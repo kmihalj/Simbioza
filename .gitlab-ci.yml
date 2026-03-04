@@ -1,0 +1,41 @@
+
+# List of stages for jobs, and their order of execution
+stages:
+  - test
+
+# Test Stage template
+.test-template:
+  tags:
+    - APPTESTAAIHREDUDOCKER
+  stage: test
+  variables:
+    XDEBUG_MODE: "coverage"
+    COMPOSER_AUTH: >
+      {
+        "gitlab-token": {
+          "gitlab.srce.hr": "${CI_JOB_TOKEN}"
+        }
+      }
+  script:
+    - echo "Running tests for PHP with image tag ${PHP_IMAGE_TAG}..."
+    - composer install --no-interaction --no-progress --no-ansi --prefer-dist --optimize-autoloader --ignore-platform-reqs
+    - composer pre-commit
+  coverage: '/^\s*Lines:\s*\d+.\d+\%/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/logs/cobertura.xml
+      junit: build/logs/junit.xml
+    paths:
+      - build/logs/clover.xml
+      - build/coverage/html
+
+# Test job using a matrix for different PHP versions
+test-php:
+  extends: .test-template
+  image: cicnavi/dap:${PHP_IMAGE_TAG}
+  parallel:
+    matrix:
+      - PHP_IMAGE_TAG: ["82", "83", "84", "08"]

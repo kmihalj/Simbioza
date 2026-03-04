@@ -1,0 +1,63 @@
+{
+    "name": "aaieduhr/heartphrame",
+    "description": "A HeartPhrame Application",
+    "type": "project",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "repositories": {
+        "heartphrame-module-demo": {
+            "type": "vcs",
+            "url": "git@gitlab.srce.hr:aai-eduhr/heartphrame/heartphrame-module-demo.git"
+        }
+    },
+    "require": {
+        "php": ">=8.2",
+        "aaieduhr/heartphrame-framework": "^0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10 || ^11",
+        "rector/rector": "^2.0",
+        "squizlabs/php_codesniffer": "^3",
+        "slevomat/coding-standard": "^8",
+        "aaieduhr/heartphrame-module-demo": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/src"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marko Ivančić",
+            "email": "mivanci@srce.hr"
+        }
+    ],
+    "config": {
+        "sort-packages": true,
+        "cache-dir": "build/composer",
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        },
+        "optimize-autoloader": true,
+        "composer-runtime-api": "^2.1"
+    },
+    "extra": {
+    },
+    "scripts": {
+        "pre-commit": [
+            "vendor/bin/phpcbf",
+            "vendor/bin/phpcs -p",
+            "vendor/bin/phpstan --memory-limit=1024M",
+            "vendor/bin/phpunit",
+            "vendor/bin/rector --dry-run",
+            "vendor/bin/phpstan analyze -c phpstan-dev.neon --memory-limit=1024M"
+        ]
+    }
+}
