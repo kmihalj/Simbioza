@@ -126,11 +126,16 @@ After that, you can visit the application using your Web Browser, for
 example, at `http://localhost/`, or similar (depending on your
 server configuration).
 
+## 8. Next steps
+
 Note that this repository includes sample code and files that are here just
 for demonstration purposes. You should adjust or delete them before you start
-developing your application. This includes, but is not limited to:
+developing your application. This includes:
 - `database/migrations/`
 - `src`
 - `views`
 - `lang`
 
+Also, there is a dev-requirement for `aaieduhr/heartphrame-module-demo`
+in `composer.json`, that serves as a demonstration module. You'll probably
+want to remove this or replace with your own module(s).
