@@ -21,8 +21,8 @@ Other notable functionalities:
 - Configuration
 - Sessions
 - Authentication
-- (TODO) Database abstraction, migrations
-- (TODO) Localization
+- Database abstraction, migrations
+- Localization
 - Composer-enabled module system
 - Encryption
 
