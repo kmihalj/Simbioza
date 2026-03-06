@@ -1,0 +1,15 @@
+ochr_kat_version: "1.0"
+
+ochr_short_name: "HeartPhrame"
+ochr_description: "A lightweight, PSR-compliant PHP framework with a custom composer-enabled module system."
+ochr_logo_file: "HeartPhrame.png"
+
+ochr_badges:
+  - https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame/badges/main/pipeline.svg
+
+ochr_keywords:
+  - PHP
+  - Framework
+
+# ochr_start_page: "https://www.opencode.hr/primjer"
+ochr_start_page: "README.md"
