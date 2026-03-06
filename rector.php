@@ -10,7 +10,6 @@ return RectorConfig::configure()
         __DIR__ . '/config',
         __DIR__ . '/tests',
         __DIR__ . '/views',
-        __DIR__ . '/hph.php',
     ])
     ->withSkip([
         \Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector::class => [

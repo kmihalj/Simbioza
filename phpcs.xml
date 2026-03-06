@@ -8,7 +8,6 @@
     <file>config</file>
     <file>tests</file>
     <file>views</file>
-    <file>hph.php</file>
 
     <!-- This is the rule we inherit from. If you want to exclude some specific rules, see the docs on how to do that -->
     <rule ref="PSR12"/>
