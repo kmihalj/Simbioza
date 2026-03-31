@@ -19,7 +19,7 @@ stages:
   script:
     - echo "Running tests for PHP with image tag ${PHP_IMAGE_TAG}..."
     - composer install --no-interaction --no-progress --no-ansi --prefer-dist --optimize-autoloader --ignore-platform-reqs
-    - composer pre-commit
+    - composer on-commit
   coverage: '/^\s*Lines:\s*\d+.\d+\%/'
   artifacts:
     when: always
