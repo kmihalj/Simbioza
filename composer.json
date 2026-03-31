@@ -2,7 +2,7 @@
     "name": "aaieduhr/heartphrame",
     "description": "A HeartPhrame Application",
     "type": "project",
-    "license": "MIT",
+    "license": "EUPL-1.2",
     "minimum-stability": "stable",
     "require": {
         "php": ">=8.2",
