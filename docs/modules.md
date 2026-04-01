@@ -119,3 +119,11 @@ calls its methods to register the provided routes, and other
 configurations with the main application.
 
 This allows modules to seamlessly extend the application's functionality.
+
+The module manifest has a method `canLoad()` that can be used to conditionally
+load the module based on certain criteria (e.g., environment, configuration
+settings, etc.). If `canLoad()` returns `false`, the module will
+be skipped during the loading process. By default `AbstractModuleManifest`
+method `canLoad()` returns `true`. You can override this method in your
+manifest to implement custom logic for determining whether the module
+should be loaded or not.
