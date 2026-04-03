@@ -70,6 +70,7 @@ return [
     \HeartPhrame\Middleware\TrustedProxyMiddleware::class,
     \HeartPhrame\Middleware\StartSessionMiddleware::class,
     \HeartPhrame\Middleware\CheckCsrfMiddleware::class,
+    \HeartPhrame\Middleware\DeferredModuleLoaderMiddleware::class,
     
     // Add your custom global middleware here
     \App\Middleware\LoggingMiddleware::class,

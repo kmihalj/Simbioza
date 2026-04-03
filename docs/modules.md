@@ -120,10 +120,23 @@ configurations with the main application.
 
 This allows modules to seamlessly extend the application's functionality.
 
-The module manifest has a method `canLoad()` that can be used to conditionally
-load the module based on certain criteria (e.g., environment, configuration
-settings, etc.). If `canLoad()` returns `false`, the module will
-be skipped during the loading process. By default `AbstractModuleManifest`
-method `canLoad()` returns `true`. You can override this method in your
-manifest to implement custom logic for determining whether the module
+The module manifest also has the following methods that can be used to
+conditionally load the module based on certain criteria
+(e.g., environment, configuration settings, etc.).
+  - `canLoad()` - called at app initialization time. If it returns `false`,
+  the module will be skipped during the loading process.
+  - `requiresDeferredLoading()` - can be used to indicate that the module
+  requires request-time (post-session) context to determine if it should load.
+  Returns `false` by default.
+  - `canLoadForRequest()` - Called by `DeferredModuleLoaderMiddleware` only
+  when `requiresDeferredLoading()` returns true. This method can contain
+  logic to determine if the module should be loaded for the current request.
+  - `canLoadForCli()` - Called by `App::loadCommands()` (CLI context) when
+  `requiresDeferredLoading()` is true. There is no HTTP request or session,
+  so this method allows the module to explicitly opt in or out of CLI loading.
+  Defaults to true.
+
+By default, in `AbstractModuleManifest` those methods return default values
+which will enable the module to be loaded. You can override those methods
+in your manifest to implement custom logic for determining whether the module
 should be loaded or not.
