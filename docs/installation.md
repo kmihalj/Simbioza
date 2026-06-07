@@ -135,7 +135,3 @@ developing your application. This includes:
 - `src`
 - `views`
 - `lang`
-
-Also, there is a dev-requirement for `aaieduhr/heartphrame-module-demo`
-in `composer.json`, that serves as a demonstration module. You'll probably
-want to remove this or replace with your own module(s).

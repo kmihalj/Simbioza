@@ -4,17 +4,42 @@
     "type": "project",
     "license": "EUPL-1.2",
     "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-framework.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-module-menu.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-module-theme.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-module-orm.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-module-auth.git"
+        }
+    ],
     "require": {
         "php": ">=8.2",
-        "aaieduhr/heartphrame-framework": "^0"
+        "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
+        "aaieduhr/heartphrame-module-auth": "^1.1",
+        "aaieduhr/heartphrame-module-menu": "^1.0",
+        "aaieduhr/heartphrame-module-orm": "^1.0",
+        "aaieduhr/heartphrame-module-theme": "^1.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10 || ^11",
         "rector/rector": "^2.0",
         "squizlabs/php_codesniffer": "^3",
-        "slevomat/coding-standard": "^8",
-        "aaieduhr/heartphrame-module-demo": "^0"
+        "slevomat/coding-standard": "^8"
     },
     "autoload": {
         "psr-4": {

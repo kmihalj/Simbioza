@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 return [
     // Application name
-    'name' => 'HeartPhrame',
+    'name' => 'HFClean',
 
     // Localization
     'localization' => [
         'locale' => 'en',
         'fallback_locale' => 'en',
+        'supported_locales' => ['hr', 'en'],
         'detect_browser_locale' => true,
         'translations_dir' => __DIR__ . '/../lang',
     ],
@@ -58,8 +59,10 @@ return [
         ],
         // List of enabled modules (package names)
         'enabled' => [
-            // Example: 'vendor/module-name'
-            'aaieduhr/heartphrame-module-demo',
+            'aaieduhr/heartphrame-module-orm',
+            'aaieduhr/heartphrame-module-menu',
+            'aaieduhr/heartphrame-module-theme',
+            'aaieduhr/heartphrame-module-auth',
         ],
     ],
 

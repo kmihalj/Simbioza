@@ -1,0 +1,32 @@
+[
+    {
+        "id": "home",
+        "label": {
+            "hr": "Početna",
+            "en": "Home"
+        },
+        "order": 10,
+        "enabled": true,
+        "route": "home"
+    },
+    {
+        "id": "about",
+        "label": {
+            "hr": "O aplikaciji",
+            "en": "About"
+        },
+        "order": 20,
+        "enabled": true,
+        "route": "about"
+    },
+    {
+        "id": "settings",
+        "label": {
+            "hr": "Postavke",
+            "en": "Settings"
+        },
+        "order": 30,
+        "enabled": true,
+        "route": "settings"
+    }
+]

@@ -1,0 +1,264 @@
+[
+    {
+        "id": "menu",
+        "label": {
+            "hr": "Meni",
+            "en": "Menu"
+        },
+        "order": 10,
+        "enabled": true,
+        "children": [
+            {
+                "id": "menu.top",
+                "label": {
+                    "hr": "Gornji meni",
+                    "en": "Top menu"
+                },
+                "order": 20,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "top"
+                }
+            },
+            {
+                "id": "menu.settings",
+                "label": {
+                    "hr": "Meni postavki",
+                    "en": "Settings menu"
+                },
+                "order": 30,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "settings"
+                }
+            },
+            {
+                "id": "menu.contexts.top",
+                "label": {
+                    "hr": "Posebni gornji meniji",
+                    "en": "Special top menus"
+                },
+                "order": 40,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_top"
+                }
+            },
+            {
+                "id": "menu.contexts.left",
+                "label": {
+                    "hr": "Posebni lijevi meniji",
+                    "en": "Special left menus"
+                },
+                "order": 50,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_left"
+                }
+            }
+        ]
+    },
+    {
+        "id": "auth",
+        "label": {
+            "hr": "Korisnici",
+            "en": "Users"
+        },
+        "order": 30,
+        "enabled": true,
+        "children": [
+            {
+                "id": "auth.setup.login",
+                "label": {
+                    "hr": "Postavke prijave",
+                    "en": "Login settings"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "overview"
+                },
+                "url": null,
+                "children": []
+            },
+            {
+                "id": "auth.setup.attributes",
+                "label": {
+                    "hr": "Atributi korisnika",
+                    "en": "User attributes"
+                },
+                "order": 20,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "attributes"
+                },
+                "url": null,
+                "children": []
+            },
+            {
+                "id": "auth.setup.groups",
+                "label": {
+                    "hr": "Grupe",
+                    "en": "Groups"
+                },
+                "order": 30,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "groups"
+                },
+                "url": null,
+                "children": []
+            },
+            {
+                "id": "auth.setup.users",
+                "label": {
+                    "hr": "Korisnici",
+                    "en": "Users"
+                },
+                "order": 40,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "users"
+                },
+                "url": null,
+                "children": []
+            },
+            {
+                "id": "auth.setup.local",
+                "label": {
+                    "hr": "Lokalna prijava",
+                    "en": "Local login"
+                },
+                "order": 50,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "local"
+                },
+                "url": null,
+                "children": []
+            }
+        ],
+        "route": null,
+        "url": null,
+        "query": []
+    },
+    {
+        "id": "auth.sso",
+        "label": {
+            "hr": "SSO provideri",
+            "en": "SSO providers"
+        },
+        "order": 40,
+        "enabled": true,
+        "children": [
+            {
+                "id": "auth.setup.provider.saml",
+                "label": {
+                    "hr": "SAML",
+                    "en": "SAML"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "provider-saml"
+                },
+                "url": null,
+                "children": [
+                    {
+                        "id": "auth.setup.provider.saml.profile.saml-aai-eduhr",
+                        "label": {
+                            "hr": "AAI@EduHR",
+                            "en": "AAI@EduHR"
+                        },
+                        "route": "auth.setup",
+                        "url": null,
+                        "query": {
+                            "section": "provider-saml",
+                            "mode": "edit",
+                            "profile_key": "saml-aai-eduhr"
+                        },
+                        "order": 10,
+                        "enabled": true,
+                        "children": [],
+                        "status_icon": "✓",
+                        "status_class": "text-success",
+                        "status_label": "Testirano i operativno"
+                    }
+                ]
+            },
+            {
+                "id": "auth.setup.provider.cas",
+                "label": {
+                    "hr": "CAS",
+                    "en": "CAS"
+                },
+                "order": 20,
+                "enabled": true,
+                "route": "auth.setup",
+                "query": {
+                    "section": "provider-cas"
+                },
+                "url": null,
+                "children": [
+                    {
+                        "id": "auth.setup.provider.cas.profile.cas-aai-eduhr",
+                        "label": {
+                            "hr": "AAI@EduHR",
+                            "en": "AAI@EduHR"
+                        },
+                        "route": "auth.setup",
+                        "url": null,
+                        "query": {
+                            "section": "provider-cas",
+                            "mode": "edit",
+                            "profile_key": "cas-aai-eduhr"
+                        },
+                        "order": 10,
+                        "enabled": true,
+                        "children": [],
+                        "status_icon": "✓",
+                        "status_class": "text-success",
+                        "status_label": "Testirano i operativno"
+                    }
+                ]
+            }
+        ],
+        "route": null,
+        "url": null,
+        "query": []
+    },
+    {
+        "id": "theme",
+        "label": {
+            "hr": "Tema",
+            "en": "Theme"
+        },
+        "order": 150,
+        "enabled": true,
+        "children": [
+            {
+                "id": "theme.settings",
+                "label": {
+                    "hr": "Postavke teme",
+                    "en": "Theme settings"
+                },
+                "order": 160,
+                "enabled": true,
+                "route": "theme.settings",
+                "query": {
+                    "section": "theme"
+                }
+            }
+        ]
+    }
+]

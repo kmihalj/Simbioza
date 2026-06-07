@@ -104,7 +104,6 @@ the module package:
         ],
         // Add your module's package name to the list of enabled modules
         'enabled' => [
-            'aaieduhr/heartphrame-module-demo',
             'my-vendor/my-module', // Your new module
         ],
     ],

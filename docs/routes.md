@@ -69,27 +69,27 @@ use HeartPhrame\Routing\RouteGroupProperties;
 
 new RouteGroup(
     new RouteGroupProperties(
-        '/contact', // Path prefix
-        'contact.', // Name prefix
+        '/admin', // Path prefix
+        'admin.', // Name prefix
         [SampleMiddleware::class] // Common middleware
     ),
     new Route(
         HttpMethodsEnum::GET,
-        '/index',
-        [HomeController::class, 'contact'],
-        'index' // Resulting name: 'contact.index'
+        '/dashboard',
+        [AdminController::class, 'dashboard'],
+        'dashboard' // Resulting name: 'admin.dashboard'
     ),
     new Route(
-        HttpMethodsEnum::POST,
-        '/index',
-        [HomeController::class, 'submitContact'],
-        'submitContact' // Resulting name: 'contact.submitContact'
+        HttpMethodsEnum::GET,
+        '/users',
+        [AdminController::class, 'users'],
+        'users' // Resulting name: 'admin.users'
     ),
 );
 ```
 
 In this example, all routes within the group will have their paths prefixed
-with `/contact`, their names prefixed with `contact.`, and the
+with `/admin`, their names prefixed with `admin.`, and the
 `SampleMiddleware` applied.
 
 ## Route Parameters
