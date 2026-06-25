@@ -186,6 +186,13 @@ if (is_array($fallbackUser)) {
         <?= $this->escape(__('About')) ?>
                         </a>
                     </li>
+        <?php if ($this->urlGenerator->namedRouteExists('calendar.index')) : ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= $this->urlGenerator->getPathFor('calendar.index') ?>">
+        <?= $this->escape(__('Calendars')) ?>
+                        </a>
+                    </li>
+        <?php endif; ?>
                 </ul>
         <?php if ($fallbackAuthMenuHtml !== '') : ?>
                     <ul class="navbar-nav ms-auto"><?= $fallbackAuthMenuHtml ?></ul>

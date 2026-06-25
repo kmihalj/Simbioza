@@ -63,6 +63,7 @@ return [
             'aaieduhr/heartphrame-module-menu',
             'aaieduhr/heartphrame-module-theme',
             'aaieduhr/heartphrame-module-auth',
+            'aaieduhr/heartphrame-module-calendar',
         ],
     ],
 
@@ -70,6 +71,7 @@ return [
         // List of route prefixes for which the CSRF token check will not be performed by the CheckCsrfMiddleware.
         'excluded_routes' => [
             '/sample/route/prefix', // All routes that start with this prefix will be excluded.
+            '/caldav',
         ],
     ],
 ];

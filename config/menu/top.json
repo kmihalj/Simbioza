@@ -28,5 +28,19 @@
         "order": 30,
         "enabled": true,
         "route": "settings"
+    },
+    {
+        "id": "calendar",
+        "parent_id": "",
+        "label": {
+            "hr": "Kalendari",
+            "en": "Calendars"
+        },
+        "route": "calendar.index",
+        "url": "",
+        "query": "",
+        "order": 40,
+        "enabled": true,
+        "level": 0
     }
 ]

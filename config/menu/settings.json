@@ -1,68 +1,5 @@
 [
     {
-        "id": "menu",
-        "label": {
-            "hr": "Meni",
-            "en": "Menu"
-        },
-        "order": 10,
-        "enabled": true,
-        "children": [
-            {
-                "id": "menu.top",
-                "label": {
-                    "hr": "Gornji meni",
-                    "en": "Top menu"
-                },
-                "order": 20,
-                "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "top"
-                }
-            },
-            {
-                "id": "menu.settings",
-                "label": {
-                    "hr": "Meni postavki",
-                    "en": "Settings menu"
-                },
-                "order": 30,
-                "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "settings"
-                }
-            },
-            {
-                "id": "menu.contexts.top",
-                "label": {
-                    "hr": "Posebni gornji meniji",
-                    "en": "Special top menus"
-                },
-                "order": 40,
-                "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "contexts_top"
-                }
-            },
-            {
-                "id": "menu.contexts.left",
-                "label": {
-                    "hr": "Posebni lijevi meniji",
-                    "en": "Special left menus"
-                },
-                "order": 50,
-                "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "contexts_left"
-                }
-            }
-        ]
-    },
-    {
         "id": "auth",
         "label": {
             "hr": "Korisnici",
@@ -172,7 +109,6 @@
                 "query": {
                     "section": "provider-saml"
                 },
-                "url": null,
                 "children": [
                     {
                         "id": "auth.setup.provider.saml.profile.saml-aai-eduhr",
@@ -180,21 +116,22 @@
                             "hr": "AAI@EduHR",
                             "en": "AAI@EduHR"
                         },
+                        "order": 10,
+                        "enabled": true,
                         "route": "auth.setup",
-                        "url": null,
                         "query": {
                             "section": "provider-saml",
                             "mode": "edit",
                             "profile_key": "saml-aai-eduhr"
                         },
-                        "order": 10,
-                        "enabled": true,
-                        "children": [],
+                        "url": null,
                         "status_icon": "✓",
                         "status_class": "text-success",
-                        "status_label": "Testirano i operativno"
+                        "status_label": "Testirano i operativno",
+                        "children": []
                     }
-                ]
+                ],
+                "url": null
             },
             {
                 "id": "auth.setup.provider.cas",
@@ -208,7 +145,6 @@
                 "query": {
                     "section": "provider-cas"
                 },
-                "url": null,
                 "children": [
                     {
                         "id": "auth.setup.provider.cas.profile.cas-aai-eduhr",
@@ -216,21 +152,22 @@
                             "hr": "AAI@EduHR",
                             "en": "AAI@EduHR"
                         },
+                        "order": 10,
+                        "enabled": true,
                         "route": "auth.setup",
-                        "url": null,
                         "query": {
                             "section": "provider-cas",
                             "mode": "edit",
                             "profile_key": "cas-aai-eduhr"
                         },
-                        "order": 10,
-                        "enabled": true,
-                        "children": [],
+                        "url": null,
                         "status_icon": "✓",
                         "status_class": "text-success",
-                        "status_label": "Testirano i operativno"
+                        "status_label": "Testirano i operativno",
+                        "children": []
                     }
-                ]
+                ],
+                "url": null
             }
         ],
         "route": null,
@@ -243,7 +180,7 @@
             "hr": "Tema",
             "en": "Theme"
         },
-        "order": 150,
+        "order": 80,
         "enabled": true,
         "children": [
             {
@@ -252,7 +189,7 @@
                     "hr": "Postavke teme",
                     "en": "Theme settings"
                 },
-                "order": 160,
+                "order": 90,
                 "enabled": true,
                 "route": "theme.settings",
                 "query": {
@@ -260,5 +197,98 @@
                 }
             }
         ]
+    },
+    {
+        "id": "menu",
+        "label": {
+            "hr": "Meni",
+            "en": "Menu"
+        },
+        "order": 120,
+        "enabled": true,
+        "children": [
+            {
+                "id": "menu.top",
+                "label": {
+                    "hr": "Gornji meni",
+                    "en": "Top menu"
+                },
+                "order": 130,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "top"
+                }
+            },
+            {
+                "id": "menu.settings",
+                "label": {
+                    "hr": "Meni postavki",
+                    "en": "Settings menu"
+                },
+                "order": 140,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "settings"
+                }
+            },
+            {
+                "id": "menu.contexts.top",
+                "label": {
+                    "hr": "Posebni gornji meniji",
+                    "en": "Special top menus"
+                },
+                "order": 150,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_top"
+                }
+            },
+            {
+                "id": "menu.contexts.left",
+                "label": {
+                    "hr": "Posebni lijevi meniji",
+                    "en": "Special left menus"
+                },
+                "order": 160,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_left"
+                }
+            }
+        ]
+    },
+    {
+        "id": "calendar.settings.group",
+        "label": {
+            "hr": "Kalendari",
+            "en": "Calendars"
+        },
+        "order": 190,
+        "enabled": true,
+        "children": [
+            {
+                "id": "calendar.settings.admin",
+                "label": {
+                    "hr": "Administracija kalendara",
+                    "en": "Calendar administration"
+                },
+                "order": 200,
+                "enabled": true,
+                "route": "calendar.admin",
+                "parent_id": "calendar.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            }
+        ],
+        "parent_id": "",
+        "route": "",
+        "url": "",
+        "query": "",
+        "level": 0
     }
 ]
