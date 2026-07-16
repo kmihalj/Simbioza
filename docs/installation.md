@@ -74,7 +74,28 @@ to generate a new encryption key and set it in the `config/env.php` file.
 > **Note:** The `config/env.php` file is ignored by Git, so you can safely
 adjust it as needed.
 
-## 6. Make the runtime `data/` folder writable
+## 6. Create the initial database schema
+
+Run the three application migrations after configuring the database connection:
+
+```shell
+vendor/bin/hph migrate:up
+```
+
+The initial migrations create the complete Auth, Calendar, and HTML Editor
+schemas and required system groups. They do not insert sample documents,
+calendars, events, or users. The sole bootstrap user account is the local
+administrator below:
+
+```text
+Username: Administrator
+Temporary password: Admin123!
+```
+
+The account is marked for a mandatory password change, so the temporary
+password must be replaced immediately after the first successful login.
+
+## 7. Make the runtime `data/` folder writable
 
 Web server needs write access to the `data/` folder, so make sure it is
 writable by the web server user. Apache example:
@@ -83,7 +104,7 @@ writable by the web server user. Apache example:
 chown -R www-data:www-data data/
 ```
 
-## 7. Run the application
+## 8. Run the application
 
 Configure your web server’s document root to point to the `public/` directory.
 
@@ -126,7 +147,7 @@ After that, you can visit the application using your Web Browser, for
 example, at `http://localhost/`, or similar (depending on your
 server configuration).
 
-## 8. Next steps
+## 9. Next steps
 
 Note that this repository includes sample code and files that are here just
 for demonstration purposes. You should adjust or delete them before you start

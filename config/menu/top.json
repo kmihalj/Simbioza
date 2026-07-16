@@ -31,16 +31,26 @@
     },
     {
         "id": "calendar",
-        "parent_id": "",
         "label": {
             "hr": "Kalendari",
             "en": "Calendars"
         },
-        "route": "calendar.index",
-        "url": "",
-        "query": "",
         "order": 40,
         "enabled": true,
+        "route": "calendar.index",
+        "parent_id": "",
+        "url": "",
+        "query": "",
         "level": 0
+    },
+    {
+        "id": "editor-html",
+        "label": {
+            "hr": "Editor",
+            "en": "Editor"
+        },
+        "order": 50,
+        "enabled": true,
+        "route": "editor-html.index"
     }
 ]

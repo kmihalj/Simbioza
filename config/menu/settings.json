@@ -82,6 +82,19 @@
                 },
                 "url": null,
                 "children": []
+            },
+            {
+                "id": "auth.setup.impersonation",
+                "label": {
+                    "hr": "Preuzmi korisnika",
+                    "en": "Impersonate user"
+                },
+                "route": "auth.setup.impersonation",
+                "url": null,
+                "query": [],
+                "order": 60,
+                "enabled": true,
+                "children": []
             }
         ],
         "route": null,
@@ -283,6 +296,66 @@
                 "url": "",
                 "query": "",
                 "level": 1
+            }
+        ],
+        "parent_id": "",
+        "route": "",
+        "url": "",
+        "query": "",
+        "level": 0
+    },
+    {
+        "id": "editor-html",
+        "label": {
+            "hr": "HTML editor",
+            "en": "HTML editor"
+        },
+        "order": 90,
+        "enabled": true,
+        "children": [
+            {
+                "id": "editor-html.settings",
+                "label": {
+                    "hr": "Postavke HTML editora",
+                    "en": "HTML editor settings"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "editor-html.settings",
+                "parent_id": "editor-html",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "editor-html.documents",
+                "parent_id": "editor-html",
+                "label": {
+                    "hr": "Dokumenti",
+                    "en": "Documents"
+                },
+                "route": "",
+                "url": "",
+                "query": "",
+                "order": 20,
+                "enabled": true,
+                "level": 1,
+                "children": [
+                    {
+                        "id": "editor-html.documents.deleted",
+                        "parent_id": "editor-html.documents",
+                        "label": {
+                            "hr": "Obrisani dokumenti",
+                            "en": "Deleted documents"
+                        },
+                        "route": "editor-html.documents.deleted",
+                        "url": "",
+                        "query": "",
+                        "order": 10,
+                        "enabled": true,
+                        "level": 2
+                    }
+                ]
             }
         ],
         "parent_id": "",

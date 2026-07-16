@@ -63,6 +63,7 @@ return [
             'aaieduhr/heartphrame-module-menu',
             'aaieduhr/heartphrame-module-theme',
             'aaieduhr/heartphrame-module-auth',
+            'aaieduhr/heartphrame-module-editor-html',
             'aaieduhr/heartphrame-module-calendar',
         ],
     ],

@@ -10,13 +10,13 @@ use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\Blueprint;
 
 return new class implements ReversibleMigrationInterface {
     /**
-     * HR: Kreira početnu auth shemu modula i bazne provider/profil postavke.
-     * Ova migracija ne kreira korisnike. Prvog local admin korisnika treba
-     * kreirati nakon migracije kroz `/auth/setup`.
+     * HR: Kreira cjelovitu početnu auth shemu, bazne provider postavke i jedini
+     * početni račun `Administrator`. Privremena lozinka mora se promijeniti pri
+     * prvoj prijavi, a migracija ne dodaje druge korisničke ili testne podatke.
      *
-     * EN: Creates initial auth module schema and base provider/profile settings.
-     * This migration does not create users. First local admin user should be
-     * created after migration through `/auth/setup`.
+     * EN: Creates the complete initial auth schema, base provider settings, and
+     * the sole bootstrap `Administrator` account. Its temporary password must be
+     * changed on first login, and no other user or test data is inserted.
      */
     public function up(Database $db): void
     {
@@ -253,6 +253,7 @@ return new class implements ReversibleMigrationInterface {
         $this->upsertSystemSetting($db, 'allow_local_registration', '0', $now);
         $this->seedDefaultUserAttributeFields($db, $now);
         $this->seedAdministratorGroup($db, $now);
+        $this->seedAdministratorUser($db, $now);
     }
 
     /**
@@ -384,7 +385,87 @@ return new class implements ReversibleMigrationInterface {
                 'updated_at' => $now,
             ]);
         }
+    }
 
+    /**
+     * HR: Kreira jedini početni lokalni administratorski račun, zapisuje njegovo
+     * prikazno ime i povezuje ga sa sistemskom grupom. `must_change_password`
+     * prisiljava promjenu privremene lozinke `Admin123!` odmah nakon prve prijave.
+     *
+     * EN: Creates the sole bootstrap local administrator account, stores its
+     * display name, and links it to the system group. `must_change_password`
+     * forces replacement of the temporary `Admin123!` password after first login.
+     */
+    private function seedAdministratorUser(Database $db, string $now): void
+    {
+        $user = $db->table(ModuleAuth::TABLE_AUTH_USERS)
+            ->where('login_identifier', '=', 'Administrator')
+            ->first();
+
+        if (!is_array($user)) {
+            $db->table(ModuleAuth::TABLE_AUTH_USERS)->insert([
+                'login_identifier' => 'Administrator',
+                'password_hash' => password_hash('Admin123!', PASSWORD_DEFAULT),
+                'is_admin' => 1,
+                'is_active' => 1,
+                'auth_source' => AuthSettingsService::PROVIDER_LOCAL,
+                'must_change_password' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $user = $db->table(ModuleAuth::TABLE_AUTH_USERS)
+                ->where('login_identifier', '=', 'Administrator')
+                ->first();
+        }
+
+        if (!is_array($user)) {
+            throw new RuntimeException('Failed to create the bootstrap Administrator account.');
+        }
+
+        $userId = (int)($user['id'] ?? 0);
+        $group = $db->table(ModuleAuth::TABLE_AUTH_GROUPS)
+            ->where('group_key', '=', 'administrator')
+            ->first();
+
+        if ($userId < 1 || !is_array($group) || (int)($group['id'] ?? 0) < 1) {
+            throw new RuntimeException('Failed to resolve bootstrap Administrator membership.');
+        }
+
+        $attribute = $db->table(ModuleAuth::TABLE_AUTH_USER_ATTRIBUTE_VALUES)
+            ->where('user_id', '=', $userId)
+            ->where('field_key', '=', 'display_name')
+            ->first();
+
+        if (!is_array($attribute)) {
+            $db->table(ModuleAuth::TABLE_AUTH_USER_ATTRIBUTE_VALUES)->insert([
+                'user_id' => $userId,
+                'field_key' => 'display_name',
+                'value_text' => 'Administrator',
+                'value_json' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $groupId = (int)$group['id'];
+        $membership = $db->table(ModuleAuth::TABLE_AUTH_USER_GROUPS)
+            ->where('user_id', '=', $userId)
+            ->where('group_id', '=', $groupId)
+            ->where('source', '=', 'manual')
+            ->first();
+
+        if (!is_array($membership)) {
+            $db->table(ModuleAuth::TABLE_AUTH_USER_GROUPS)->insert([
+                'user_id' => $userId,
+                'group_id' => $groupId,
+                'source' => 'manual',
+                'source_field_key' => null,
+                'source_provider' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
     }
 
     /**

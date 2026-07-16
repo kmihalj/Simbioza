@@ -7,6 +7,10 @@
     "repositories": [
         {
             "type": "vcs",
+            "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-module-html-editor.git"
+        },
+        {
+            "type": "vcs",
             "url": "git@gitlab.opencode.hr:srce/aai-eduhr/heartphrame/heartphrame-framework.git"
         },
         {
@@ -35,8 +39,9 @@
         "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
         "aaieduhr/heartphrame-module-auth": "dev-main as 1.1.99",
         "aaieduhr/heartphrame-module-calendar": "dev-main as 1.0.99",
+        "aaieduhr/heartphrame-module-editor-html": "dev-main as 0.1.99",
         "aaieduhr/heartphrame-module-menu": "dev-main as 1.0.99",
-        "aaieduhr/heartphrame-module-orm": "dev-main as 1.0.99",
+        "aaieduhr/heartphrame-module-orm": "dev-main as 1.1.99",
         "aaieduhr/heartphrame-module-theme": "dev-main as 1.0.99"
     },
     "require-dev": {

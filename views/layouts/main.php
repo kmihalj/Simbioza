@@ -83,6 +83,25 @@ if (is_array($fallbackUser)) {
         $fallbackAuthItems[] = '<li><a class="dropdown-item" href="' . $this->escape($fallbackLogoutPath) . '">'
         . $this->escape(__('Odjava')) . '</a></li>';
     }
+    $fallbackIsImpersonating = false;
+    if (is_object($this->authnHandler) && method_exists($this->authnHandler, 'isImpersonating')) {
+        try {
+            $fallbackIsImpersonating = (bool)$this->authnHandler->isImpersonating();
+        } catch (Throwable) {
+            $fallbackIsImpersonating = false;
+        }
+    }
+    if ($fallbackIsImpersonating) {
+        $fallbackStopImpersonationPath = $authFallbackPath('auth.impersonation.stop', $authNextPath);
+        if ($fallbackStopImpersonationPath !== '') {
+            if ($fallbackLogoutPath === '' && $fallbackAuthItems !== []) {
+                $fallbackAuthItems[] = '<li><hr class="dropdown-divider"></li>';
+            }
+            $fallbackAuthItems[] = '<li><a class="dropdown-item" href="'
+            . $this->escape($fallbackStopImpersonationPath) . '">'
+            . $this->escape(__('Vrati administratorski račun')) . '</a></li>';
+        }
+    }
     if ($fallbackAuthItems !== []) {
         $fallbackAuthMenuHtml = '<li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" '
         . 'role="button" data-bs-toggle="dropdown" aria-expanded="false">'
@@ -189,7 +208,7 @@ if (is_array($fallbackUser)) {
         <?php if ($this->urlGenerator->namedRouteExists('calendar.index')) : ?>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= $this->urlGenerator->getPathFor('calendar.index') ?>">
-        <?= $this->escape(__('Calendars')) ?>
+            <?= $this->escape(__('Calendars')) ?>
                         </a>
                     </li>
         <?php endif; ?>
@@ -210,11 +229,22 @@ if (is_array($fallbackUser)) {
         <?php endif; ?>
 
         <?php if ($messages = $this->alertHandler->getAllAndForget()) : ?>
-            <?php foreach ($messages as $message) : ?>
-                <div class="alert alert-<?= $message->level->value ?>" role="alert">
-                <?= $message->message ?>
-                </div>
-            <?php endforeach; ?>
+            <?php
+            // HR: Globalne flash poruke prikazujemo kao toastove kako redirect obavijesti ne bi pomicale sadržaj.
+            // EN: Global flash messages render as toasts so redirect notices do not push page content down.
+            $layoutToastMessages = [];
+            foreach ($messages as $message) {
+                $layoutToastMessages[] = [
+                    'level' => $message->level->value,
+                    'message' => $message->message,
+                ];
+            }
+            ?>
+            <?= $this->forModulePartial(
+                'aaieduhr/heartphrame-module-auth',
+                'auth/toasts',
+                ['toast_messages' => $layoutToastMessages, 'consume_alerts' => false],
+            ) ?>
         <?php endif; ?>
 
         <?php if ($renderedRouteLeftMenu !== '') : ?>
