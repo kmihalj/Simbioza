@@ -120,6 +120,30 @@ if (is_array($fallbackUser)) {
         . '</a></li>';
     }
 }
+
+/*
+ * HR: Globalne flash poruke pripremamo prije ispisa <head> elementa kako bi
+ *     zajednički Auth partial mogao registrirati tematske CSS i JavaScript assete.
+ * EN: Prepare global flash messages before writing the <head> element so the
+ *     shared Auth partial can register its themed CSS and JavaScript assets.
+ */
+$layoutToastHtml = '';
+$layoutMessages = $this->alertHandler->getAllAndForget();
+if (is_array($layoutMessages) && $layoutMessages !== []) {
+    $layoutToastMessages = [];
+    foreach ($layoutMessages as $layoutMessage) {
+        $layoutToastMessages[] = [
+            'level' => $layoutMessage->level->value,
+            'message' => $layoutMessage->message,
+        ];
+    }
+
+    $layoutToastHtml = $this->forModulePartial(
+        'aaieduhr/heartphrame-module-auth',
+        'auth/toasts',
+        ['toast_messages' => $layoutToastMessages, 'consume_alerts' => false],
+    );
+}
 ?>
 
 <!DOCTYPE html>
@@ -228,23 +252,12 @@ if (is_array($fallbackUser)) {
             </div>
         <?php endif; ?>
 
-        <?php if ($messages = $this->alertHandler->getAllAndForget()) : ?>
+        <?php if ($layoutToastHtml !== '') : ?>
             <?php
-            // HR: Globalne flash poruke prikazujemo kao toastove kako redirect obavijesti ne bi pomicale sadržaj.
-            // EN: Global flash messages render as toasts so redirect notices do not push page content down.
-            $layoutToastMessages = [];
-            foreach ($messages as $message) {
-                $layoutToastMessages[] = [
-                    'level' => $message->level->value,
-                    'message' => $message->message,
-                ];
-            }
+            // HR: Toast je pripremljen prije layouta, ali se vizualno prikazuje uz sadržaj.
+            // EN: The toast is prepared before the layout but is visually rendered alongside content.
             ?>
-            <?= $this->forModulePartial(
-                'aaieduhr/heartphrame-module-auth',
-                'auth/toasts',
-                ['toast_messages' => $layoutToastMessages, 'consume_alerts' => false],
-            ) ?>
+            <?= $layoutToastHtml ?>
         <?php endif; ?>
 
         <?php if ($renderedRouteLeftMenu !== '') : ?>

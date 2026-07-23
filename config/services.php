@@ -81,8 +81,13 @@ return [
         return $logger;
     },
 
-    // Authn Handler
-    AuthnHandlerInterface::class => fn(): AuthnHandlerInterface => new ArrayAuthnHandler(),
+    // HR: Frameworkov pomoćni autentikacijski handler čita korisnike iz aplikacijske konfiguracije.
+    // EN: The framework helper authentication handler reads users from application configuration.
+    AuthnHandlerInterface::class => function (ContainerInterface $container): AuthnHandlerInterface {
+        /** @var ConfigInterface $config */
+        $config = $container->get(ConfigInterface::class);
+        return new ArrayAuthnHandler($config);
+    },
 
     // Encryption
     EncryptionInterface::class => function (ContainerInterface $container): EncryptionInterface {

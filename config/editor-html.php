@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// HR: Aplikacijske postavke koje HTML editor može mijenjati kroz administratorsko sučelje.
+// EN: Application settings that the HTML editor may update through its administration UI.
 return [
     'storage' => [
         'driver' => 'filesystem',
@@ -10,7 +12,7 @@ return [
     'view' => [
         'table_of_contents' => true,
         'slug' => [
-            'enabled' => true,
+            'enabled' => false,
             'path' => 'view',
         ],
     ],

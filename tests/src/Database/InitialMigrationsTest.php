@@ -7,7 +7,10 @@ namespace Tests\Database;
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
+use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
+use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -43,18 +46,20 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće samo tri objedinjene inicijalne migracije te provjerava aktualnu
-     * auth, calendar i editor shemu, početnog administratora i izostanak sadržaja.
+     * HR: Pokreće šest objedinjenih inicijalnih migracija te provjerava aktualne
+     * Auth, Calendar, Editor, Workspace, E-mail i Notification sheme, početnog
+     * administratora i izostanak sadržaja.
      *
-     * EN: Runs only the three consolidated initial migrations and verifies the
-     * current auth, calendar, and editor schemas, bootstrap administrator, and no content data.
+     * EN: Runs six consolidated initial migrations and verifies the current
+     * Auth, Calendar, Editor, Workspace, E-mail, and Notification schemas,
+     * the bootstrap administrator, and the absence of content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(3, $migrationFiles, 'Only consolidated initial migrations are expected.');
+        $this->assertCount(6, $migrationFiles, 'Only consolidated initial migrations are expected.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -227,6 +232,123 @@ final class InitialMigrationsTest extends TestCase
         ]);
         $this->assertTrue($this->database->schema()->hasTable(ModuleEditorHtml::TABLE_DOCUMENT_ACL));
 
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACES, [
+            'id',
+            'uuid',
+            'slug',
+            'name',
+            'description',
+            'visibility',
+            'owner_user_id',
+            'is_archived',
+            'is_deleted',
+            'created_by_user_id',
+            'updated_by_user_id',
+            'deleted_by_user_id',
+            'deleted_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_ACL, [
+            'id',
+            'workspace_id',
+            'subject_type',
+            'subject_id',
+            'can_view',
+            'can_add',
+            'can_edit',
+            'can_publish',
+            'can_delete',
+            'can_manage',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_NODES, [
+            'id',
+            'uuid',
+            'workspace_id',
+            'parent_id',
+            'node_type',
+            'slug',
+            'title',
+            'document_key',
+            'route_name',
+            'target_url',
+            'sort_order',
+            'is_homepage',
+            'is_enabled',
+            'created_by_user_id',
+            'updated_by_user_id',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL, [
+            'id',
+            'node_id',
+            'subject_type',
+            'subject_id',
+            'can_view',
+            'can_add',
+            'can_edit',
+            'can_publish',
+            'can_delete',
+            'can_manage',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS, [
+            'id',
+            'node_id',
+            'language_code',
+            'status',
+            'current_version_number',
+            'published_version_number',
+            'submitted_by_user_id',
+            'submitted_at',
+            'published_by_user_id',
+            'published_at',
+            'archived_by_user_id',
+            'archived_at',
+            'updated_by_user_id',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleEmail::TABLE_OUTBOX, [
+            'id',
+            'uuid',
+            'dedup_key',
+            'user_id',
+            'recipient_email',
+            'recipient_name',
+            'subject',
+            'body_text',
+            'body_html',
+            'status',
+            'attempts',
+            'available_at',
+            'locked_at',
+            'sent_at',
+            'last_error',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleNotification::TABLE_NOTIFICATIONS, [
+            'id',
+            'uuid',
+            'user_id',
+            'notification_key',
+            'title',
+            'message',
+            'link_url',
+            'source_module',
+            'source_reference',
+            'dedup_key',
+            'data_json',
+            'read_at',
+            'created_at',
+            'updated_at',
+        ]);
+
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
         $administrator = $users[0];
@@ -239,6 +361,10 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleCalendar::TABLE_CALENDAR_EVENTS)->get());
         $this->assertSame([], $this->database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
         $this->assertSame([], $this->database->table(ModuleEditorHtml::TABLE_ASSETS)->get());
+        $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACES)->get());
+        $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
+        $this->assertSame([], $this->database->table(ModuleEmail::TABLE_OUTBOX)->get());
+        $this->assertSame([], $this->database->table(ModuleNotification::TABLE_NOTIFICATIONS)->get());
     }
 
     /**

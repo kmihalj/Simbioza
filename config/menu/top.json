@@ -52,5 +52,19 @@
         "order": 50,
         "enabled": true,
         "route": "editor-html.index"
+    },
+    {
+        "id": "workspaces",
+        "parent_id": "",
+        "label": {
+            "hr": "Područja",
+            "en": "Workspaces"
+        },
+        "route": "workspace.index",
+        "url": "",
+        "query": "",
+        "order": 45,
+        "enabled": true,
+        "level": 0
     }
 ]
