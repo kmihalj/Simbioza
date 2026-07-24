@@ -215,7 +215,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor.git",
-                "reference": "d9dba5e64611a675b466b53f42560dee0fe6795f"
+                "reference": "b359723167a8480f9f56cf9f80a381ea2c1a89dd"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
@@ -274,7 +274,7 @@
                 }
             ],
             "description": "Standalone HTML WYSIWYG editor module for HeartPhrame",
-            "time": "2026-07-23T21:25:32+00:00"
+            "time": "2026-07-24T05:26:30+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-email",
