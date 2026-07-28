@@ -1,4 +1,102 @@
 {
+    "enabled": true,
     "active_theme": "standard",
-    "mode_policy": "auto"
+    "mode_policy": "auto",
+    "components": {
+        "skip_link": true,
+        "header": {
+            "enabled": true,
+            "sticky": true,
+            "container": "fluid",
+            "items": [
+                {
+                    "id": "header-1",
+                    "type": "logo",
+                    "position": "start",
+                    "text": [],
+                    "href": "/hfc/",
+                    "src": "/hfc/favicon.svg",
+                    "alt": {
+                        "hr": "HFClean znak",
+                        "en": "HFClean mark"
+                    },
+                    "height": 44,
+                    "new_tab": false
+                },
+                {
+                    "id": "header-2",
+                    "type": "text",
+                    "position": "start",
+                    "text": {
+                        "hr": "Digitalno radno okruženje",
+                        "en": "Digital workspace"
+                    },
+                    "href": "",
+                    "src": "",
+                    "alt": [],
+                    "height": 44,
+                    "new_tab": false
+                },
+                {
+                    "id": "header-3",
+                    "type": "language",
+                    "position": "end",
+                    "text": [],
+                    "href": "",
+                    "src": "",
+                    "alt": [],
+                    "height": 44,
+                    "new_tab": false
+                },
+                {
+                    "id": "header-4",
+                    "type": "account",
+                    "position": "end",
+                    "text": [],
+                    "href": "",
+                    "src": "",
+                    "alt": [],
+                    "height": 44,
+                    "new_tab": false
+                }
+            ]
+        },
+        "navigation": {
+            "placement": "hero",
+            "container": "fluid",
+            "breakpoint": "lg",
+            "show_brand": true,
+            "show_mobile_label": true,
+            "mobile_label": {
+                "hr": "Izbornik",
+                "en": "Menu"
+            },
+            "sticky": false,
+            "show_icons": true,
+            "mark_external_links": true
+        },
+        "hero": {
+            "home_enabled": true,
+            "inner_enabled": true,
+            "gradient_preset": "blue-teal",
+            "gradient_colors": [
+                "#25408F",
+                "#2872A0",
+                "#2F9EAA",
+                "#3CB4AD",
+                "#4CC0AD"
+            ],
+            "container": "xxl",
+            "home_size": "medium",
+            "inner_size": "compact",
+            "alignment": "start",
+            "text_color": "#FFFFFF",
+            "muted_color": "#E9ECEF",
+            "visual_enabled": true,
+            "visual_src": "/hfc/theme-assets/universal-hero-artwork.svg",
+            "visual_alt": [],
+            "visual_decorative": true,
+            "wave": true
+        }
+    }
 }

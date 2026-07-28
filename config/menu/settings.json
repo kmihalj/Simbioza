@@ -24,96 +24,6 @@
         ]
     },
     {
-        "id": "editor-html",
-        "label": {
-            "hr": "HTML editor",
-            "en": "HTML editor"
-        },
-        "order": 90,
-        "enabled": true,
-        "children": [
-            {
-                "id": "editor-html.settings",
-                "label": {
-                    "hr": "Postavke HTML editora",
-                    "en": "HTML editor settings"
-                },
-                "order": 10,
-                "enabled": true,
-                "route": "editor-html.settings",
-                "parent_id": "editor-html",
-                "url": "",
-                "query": "",
-                "level": 1
-            },
-            {
-                "id": "editor-html.documents",
-                "label": {
-                    "hr": "Dokumenti",
-                    "en": "Documents"
-                },
-                "order": 20,
-                "enabled": true,
-                "children": [
-                    {
-                        "id": "editor-html.documents.deleted",
-                        "label": {
-                            "hr": "Obrisani dokumenti",
-                            "en": "Deleted documents"
-                        },
-                        "order": 10,
-                        "enabled": true,
-                        "route": "editor-html.documents.deleted",
-                        "parent_id": "editor-html.documents",
-                        "url": "",
-                        "query": "",
-                        "level": 2
-                    }
-                ],
-                "parent_id": "editor-html",
-                "route": "",
-                "url": "",
-                "query": "",
-                "level": 1
-            }
-        ],
-        "parent_id": "",
-        "route": "",
-        "url": "",
-        "query": "",
-        "level": 0
-    },
-    {
-        "id": "calendar.settings.group",
-        "parent_id": "",
-        "label": {
-            "hr": "Kalendari",
-            "en": "Calendars"
-        },
-        "route": "",
-        "url": "",
-        "query": "",
-        "order": 50,
-        "enabled": true,
-        "level": 0,
-        "children": [
-            {
-                "id": "calendar.settings.admin",
-                "parent_id": "calendar.settings.group",
-                "label": {
-                    "hr": "Administracija kalendara",
-                    "en": "Calendar administration"
-                },
-                "route": "calendar.admin",
-                "url": "",
-                "query": "",
-                "order": 10,
-                "enabled": true,
-                "level": 1
-            }
-        ]
-    },
-    {
         "id": "auth",
         "label": {
             "hr": "Korisnici",
@@ -302,65 +212,92 @@
         ]
     },
     {
-        "id": "menu",
+        "id": "calendar.settings.group",
+        "parent_id": "",
         "label": {
-            "hr": "Meni",
-            "en": "Menu"
+            "hr": "Kalendari",
+            "en": "Calendars"
         },
-        "order": 120,
+        "route": "",
+        "url": "",
+        "query": "",
+        "order": 50,
         "enabled": true,
+        "level": 0,
         "children": [
             {
-                "id": "menu.top",
+                "id": "calendar.settings.admin",
+                "parent_id": "calendar.settings.group",
                 "label": {
-                    "hr": "Gornji meni",
-                    "en": "Top menu"
+                    "hr": "Administracija kalendara",
+                    "en": "Calendar administration"
                 },
-                "order": 130,
+                "route": "calendar.admin",
+                "url": "",
+                "query": "",
+                "order": 10,
                 "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "top"
-                }
+                "level": 1
+            }
+        ]
+    },
+    {
+        "id": "editor-html",
+        "parent_id": "",
+        "label": {
+            "hr": "HTML editor",
+            "en": "HTML editor"
+        },
+        "route": "",
+        "url": "",
+        "query": "",
+        "order": 90,
+        "enabled": true,
+        "level": 0,
+        "children": [
+            {
+                "id": "editor-html.settings",
+                "parent_id": "editor-html",
+                "label": {
+                    "hr": "Postavke HTML editora",
+                    "en": "HTML editor settings"
+                },
+                "route": "editor-html.settings",
+                "url": "",
+                "query": "",
+                "order": 10,
+                "enabled": true,
+                "level": 1
             },
             {
-                "id": "menu.settings",
+                "id": "editor-html.documents",
+                "parent_id": "editor-html",
                 "label": {
-                    "hr": "Meni postavki",
-                    "en": "Settings menu"
+                    "hr": "Dokumenti",
+                    "en": "Documents"
                 },
-                "order": 140,
+                "route": "",
+                "url": "",
+                "query": "",
+                "order": 20,
                 "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "settings"
-                }
-            },
-            {
-                "id": "menu.contexts.top",
-                "label": {
-                    "hr": "Posebni gornji meniji",
-                    "en": "Special top menus"
-                },
-                "order": 150,
-                "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "contexts_top"
-                }
-            },
-            {
-                "id": "menu.contexts.left",
-                "label": {
-                    "hr": "Posebni lijevi meniji",
-                    "en": "Special left menus"
-                },
-                "order": 160,
-                "enabled": true,
-                "route": "menu.settings",
-                "query": {
-                    "section": "contexts_left"
-                }
+                "level": 1,
+                "children": [
+                    {
+                        "id": "editor-html.documents.deleted",
+                        "parent_id": "editor-html.documents",
+                        "label": {
+                            "hr": "Obrisani dokumenti",
+                            "en": "Deleted documents"
+                        },
+                        "route": "editor-html.documents.deleted",
+                        "url": "",
+                        "query": "",
+                        "order": 10,
+                        "enabled": true,
+                        "level": 2
+                    }
+                ]
             }
         ]
     },
@@ -396,60 +333,60 @@
     },
     {
         "id": "workspace.settings.group",
+        "parent_id": "",
         "label": {
             "hr": "Područja",
             "en": "Workspaces"
         },
+        "route": "",
+        "url": "",
+        "query": "",
         "order": 55,
         "enabled": true,
+        "level": 0,
         "children": [
             {
                 "id": "workspace.settings",
+                "parent_id": "workspace.settings.group",
                 "label": {
                     "hr": "Opće postavke",
                     "en": "General settings"
                 },
-                "order": 10,
-                "enabled": true,
                 "route": "workspace.settings",
-                "parent_id": "workspace.settings.group",
                 "url": "",
                 "query": "",
+                "order": 10,
+                "enabled": true,
                 "level": 1
             },
             {
                 "id": "workspace.settings.all",
+                "parent_id": "workspace.settings.group",
                 "label": {
                     "hr": "Sva područja",
                     "en": "All workspaces"
                 },
-                "order": 20,
-                "enabled": true,
                 "route": "workspace.settings.all",
-                "parent_id": "workspace.settings.group",
                 "url": "",
                 "query": "",
+                "order": 20,
+                "enabled": true,
                 "level": 1
             },
             {
                 "id": "workspace.settings.deleted",
+                "parent_id": "workspace.settings.group",
                 "label": {
                     "hr": "Obrisana područja",
                     "en": "Deleted workspaces"
                 },
-                "order": 30,
-                "enabled": true,
                 "route": "workspace.settings.deleted",
-                "parent_id": "workspace.settings.group",
                 "url": "",
                 "query": "",
+                "order": 30,
+                "enabled": true,
                 "level": 1
             }
-        ],
-        "parent_id": "",
-        "route": "",
-        "url": "",
-        "query": "",
-        "level": 0
+        ]
     }
 ]

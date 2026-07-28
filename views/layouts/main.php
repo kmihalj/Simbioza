@@ -8,6 +8,8 @@ declare(strict_types=1);
  * @var string $content
  * @var ?\AaiEduHr\HeartPhrameModuleMenu\Service\MenuRenderer $menuRenderer
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeRenderer $themeRenderer
+ * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeLayoutRenderer $themeLayoutRenderer
+ * @var array<string, mixed>|false|null $themeHero
  */
 
 $appName = $this->config->getAsNonEmptyString('app.name') ?? 'HeartPhrame';
@@ -144,6 +146,191 @@ if (is_array($layoutMessages) && $layoutMessages !== []) {
         ['toast_messages' => $layoutToastMessages, 'consume_alerts' => false],
     );
 }
+
+/*
+ * HR: Strukturne dijelove pripremamo prije ispisa layouta. Theme i Menu moduli
+ *     ostaju opcionalni: svaki od njih može nedostajati bez prekida prikaza.
+ * EN: Structural parts are prepared before layout output. Theme and Menu modules
+ *     remain optional: either may be absent without breaking the page.
+ */
+$layoutThemeEnabled = isset($themeLayoutRenderer)
+&& is_object($themeLayoutRenderer)
+&& method_exists($themeLayoutRenderer, 'isEnabled')
+&& $themeLayoutRenderer->isEnabled();
+$layoutSkipLinkHtml = '';
+$layoutHeaderHtml = '';
+$layoutHeroHtml = '';
+$layoutNavigationPresentation = [];
+$layoutNavigationPlacement = 'standalone';
+if ($layoutThemeEnabled) {
+    if (method_exists($themeLayoutRenderer, 'renderSkipLink')) {
+        $candidate = $themeLayoutRenderer->renderSkipLink('main-content');
+        $layoutSkipLinkHtml = is_string($candidate) ? $candidate : '';
+    }
+    if (method_exists($themeLayoutRenderer, 'navigationPresentation')) {
+        $candidate = $themeLayoutRenderer->navigationPresentation();
+        $layoutNavigationPresentation = is_array($candidate) ? $candidate : [];
+    }
+    if (method_exists($themeLayoutRenderer, 'navigationPlacement')) {
+        $candidate = $themeLayoutRenderer->navigationPlacement();
+        $layoutNavigationPlacement = is_string($candidate) ? $candidate : 'standalone';
+    }
+}
+
+$renderedTopMenu = '';
+$renderedRouteLeftMenu = '';
+$menuConfigurationError = null;
+$layoutLanguageControlHtml = '';
+$layoutAccountControlHtml = $fallbackAuthMenuHtml;
+if (
+    isset($menuRenderer)
+    && is_object($menuRenderer)
+    && method_exists($menuRenderer, 'isEnabled')
+    && method_exists($menuRenderer, 'renderTopMenu')
+    && $menuRenderer->isEnabled()
+) {
+    try {
+        try {
+            $topMenuCandidate = $menuRenderer->renderTopMenu($layoutNavigationPresentation);
+        } catch (\ArgumentCountError) {
+            /*
+             * HR: Tijekom lokalne nadogradnje stariji Menu može još imati metodu bez parametra.
+             * EN: During a local upgrade, an older Menu may still expose a parameterless method.
+             */
+            $topMenuCandidate = $menuRenderer->renderTopMenu();
+        }
+        $renderedTopMenu = is_string($topMenuCandidate) ? $topMenuCandidate : '';
+        if (method_exists($menuRenderer, 'renderRouteLeftMenu')) {
+            $routeLeftMenuCandidate = $menuRenderer->renderRouteLeftMenu();
+            $renderedRouteLeftMenu = is_string($routeLeftMenuCandidate) ? $routeLeftMenuCandidate : '';
+        }
+        if (method_exists($menuRenderer, 'renderLanguageControl')) {
+            $candidate = $menuRenderer->renderLanguageControl();
+            $layoutLanguageControlHtml = is_string($candidate) ? $candidate : '';
+        }
+        if (method_exists($menuRenderer, 'renderAccountControl')) {
+            $candidate = $menuRenderer->renderAccountControl();
+            $layoutAccountControlHtml = is_string($candidate) ? $candidate : $fallbackAuthMenuHtml;
+        }
+    } catch (\AaiEduHr\HeartPhrameModuleMenu\Exception\MenuConfigurationException $exception) {
+        $menuConfigurationError = $exception->getMessage();
+    }
+}
+
+/*
+ * HR: Fallback navigacija postoji samo za instalacije bez menu modula.
+ * EN: Fallback navigation exists only for installations without the menu module.
+ */
+if ($renderedTopMenu === '') {
+    $fallbackShowBrand = (bool)($layoutNavigationPresentation['show_brand'] ?? true);
+    $fallbackShowAccount = (bool)($layoutNavigationPresentation['show_account'] ?? true);
+    $fallbackContainerValue = is_scalar($layoutNavigationPresentation['container'] ?? null)
+    ? strtolower(trim((string)$layoutNavigationPresentation['container']))
+    : 'fluid';
+    $fallbackContainer = match ($fallbackContainerValue) {
+        'contained' => 'container',
+        'wide' => 'container-xl',
+        'sm', 'md', 'lg', 'xl', 'xxl' => 'container-' . $fallbackContainerValue,
+        default => 'container-fluid',
+    };
+    $fallbackBreakpoint = is_scalar($layoutNavigationPresentation['breakpoint'] ?? null)
+    ? strtolower(trim((string)$layoutNavigationPresentation['breakpoint']))
+    : 'lg';
+    if (!in_array($fallbackBreakpoint, ['sm', 'md', 'lg', 'xl', 'xxl'], true)) {
+        $fallbackBreakpoint = 'lg';
+    }
+    $fallbackMobileLabel = is_scalar($layoutNavigationPresentation['mobile_label'] ?? null)
+    ? trim((string)$layoutNavigationPresentation['mobile_label'])
+    : __('Menu');
+    $fallbackMobileLabelHtml = (bool)($layoutNavigationPresentation['show_mobile_label'] ?? false)
+    ? '<span class="me-2">' . $this->escape($fallbackMobileLabel) . '</span>'
+    : '';
+    $fallbackBrandHtml = $fallbackShowBrand
+    ? '<a class="navbar-brand" href="' . $this->escape($homePath) . '">' . $this->escape($appName) . '</a>'
+    : '';
+    $fallbackAccountHtml = $fallbackShowAccount && $fallbackAuthMenuHtml !== ''
+    ? '<ul class="navbar-nav ms-auto">' . $fallbackAuthMenuHtml . '</ul>'
+    : '';
+    $fallbackCalendarHtml = $this->urlGenerator->namedRouteExists('calendar.index')
+    ? '<li class="nav-item"><a class="nav-link" href="'
+    . $this->escape($this->urlGenerator->getPathFor('calendar.index')) . '">'
+    . $this->escape(__('Calendars')) . '</a></li>'
+    : '';
+    $renderedTopMenu = '<nav class="navbar navbar-expand-' . $this->escape($fallbackBreakpoint)
+    . ' navbar-dark bg-dark hph-primary-navigation"><div class="' . $this->escape($fallbackContainer) . '">'
+    . $fallbackBrandHtml
+    . '<button class="navbar-toggler" type="button" '
+    . 'data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" '
+    . 'aria-expanded="false" aria-label="' . $this->escape($fallbackMobileLabel) . '">'
+    . $fallbackMobileLabelHtml . '<span class="navbar-toggler-icon"></span></button>'
+    . '<div class="collapse navbar-collapse" id="navbarNav"><ul class="navbar-nav">'
+    . '<li class="nav-item"><a class="nav-link" href="' . $this->escape($homePath) . '">'
+    . $this->escape(__('Home')) . '</a></li>'
+    . '<li class="nav-item"><a class="nav-link" href="'
+    . $this->escape($this->urlGenerator->getPathFor('about')) . '">'
+    . $this->escape(__('About')) . '</a></li>'
+    . $fallbackCalendarHtml
+    . '</ul>' . $fallbackAccountHtml . '</div></div></nav>';
+}
+
+if ($layoutThemeEnabled && method_exists($themeLayoutRenderer, 'renderHeader')) {
+    $candidate = $themeLayoutRenderer->renderHeader([
+        'language' => $layoutLanguageControlHtml,
+        'account' => $layoutAccountControlHtml,
+    ]);
+    $layoutHeaderHtml = is_string($candidate) ? $candidate : '';
+}
+
+$layoutHeroSuppressed = isset($themeHero) && $themeHero === false;
+$layoutHeroContext = isset($themeHero) && is_array($themeHero) ? $themeHero : [];
+$layoutAutomaticInnerHeroTitle = '';
+if (
+    !$layoutHeroSuppressed
+    && $layoutHeroContext === []
+    && isset($title)
+    && is_scalar($title)
+    && trim((string)$title) !== ''
+) {
+    /*
+     * HR: Unutarnje stranice automatski dobivaju hero iz naslova layouta. Kontroler
+     *     i dalje može poslati bogatiji `$themeHero` ili vrijednost `false` za isključivanje.
+     * EN: Inner pages automatically receive a hero from the layout title. A controller
+     *     may still supply richer `$themeHero` data or `false` to suppress it.
+     */
+    $layoutHeroContext = [
+        'is_home' => false,
+        'title' => __((string)$title),
+    ];
+    $layoutAutomaticInnerHeroTitle = $layoutHeroContext['title'];
+}
+if (
+    $layoutThemeEnabled
+    && !$layoutHeroSuppressed
+    && $layoutHeroContext !== []
+    && method_exists($themeLayoutRenderer, 'renderHero')
+) {
+    $heroNavigation = $layoutNavigationPlacement === 'hero' ? $renderedTopMenu : '';
+    $candidate = $themeLayoutRenderer->renderHero($layoutHeroContext, $heroNavigation);
+    $layoutHeroHtml = is_string($candidate) ? $candidate : '';
+}
+$layoutStandaloneNavigationHtml = $layoutNavigationPlacement === 'hero' && $layoutHeroHtml !== ''
+? ''
+: $renderedTopMenu;
+$layoutAutomaticInnerHeroTitleJson = json_encode(
+    $layoutAutomaticInnerHeroTitle,
+    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+);
+if (!is_string($layoutAutomaticInnerHeroTitleJson)) {
+    $layoutAutomaticInnerHeroTitleJson = '""';
+}
+
+/*
+ * HR: Kada runtime tema nije aktivna, osnovni layout sam osigurava razmak između
+ *     navigacije i sadržaja. Uključena tema razmak oblikuje kroz Hero i vlastiti CSS.
+ * EN: When the runtime theme is inactive, the base layout provides spacing between
+ *     navigation and content. An enabled theme controls that spacing through Hero and its CSS.
+ */
+$layoutMainClasses = 'container-fluid px-4' . ($layoutThemeEnabled ? '' : ' pt-3');
 ?>
 
 <!DOCTYPE html>
@@ -176,7 +363,7 @@ if (is_array($layoutMessages) && $layoutMessages !== []) {
             padding-top: 0;
             padding-bottom: 2rem;
         }
-        .navbar {
+        .navbar:not(.hph-primary-navigation) {
             margin-bottom: 2rem;
         }
     </style>
@@ -185,67 +372,12 @@ if (is_array($layoutMessages) && $layoutMessages !== []) {
     <?= $this->renderPlaceholder('head') ?>
 </head>
 <body>
-    <?php
-    $renderedTopMenu = '';
-    $renderedRouteLeftMenu = '';
-    $menuConfigurationError = null;
-    if (
-        isset($menuRenderer)
-        && is_object($menuRenderer)
-        && method_exists($menuRenderer, 'isEnabled')
-        && method_exists($menuRenderer, 'renderTopMenu')
-        && $menuRenderer->isEnabled()
-    ) {
-        try {
-            $topMenuCandidate = $menuRenderer->renderTopMenu();
-            $renderedTopMenu = is_string($topMenuCandidate) ? $topMenuCandidate : '';
-            if (method_exists($menuRenderer, 'renderRouteLeftMenu')) {
-                $routeLeftMenuCandidate = $menuRenderer->renderRouteLeftMenu();
-                $renderedRouteLeftMenu = is_string($routeLeftMenuCandidate) ? $routeLeftMenuCandidate : '';
-            }
-        } catch (\AaiEduHr\HeartPhrameModuleMenu\Exception\MenuConfigurationException $exception) {
-            $menuConfigurationError = $exception->getMessage();
-        }
-    }
-    ?>
-    <?php if ($renderedTopMenu !== '') : ?>
-        <?= $renderedTopMenu ?>
-    <?php else : ?>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="<?= $this->escape($homePath) ?>"><?= $this->escape($appName) ?></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= $this->urlGenerator->getPathFor('home') ?>">
-        <?= $this->escape(__('Home')) ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= $this->urlGenerator->getPathFor('about') ?>">
-        <?= $this->escape(__('About')) ?>
-                        </a>
-                    </li>
-        <?php if ($this->urlGenerator->namedRouteExists('calendar.index')) : ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= $this->urlGenerator->getPathFor('calendar.index') ?>">
-            <?= $this->escape(__('Calendars')) ?>
-                        </a>
-                    </li>
-        <?php endif; ?>
-                </ul>
-        <?php if ($fallbackAuthMenuHtml !== '') : ?>
-                    <ul class="navbar-nav ms-auto"><?= $fallbackAuthMenuHtml ?></ul>
-        <?php endif; ?>
-            </div>
-        </div>
-        </nav>
-    <?php endif; ?>
+    <?= $layoutSkipLinkHtml ?>
+    <?= $layoutHeaderHtml ?>
+    <?= $layoutStandaloneNavigationHtml ?>
+    <?= $layoutHeroHtml ?>
 
-    <div class="container-fluid px-4">
+    <main id="main-content" class="<?= $this->escape($layoutMainClasses) ?>">
         <?php if ($menuConfigurationError !== null) : ?>
             <div class="alert alert-warning" role="alert">
             <?= $this->escape($menuConfigurationError) ?>
@@ -272,7 +404,33 @@ if (is_array($layoutMessages) && $layoutMessages !== []) {
         <?php else : ?>
             <?= $content ?>
         <?php endif; ?>
-    </div>
+    </main>
+
+    <?php if ($layoutHeroHtml !== '' && $layoutAutomaticInnerHeroTitle !== '') : ?>
+        <script>
+            (() => {
+                /*
+                 * HR: Uklanjamo samo prvi sadržajni H1 čiji se tekst potpuno podudara
+                 *     s automatskim hero naslovom; ostala dokumentna zaglavlja ostaju vidljiva.
+                 * EN: Hide only the first content H1 whose text exactly matches the automatic
+                 *     hero title; all other document headings remain visible.
+                 */
+                <?php // phpcs:ignore ?>
+                const heroTitle = <?= $layoutAutomaticInnerHeroTitleJson ?>;
+                const headings = document.querySelectorAll('#main-content h1');
+
+                for (const heading of headings) {
+                    if ((heading.textContent || '').trim() !== heroTitle.trim()) {
+                        continue;
+                    }
+
+                    heading.hidden = true;
+                    heading.setAttribute('data-hph-duplicate-hero-title', '');
+                    break;
+                }
+            })();
+        </script>
+    <?php endif; ?>
 
     <footer class="mt-5 pt-3 border-top text-center text-muted">
         <div class="container-fluid">

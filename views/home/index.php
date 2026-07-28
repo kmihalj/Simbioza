@@ -6,13 +6,20 @@ declare(strict_types=1);
  * @var \HeartPhrame\View\View $this
  * @var string $title
  * @var string $content
+ * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeLayoutRenderer $themeLayoutRenderer
  */
 
+$themeShowsHomeHero = isset($themeLayoutRenderer)
+&& is_object($themeLayoutRenderer)
+&& method_exists($themeLayoutRenderer, 'heroEnabled')
+&& $themeLayoutRenderer->heroEnabled(true);
 ?>
 
 <div class="jumbotron">
+    <?php if (!$themeShowsHomeHero) : ?>
     <h1 class="display-4"><?= $this->escape(__($title)) ?></h1>
     <p class="lead"><?= $this->escape(__($content)) ?></p>
+    <?php endif; ?>
     <hr class="my-4">
     <p><?= $this->escape(__('This is a lightweight PHP framework that implements PSR standards.')) ?></p>
     <p class="lead">

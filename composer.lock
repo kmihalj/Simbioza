@@ -92,7 +92,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-auth.git",
-                "reference": "8be7539ed55a4bec17fbc7416e1a6c916dee1476"
+                "reference": "37cdef4ff44d1628a6deb00b82d9f5b2f96cb662"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "dev-feature/orm-v2-foundation || dev-main || ^0",
@@ -144,7 +144,7 @@
                 }
             ],
             "description": "Authentication module for HeartPhrame with local and profile-based external providers (SAML, CAS, OIDC, OAuth2)",
-            "time": "2026-07-23T21:24:07+00:00"
+            "time": "2026-07-28T06:41:46+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-calendar",
@@ -152,7 +152,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-calendar.git",
-                "reference": "58805f99e5d5110580f0d3f3fc76a0b77eaed184"
+                "reference": "acba5f7d853f31e5a225322822c6634b8cf614c3"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
@@ -207,7 +207,7 @@
                 }
             ],
             "description": "HeartPhrame Calendar module with web calendars and basic CalDAV support",
-            "time": "2026-07-23T21:24:27+00:00"
+            "time": "2026-07-28T06:41:46+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-editor-html",
@@ -348,7 +348,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-menu.git",
-                "reference": "5eb9e63337b5709313bbc04278b495199467e25f"
+                "reference": "abc4859365ad1c4d99df95f20b91a052af8b5cc4"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
@@ -401,7 +401,7 @@
                 }
             ],
             "description": "Configurable menu and settings navigation module for HeartPhrame",
-            "time": "2026-07-15T21:52:39+00:00"
+            "time": "2026-07-28T06:41:46+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-notification",
@@ -478,7 +478,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-orm.git",
-                "reference": "d0d07d8e3e3a77fa3e78f1afc80504830a6f14dd"
+                "reference": "e8e645e28cebc4cc322db3a7033402f55a87c20f"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
@@ -530,7 +530,7 @@
                 }
             ],
             "description": "HeartPhrame ORM module (extracted ORM stack)",
-            "time": "2026-07-23T21:24:49+00:00"
+            "time": "2026-07-28T06:41:46+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-theme",
@@ -538,10 +538,11 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-theme.git",
-                "reference": "a07b5b02c4266df1e9a7edb276677ebea2a356e1"
+                "reference": "1f825e6686a5b5c9368f4a30bf350b5a7a71beb4"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
+                "ext-zip": "*",
                 "php": ">=8.2"
             },
             "require-dev": {
@@ -591,7 +592,7 @@
                 }
             ],
             "description": "HeartPhrame Theme Module",
-            "time": "2026-07-23T21:25:10+00:00"
+            "time": "2026-07-28T06:41:46+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-workspace",
@@ -599,12 +600,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/kmihalj/heartphrame-module-workspace.git",
-                "reference": "bd8d683035f8d2d12b051159bc0e9adf79aae274"
+                "reference": "de45347eb972e9829dbe64de41de69da8282fa54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kmihalj/heartphrame-module-workspace/zipball/bd8d683035f8d2d12b051159bc0e9adf79aae274",
-                "reference": "bd8d683035f8d2d12b051159bc0e9adf79aae274",
+                "url": "https://api.github.com/repos/kmihalj/heartphrame-module-workspace/zipball/de45347eb972e9829dbe64de41de69da8282fa54",
+                "reference": "de45347eb972e9829dbe64de41de69da8282fa54",
                 "shasum": ""
             },
             "require": {
@@ -665,7 +666,7 @@
                 }
             ],
             "description": "Workspace and hierarchical content organization module for HeartPhrame",
-            "time": "2026-07-23T21:38:22+00:00"
+            "time": "2026-07-28T06:41:46+00:00"
         },
         {
             "name": "psr/container",

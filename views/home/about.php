@@ -5,7 +5,13 @@ declare(strict_types=1);
 /**
  * @var \HeartPhrame\View\View $this
  * @var string $title
+ * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeLayoutRenderer $themeLayoutRenderer
  */
+
+$themeShowsInnerHero = isset($themeLayoutRenderer)
+&& is_object($themeLayoutRenderer)
+&& method_exists($themeLayoutRenderer, 'heroEnabled')
+&& $themeLayoutRenderer->heroEnabled(false);
 
 $psrItems = [
     'PSR-3 Logger Interface',
@@ -32,9 +38,11 @@ $functionalityItems = [
 ?>
 
 <div class="card mb-4">
+    <?php if (!$themeShowsInnerHero) : ?>
     <div class="card-header">
         <h1><?= $this->escape(__($title)) ?></h1>
     </div>
+    <?php endif; ?>
     <div class="card-body">
         <p><?= $this->escape(__('Follows Model-View-Controller architecture.')) ?></p>
 
