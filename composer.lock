@@ -409,12 +409,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/kmihalj/heartphrame-module-notification.git",
-                "reference": "6cb1ac19c4b40418cfb3438773d4094e908507e5"
+                "reference": "4a78fd8cb7c4f77a91144402c73ffa0d06f41dbe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kmihalj/heartphrame-module-notification/zipball/6cb1ac19c4b40418cfb3438773d4094e908507e5",
-                "reference": "6cb1ac19c4b40418cfb3438773d4094e908507e5",
+                "url": "https://api.github.com/repos/kmihalj/heartphrame-module-notification/zipball/4a78fd8cb7c4f77a91144402c73ffa0d06f41dbe",
+                "reference": "4a78fd8cb7c4f77a91144402c73ffa0d06f41dbe",
                 "shasum": ""
             },
             "require": {
@@ -466,7 +466,7 @@
                 "EUPL-1.2"
             ],
             "description": "Reusable in-app notification inbox for HeartPhrame",
-            "time": "2026-07-28T07:15:23+00:00"
+            "time": "2026-07-28T07:21:45+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-orm",
