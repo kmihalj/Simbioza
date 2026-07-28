@@ -10,6 +10,7 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -46,12 +47,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće šest objedinjenih inicijalnih migracija te provjerava aktualne
-     * Auth, Calendar, Editor, Workspace, E-mail i Notification sheme, početnog
-     * administratora i izostanak sadržaja.
+     * HR: Pokreće sedam objedinjenih inicijalnih migracija te provjerava aktualne
+     * Auth, Calendar, Editor, Workspace, E-mail, Notification i Task sheme,
+     * početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs six consolidated initial migrations and verifies the current
-     * Auth, Calendar, Editor, Workspace, E-mail, and Notification schemas,
+     * EN: Runs seven consolidated initial migrations and verifies the current
+     * Auth, Calendar, Editor, Workspace, E-mail, Notification, and Task schemas,
      * the bootstrap administrator, and the absence of content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
@@ -59,7 +60,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(6, $migrationFiles, 'Only consolidated initial migrations are expected.');
+        $this->assertCount(7, $migrationFiles, 'Only consolidated initial migrations are expected.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -348,6 +349,29 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleTask::TABLE_STATES, [
+            'id',
+            'task_uuid',
+            'task_list_uuid',
+            'document_id',
+            'is_completed',
+            'updated_by_user_id',
+            'updated_by_display_name',
+            'state_version',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleTask::TABLE_EVENTS, [
+            'id',
+            'uuid',
+            'task_uuid',
+            'task_list_uuid',
+            'document_id',
+            'is_completed',
+            'changed_by_user_id',
+            'changed_by_display_name',
+            'created_at',
+        ]);
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -365,6 +389,8 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
         $this->assertSame([], $this->database->table(ModuleEmail::TABLE_OUTBOX)->get());
         $this->assertSame([], $this->database->table(ModuleNotification::TABLE_NOTIFICATIONS)->get());
+        $this->assertSame([], $this->database->table(ModuleTask::TABLE_STATES)->get());
+        $this->assertSame([], $this->database->table(ModuleTask::TABLE_EVENTS)->get());
     }
 
     /**

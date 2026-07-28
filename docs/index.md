@@ -31,6 +31,7 @@ Explore more advanced topics and the framework's core components.
 
 * [Common Services (Dependency Injection)](common-services.md)
 * [Modules](modules.md)
+* [Module dependencies / Ovisnosti modula](module-dependencies.md)
 * [Database](database.md)
 * [Encryption](encryption.md)
 * [Event Dispatcher](event-dispatcher.md)

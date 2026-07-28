@@ -66,6 +66,7 @@ return [
             'aaieduhr/heartphrame-module-email',
             'aaieduhr/heartphrame-module-notification',
             'aaieduhr/heartphrame-module-editor-html',
+            'aaieduhr/heartphrame-module-task',
             'aaieduhr/heartphrame-module-workspace',
             'aaieduhr/heartphrame-module-calendar',
         ],

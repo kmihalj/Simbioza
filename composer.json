@@ -43,12 +43,16 @@
         },
         {
             "type": "vcs",
+            "url": "https://github.com/kmihalj/heartphrame-module-task.git"
+        },
+        {
+            "type": "vcs",
             "url": "https://github.com/kmihalj/heartphrame-module-workspace.git"
         }
     ],
     "require": {
         "php": ">=8.2",
-        "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
+        "aaieduhr/heartphrame-framework": ">=0.0.22 <1.0",
         "aaieduhr/heartphrame-module-auth": "dev-main as 1.1.99",
         "aaieduhr/heartphrame-module-calendar": "dev-main as 1.0.99",
         "aaieduhr/heartphrame-module-editor-html": "dev-main as 0.1.99",
@@ -56,6 +60,7 @@
         "aaieduhr/heartphrame-module-menu": "dev-main as 1.0.99",
         "aaieduhr/heartphrame-module-notification": "dev-main as 0.1.99",
         "aaieduhr/heartphrame-module-orm": "dev-main as 1.1.99",
+        "aaieduhr/heartphrame-module-task": "dev-main as 0.1.99",
         "aaieduhr/heartphrame-module-theme": "dev-main as 1.0.99",
         "aaieduhr/heartphrame-module-workspace": "dev-main as 0.1.99"
     },
