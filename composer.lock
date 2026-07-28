@@ -474,7 +474,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-orm.git",
-                "reference": "e8e645e28cebc4cc322db3a7033402f55a87c20f"
+                "reference": "138a83fb77211234b567eefe077e1e9d922d5fdc"
             },
             "require": {
                 "aaieduhr/heartphrame-framework": "^0 || dev-main || dev-feature/orm-v2-foundation",
@@ -526,7 +526,7 @@
                 }
             ],
             "description": "HeartPhrame ORM module (extracted ORM stack)",
-            "time": "2026-07-28T06:41:46+00:00"
+            "time": "2026-07-28T07:28:10+00:00"
         },
         {
             "name": "aaieduhr/heartphrame-module-theme",
