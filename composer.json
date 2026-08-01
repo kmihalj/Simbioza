@@ -132,6 +132,7 @@
             "php scripts/audit_module_documentation.php",
             "vendor/bin/phpunit"
         ],
-        "clean-matrix": "php scripts/verify_clean_install_matrix.php"
+        "clean-matrix": "php scripts/verify_clean_install_matrix.php",
+        "e2e": "php scripts/run_e2e.php"
     }
 }

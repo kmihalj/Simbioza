@@ -46,6 +46,9 @@ variable; do not commit local `path` repositories into the shared manifest.
 composer update --with-all-dependencies
 composer check-platform-reqs
 composer on-commit
+npm install --no-package-lock
+npx playwright install chromium
+composer e2e
 ```
 
 Application configuration, migrations, module order, and API integration are
@@ -60,6 +63,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [Module dependencies](docs/module-dependencies_en.md)
 - [Database configuration](docs/database_en.md)
 - [API v1 contract](docs/api-v1-contract_en.md)
+- [End-to-end testing](docs/end-to-end-testing_en.md)
 
 ## Enabled modules
 

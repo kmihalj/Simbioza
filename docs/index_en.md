@@ -14,6 +14,7 @@ Suggested path for beginners:
 3. [Database configuration](database_en.md)
 4. [Configuration](configuration_en.md)
 5. [Common workflows](common-workflows_en.md)
+6. [End-to-end testing](end-to-end-testing_en.md)
 
 Suggested path for advanced users:
 
@@ -39,6 +40,7 @@ php scripts/verify_clean_install_matrix.php
 php scripts/audit_bilingual_phpdoc.php
 php scripts/audit_module_documentation.php
 composer on-commit
+composer e2e
 ```
 
 ## Fundamentals
@@ -59,6 +61,7 @@ composer on-commit
 - [API implementation plan](api-implementation-plan_en.md)
 - [Encryption](encryption_en.md)
 - [Event dispatcher](event-dispatcher_en.md)
+- [End-to-end testing](end-to-end-testing_en.md)
 
 The application enables `aaieduhr/heartphrame-module-api` immediately after
 Auth. Routes under `/api/v1` use Bearer keys and intentionally skip PHP session

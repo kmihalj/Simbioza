@@ -125,3 +125,47 @@ jobs:
           HPH_MATRIX_DB_USER: heartphrame_matrix
           HPH_MATRIX_DB_PASSWORD: matrix-secret
         run: php scripts/verify_clean_install_matrix.php --case=all --database=mysql
+
+  browser-and-api-e2e:
+    name: Browser and API E2E / Browser i API E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out application / Dohvati aplikaciju
+        uses: actions/checkout@v5
+
+      - name: Set up PHP / Postavi PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pdo, pdo_sqlite, simplexml, tokenizer, xmlwriter, zip
+          coverage: none
+
+      - name: Set up latest Node.js / Postavi najnoviji Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: latest
+
+      - name: Resolve latest PHP dependencies / Dohvati najnovije PHP ovisnosti
+        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
+        run: npm install --no-package-lock
+
+      - name: Install Chromium / Instaliraj Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run isolated browser and API scenarios / Pokreni izolirane browser i API scenarije
+        run: composer e2e
+
+      - name: Upload E2E diagnostics / Spremi E2E dijagnostiku
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hfclean-e2e-diagnostics
+          path: |
+            build/playwright-report
+            build/test-results
+            build/e2e-server.log
+          if-no-files-found: ignore
+          retention-days: 14

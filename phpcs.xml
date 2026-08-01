@@ -9,6 +9,10 @@
     <file>tests</file>
     <file>views</file>
 
+    <!-- HR: Playwright scenariji su JavaScript i provjerava ih Playwright/Node.
+         EN: Playwright scenarios are JavaScript and are validated by Playwright/Node. -->
+    <exclude-pattern>tests/E2E/*.js</exclude-pattern>
+
     <!-- This is the rule we inherit from. If you want to exclude some specific rules, see the docs on how to do that -->
     <rule ref="PSR12"/>
 
@@ -43,4 +47,3 @@
     <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInClosureUse" />
     <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInDeclaration" />
 </ruleset>
-

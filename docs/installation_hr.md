@@ -75,6 +75,9 @@ modula koji nije instaliran.
 composer on-commit
 php scripts/audit_bilingual_phpdoc.php
 php scripts/verify_clean_install_matrix.php
+npm install --no-package-lock
+npx playwright install chromium
+composer e2e
 ```
 
 Za puni lokalni kandidat na PostgreSQL-u ili MySQL-u pripremite praznu testnu
@@ -97,9 +100,13 @@ Document root usmjerite na `HFClean/public`, omogućite PHP procesu pisanje u
 `data/` i nepoznate putanje usmjerite na `public/index.php`. Za lokalni razvoj:
 
 ```bash
-php -S 127.0.0.1:8080 -t public public/index.php
+php -S 127.0.0.1:8080 -t public scripts/dev_router.php
 ```
 
 Otvorite `http://127.0.0.1:8080/`. Produkcija treba PHP-FPM uz Apache/Nginx,
 HTTPS, sigurne kolačiće, ne-razvojno okruženje i upravitelj procesa za uključene
 outbox/webhook workere.
+
+Razvojni router postojeće assete poslužuje izravno, a samo nepoznate putanje
+šalje kroz `public/index.php`. Izolirani browser i API tijek opisan je u
+[end-to-end testiranju](end-to-end-testing_hr.md).

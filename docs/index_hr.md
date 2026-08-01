@@ -14,6 +14,7 @@ Predloženi put za početnike:
 3. [Konfiguracija baze](database_hr.md)
 4. [Konfiguracija](configuration_hr.md)
 5. [Uobičajeni tijekovi rada](common-workflows_hr.md)
+6. [End-to-end testiranje](end-to-end-testing_hr.md)
 
 Predloženi put za napredne korisnike:
 
@@ -39,6 +40,7 @@ php scripts/verify_clean_install_matrix.php
 php scripts/audit_bilingual_phpdoc.php
 php scripts/audit_module_documentation.php
 composer on-commit
+composer e2e
 ```
 
 ## Osnove
@@ -59,6 +61,7 @@ composer on-commit
 - [Plan implementacije API-ja](api-implementation-plan_hr.md)
 - [Šifriranje](encryption_hr.md)
 - [Dispečer događaja](event-dispatcher_hr.md)
+- [End-to-end testiranje](end-to-end-testing_hr.md)
 
 Aplikacija uključuje `aaieduhr/heartphrame-module-api` odmah nakon Autha. Rute
 pod `/api/v1` koriste Bearer ključeve i namjerno preskaču pokretanje PHP sesije

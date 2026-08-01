@@ -75,6 +75,9 @@ module migration when the module is not installed.
 composer on-commit
 php scripts/audit_bilingual_phpdoc.php
 php scripts/verify_clean_install_matrix.php
+npm install --no-package-lock
+npx playwright install chromium
+composer e2e
 ```
 
 For a full local candidate over PostgreSQL or MySQL, provide an empty test
@@ -97,9 +100,13 @@ Point the document root to `HFClean/public`, make `data/` writable by the PHP
 process, and route unknown paths to `public/index.php`. For local development:
 
 ```bash
-php -S 127.0.0.1:8080 -t public public/index.php
+php -S 127.0.0.1:8080 -t public scripts/dev_router.php
 ```
 
 Open `http://127.0.0.1:8080/`. Production deployments should use PHP-FPM with
 Apache/Nginx, HTTPS, secure cookies, a non-development environment, and a
 process manager for configured outbox/webhook workers.
+
+The development router serves existing assets directly and sends only unknown
+paths through `public/index.php`. See [end-to-end testing](end-to-end-testing_en.md)
+for the isolated browser and API workflow.

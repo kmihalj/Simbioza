@@ -45,6 +45,9 @@ modulima koristi se nespremljeni `composer.local.json` preko varijable
 composer update --with-all-dependencies
 composer check-platform-reqs
 composer on-commit
+npm install --no-package-lock
+npx playwright install chromium
+composer e2e
 ```
 
 Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
@@ -59,6 +62,7 @@ zaseban [engleski indeks](docs/index_en.md).
 - [Ovisnosti modula](docs/module-dependencies_hr.md)
 - [Konfiguracija baze](docs/database_hr.md)
 - [API v1 ugovor](docs/api-v1-contract_hr.md)
+- [End-to-end testiranje](docs/end-to-end-testing_hr.md)
 
 ## Uključeni moduli
 

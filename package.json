@@ -1,0 +1,11 @@
+{
+  "name": "hfclean-browser-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test --config=tests/E2E/playwright.config.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest"
+  }
+}
