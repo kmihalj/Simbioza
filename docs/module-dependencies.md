@@ -9,15 +9,16 @@ install, from **optional integrations**, which only extend behavior when the
 corresponding module is present. An optional module must not become a hidden
 requirement for basic operation.
 
-Svi moduli koji koriste Framework zahtijevaju najmanje `v0.0.22` i dopuštaju
-buduće stabilne verzije do `1.0`. Time nova instalacija ne može neprimjetno
-ostati na starijem Frameworku iz zastarjelog locka, a `composer update` može
-preuzeti sljedeću stabilnu `0.x` verziju.
+Svi moduli koriste Framework i međusobne interne ovisnosti s pomične grane
+`dev-main`. Repozitoriji modula i HFClean ne spremaju `composer.lock`; CI svaki
+put pokreće `composer update --with-all-dependencies`, dohvaća najnovija stanja
+grana `main` i zatim izvršava puni `composer on-commit`.
 
-All modules using the Framework require at least `v0.0.22` and allow future
-stable versions below `1.0`. This prevents a new installation from silently
-remaining on an older Framework version retained by a stale lock file while
-allowing `composer update` to select the next stable `0.x` release.
+All modules use the Framework and internal module dependencies from the moving
+`dev-main` branch. Module repositories and HFClean do not commit
+`composer.lock`; CI runs `composer update --with-all-dependencies` on every run,
+resolves the latest `main` heads, and then executes the complete
+`composer on-commit` suite.
 
 ## Brzi pregled / Quick reference
 
@@ -25,14 +26,16 @@ allowing `composer update` to select the next stable `0.x` release.
 |---|---|---|
 | `module-orm` | Framework, `ext-pdo` | - |
 | `module-auth` | Framework, ORM | Menu, Notification |
+| `module-api` | Framework, Auth | Workspace, HTML Editor |
 | `module-menu` | Framework | Auth |
 | `module-theme` | Framework, `ext-zip` | Menu |
 | `module-calendar` | Framework, Auth, ORM | Menu, Theme |
-| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | Menu, Theme, Calendar, Workspace, Task |
+| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | Menu, Theme, Calendar, Workspace, Task, Comment |
 | `module-email` | Framework, Auth, ORM | - |
 | `module-notification` | Framework, Auth, ORM | Email |
 | `module-workspace` | Framework, Auth, ORM | HTML Editor, Menu, Notification; Email samo posredno kroz Notification / Email only indirectly through Notification |
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | Workspace, Notification |
+| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
 | `module-demo` | PHP | - |
 
 ## Pravila učitavanja / Loading rules
@@ -47,10 +50,13 @@ HR:
   samo u aplikaciji.
 - `module-workspace` ne zahtijeva `module-notification`. Bez njega workflow radi,
   ali ne šalje obavijesti.
-- `module-editor-html` radi samostalno bez Workspacea, Calendara, Taska, Themea i
-  Menua; pojedine kontrole i renderer pojavljuju se samo uz instaliranu integraciju.
+- `module-editor-html` radi samostalno bez Workspacea, Calendara, Taska, Commenta,
+  Themea i Menua; pojedine kontrole i renderer pojavljuju se samo uz instaliranu
+  integraciju.
 - `module-task` namjerno zahtijeva HTML Editor jer su definicije i stabilni UUID-evi
   zadataka dio verzioniranog HTML dokumenta.
+- `module-comment` koristi Editorov dokument i prava čitanja, Notification za
+  prijave neprimjerenog sadržaja te opcionalno Workspaceova prava objavljivanja.
 
 EN:
 
@@ -62,10 +68,13 @@ EN:
   notifications remain in-app only.
 - `module-workspace` does not require `module-notification`. Without it, the
   workflow works but sends no notifications.
-- `module-editor-html` works standalone without Workspace, Calendar, Task, Theme,
-  and Menu; each control and renderer appears only when its integration is installed.
+- `module-editor-html` works standalone without Workspace, Calendar, Task, Comment,
+  Theme, and Menu; each control and renderer appears only when its integration is
+  installed.
 - `module-task` intentionally requires HTML Editor because task definitions and
   stable task UUIDs belong to the versioned HTML document.
+- `module-comment` uses Editor documents and read access, Notification for
+  inappropriate-content reports, and optionally Workspace publish permissions.
 
 ## Graf / Graph
 
@@ -78,15 +87,19 @@ optional integration.
 ```text
 ORM ----------> Framework
 Auth ---------> ORM + Framework
+API ----------> Auth + Framework
 Calendar -----> Auth + ORM + Framework
 Email --------> Auth + ORM + Framework
 Notification -> Auth + ORM + Framework
 Workspace ----> Auth + ORM + Framework
 Editor HTML --> Auth + ORM + Framework
 Task ---------> Editor HTML + Auth + ORM + Framework
+Comment ------> Editor HTML + Notification + Auth + ORM + Framework
 
 Notification - - > Email
+API          - - > Workspace, Editor HTML
 Workspace    - - > Editor HTML, Menu, Notification
-Editor HTML  - - > Menu, Theme, Calendar, Workspace, Task
+Editor HTML  - - > Menu, Theme, Calendar, Workspace, Task, Comment
 Task         - - > Workspace, Notification
+Comment      - - > Workspace, Theme
 ```

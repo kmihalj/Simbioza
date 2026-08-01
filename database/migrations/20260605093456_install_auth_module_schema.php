@@ -241,16 +241,40 @@ return new class implements ReversibleMigrationInterface {
             });
         }
 
+        if (!$schema->hasTable(ModuleAuth::TABLE_AUTH_API_KEYS)) {
+            $schema->create(ModuleAuth::TABLE_AUTH_API_KEYS, static function (Blueprint $table): void {
+                $table->charset('utf8mb4');
+                $table->collation('utf8mb4_unicode_ci');
+
+                $table->id();
+                $table->string('public_id', 64)->unique();
+                $table->bigInteger('user_id')->unsigned()->index();
+                $table->bigInteger('created_by_user_id')->unsigned()->nullable()->index();
+                $table->string('name', 190);
+                $table->text('description')->nullable();
+                $table->string('secret_hash', 255);
+                $table->text('scopes_json');
+                $table->text('allowed_ips_json')->nullable();
+                $table->timestamp('expires_at')->nullable()->index();
+                $table->timestamp('last_used_at')->nullable()->index();
+                $table->string('last_used_ip', 64)->nullable();
+                $table->timestamp('revoked_at')->nullable()->index();
+                $table->timestamps();
+
+                $table->index(['user_id', 'revoked_at']);
+            });
+        }
+
         $now = date('Y-m-d H:i:s');
 
-        $this->upsertProviderSetting($db, AuthSettingsService::PROVIDER_LOCAL, true, [], $now);
-        $this->upsertProviderSetting($db, AuthSettingsService::PROVIDER_SAML, false, [], $now);
-        $this->upsertProviderSetting($db, AuthSettingsService::PROVIDER_CAS, false, [], $now);
-        $this->upsertProviderSetting($db, AuthSettingsService::PROVIDER_OIDC, false, [], $now);
-        $this->upsertProviderSetting($db, AuthSettingsService::PROVIDER_OAUTH2, false, [], $now);
+        $this->seedProviderSetting($db, AuthSettingsService::PROVIDER_LOCAL, true, [], $now);
+        $this->seedProviderSetting($db, AuthSettingsService::PROVIDER_SAML, false, [], $now);
+        $this->seedProviderSetting($db, AuthSettingsService::PROVIDER_CAS, false, [], $now);
+        $this->seedProviderSetting($db, AuthSettingsService::PROVIDER_OIDC, false, [], $now);
+        $this->seedProviderSetting($db, AuthSettingsService::PROVIDER_OAUTH2, false, [], $now);
 
-        $this->upsertSystemSetting($db, 'allow_local_admin_breakglass', '1', $now);
-        $this->upsertSystemSetting($db, 'allow_local_registration', '0', $now);
+        $this->seedSystemSetting($db, 'allow_local_admin_breakglass', '1', $now);
+        $this->seedSystemSetting($db, 'allow_local_registration', '0', $now);
         $this->seedDefaultUserAttributeFields($db, $now);
         $this->seedAdministratorGroup($db, $now);
         $this->seedAdministratorUser($db, $now);
@@ -264,6 +288,7 @@ return new class implements ReversibleMigrationInterface {
     public function down(Database $db): void
     {
         $schema = $db->schema();
+        $schema->dropIfExists(ModuleAuth::TABLE_AUTH_API_KEYS);
         $schema->dropIfExists(ModuleAuth::TABLE_AUTH_USER_IDENTITIES);
         $schema->dropIfExists(ModuleAuth::TABLE_AUTH_AUDIT_LOGS);
         $schema->dropIfExists(ModuleAuth::TABLE_AUTH_GROUP_MAPPING_RULES);
@@ -469,13 +494,17 @@ return new class implements ReversibleMigrationInterface {
     }
 
     /**
-     * HR: Upsert helper za `auth_provider_settings`.
+     * HR: Upisuje početnu postavku providera samo ako još ne postoji.
+     * Ponovno pokretanje inicijalne migracije ne smije poništiti administratorsku
+     * konfiguraciju postojeće aplikacije.
      *
-     * EN: Upsert helper for `auth_provider_settings`.
+     * EN: Inserts an initial provider setting only when it does not exist yet.
+     * Re-running the initial migration must not reset administrator configuration
+     * in an existing application.
      *
      * @param array<string,mixed> $config
      */
-    private function upsertProviderSetting(
+    private function seedProviderSetting(
         Database $db,
         string $provider,
         bool $enabled,
@@ -486,44 +515,32 @@ return new class implements ReversibleMigrationInterface {
             ->where('provider', '=', $provider)
             ->first();
 
-        $payload = [
-            'enabled' => $enabled ? 1 : 0,
-            'config_json' => json_encode($config, JSON_THROW_ON_ERROR),
-            'updated_at' => $now,
-        ];
-
         if (is_array($row)) {
-            $db->table(ModuleAuth::TABLE_AUTH_PROVIDER_SETTINGS)
-                ->where('provider', '=', $provider)
-                ->update($payload);
             return;
         }
 
         $db->table(ModuleAuth::TABLE_AUTH_PROVIDER_SETTINGS)
             ->insert([
                 'provider' => $provider,
-                ...$payload,
+                'enabled' => $enabled ? 1 : 0,
+                'config_json' => json_encode($config, JSON_THROW_ON_ERROR),
+                'updated_at' => $now,
             ]);
     }
 
     /**
-     * HR: Upsert helper za `auth_system_settings`.
+     * HR: Upisuje početnu sistemsku postavku samo ako još ne postoji.
      *
-     * EN: Upsert helper for `auth_system_settings`.
+     * EN: Inserts an initial system setting only when it does not exist yet.
+     *
      */
-    private function upsertSystemSetting(Database $db, string $key, string $value, string $now): void
+    private function seedSystemSetting(Database $db, string $key, string $value, string $now): void
     {
         $row = $db->table(ModuleAuth::TABLE_AUTH_SYSTEM_SETTINGS)
             ->where('setting_key', '=', $key)
             ->first();
 
         if (is_array($row)) {
-            $db->table(ModuleAuth::TABLE_AUTH_SYSTEM_SETTINGS)
-                ->where('setting_key', '=', $key)
-                ->update([
-                    'setting_value' => $value,
-                    'updated_at' => $now,
-                ]);
             return;
         }
 

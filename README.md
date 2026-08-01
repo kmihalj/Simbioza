@@ -1,46 +1,51 @@
-# HeartPhrame - HPh
+# HFClean HeartPhrame application
 
-A lightweight, PSR-compliant PHP framework with a custom composer-enabled module system.
+[Hrvatska verzija](README_hr.md)
 
-It comes with a custom implementation for several PSR recommendations:
-- PSR-3 Logger Interface
-- PSR-4 Autoloading
-- PSR-7 HTTP Message Interface
-- PSR-11 Container Interface
-- PSR-12 Extended Coding Style Guide
-- PSR-14 Event Dispatcher
-- PSR-15 HTTP Server Request Handlers
-- PSR-16 Caching Interface
-- PSR-17 HTTP Factories
+HFClean is the integration application for the HeartPhrame Framework and its
+independently maintained modules. Application work belongs here and in module
+repositories; the Framework is consumed from its upstream `main` branch and is
+not developed as part of this repository.
 
-Note that you can use any other PSR-compliant library with HeartPhrame instead of the ones provided by default.
+## Requirements
 
-Other notable functionalities:
-- Routing
-- Templating
-- Configuration
-- Sessions
-- Authentication
-- Database abstraction, migrations
-- Localization
-- Composer-enabled module system
-- Encryption
+- PHP 8.2 or newer
+- Composer 2
+- PDO SQLite for the default local setup
+- Git access to the listed module repositories
 
+## Dependency policy
 
-## Documentation
+The Framework and every internal HeartPhrame module are intentionally required
+from the moving `dev-main` branch. Fixed aliases and internal version ranges are
+not used. This application also does not commit `composer.lock`; each CI run and
+deployment resolves the latest development heads and executes the complete
+quality suite.
 
-For more information on how to start using HeartPhrame, refer to the [documentation](docs/index.md).
+Committed Composer metadata uses VCS repositories so a clean CI checkout works
+without sibling directories. For local work with symlinked module checkouts,
+use an untracked `composer.local.json` through the `COMPOSER` environment
+variable; do not commit local `path` repositories into the shared manifest.
 
-## The name
+## Installation and verification
 
-HeartPhrame was developed by the [AAI@EduHr](https://www.aaiedu.hr/) dev team from
-[University of Zagreb University computing centre SRCE](https://www.srce.unizg.hr/en).
-The short name of a University computing centre in the Croatian language is "Srce", meaning "Heart" in English.
+```bash
+composer update --with-all-dependencies
+composer check-platform-reqs
+composer on-commit
+```
 
-So, HeartPhrame is a play on the names "Srce" (Heart), PHP, and Framework:
+Application configuration, migrations, module order, and API integration are
+described in the [documentation](docs/index.md). The bilingual dependency
+matrix is in [module dependencies](docs/module-dependencies.md).
 
-> Heart (Srce) PHP Framework -> Heart PHP Frame -> HeartPhrame -> HPh
+## Enabled modules
+
+HFClean integrates API, Auth, Calendar, Comment, HTML Editor, E-mail, Menu,
+Notification, ORM, Task, Theme, and Workspace. Modules keep ownership of their
+domain rules; the application composes them and supplies deployment settings.
 
 ## Licence
 
-This work is published under [European Union Public License (the ‘EUPL’) v1.2](LICENSE).
+This work is published under the
+[European Union Public Licence (EUPL) v1.2](LICENSE).

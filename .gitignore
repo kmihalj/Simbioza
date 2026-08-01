@@ -1,5 +1,8 @@
 /vendor/
 /build/
+/composer.lock
+/composer.local.json
+/composer.local.lock
 /.playwright-cli/
 /output/
 /scripts/dev_seed_full_test.php

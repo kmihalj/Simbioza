@@ -17,24 +17,24 @@ jobs:
         php: ['8.2', '8.3', '8.4', '8.5']
 
     steps:
-      - name: Check out application
-        uses: actions/checkout@v4
+      - name: Check out application / Dohvati aplikaciju
+        uses: actions/checkout@v5
 
-      - name: Set up PHP
+      - name: Set up PHP / Postavi PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pdo, pdo_sqlite, simplexml, tokenizer, xmlwriter, zip
           coverage: pcov
 
-      - name: Validate Composer metadata
+      - name: Validate Composer metadata / Provjeri Composer metapodatke
         run: composer validate --strict
 
-      - name: Install locked Git dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+      - name: Resolve latest dependencies / Dohvati najnovije ovisnosti
+        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Check platform requirements
+      - name: Check platform requirements / Provjeri platformske preduvjete
         run: composer check-platform-reqs
 
-      - name: Run quality and test suite
+      - name: Run quality and test suite / Pokreni provjere i testove
         run: composer on-commit

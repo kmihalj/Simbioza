@@ -1,11 +1,74 @@
 [
     {
+        "id": "menu",
+        "label": {
+            "hr": "Meni",
+            "en": "Menu"
+        },
+        "order": 10,
+        "enabled": true,
+        "children": [
+            {
+                "id": "menu.top",
+                "label": {
+                    "hr": "Gornji meni",
+                    "en": "Top menu"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "top"
+                }
+            },
+            {
+                "id": "menu.settings",
+                "label": {
+                    "hr": "Meni postavki",
+                    "en": "Settings menu"
+                },
+                "order": 20,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "settings"
+                }
+            },
+            {
+                "id": "menu.contexts.top",
+                "label": {
+                    "hr": "Posebni gornji meniji",
+                    "en": "Special top menus"
+                },
+                "order": 30,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_top"
+                }
+            },
+            {
+                "id": "menu.contexts.left",
+                "label": {
+                    "hr": "Posebni lijevi meniji",
+                    "en": "Special left menus"
+                },
+                "order": 40,
+                "enabled": true,
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_left"
+                }
+            }
+        ]
+    },
+    {
         "id": "theme",
         "label": {
             "hr": "Tema",
             "en": "Theme"
         },
-        "order": 80,
+        "order": 20,
         "enabled": true,
         "children": [
             {
@@ -14,7 +77,7 @@
                     "hr": "Postavke teme",
                     "en": "Theme settings"
                 },
-                "order": 90,
+                "order": 10,
                 "enabled": true,
                 "route": "theme.settings",
                 "query": {
@@ -300,6 +363,20 @@
                 ]
             }
         ]
+    },
+    {
+        "id": "auth.setup.api-keys",
+        "parent_id": "auth",
+        "label": {
+            "hr": "API ključevi",
+            "en": "API keys"
+        },
+        "route": "auth.setup.api-keys",
+        "url": "",
+        "query": "",
+        "order": 70,
+        "enabled": true,
+        "level": 1
     },
     {
         "id": "email.settings.group",

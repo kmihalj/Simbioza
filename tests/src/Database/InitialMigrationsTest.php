@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Database;
 
+use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
+use AaiEduHr\HeartPhrameModuleComment\ModuleComment;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
@@ -47,20 +49,20 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće sedam objedinjenih inicijalnih migracija te provjerava aktualne
-     * Auth, Calendar, Editor, Workspace, E-mail, Notification i Task sheme,
-     * početnog administratora i izostanak sadržaja.
+     * HR: Pokreće devet objedinjenih inicijalnih migracija te provjerava aktualne
+     * Auth, Calendar, Editor, Workspace, E-mail, Notification, Task, Comment i API
+     * sheme, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs seven consolidated initial migrations and verifies the current
-     * Auth, Calendar, Editor, Workspace, E-mail, Notification, and Task schemas,
-     * the bootstrap administrator, and the absence of content data.
+     * EN: Runs nine consolidated initial migrations and verifies the current
+     * Auth, Calendar, Editor, Workspace, E-mail, Notification, Task, Comment, and
+     * API schemas, the bootstrap administrator, and the absence of content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(7, $migrationFiles, 'Only consolidated initial migrations are expected.');
+        $this->assertCount(9, $migrationFiles, 'Only consolidated initial migrations are expected.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -349,6 +351,13 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleNotification::TABLE_USER_PREFERENCES, [
+            'id',
+            'user_id',
+            'email_enabled',
+            'created_at',
+            'updated_at',
+        ]);
         $this->assertColumns(ModuleTask::TABLE_STATES, [
             'id',
             'task_uuid',
@@ -372,6 +381,120 @@ final class InitialMigrationsTest extends TestCase
             'changed_by_display_name',
             'created_at',
         ]);
+        $this->assertColumns(ModuleComment::TABLE_SETTINGS, [
+            'id',
+            'document_id',
+            'language_code',
+            'published_enabled',
+            'draft_enabled',
+            'has_draft_setting',
+            'updated_by_user_id',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleComment::TABLE_COMMENTS, [
+            'id',
+            'uuid',
+            'document_id',
+            'language_code',
+            'user_id',
+            'author_display_name',
+            'body',
+            'is_deleted',
+            'deleted_by_user_id',
+            'deleted_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleComment::TABLE_REACTIONS, [
+            'id',
+            'comment_id',
+            'user_id',
+            'reaction',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleComment::TABLE_REPORTS, [
+            'id',
+            'uuid',
+            'comment_id',
+            'reporter_user_id',
+            'status',
+            'reason',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleApi::TABLE_RATE_LIMITS, [
+            'id',
+            'api_key_id',
+            'window_start',
+            'request_count',
+            'expires_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleApi::TABLE_IDEMPOTENCY_KEYS, [
+            'id',
+            'api_key_id',
+            'idempotency_key',
+            'request_fingerprint',
+            'response_status',
+            'response_headers_json',
+            'response_body',
+            'expires_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleApi::TABLE_KEY_REQUESTS, [
+            'id',
+            'uuid',
+            'user_id',
+            'name',
+            'description',
+            'scopes_json',
+            'allowed_ips_json',
+            'expires_at',
+            'status',
+            'decided_by_user_id',
+            'decided_at',
+            'decision_note',
+            'api_key_id',
+            'encrypted_token',
+            'token_revealed_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleApi::TABLE_WEBHOOK_SUBSCRIPTIONS, [
+            'id',
+            'uuid',
+            'owner_api_key_id',
+            'owner_user_id',
+            'name',
+            'target_url',
+            'events_json',
+            'encrypted_secret',
+            'is_active',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleApi::TABLE_WEBHOOK_DELIVERIES, [
+            'id',
+            'uuid',
+            'subscription_id',
+            'event_uuid',
+            'event_name',
+            'payload_json',
+            'status',
+            'attempts',
+            'available_at',
+            'locked_at',
+            'delivered_at',
+            'response_status',
+            'response_body',
+            'last_error',
+            'created_at',
+            'updated_at',
+        ]);
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -389,8 +512,18 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
         $this->assertSame([], $this->database->table(ModuleEmail::TABLE_OUTBOX)->get());
         $this->assertSame([], $this->database->table(ModuleNotification::TABLE_NOTIFICATIONS)->get());
+        $this->assertSame([], $this->database->table(ModuleNotification::TABLE_USER_PREFERENCES)->get());
         $this->assertSame([], $this->database->table(ModuleTask::TABLE_STATES)->get());
         $this->assertSame([], $this->database->table(ModuleTask::TABLE_EVENTS)->get());
+        $this->assertSame([], $this->database->table(ModuleComment::TABLE_SETTINGS)->get());
+        $this->assertSame([], $this->database->table(ModuleComment::TABLE_COMMENTS)->get());
+        $this->assertSame([], $this->database->table(ModuleComment::TABLE_REACTIONS)->get());
+        $this->assertSame([], $this->database->table(ModuleComment::TABLE_REPORTS)->get());
+        $this->assertSame([], $this->database->table(ModuleApi::TABLE_RATE_LIMITS)->get());
+        $this->assertSame([], $this->database->table(ModuleApi::TABLE_IDEMPOTENCY_KEYS)->get());
+        $this->assertSame([], $this->database->table(ModuleApi::TABLE_KEY_REQUESTS)->get());
+        $this->assertSame([], $this->database->table(ModuleApi::TABLE_WEBHOOK_SUBSCRIPTIONS)->get());
+        $this->assertSame([], $this->database->table(ModuleApi::TABLE_WEBHOOK_DELIVERIES)->get());
     }
 
     /**

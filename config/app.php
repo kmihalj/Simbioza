@@ -48,6 +48,7 @@ return [
         // List of route prefixes for which the session will not be started by the StartSessionMiddleware.
         'excluded_routes' => [
             '/sample/route/prefix', // All routes that start with this prefix will be excluded.
+            '/api/v1',
         ],
     ],
 
@@ -63,10 +64,12 @@ return [
             'aaieduhr/heartphrame-module-menu',
             'aaieduhr/heartphrame-module-theme',
             'aaieduhr/heartphrame-module-auth',
+            'aaieduhr/heartphrame-module-api',
             'aaieduhr/heartphrame-module-email',
             'aaieduhr/heartphrame-module-notification',
             'aaieduhr/heartphrame-module-editor-html',
             'aaieduhr/heartphrame-module-task',
+            'aaieduhr/heartphrame-module-comment',
             'aaieduhr/heartphrame-module-workspace',
             'aaieduhr/heartphrame-module-calendar',
         ],
@@ -77,6 +80,7 @@ return [
         'excluded_routes' => [
             '/sample/route/prefix', // All routes that start with this prefix will be excluded.
             '/caldav',
+            '/api/v1',
         ],
     ],
 ];

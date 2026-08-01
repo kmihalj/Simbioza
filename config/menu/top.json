@@ -49,22 +49,22 @@
             "hr": "Editor",
             "en": "Editor"
         },
-        "order": 50,
-        "enabled": true,
+        "order": 60,
+        "enabled": false,
         "route": "editor-html.index"
     },
     {
         "id": "workspaces",
-        "parent_id": "",
         "label": {
             "hr": "Područja",
             "en": "Workspaces"
         },
+        "order": 50,
+        "enabled": true,
         "route": "workspace.index",
+        "parent_id": "",
         "url": "",
         "query": "",
-        "order": 45,
-        "enabled": true,
         "level": 0
     }
 ]
