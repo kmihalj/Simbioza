@@ -13,7 +13,7 @@ Svaki HeartPhrame modul zahtijeva
 `aaieduhr/heartphrame-framework:dev-main`. HFClean trenutačno povezuje ORM,
 Menu, Theme, Auth, E-mail, Notification, HTML Editor, Task, Comment, Workspace,
 Calendar i API. Obavezni redoslijed modula i opcionalne mogućnosti navedeni su
-u [matrici ovisnosti](docs/module-dependencies.md).
+u [matrici ovisnosti](docs/module-dependencies_hr.md).
 
 Najmanje provjerene instalacije su samo Framework, Framework + Theme,
 Framework + Menu te Framework + Theme + Menu. Moduli s bazom dodaju ORM i svoje
@@ -48,8 +48,17 @@ composer on-commit
 ```
 
 Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
-su u [dokumentaciji](docs/index.md). Dvojezična matrica nalazi se u dokumentu
-[ovisnosti modula](docs/module-dependencies.md).
+su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima
+zaseban [engleski indeks](docs/index_en.md).
+
+## Dokumentacija
+
+- Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
+- Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
+- [Instalacija](docs/installation_hr.md)
+- [Ovisnosti modula](docs/module-dependencies_hr.md)
+- [Konfiguracija baze](docs/database_hr.md)
+- [API v1 ugovor](docs/api-v1-contract_hr.md)
 
 ## Uključeni moduli
 

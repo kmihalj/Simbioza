@@ -1,4 +1,3 @@
-
 # Configuration
 
 This document explains how configuration files are arranged.
@@ -96,7 +95,7 @@ declare(strict_types=1);
 return [
     MyService::class => fn(ContainerInterface $container): MyService => new MyService(),
 ];
-````
+```
 
 Feel free to add additional services as needed or to override existing
 services. The only requirement is that they are defined as callbacks

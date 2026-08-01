@@ -1,4 +1,3 @@
-
 # Project structure
 
 This document explains how the project is organized. It focuses on the
@@ -26,7 +25,7 @@ As your project grows, you can add additional layers such as `Domain/`,
 
 Centralized application configuration (app settings, environment, routes,
 middleware, DI services, bootstrap code). For more information,
-see [Configuration](configuration.md).
+see [Configuration](configuration_en.md).
 
 
 ### Runtime data (`data/`)
@@ -38,7 +37,7 @@ server user.
 - cache/ — Cache storage. Also, it must be writable.
 
 You are free to choose a different location for these directories
-(see [Configuration](configuration.md) on how to override the default
+(see [Configuration](configuration_en.md) on how to override the default
 locations).
 
 Ensure this directory is writable by the web server user. Do not commit
@@ -93,7 +92,7 @@ Typical structure:
 - feature‑specific folders — Grouped by feature or controller for clarity.
 
 Note that you can change the default path for views in the `config/app.php`
-configuration file. See [Views](views.md) for more information.
+configuration file. See [Views](views_en.md) for more information.
 
 
 ###  Other files

@@ -5,7 +5,7 @@ its Dependency Injection (DI) container.
 
 ## Using Services
 
-For any service you wish to use, you can type-hint its interface / clas in
+For any service you wish to use, you can type-hint its interface or class in
 your class constructor or method, and the container will automatically
 inject the correct implementation.
 

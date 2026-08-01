@@ -9,7 +9,7 @@ The localization system is configured in your `config/app.php` file:
 
 ```php
 return [
-    'localization' = [
+    'localization' => [
         'locale' => 'en',
         'fallback_locale' => 'en',
         'detect_browser_locale' => true,
@@ -42,7 +42,7 @@ return [
 
 ### Using the Helper Function
 
-The `__()` and `__e` (with escape) helper functions are available globally
+The `__()` and `__e()` (with escaping) helper functions are available globally
 and can be used anywhere in your application (views, controllers, etc.).
 
 ```php

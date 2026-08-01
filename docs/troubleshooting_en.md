@@ -1,4 +1,4 @@
-## Troubleshooting
+# Troubleshooting
 
 - Blank page or 500 error:
     - Check the logs under data/ (ensure directories are writable).

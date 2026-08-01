@@ -58,6 +58,63 @@ function documentedModuleRoot(string $applicationRoot, string $module): string
 }
 
 /**
+ * HR: Provjerava potpune jezične parove, uklanja stare miješane nazive i
+ *     potvrđuje da relativne Markdown poveznice vode na postojeće datoteke.
+ * EN: Verifies complete language pairs, rejects legacy mixed-language names,
+ *     and confirms that relative Markdown links target existing files.
+ *
+ * @param list<string> $issues
+ */
+function auditDocumentationPairs(string $root, string $label, array &$issues): void
+{
+    $documentationRoot = $root . '/docs';
+    $english = glob($documentationRoot . '/*_en.md') ?: [];
+    $croatian = glob($documentationRoot . '/*_hr.md') ?: [];
+
+    foreach ($english as $englishPath) {
+        $expected = substr($englishPath, 0, -6) . '_hr.md';
+        if (!is_file($expected)) {
+            $issues[] = $label . ': missing ' . basename($expected);
+        }
+    }
+    foreach ($croatian as $croatianPath) {
+        $expected = substr($croatianPath, 0, -6) . '_en.md';
+        if (!is_file($expected)) {
+            $issues[] = $label . ': missing ' . basename($expected);
+        }
+    }
+    if (count($english) !== count($croatian)) {
+        $issues[] = sprintf(
+            '%s: EN/HR document count differs (%d/%d)',
+            $label,
+            count($english),
+            count($croatian),
+        );
+    }
+
+    $documents = glob($documentationRoot . '/*.md') ?: [];
+    foreach ($documents as $document) {
+        $basename = basename($document);
+        if (!preg_match('/_(?:en|hr)\.md$/', $basename)) {
+            $issues[] = $label . ': legacy mixed or unpaired document ' . $basename;
+        }
+
+        $text = documentationText($document);
+        if (preg_match_all('/\]\((?![a-z][a-z0-9+.-]*:|\/|#)([^)#]+\.md)(?:#[^)]*)?\)/i', $text, $matches)) {
+            foreach ($matches[1] as $target) {
+                if (!is_string($target)) {
+                    continue;
+                }
+                $resolved = dirname($document) . '/' . rawurldecode($target);
+                if (!is_file($resolved)) {
+                    $issues[] = sprintf('%s/%s: broken link %s', $label, $basename, $target);
+                }
+            }
+        }
+    }
+}
+
+/**
  * HR: Pokreće provjeru ovisnosti i parova dokumenata za dopuštene module.
  * EN: Runs dependency and document-pair checks for the allowed modules.
  */
@@ -65,6 +122,7 @@ function runModuleDocumentationAudit(): int
 {
     $applicationRoot = dirname(__DIR__);
     $issues = [];
+    auditDocumentationPairs($applicationRoot, 'HFClean', $issues);
     foreach (DOCUMENTED_MODULES as $module) {
         $root = documentedModuleRoot($applicationRoot, $module);
         $composer = json_decode(
@@ -91,28 +149,7 @@ function runModuleDocumentationAudit(): int
             }
         }
 
-        $english = glob($root . '/docs/*_en.md') ?: [];
-        $croatian = glob($root . '/docs/*_hr.md') ?: [];
-        foreach ($english as $englishPath) {
-            $expected = substr($englishPath, 0, -6) . '_hr.md';
-            if (!is_file($expected)) {
-                $issues[] = $module . ': missing ' . basename($expected);
-            }
-        }
-        foreach ($croatian as $croatianPath) {
-            $expected = substr($croatianPath, 0, -6) . '_en.md';
-            if (!is_file($expected)) {
-                $issues[] = $module . ': missing ' . basename($expected);
-            }
-        }
-        if (count($english) !== count($croatian)) {
-            $issues[] = sprintf(
-                '%s: EN/HR document count differs (%d/%d)',
-                $module,
-                count($english),
-                count($croatian),
-            );
-        }
+        auditDocumentationPairs($root, $module, $issues);
     }
 
     $apiRoot = documentedModuleRoot($applicationRoot, 'heartphrame-module-api');

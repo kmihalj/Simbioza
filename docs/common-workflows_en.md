@@ -19,7 +19,7 @@ specific controller action. You can also assign a name and attach
 middleware here.
 
 Check the existing examples in the `config/routes.php` file for reference.
-For more details, see [Routes](routes.md).
+For more details, see [Routes](routes_en.md).
 
 ### 2. Create a Controller Action
 
@@ -38,7 +38,7 @@ structure (e.g., headers and footers).
 
 From your controller action, render the view and return it as a response.
 
-For more information on views, see [Views](views.md).
+For more information on views, see [Views](views_en.md).
 
 ---
 
@@ -52,7 +52,7 @@ implementation to an interface or class name, and the container will
 be able to inject it automatically wherever it's necessary.
 
 For more information, see the `services.php` section in the
-[Configuration](configuration.md) documentation.
+[Configuration](configuration_en.md) documentation.
 
 ### Adjusting Middleware
 

@@ -13,7 +13,7 @@ Every HeartPhrame module requires `aaieduhr/heartphrame-framework:dev-main`.
 HFClean currently integrates ORM, Menu, Theme, Auth, E-mail, Notification,
 HTML Editor, Task, Comment, Workspace, Calendar, and API. Required module order
 and optional capabilities are listed in
-[the dependency matrix](docs/module-dependencies.md).
+[the dependency matrix](docs/module-dependencies_en.md).
 
 The smallest verified installations are Framework only, Framework + Theme,
 Framework + Menu, and Framework + Theme + Menu. Database-backed modules add ORM
@@ -49,8 +49,17 @@ composer on-commit
 ```
 
 Application configuration, migrations, module order, and API integration are
-described in the [documentation](docs/index.md). The bilingual dependency
-matrix is in [module dependencies](docs/module-dependencies.md).
+described in the [English documentation](docs/index_en.md). The Croatian
+documentation has a separate [Croatian index](docs/index_hr.md).
+
+## Documentation
+
+- Main index (EN): [docs/index_en.md](docs/index_en.md)
+- Main index (HR): [docs/index_hr.md](docs/index_hr.md)
+- [Installation](docs/installation_en.md)
+- [Module dependencies](docs/module-dependencies_en.md)
+- [Database configuration](docs/database_en.md)
+- [API v1 contract](docs/api-v1-contract_en.md)
 
 ## Enabled modules
 
