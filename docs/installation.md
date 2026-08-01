@@ -1,158 +1,206 @@
+# HFClean installation / Instalacija HFCleana
 
-# Installation
+[English](#english) | [Hrvatski](#hrvatski)
 
-This project is a Composer-enabled PHP framework that serves as a base
-for building custom applications. The recommended
-way to install it is via Composer’s create-project command.
+## English
 
-If you don’t yet have Composer installed, see https://getcomposer.org/download/
+HFClean is the integration application for the moving `dev-main` versions of
+HeartPhrame Framework and its modules. It is not the upstream Framework and it
+does not include demo accounts or sample domain data.
 
-## Requirements
+### 1. Requirements
 
-Check the `composer.json` file for the required PHP version and extensions.
+- PHP 8.2 or newer;
+- Composer 2 and Git access to every private module repository;
+- PDO SQLite, PostgreSQL, or MySQL/MariaDB driver;
+- PHP extensions required by enabled modules (`dom`, `fileinfo`, `mbstring`,
+  `zip`, and others reported by `composer check-platform-reqs`).
 
-## 1. Create a project
+### 2. Install current module heads
 
-```shell
-composer create-project aaieduhr/heartphrame my-project
+```bash
+git clone <your-hfclean-repository> HFClean
+cd HFClean
+composer update --with-all-dependencies
+composer check-platform-reqs
 ```
 
-Adjust the directory name (`my-project`) to your liking.
+Internal packages intentionally use `dev-main`. The root application therefore
+has `"minimum-stability": "dev"` and `"prefer-stable": true`. HFClean does not
+commit `composer.lock`; every CI/deployment resolves and tests the current
+heads. Use `composer install` only when your deployment process intentionally
+provides a generated lock file.
 
-You\'ll want to delete the `.git` directory and initialize a new Git repository.
+### 3. Create local configuration
 
-```shell
-rm -rf .git
-git init --initial-branch=main
-```
-
-## 2. Install dependencies
-
-To install the dependencies, run the following command:
-
-```shell
-composer install
-```
-
-## 3. Running code quality tools
-
-At this point, all code quality checks should pass. The `pre-commit` script
-runs a series of tools to ensure code quality, including PHP Code
-Sniffer, PHPStan, and PHPUnit.
-
-```shell
-composer pre-commit
-```
-
-## 4. Add your first commit
-
-Replace any occurrences of `aaieduhr` with your username or organization name;
-and `heartphrame` with the name of your application, project, or repository.
-Also, adjust authors in `composer.json`.
-
-After that, you can push your changes as an initial commit to your module repo:
-
-```shell
-git remote add origin git@git-instance.org:project/repo.git
-git add .
-git commit -m "Initial commit"
-git push --set-upstream origin main
-```
-
-## 5. Adjust environment configuration
-
-Copy the `config/env.php.dist` file to `config/env.php` and adjust the
-environment variables as needed.
-
-```shell
+```bash
+cp config/database.php.dist config/database.php
 cp config/env.php.dist config/env.php
-nano config/env.php
-```
-You can use the command `vendor/bin/hph encryption:generate-key`
-to generate a new encryption key and set it in the `config/env.php` file.
-
-> **Note:** The `config/env.php` file is ignored by Git, so you can safely
-adjust it as needed.
-
-## 6. Create the initial database schema
-
-Run the three application migrations after configuring the database connection:
-
-```shell
-vendor/bin/hph migrate:up
+vendor/bin/hph encryption:generate-key
 ```
 
-The initial migrations create the complete Auth, Calendar, and HTML Editor
-schemas and required system groups. They do not insert sample documents,
-calendars, events, or users. The sole bootstrap user account is the local
-administrator below:
+Paste the generated key into `config/env.php`, select the database in
+`config/database.php`, and never commit either local file. Database examples
+are in [database configuration](database.md).
 
-```text
-Username: Administrator
-Temporary password: Admin123!
+Theme and Menu JSON files live below `resources/config/theme/` and
+`resources/config/menu/`. Their PHP configuration files remain directly below
+`config/`; this avoids a PHP-config-file/directory name collision.
+
+### 4. Migrate an empty database
+
+HFClean already commits the nine official initial migrations. Inspect and run
+them:
+
+```bash
+vendor/bin/hph orm-migrate:status
+vendor/bin/hph orm-migrate:up
+vendor/bin/hph orm-migrate:status
 ```
 
-The account is marked for a mandatory password change, so the temporary
-password must be replaced immediately after the first successful login.
+Expected result after the second status command: every migration is `[RAN]`
+and pending count is `0`. The migrations create schemas and required system
+records only; create the first administrator through `/settings/auth`.
 
-## 7. Make the runtime `data/` folder writable
+In a custom minimal application, copy only migrations for installed modules:
 
-Web server needs write access to the `data/` folder, so make sure it is
-writable by the web server user. Apache example:
-
-```shell
-chown -R www-data:www-data data/
+```bash
+vendor/bin/hph auth:install-migration
+vendor/bin/hph api:install-migration
+vendor/bin/hph orm-migrate:up
 ```
 
-## 8. Run the application
+Replace/add scaffold commands according to `vendor/bin/hph`. Do not copy a
+module migration when the module is not installed.
 
-Configure your web server’s document root to point to the `public/` directory.
+### 5. Verify before serving
 
-### Apache Example
-
-```apache
-<VirtualHost *:80>
-    ServerName your-project.test
-    DocumentRoot /path/to/your-project/public
-
-    <Directory /path/to/your-project/public>
-        AllowOverride All
-        Require all granted
-    </Directory>
-</VirtualHost>
+```bash
+composer on-commit
+php scripts/audit_bilingual_phpdoc.php
+php scripts/verify_clean_install_matrix.php
 ```
 
-### Nginx Example
+For a full local candidate over PostgreSQL or MySQL, provide an empty test
+database through `HPH_MATRIX_DB_*` and run:
 
-```nginx
-server {
-    listen 80;
-    server_name your-project.test;
-    root /path/to/your-project/public;
-
-    index index.php;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; # Adjust to your PHP version
-    }
-}
+```bash
+php scripts/verify_clean_install_matrix.php \
+  --case=all --database=pgsql --local
 ```
 
-After that, you can visit the application using your Web Browser, for
-example, at `http://localhost/`, or similar (depending on your
-server configuration).
+The matrix tool never writes database credentials to its JSON report.
 
-## 9. Next steps
+### 6. Web server
 
-Note that this repository includes sample code and files that are here just
-for demonstration purposes. You should adjust or delete them before you start
-developing your application. This includes:
-- `database/migrations/`
-- `src`
-- `views`
-- `lang`
+Point the document root to `HFClean/public`, make `data/` writable by the PHP
+process, and route unknown paths to `public/index.php`. For local development:
+
+```bash
+php -S 127.0.0.1:8080 -t public public/index.php
+```
+
+Open `http://127.0.0.1:8080/`. Production deployments should use PHP-FPM with
+Apache/Nginx, HTTPS, secure cookies, a non-development environment, and a
+process manager for configured outbox/webhook workers.
+
+## Hrvatski
+
+HFClean je integracijska aplikacija za pomične `dev-main` verzije HeartPhrame
+Frameworka i modula. Nije uzvodni Framework i ne sadrži demo račune ni probne
+domenske podatke.
+
+### 1. Preduvjeti
+
+- PHP 8.2 ili noviji;
+- Composer 2 i Git pristup svim privatnim repozitorijima modula;
+- PDO driver za SQLite, PostgreSQL ili MySQL/MariaDB;
+- PHP ekstenzije uključenih modula (`dom`, `fileinfo`, `mbstring`, `zip` i
+  ostale koje prijavi `composer check-platform-reqs`).
+
+### 2. Instaliranje aktualnih stanja modula
+
+```bash
+git clone <tvoj-hfclean-repozitorij> HFClean
+cd HFClean
+composer update --with-all-dependencies
+composer check-platform-reqs
+```
+
+Interni paketi namjerno koriste `dev-main`, zato aplikacija ima
+`"minimum-stability": "dev"` i `"prefer-stable": true`. HFClean ne sprema
+`composer.lock`; svaki CI/deployment razrješava i testira aktualna stanja.
+`composer install` koristi se samo kada deployment namjerno dobiva generirani
+lock file.
+
+### 3. Lokalna konfiguracija
+
+```bash
+cp config/database.php.dist config/database.php
+cp config/env.php.dist config/env.php
+vendor/bin/hph encryption:generate-key
+```
+
+Generirani ključ unesi u `config/env.php`, bazu odaberi u
+`config/database.php`, a lokalne datoteke nikada ne spremaj u Git. Primjeri su
+u [konfiguraciji baze](database.md).
+
+Theme i Menu JSON datoteke nalaze se u `resources/config/theme/` i
+`resources/config/menu/`. Njihove PHP konfiguracije ostaju izravno u `config/`
+kako naziv PHP datoteke ne bi kolidirao s istoimenim direktorijem.
+
+### 4. Migriranje prazne baze
+
+HFClean već sprema devet službenih početnih migracija. Pregledaj ih i pokreni:
+
+```bash
+vendor/bin/hph orm-migrate:status
+vendor/bin/hph orm-migrate:up
+vendor/bin/hph orm-migrate:status
+```
+
+Očekivani rezultat drugog statusa: sve migracije su `[RAN]`, a broj pending
+migracija je `0`. Migracije kreiraju sheme i obavezne sistemske zapise; prvog
+administratora kreiraj kroz `/settings/auth`.
+
+U vlastitoj minimalnoj aplikaciji kopiraj samo migracije instaliranih modula:
+
+```bash
+vendor/bin/hph auth:install-migration
+vendor/bin/hph api:install-migration
+vendor/bin/hph orm-migrate:up
+```
+
+Druge scaffold naredbe pronađi s `vendor/bin/hph`. Ne kopiraj migraciju modula
+koji nije instaliran.
+
+### 5. Provjera prije posluživanja
+
+```bash
+composer on-commit
+php scripts/audit_bilingual_phpdoc.php
+php scripts/verify_clean_install_matrix.php
+```
+
+Za puni lokalni kandidat na PostgreSQL-u ili MySQL-u pripremi praznu testnu
+bazu kroz `HPH_MATRIX_DB_*` i pokreni:
+
+```bash
+php scripts/verify_clean_install_matrix.php \
+  --case=all --database=pgsql --local
+```
+
+Alat nikada ne sprema pristupne podatke baze u JSON izvještaj.
+
+### 6. Web poslužitelj
+
+Document root usmjeri na `HFClean/public`, omogući PHP procesu pisanje u
+`data/` i nepoznate putanje usmjeri na `public/index.php`. Za lokalni razvoj:
+
+```bash
+php -S 127.0.0.1:8080 -t public public/index.php
+```
+
+Otvori `http://127.0.0.1:8080/`. Produkcija treba PHP-FPM uz Apache/Nginx,
+HTTPS, sigurne kolačiće, ne-razvojni environment i process manager za uključene
+outbox/webhook workere.

@@ -10,15 +10,28 @@ is not developed in this repository.
 
 ---
 
-## Getting Started
+## Početak / Getting started
 
-New to HeartPhrame? Start here to get your first application up and running.
+Za prvu čistu instalaciju kreni ovdje. Start here for a clean installation.
 
-* [Installation](installation.md)
-* [Project Structure](project-structure.md)
-* [Configuration](configuration.md)
+* [Instalacija / Installation](installation.md)
+* [Ovisnosti modula / Module dependencies](module-dependencies.md)
+* [Baza / Database](database.md)
+* [Konfiguracija / Configuration](configuration.md)
+* [Struktura projekta / Project structure](project-structure.md)
 
-## The Basics
+Provjera podržanih minimalnih kombinacija i baza izvodi se naredbama:
+
+```bash
+php scripts/verify_clean_install_matrix.php
+php scripts/audit_bilingual_phpdoc.php
+composer on-commit
+```
+
+The commands above verify minimal module combinations, bilingual production
+PHPDoc coverage, and the complete quality suite.
+
+## Osnove / Basics
 
 Learn the fundamental concepts that power a HeartPhrame application.
 
@@ -29,7 +42,7 @@ Learn the fundamental concepts that power a HeartPhrame application.
 * [Sessions](sessions.md)
 * [Localization](localization.md)
 
-## Digging Deeper
+## Napredno / Digging deeper
 
 Explore more advanced topics and the framework's core components.
 
@@ -37,8 +50,6 @@ Explore more advanced topics and the framework's core components.
 * [Modules](modules.md)
 * [Module dependencies / Ovisnosti modula](module-dependencies.md)
 * [API v1 contract / API v1 ugovor](api-v1-contract.md)
-* [API implementation plan / Plan implementacije API-ja](api-implementation-plan.md)
-* [Database](database.md)
 * [Encryption](encryption.md)
 * [Event Dispatcher](event-dispatcher.md)
 
@@ -54,7 +65,7 @@ te pregledničku CSRF provjeru. Auth posjeduje korisnike, grupe, hashove ključe
 i administratorska pravila; API modul posjeduje verzionirane JSON ugovore i
 uvjetni ekran API ključeva.
 
-## Guides
+## Vodiči / Guides
 
 Follow these step-by-step guides for common development tasks.
 

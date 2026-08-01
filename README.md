@@ -7,6 +7,19 @@ independently maintained modules. Application work belongs here and in module
 repositories; the Framework is consumed from its upstream `main` branch and is
 not developed as part of this repository.
 
+## Dependencies
+
+Every HeartPhrame module requires `aaieduhr/heartphrame-framework:dev-main`.
+HFClean currently integrates ORM, Menu, Theme, Auth, E-mail, Notification,
+HTML Editor, Task, Comment, Workspace, Calendar, and API. Required module order
+and optional capabilities are listed in
+[the dependency matrix](docs/module-dependencies.md).
+
+The smallest verified installations are Framework only, Framework + Theme,
+Framework + Menu, and Framework + Theme + Menu. Database-backed modules add ORM
+and their documented domain dependencies. Composer resolves all transitive
+dependencies automatically.
+
 ## Requirements
 
 - PHP 8.2 or newer

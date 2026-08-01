@@ -9,16 +9,16 @@ return [
     ],
     'top' => [
         'enabled' => true,
-        'json' => __DIR__ . '/menu/top.json',
+        'json' => dirname(__DIR__) . '/resources/config/menu/top.json',
     ],
     'settings' => [
         'enabled' => true,
         'route' => 'menu.settings',
-        'json' => __DIR__ . '/menu/settings.json',
+        'json' => dirname(__DIR__) . '/resources/config/menu/settings.json',
     ],
     'contexts' => [
         'enabled' => true,
-        'json' => __DIR__ . '/menu/contexts.json',
+        'json' => dirname(__DIR__) . '/resources/config/menu/contexts.json',
     ],
     'language_selector' => [
         'enabled' => true,

@@ -7,6 +7,19 @@ samostalno održavane module. Aplikacijski razvoj pripada ovdje i u repozitorije
 modula; Framework se koristi s uzvodne grane `main` i ne razvija se u ovom
 repozitoriju.
 
+## Ovisnosti
+
+Svaki HeartPhrame modul zahtijeva
+`aaieduhr/heartphrame-framework:dev-main`. HFClean trenutačno povezuje ORM,
+Menu, Theme, Auth, E-mail, Notification, HTML Editor, Task, Comment, Workspace,
+Calendar i API. Obavezni redoslijed modula i opcionalne mogućnosti navedeni su
+u [matrici ovisnosti](docs/module-dependencies.md).
+
+Najmanje provjerene instalacije su samo Framework, Framework + Theme,
+Framework + Menu te Framework + Theme + Menu. Moduli s bazom dodaju ORM i svoje
+dokumentirane domenske ovisnosti. Composer automatski razrješava sve tranzitivne
+ovisnosti.
+
 ## Preduvjeti
 
 - PHP 8.2 ili noviji

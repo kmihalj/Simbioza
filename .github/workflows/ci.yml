@@ -38,3 +38,24 @@ jobs:
 
       - name: Run quality and test suite / Pokreni provjere i testove
         run: composer on-commit
+
+  clean-install-sqlite:
+    name: Clean module matrix / Čista matrica modula
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out application / Dohvati aplikaciju
+        uses: actions/checkout@v5
+
+      - name: Set up PHP / Postavi PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pdo, pdo_sqlite, simplexml, tokenizer, xmlwriter, zip
+          coverage: none
+
+      - name: Resolve verifier dependencies / Dohvati ovisnosti alata
+        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Verify clean module combinations / Provjeri čiste kombinacije modula
+        run: composer clean-matrix

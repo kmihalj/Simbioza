@@ -42,3 +42,21 @@ test-php:
   parallel:
     matrix:
       - PHP_IMAGE_TAG: ["82", "83", "84", "08"]
+
+# HR: Zasebno provjerava da svaki minimalni skup modula radi iz čiste instalacije.
+# EN: Separately verifies every minimal module set from a clean installation.
+clean-install-sqlite:
+  tags:
+    - APPTESTAAIHREDUDOCKER
+  stage: test
+  image: cicnavi/dap:08
+  variables:
+    COMPOSER_AUTH: >
+      {
+        "gitlab-token": {
+          "gitlab.srce.hr": "${CI_JOB_TOKEN}"
+        }
+      }
+  script:
+    - composer update --with-all-dependencies --no-interaction --no-progress --no-ansi --prefer-dist --optimize-autoloader --ignore-platform-reqs
+    - composer clean-matrix
