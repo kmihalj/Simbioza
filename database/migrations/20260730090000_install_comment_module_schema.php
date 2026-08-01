@@ -8,5 +8,5 @@ declare(strict_types=1);
  * EN: The HFClean initial Comment installation uses the module-owned single
  *     migration.
  */
-return require dirname(__DIR__, 3)
-    . '/heartphrame-module-comment/resources/migrations/initial_comment_schema.php';
+return require dirname(__DIR__, 2)
+    . '/vendor/aaieduhr/heartphrame-module-comment/resources/migrations/initial_comment_schema.php';
