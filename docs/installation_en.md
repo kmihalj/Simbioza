@@ -86,6 +86,10 @@ php scripts/verify_clean_install_matrix.php \
 ```
 
 The matrix tool never writes database credentials to its JSON report.
+The HFClean CI workflow runs every minimal module combination on SQLite and the
+complete module set on clean PostgreSQL and MySQL service databases. This keeps
+Composer resolution, migration installation, CLI boot, and the HTTP homepage
+covered on every supported database family.
 
 ## 6. Web server
 

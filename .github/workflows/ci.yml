@@ -59,3 +59,69 @@ jobs:
 
       - name: Verify clean module combinations / Provjeri čiste kombinacije modula
         run: composer clean-matrix
+
+  clean-install-network-databases:
+    name: Clean PostgreSQL and MySQL / Čisti PostgreSQL i MySQL
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: heartphrame_matrix
+          POSTGRES_USER: heartphrame_matrix
+          POSTGRES_PASSWORD: matrix-secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: heartphrame_matrix
+          MYSQL_USER: heartphrame_matrix
+          MYSQL_PASSWORD: matrix-secret
+          MYSQL_ROOT_PASSWORD: matrix-root-secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent -h localhost -uroot -pmatrix-root-secret"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out application / Dohvati aplikaciju
+        uses: actions/checkout@v5
+
+      - name: Set up PHP / Postavi PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, simplexml, tokenizer, xmlwriter, zip
+          coverage: none
+
+      - name: Resolve verifier dependencies / Dohvati ovisnosti alata
+        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Verify PostgreSQL clean installation / Provjeri čistu PostgreSQL instalaciju
+        env:
+          HPH_MATRIX_DB_HOST: 127.0.0.1
+          HPH_MATRIX_DB_PORT: 5432
+          HPH_MATRIX_DB_NAME: heartphrame_matrix
+          HPH_MATRIX_DB_USER: heartphrame_matrix
+          HPH_MATRIX_DB_PASSWORD: matrix-secret
+        run: php scripts/verify_clean_install_matrix.php --case=all --database=pgsql
+
+      - name: Verify MySQL clean installation / Provjeri čistu MySQL instalaciju
+        env:
+          HPH_MATRIX_DB_HOST: 127.0.0.1
+          HPH_MATRIX_DB_PORT: 3306
+          HPH_MATRIX_DB_NAME: heartphrame_matrix
+          HPH_MATRIX_DB_USER: heartphrame_matrix
+          HPH_MATRIX_DB_PASSWORD: matrix-secret
+        run: php scripts/verify_clean_install_matrix.php --case=all --database=mysql

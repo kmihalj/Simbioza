@@ -116,3 +116,7 @@ php scripts/verify_clean_install_matrix.php \
 Podržane vrijednosti su `sqlite`, `pgsql`, `mysql` i `mariadb`. Koristite
 zasebnu praznu bazu jer test instalira cijelu shemu. JSON izvještaj sadrži
 driver i rezultate, ali nikada pristupne varijable okruženja.
+
+CI priprema jednokratne PostgreSQL i MySQL servisne baze te na obje pokreće
+kandidat sa svim modulima. SQLite CI dodatno pokreće svaki minimalni slučaj,
+uključujući samo Framework, samo Theme, samo Menu te Theme zajedno s Menuom.

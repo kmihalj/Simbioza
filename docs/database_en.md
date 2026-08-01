@@ -115,3 +115,8 @@ php scripts/verify_clean_install_matrix.php \
 Supported values are `sqlite`, `pgsql`, `mysql`, and `mariadb`. Use a dedicated
 empty database because the test installs the complete schema. The JSON report
 contains the driver and results but never the credential environment variables.
+
+CI provisions disposable PostgreSQL and MySQL service databases and runs the
+complete-module candidate against both. SQLite CI additionally runs every
+minimal module case, including Framework-only, Theme-only, Menu-only, and
+Theme plus Menu.

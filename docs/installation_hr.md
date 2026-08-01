@@ -86,6 +86,10 @@ php scripts/verify_clean_install_matrix.php \
 ```
 
 Alat nikada ne sprema pristupne podatke baze u JSON izvještaj.
+HFClean CI tijek rada pokreće svaku minimalnu kombinaciju modula na SQLiteu te
+potpuni skup modula na čistim PostgreSQL i MySQL servisnim bazama. Tako se pri
+svakom pokretanju provjeravaju Composer razrješavanje, instalacija migracija,
+pokretanje CLI-ja i HTTP naslovnica na svakoj podržanoj obitelji baza.
 
 ## 6. Web-poslužitelj
 
