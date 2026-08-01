@@ -12,6 +12,10 @@ inside a directory below the operating system's temporary
 `heartphrame-clean-matrix` directory. The runner refuses to work outside that
 directory and removes the project when it finishes.
 
+The Workspace, page, draft, and published versions created by the browser test
+are synthetic fixtures, not starter or demonstration content. They are never
+copied into HFClean, a module package, or an administrator's installation.
+
 ## What is covered
 
 - the home page and static assets load through the real front controller;
@@ -22,6 +26,13 @@ directory and removes the project when it finishes.
 - a guest is redirected from Auth administration to login;
 - a local administrator can log in, open Auth settings, and log out;
 - a logged-in non-administrator receives HTTP `403` for Auth settings;
+- an administrator creates an empty Workspace and page through the real UI;
+- the first editor save-and-publish action becomes the reader version;
+- a later save remains a private shared draft while the regular view keeps
+  showing the preceding immutable publication;
+- publishing that draft changes the reader version while history retains the
+  initial document and both immutable publications;
+- a historical-version view still renders the first published body;
 - absent and invalid Bearer keys receive the same RFC problem response;
 - a valid key can read API discovery and `/api/v1/me` without password data;
 - an administrator key completes a real Workspace create/read API cycle.

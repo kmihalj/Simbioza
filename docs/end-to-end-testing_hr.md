@@ -12,6 +12,10 @@ direktoriju ispod privremenog sistemskog korijena
 `heartphrame-clean-matrix`. Runner odbija raditi izvan tog korijena i nakon
 završetka uklanja projekt.
 
+Workspace, stranica, nacrt i objavljene verzije koje stvara browser test
+sintetički su testni podaci, a ne početni ili demonstracijski sadržaj. Nikada se
+ne kopiraju u HFClean, paket modula ni administratorsku instalaciju.
+
 ## Što se provjerava
 
 - naslovnica i statičke datoteke učitavaju se kroz stvarni front controller;
@@ -22,6 +26,13 @@ završetka uklanja projekt.
 - gost se s Auth administracije preusmjerava na prijavu;
 - lokalni administrator može se prijaviti, otvoriti Auth postavke i odjaviti;
 - prijavljeni korisnik koji nije administrator dobiva HTTP `403` za Auth postavke;
+- administrator kroz stvarno sučelje kreira prazno područje i stranicu;
+- prva radnja spremanja i objave u editoru postaje verzija za čitatelje;
+- kasnije spremanje ostaje privatni zajednički nacrt, dok običan pregled i dalje
+  prikazuje prethodnu nepromjenjivu objavu;
+- objava tog nacrta mijenja verziju za čitatelje, a povijest zadržava početni
+  dokument i obje nepromjenjive objave;
+- pregled povijesne verzije i dalje prikazuje prvo objavljeno tijelo;
 - nedostajući i neispravan Bearer ključ vraćaju isti RFC problem odgovor;
 - valjani ključ čita API discovery i `/api/v1/me` bez podataka o lozinci;
 - administratorski ključ izvršava stvarni Workspace create/read API tijek.

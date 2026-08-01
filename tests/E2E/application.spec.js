@@ -89,6 +89,91 @@ test.describe('browser flows', () => {
     expect(response?.status()).toBe(403);
     await expect(page.locator('body')).toContainText(/Access denied|Pristup nije dozvoljen/i);
   });
+
+  test('administrator publishes content while drafts and immutable versions remain separated', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    const workspaceSlug = 'e2e-content-workspace';
+    const pageSlug = 'e2e-published-page';
+    const firstPublishedBody = 'First published body from the isolated E2E test.';
+    const secondDraftBody = 'Second draft body that must stay private until publication.';
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/workspaces/manage');
+    await page.getByRole('textbox', { name: 'Name', exact: true }).fill('E2E Content Workspace');
+    await page.getByRole('textbox', { name: 'Slug', exact: true }).fill(workspaceSlug);
+    await page.getByRole('textbox', { name: 'Description' }).fill(
+      'Temporary workspace for content lifecycle automation.',
+    );
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/workspaces/manage'
+        && url.searchParams.get('workspace') === workspaceSlug),
+      page.getByRole('button', { name: 'Save', exact: true }).click(),
+    ]);
+
+    await page.getByRole('link', { name: 'Open Workspace' }).click();
+    await page.getByRole('button', { name: 'New page' }).click();
+    await page.getByRole('textbox', { name: 'Page title' }).fill('E2E Published Page');
+    await page.getByRole('textbox', { name: 'Slug', exact: true }).fill(pageSlug);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/editor-html'
+        && url.searchParams.get('document') === pageSlug),
+      page.getByRole('button', { name: 'Create and edit' }).click(),
+    ]);
+
+    const editorSurface = page.locator('[data-editor-html-surface]');
+    await expect(editorSurface).toBeVisible();
+    await editorSurface.fill(firstPublishedBody);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`
+        && url.searchParams.get('saved') === '1'),
+      page.getByRole('button', { name: 'Save and publish' }).click(),
+    ]);
+    await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
+
+    await page.getByRole('link', { name: 'Edit', exact: true }).click();
+    await expect(editorSurface).toBeVisible();
+    await editorSurface.fill(secondDraftBody);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/editor-html'
+        && url.searchParams.get('saved') === '1'),
+      page.getByRole('button', { name: 'Save', exact: true }).click(),
+    ]);
+    await expect(page.getByText('Shared draft', { exact: true })).toBeVisible();
+
+    await page.getByRole('link', { name: 'View', exact: true }).click();
+    await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
+    await expect(page.getByText(secondDraftBody, { exact: true })).toHaveCount(0);
+
+    await page.getByRole('link', { name: 'Edit draft', exact: true }).click();
+    await expect(editorSurface).toContainText(secondDraftBody);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`
+        && url.searchParams.get('saved') === '1'),
+      page.getByRole('button', { name: 'Save and publish' }).click(),
+    ]);
+    await expect(page.getByRole('heading', { name: secondDraftBody, exact: true })).toBeVisible();
+    await expect(page.getByText(firstPublishedBody, { exact: true })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'History' }).click();
+    const historyDialog = page.getByRole('dialog', { name: 'Version history' });
+    await expect(historyDialog).toBeVisible();
+    await expect(historyDialog.getByRole('row')).toHaveCount(4);
+    await expect(historyDialog).toContainText('#3');
+    await expect(historyDialog).toContainText('#2');
+    await expect(historyDialog).toContainText('#1');
+
+    const firstPublicationLink = historyDialog.locator('a[href*="version=2"]');
+    await expect(firstPublicationLink).toHaveCount(1);
+    const firstPublicationUrl = await firstPublicationLink.getAttribute('href');
+    expect(firstPublicationUrl).not.toBeNull();
+    const firstPublicationResponse = await page.goto(firstPublicationUrl);
+    expect(firstPublicationResponse?.status()).toBe(200);
+    await expect(page).toHaveURL((url) => url.pathname === '/editor-html/version'
+      && url.searchParams.get('version') === '2');
+    await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
+    await expect(page.getByText(secondDraftBody, { exact: true })).toHaveCount(0);
+  });
 });
 
 test.describe.serial('versioned API flows', () => {
