@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace HFClean\Tools;
 
+use AaiEduHr\HeartPhrameModuleApi\Service\ApiScopeRegistry;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthApiKeyService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthSettingsService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
@@ -96,8 +97,13 @@ function assertSafeE2eProject(string $projectDirectory, string $temporaryRoot): 
 }
 
 /**
- * HR: Prilagođava samo privremenu aplikaciju za lokalni HTTP test bez sigurnog cookieja.
- * EN: Adjusts only the temporary application for a local HTTP test without a secure cookie.
+ * HR: Prilagođava samo privremenu aplikaciju za lokalni HTTP test bez sigurnog
+ *     cookieja te unaprijed postavlja nedostupni lokalni SMTP. Time se stvarni
+ *     e-mail red čekanja može provjeriti bez vanjskog mrežnog poziva.
+ *
+ * EN: Adjusts only the temporary application for a local HTTP test without a
+ *     secure cookie and preconfigures an unavailable local SMTP endpoint. This
+ *     allows the real e-mail queue to be tested without an external network call.
  */
 function configureE2eApplication(string $projectDirectory): void
 {
@@ -122,16 +128,61 @@ function configureE2eApplication(string $projectDirectory): void
     $session['options'] = $sessionOptions;
     $config['session'] = $session;
     writeMatrixPhpConfig($configPath, $config);
+
+    $apiConfigPath = $projectDirectory . '/config/api.php';
+    $apiConfigValue = require $apiConfigPath;
+    if (!is_array($apiConfigValue)) {
+        throw new RuntimeException('E2E API configuration is invalid.');
+    }
+
+    $apiConfig = matrixStringKeyedArray($apiConfigValue, 'E2E API configuration');
+    $cors = is_array($apiConfig['cors'] ?? null) ? $apiConfig['cors'] : [];
+    $cors['enabled'] = true;
+    $cors['allowed_origins'] = ['https://client.example'];
+    $apiConfig['cors'] = $cors;
+    writeMatrixPhpConfig($apiConfigPath, $apiConfig);
+
+    writeMatrixPhpConfig($projectDirectory . '/config/email.php', [
+        'enabled' => true,
+        'smtp' => [
+            'host' => '127.0.0.1',
+            'port' => 9,
+            'encryption' => 'none',
+            'username' => '',
+            'password' => '',
+            'connect_timeout' => 1,
+            'io_timeout' => 1,
+            'verify_peer' => false,
+            'allow_self_signed' => false,
+        ],
+        'sender' => [
+            'email' => 'e2e@example.invalid',
+            'name' => 'HFClean E2E',
+        ],
+        'application_base_url' => 'http://127.0.0.1',
+        'notifications_enabled' => false,
+        'worker' => [
+            'max_attempts' => 1,
+            'retry_delay_seconds' => 1,
+        ],
+        'menu' => ['auto_register_settings' => true],
+    ]);
 }
 
 /**
  * HR: U praznu privremenu bazu dodaje administratorskog i običnog korisnika te
- *     vraća jednokratni administratorski API token bez njegova ispisa u log.
+ *     vraća njihove jednokratne API tokene bez ispisa u log. Oba ključa dobivaju
+ *     cijeli dinamički katalog scopeova kako bi E2E mogao dokazati da scope sam
+ *     po sebi nikada ne podiže stvarna prava običnog korisnika.
  *
  * EN: Adds an administrator and a regular user to the empty temporary database
- *     and returns a one-time administrator API token without logging it.
+ *     and returns their one-time API tokens without logging them. Both keys
+ *     receive the complete dynamic scope catalog so E2E can prove that a scope
+ *     alone never elevates the regular user's real permissions.
+ *
+ * @return array{admin_api_token:string,user_api_token:string}
  */
-function seedE2eFixtures(string $projectDirectory): string
+function seedE2eFixtures(string $projectDirectory): array
 {
     putenv('HPH_APP_PATH=' . $projectDirectory);
     putenv('HPH_CONFIG_PATH=' . $projectDirectory . '/config');
@@ -165,27 +216,51 @@ function seedE2eFixtures(string $projectDirectory): string
         null,
         false,
     );
-    $users->createLocalUser(
+    $user = $users->createLocalUser(
         E2E_USER_LOGIN,
         'E2E User',
         'e2e-user@example.invalid',
         E2E_USER_PASSWORD,
     );
+    $userId = is_numeric($user['id'] ?? null) ? (int)$user['id'] : 0;
+    if ($userId <= 0) {
+        throw new RuntimeException('The E2E regular user was not created.');
+    }
 
     $apiKeys = $container->get(AuthApiKeyService::class);
     if (!$apiKeys instanceof AuthApiKeyService) {
         throw new RuntimeException('The Auth API-key service is unavailable in the all-module installation.');
     }
 
-    return $apiKeys->issue(
-        $adminId,
-        'HFClean E2E',
-        'Ephemeral key for the isolated browser and API test suite.',
-        ['workspace:read', 'workspace:manage'],
-        [],
-        null,
-        $adminId,
-    )->plainTextToken;
+    $scopeRegistry = $container->get(ApiScopeRegistry::class);
+    if (!$scopeRegistry instanceof ApiScopeRegistry) {
+        throw new RuntimeException('The API scope registry is unavailable in the all-module installation.');
+    }
+    $scopes = $scopeRegistry->all();
+    if ($scopes === []) {
+        throw new RuntimeException('The all-module E2E scope catalog is empty.');
+    }
+
+    return [
+        'admin_api_token' => $apiKeys->issue(
+            $adminId,
+            'HFClean E2E administrator',
+            'Ephemeral administrator key for the isolated E2E suite.',
+            $scopes,
+            [],
+            null,
+            $adminId,
+        )->plainTextToken,
+        'user_api_token' => $apiKeys->issue(
+            $userId,
+            'HFClean E2E regular user',
+            'Ephemeral regular-user key for authorization boundary tests.',
+            $scopes,
+            [],
+            null,
+            $adminId,
+        )->plainTextToken,
+    ];
 }
 
 /**
@@ -340,7 +415,7 @@ function runEndToEndSuite(): int
         }
 
         configureE2eApplication($projectDirectory);
-        $apiToken = seedE2eFixtures($projectDirectory);
+        $fixtures = seedE2eFixtures($projectDirectory);
         $port = e2eFreePort();
         $baseUrl = 'http://127.0.0.1:' . $port;
         $server = startE2eServer($sourceRoot, $projectDirectory, $port);
@@ -367,7 +442,8 @@ function runEndToEndSuite(): int
                 'HPH_E2E_ADMIN_PASSWORD' => E2E_ADMIN_PASSWORD,
                 'HPH_E2E_USER_LOGIN' => E2E_USER_LOGIN,
                 'HPH_E2E_USER_PASSWORD' => E2E_USER_PASSWORD,
-                'HPH_E2E_API_TOKEN' => $apiToken,
+                'HPH_E2E_API_TOKEN' => $fixtures['admin_api_token'],
+                'HPH_E2E_USER_API_TOKEN' => $fixtures['user_api_token'],
             ],
         );
         fwrite(STDOUT, $testResult->output);

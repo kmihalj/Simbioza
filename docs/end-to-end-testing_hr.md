@@ -18,24 +18,28 @@ ne kopiraju u HFClean, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-- naslovnica i statičke datoteke učitavaju se kroz stvarni front controller;
-- mobilni izbornik otvara se kao desni bočni panel i ponovno se zatvara;
-- vizual podešen u hero postavkama učitava se na mobilnom viewportu;
-- iste Home i Inner postavke veličine daju jednaku renderiranu visinu heroa;
-- hero dolazi do ruba viewporta bez horizontalnog overflowa;
-- gost se s Auth administracije preusmjerava na prijavu;
-- lokalni administrator može se prijaviti, otvoriti Auth postavke i odjaviti;
-- prijavljeni korisnik koji nije administrator dobiva HTTP `403` za Auth postavke;
-- administrator kroz stvarno sučelje kreira prazno područje i stranicu;
-- prva radnja spremanja i objave u editoru postaje verzija za čitatelje;
-- kasnije spremanje ostaje privatni zajednički nacrt, dok običan pregled i dalje
-  prikazuje prethodnu nepromjenjivu objavu;
-- objava tog nacrta mijenja verziju za čitatelje, a povijest zadržava početni
-  dokument i obje nepromjenjive objave;
-- pregled povijesne verzije i dalje prikazuje prvo objavljeno tijelo;
-- nedostajući i neispravan Bearer ključ vraćaju isti RFC problem odgovor;
-- valjani ključ čita API discovery i `/api/v1/me` bez podataka o lozinci;
-- administratorski ključ izvršava stvarni Workspace create/read API tijek.
+Svih 35 scenarija pokriva svaki modul koji HFClean isporučuje. Provjerava se
+javno ponašanje, a ne privatni detalji implementacije.
+
+| Područje | End-to-end pokrivenost |
+|---|---|
+| Čisti host i ORM | Nova aplikacija, SQLite baza, sve službene migracije, stvarni front controller, sesije, logovi, cache direktoriji i sigurno uklanjanje. |
+| Theme i Menu | Desktop/mobilna navigacija, desni mobilni panel, pamćenje jezika, spremanje menija, responzivni hero vizual, jednake Home/Inner veličine, prikaz od ruba do ruba, kopiranje teme, izvoz paketa, prijenosni backup, brisanje i uvoz backupa. |
+| Auth | Preusmjeravanje gosta, ovlasti administratora i običnog korisnika, lokalna prijava/odjava, profil i postavka obavijesti, povratna promjena lozinke, CRUD grupa/korisnika, članstva, ETagovi, siguran izlaz, audit i čišćenje. |
+| API | Bearer autentikacija, dinamički scopeovi, discovery, izvorni OpenAPI 3.1, CORS preflight, paginacija, RFC 9457 problemi, rate-limit zaglavlja, idempotentni replay, `If-Match`, zahtjev za osobni ključ, odobrenje administratora, jednokratni prikaz i odvajanje scopea od domenskih prava. |
+| Workspace | Kreiranje, skriveni nedopušteni dohvat, pretraga subjekata, ACL područja i čvorova, poveznice stabla, potpuni poredak, izmjene, brisanje čvora, soft-delete područja, popis obrisanih i oporavak. |
+| HTML Editor | Strukturirani nacrt, odbijanje zastarjele revizije, slanje na pregled, granica prava objavljivača, objava, nepromjenjive verzije, renderirani izlaz, prijevodi, povrat verzije, odbacivanje nacrta, brisanje stranice i uklanjanje javne Workspace rute. |
+| Privitci | Obični multipart upload, odbijanje nepodržane idempotentnosti uploada, prijenos i prekid chunkova, vidljivost, popis, izmjena metapodataka, byte-for-byte preuzimanje i brisanje. |
+| Task | Otkrivanje iz verzioniranog sadržaja dokumenta, ETagom zaštićena promjena stanja, idempotentni replay i povijest s jednim stvarnim prijelazom. |
+| Notification | Domenske obavijesti nakon reviewa i prijave komentara, API inbox/read/read-all te ekran obavijesti prijavljenog korisnika. |
+| Comment | Stvaranje komentara na stvarnoj objavljenoj stranici, reakcija, prijava neprimjerenog sadržaja, obavijest administratora i moderatorsko brisanje. |
+| Calendar i CalDAV | ACL kalendara, CRUD događaja, obavezni vremenski rasponi, ICS izvoz, ETagovi, well-known discovery, `HEAD`, `OPTIONS`, principal/collection `PROPFIND`, `REPORT` te `PUT`/`GET`/`DELETE` kalendarskog objekta. |
+| Webhookovi | Vlasništvo pretplate, jednokratna tajna, ETag izmjena, rotacija tajne, dostava nastala stvarnom domenskom promjenom, pregled/retry dostave i zaštićeno brisanje. |
+| Email | Spremanje postavki, red kroz stvarni outbox, trenutačni pokušaj prema namjerno nedostupnom lokalnom SMTP-u i vidljiv konačni neuspjeh bez vanjske isporuke. |
+
+Negativni tokovi namjerna su pokrivenost: skriveni odgovori `404`, zabrane `403`,
+neispravni ključevi, nedostajući ili zastarjeli preduvjeti, neispravni rasponi i
+nepodržana idempotentnost uploada moraju ostati stabilni ugovori.
 
 ## Prvo pokretanje
 
@@ -62,6 +66,10 @@ composer e2e -- --local
 
 Lokalni način koristi path repozitorije samo za module koji pripadaju ovom
 projektu. Nikada ne zamjenjuje uzvodni Framework ni Demo modul.
+
+Lokalni prolaz obavezan je kada se zajedno mijenjaju dva ili više susjednih
+modula. Zadani prolaz zatim mora proći i nakon što su commitovi tih modula
+dostupni na udaljenim granama `dev-main`.
 
 ## Istraživanje greške
 

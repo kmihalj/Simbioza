@@ -56,7 +56,7 @@ integraciju.
 ```text
 ORM ----------> Framework
 Auth ---------> ORM + Framework
-API ----------> Auth + Framework
+API ----------> Auth + ORM + Framework
 Calendar -----> Auth + ORM + Framework
 Email --------> Auth + ORM + Framework
 Notification -> Auth + ORM + Framework

@@ -1,32 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { e2eEnvironment, login } from './helpers.js';
 
-const adminLogin = process.env.HPH_E2E_ADMIN_LOGIN;
-const adminPassword = process.env.HPH_E2E_ADMIN_PASSWORD;
-const userLogin = process.env.HPH_E2E_USER_LOGIN;
-const userPassword = process.env.HPH_E2E_USER_PASSWORD;
-const apiToken = process.env.HPH_E2E_API_TOKEN;
-
-for (const [name, value] of Object.entries({
-  HPH_E2E_ADMIN_LOGIN: adminLogin,
-  HPH_E2E_ADMIN_PASSWORD: adminPassword,
-  HPH_E2E_USER_LOGIN: userLogin,
-  HPH_E2E_USER_PASSWORD: userPassword,
-  HPH_E2E_API_TOKEN: apiToken,
-})) {
-  if (!value) {
-    throw new Error(`${name} is required. Run the suite through composer e2e.`);
-  }
-}
-
-async function login(page, loginIdentifier, password) {
-  await page.goto('/auth/login');
-  await page.locator('#auth_login').fill(loginIdentifier);
-  await page.locator('#auth_password').fill(password);
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.startsWith('/auth/login')),
-    page.locator('#local_override_login button[type="submit"]').click(),
-  ]);
-}
+const {
+  adminLogin,
+  adminPassword,
+  userLogin,
+  userPassword,
+  adminApiToken: apiToken,
+} = e2eEnvironment();
 
 test.describe('browser flows', () => {
   test('mobile navigation, hero artwork, equal hero sizes, and edge-to-edge layout work', async ({ page }) => {

@@ -18,24 +18,28 @@ copied into HFClean, a module package, or an administrator's installation.
 
 ## What is covered
 
-- the home page and static assets load through the real front controller;
-- the mobile menu opens as a right-side drawer and closes again;
-- the configured hero artwork loads on a mobile viewport;
-- equal Home and Inner hero-size settings produce equal rendered heights;
-- the hero reaches the viewport edge without horizontal overflow;
-- a guest is redirected from Auth administration to login;
-- a local administrator can log in, open Auth settings, and log out;
-- a logged-in non-administrator receives HTTP `403` for Auth settings;
-- an administrator creates an empty Workspace and page through the real UI;
-- the first editor save-and-publish action becomes the reader version;
-- a later save remains a private shared draft while the regular view keeps
-  showing the preceding immutable publication;
-- publishing that draft changes the reader version while history retains the
-  initial document and both immutable publications;
-- a historical-version view still renders the first published body;
-- absent and invalid Bearer keys receive the same RFC problem response;
-- a valid key can read API discovery and `/api/v1/me` without password data;
-- an administrator key completes a real Workspace create/read API cycle.
+The 35 scenarios cover every module shipped by HFClean. They exercise public
+behavior rather than private implementation details.
+
+| Area | End-to-end coverage |
+|---|---|
+| Clean host and ORM | A new application, SQLite database, all official migrations, real front controller, sessions, logs, cache directories, and teardown safety. |
+| Theme and Menu | Desktop/mobile navigation, right-side mobile drawer, locale persistence, menu save, responsive hero artwork, equal Home/Inner sizes, edge-to-edge layout, theme clone, package export, portable backup, deletion, and backup import. |
+| Auth | Guest redirect, administrator and regular-user authorization, local login/logout, profile and notification preference updates, reversible password change, group/user CRUD, memberships, ETags, safe output, audit records, and cleanup. |
+| API | Bearer authentication, dynamic scopes, discovery, raw OpenAPI 3.1, CORS preflight, pagination, RFC 9457 problems, rate-limit headers, idempotent replay, `If-Match`, personal key request, administrator approval, one-time reveal, and scope/domain-permission separation. |
+| Workspace | Creation, concealed unauthorized reads, subject search, workspace and node ACLs, tree links, complete ordering, updates, node deletion, soft deletion, deleted list, and restore. |
+| HTML Editor | Structured draft creation, concurrent revision rejection, review, publisher boundary, publication, immutable versions, rendered output, translations, version restore, draft discard, page deletion, and public Workspace route removal. |
+| Attachments | Standard multipart upload, rejection of unsupported upload idempotency, chunk upload and cancellation, visibility, listing, metadata update, byte-for-byte download, and deletion. |
+| Task | Discovery from versioned document content, ETag-protected state change, idempotent replay, and one-entry state history. |
+| Notification | Review and comment-report domain notifications, API inbox/read/read-all behavior, and the authenticated notification screen. |
+| Comment | Comment creation on a real published page, reaction, inappropriate-content report, administrator notification, and moderator deletion. |
+| Calendar and CalDAV | Calendar ACL, event CRUD, required ranges, ICS export, ETags, well-known discovery, `HEAD`, `OPTIONS`, principal/collection `PROPFIND`, `REPORT`, and calendar-object `PUT`/`GET`/`DELETE`. |
+| Webhooks | Subscription ownership, one-time secret, ETag update, secret rotation, a delivery created by a real domain mutation, delivery inspection/retry, and protected deletion. |
+| Email | Settings persistence, queueing through the real outbox, an immediate attempt against an intentionally unavailable local SMTP endpoint, and observable terminal failure without external delivery. |
+
+Negative paths are intentional coverage: concealed `404` responses, `403`
+permission failures, invalid keys, missing or stale preconditions, invalid
+ranges, and unsupported upload idempotency must remain stable contracts.
 
 ## First run
 
@@ -62,6 +66,10 @@ composer e2e -- --local
 
 The local mode uses path repositories only for the modules that belong to this
 project. It never substitutes the upstream Framework or Demo module.
+
+The local run is the required check whenever two or more sibling modules are
+changed together. The default run must then pass as well after those module
+commits are available on their remote `dev-main` branches.
 
 ## Debug a failure
 
