@@ -341,8 +341,36 @@ test.describe('module browser surfaces', () => {
     await page.goto('/auth/logout');
 
     await login(page, adminLogin, adminPassword);
+    await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/notifications');
     await expect(page.locator('body')).toContainText(/comment|komentar/i);
+    const notificationColors = await page.locator('.card').evaluate((card) => {
+      const bodyText = card.querySelector('.text-body');
+      const secondaryText = card.querySelector('.text-body-secondary');
+      if (!(bodyText instanceof HTMLElement) || !(secondaryText instanceof HTMLElement)) {
+        throw new Error('Notification text elements are missing.');
+      }
+
+      // HR: Razrješava varijablu teme u isti izračunati RGB oblik koji vraća preglednik.
+      // EN: Resolves a theme variable to the same computed RGB form returned by the browser.
+      const colorFromVariable = (name) => {
+        const probe = document.createElement('span');
+        probe.style.color = `var(${name})`;
+        card.append(probe);
+        const color = getComputedStyle(probe).color;
+        probe.remove();
+        return color;
+      };
+
+      return {
+        body: getComputedStyle(bodyText).color,
+        expectedBody: colorFromVariable('--hph-body-text'),
+        secondary: getComputedStyle(secondaryText).color,
+        expectedSecondary: colorFromVariable('--hph-muted-text'),
+      };
+    });
+    expect(notificationColors.body).toBe(notificationColors.expectedBody);
+    expect(notificationColors.secondary).toBe(notificationColors.expectedSecondary);
     await page.goto(publicPath);
     const moderated = page.locator('article').filter({ hasText: 'E2E moderated comment' });
     page.once('dialog', (dialog) => dialog.accept());
