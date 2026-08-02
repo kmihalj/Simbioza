@@ -88,11 +88,16 @@ php scripts/verify_clean_install_matrix.php \
   --case=all --database=pgsql --local
 ```
 
-Alat nikada ne sprema pristupne podatke baze u JSON izvještaj.
+Nakon te clean-install provjere upotrijebite drugu praznu jednokratnu bazu za
+potpuni browser, API i performance skup naredbom
+`php scripts/run_e2e.php --local --database=pgsql` ili `--database=mysql`.
+Matrica i E2E alati nikada ne spremaju pristupne podatke baze u izvještaje ni
+metrike.
 HFClean CI tijek rada pokreće svaku minimalnu kombinaciju modula na SQLiteu te
-potpuni skup modula na čistim PostgreSQL i MySQL servisnim bazama. Tako se pri
-svakom pokretanju provjeravaju Composer razrješavanje, instalacija migracija,
-pokretanje CLI-ja i HTTP naslovnica na svakoj podržanoj obitelji baza.
+potpuni skup modula i svih 39 E2E scenarija na čistim PostgreSQL i MySQL
+servisnim bazama. Tako se na svakoj podržanoj obitelji baza provjeravaju
+Composer razrješavanje, migracije, CLI/HTTP pokretanje, funkcionalni tokovi i
+performance budžeti.
 
 ## 6. Web-poslužitelj
 

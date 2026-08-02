@@ -34,6 +34,10 @@ test.describe('browser flows', () => {
     const homeHeroHeight = await page.locator('.hph-hero').evaluate(
       (element) => element.getBoundingClientRect().height,
     );
+    const homeHeroStageHeight = await page.locator('.hph-hero__stage').evaluate(
+      (element) => element.getBoundingClientRect().height,
+    );
+    expect(homeHeroStageHeight).toBeGreaterThanOrEqual(256);
     await page.goto('/about');
     const innerHeroHeight = await page.locator('.hph-hero').evaluate(
       (element) => element.getBoundingClientRect().height,
@@ -47,6 +51,20 @@ test.describe('browser flows', () => {
     }));
     expect(Math.abs(layout.right - layout.viewportWidth)).toBeLessThanOrEqual(1);
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
+
+    await page.goto('/workspaces');
+    const mobileContentGeometry = await page.locator('.hph-page-stage').evaluate((stage) => {
+      const hero = stage.querySelector('.hph-hero')?.getBoundingClientRect();
+      const heroContent = stage.querySelector('.hph-hero__content')?.getBoundingClientRect();
+      const main = stage.querySelector('.hph-main-content')?.getBoundingClientRect();
+
+      return {
+        contentClearance: (main?.top ?? 0) - (heroContent?.bottom ?? 0),
+        contentOverlap: (hero?.bottom ?? 0) - (main?.top ?? 0),
+      };
+    });
+    expect(mobileContentGeometry.contentOverlap).toBeGreaterThanOrEqual(120);
+    expect(mobileContentGeometry.contentClearance).toBeGreaterThanOrEqual(16);
   });
 
   test('guest is redirected, administrator is authorized, and logout clears the session', async ({ page }) => {

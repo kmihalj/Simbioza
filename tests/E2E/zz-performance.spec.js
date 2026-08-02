@@ -49,25 +49,35 @@ function requestEvent(marker) {
  */
 function expectRecordedBudget(name, marker, budget) {
   const events = queryEvents(marker);
-  const sql = events.map((event) => event.sql);
+  const sql = events.map((event) => event.sql.replaceAll('`', '"'));
+  const lowerSql = sql.map((statement) => statement.toLowerCase());
   expect(events.length, `${name} exceeded its SQL query budget`).toBeLessThanOrEqual(budget);
   expect(
-    sql.filter((statement) => statement.includes('information_schema.tables')
-      || statement.includes('sqlite_master WHERE type = ?')).length,
+    lowerSql.filter((statement) => statement.includes('information_schema.tables')
+      || statement.includes('sqlite_master where type = ?')).length,
     `${name} repeated schema-table discovery`,
   ).toBeLessThanOrEqual(1);
   expect(
-    sql.filter((statement) => statement.includes('FROM "auth_provider_settings"')).length,
+    lowerSql.filter((statement) => statement.includes('from "auth_provider_settings"')).length,
     `${name} repeated Auth provider-settings reads`,
   ).toBeLessThanOrEqual(1);
   expect(
-    sql.some((statement) => statement.startsWith('UPDATE "auth_groups"')),
+    lowerSql.some((statement) => statement.startsWith('update "auth_groups"')),
     `${name} triggered an unexpected Auth group repair write`,
   ).toBe(false);
   expect(
-    sql.some((statement) => statement.startsWith('UPDATE "auth_api_keys" SET')),
+    lowerSql.some((statement) => statement.startsWith('update "auth_api_keys" set')),
     `${name} triggered an unexpected API-key usage write`,
   ).toBe(false);
+  expect(
+    lowerSql.filter((statement) => statement.includes('from "workspace_acl"')).length,
+    `${name} repeated Workspace ACL reads`,
+  ).toBeLessThanOrEqual(1);
+  expect(
+    lowerSql.filter((statement) => statement.startsWith('insert into "auth_user_provider_access"')
+      || statement.startsWith('update "auth_user_provider_access"')).length,
+    `${name} repeated Auth provider-access writes`,
+  ).toBeLessThanOrEqual(1);
 }
 
 /**
@@ -113,15 +123,15 @@ test('representative read paths remain inside measured SQL budgets', async ({ re
     request,
     'home',
     '/',
-    12,
+    6,
     { durationMs: 500, peakMemoryBytes: 32 * 1024 * 1024, responseBytes: 16 * 1024 },
     false,
   );
-  await expectQueryBudget(request, 'current-user', '/api/v1/me', 16, apiReadBudget);
-  await expectQueryBudget(request, 'users', '/api/v1/users?page[limit]=20', 30, apiReadBudget);
-  await expectQueryBudget(request, 'workspaces', '/api/v1/workspaces?page[limit]=20', 24, apiReadBudget);
-  await expectQueryBudget(request, 'calendars', '/api/v1/calendars?page[limit]=20', 24, apiReadBudget);
-  await expectQueryBudget(request, 'notifications', '/api/v1/notifications?page[limit]=20', 20, apiReadBudget);
+  await expectQueryBudget(request, 'current-user', '/api/v1/me', 14, apiReadBudget);
+  await expectQueryBudget(request, 'users', '/api/v1/users?page[limit]=20', 20, apiReadBudget);
+  await expectQueryBudget(request, 'workspaces', '/api/v1/workspaces?page[limit]=20', 16, apiReadBudget);
+  await expectQueryBudget(request, 'calendars', '/api/v1/calendars?page[limit]=20', 16, apiReadBudget);
+  await expectQueryBudget(request, 'notifications', '/api/v1/notifications?page[limit]=20', 16, apiReadBudget);
 });
 
 test('Auth create and update mutations remain inside measured SQL budgets', async ({ request }) => {
@@ -146,7 +156,7 @@ test('Auth create and update mutations remain inside measured SQL budgets', asyn
     },
   });
   const created = await expectData(createdResponse, 201);
-  expectRecordedBudget('auth-create', createMarker, 64);
+  expectRecordedBudget('auth-create', createMarker, 45);
   expectRequestBudget('auth-create', createMarker, {
     durationMs: 2_000,
     peakMemoryBytes: 32 * 1024 * 1024,
@@ -164,7 +174,14 @@ test('Auth create and update mutations remain inside measured SQL budgets', asyn
     data: { attributes: { display_name: 'Updated Performance User' } },
   });
   expect((await expectData(updatedResponse)).display_name).toBe('Updated Performance User');
-  expectRecordedBudget('auth-update', updateMarker, 64);
+  expectRecordedBudget('auth-update', updateMarker, 40);
+  expect(
+    queryEvents(updateMarker)
+      .map((event) => event.sql.replaceAll('`', '"').toLowerCase())
+      .filter((statement) => statement.startsWith('insert into "auth_user_provider_access"')
+        || statement.startsWith('update "auth_user_provider_access"')),
+    'auth-update rewrote an unchanged provider-access matrix',
+  ).toHaveLength(0);
   expectRequestBudget('auth-update', updateMarker, {
     durationMs: 750,
     peakMemoryBytes: 32 * 1024 * 1024,
@@ -202,7 +219,7 @@ test('page creation, publication, and public rendering stay inside measured SQL 
       content: [{ type: 'html', html: '<h1>Performance Page</h1><p>Measured content.</p>' }],
     },
   }), 201);
-  expectRecordedBudget('page-create', createMarker, 65);
+  expectRecordedBudget('page-create', createMarker, 60);
   expectRequestBudget('page-create', createMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,
@@ -223,7 +240,7 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     }),
     data: {},
   }));
-  expectRecordedBudget('page-publish', publishMarker, 45);
+  expectRecordedBudget('page-publish', publishMarker, 42);
   expectRequestBudget('page-publish', publishMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,
@@ -235,7 +252,7 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     headers: { 'X-HPH-Performance-Run': publicMarker },
   });
   expect(publicResponse.status()).toBe(200);
-  expectRecordedBudget('page-public', publicMarker, 35);
+  expectRecordedBudget('page-public', publicMarker, 32);
   expectRequestBudget('page-public', publicMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,

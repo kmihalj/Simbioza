@@ -167,5 +167,98 @@ jobs:
             build/playwright-report
             build/test-results
             build/e2e-server.log
+            build/e2e-query-log.jsonl
+            build/e2e-request-log.jsonl
+          if-no-files-found: ignore
+          retention-days: 14
+
+  network-database-e2e:
+    name: PostgreSQL and MySQL E2E / PostgreSQL i MySQL E2E
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: heartphrame_e2e
+          POSTGRES_USER: heartphrame_e2e
+          POSTGRES_PASSWORD: e2e-secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: heartphrame_e2e
+          MYSQL_USER: heartphrame_e2e
+          MYSQL_PASSWORD: e2e-secret
+          MYSQL_ROOT_PASSWORD: e2e-root-secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent -h localhost -uroot -pe2e-root-secret"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out application / Dohvati aplikaciju
+        uses: actions/checkout@v5
+
+      - name: Set up PHP / Postavi PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pdo, pdo_mysql, pdo_pgsql, simplexml, tokenizer, xmlwriter, zip
+          coverage: none
+
+      - name: Set up latest Node.js / Postavi najnoviji Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: latest
+
+      - name: Resolve latest PHP dependencies / Dohvati najnovije PHP ovisnosti
+        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
+        run: npm install --no-package-lock
+
+      - name: Install Chromium / Instaliraj Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run PostgreSQL browser, API, and performance E2E / Pokreni PostgreSQL E2E
+        env:
+          HPH_MATRIX_DB_HOST: 127.0.0.1
+          HPH_MATRIX_DB_PORT: 5432
+          HPH_MATRIX_DB_NAME: heartphrame_e2e
+          HPH_MATRIX_DB_USER: heartphrame_e2e
+          HPH_MATRIX_DB_PASSWORD: e2e-secret
+        run: php scripts/run_e2e.php --database=pgsql
+
+      - name: Run MySQL browser, API, and performance E2E / Pokreni MySQL E2E
+        env:
+          HPH_MATRIX_DB_HOST: 127.0.0.1
+          HPH_MATRIX_DB_PORT: 3306
+          HPH_MATRIX_DB_NAME: heartphrame_e2e
+          HPH_MATRIX_DB_USER: heartphrame_e2e
+          HPH_MATRIX_DB_PASSWORD: e2e-secret
+        run: php scripts/run_e2e.php --database=mysql
+
+      - name: Upload network E2E diagnostics / Spremi mrežnu E2E dijagnostiku
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hfclean-network-e2e-diagnostics
+          path: |
+            build/playwright-report
+            build/test-results
+            build/e2e-server-*.log
+            build/e2e-query-log-*.jsonl
+            build/e2e-request-log-*.jsonl
           if-no-files-found: ignore
           retention-days: 14

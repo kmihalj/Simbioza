@@ -88,11 +88,16 @@ php scripts/verify_clean_install_matrix.php \
   --case=all --database=pgsql --local
 ```
 
-The matrix tool never writes database credentials to its JSON report.
+After that clean-install check, use a second empty disposable database to run
+the complete browser, API, and performance suite with
+`php scripts/run_e2e.php --local --database=pgsql` or `--database=mysql`.
+The matrix and E2E tools never write database credentials to their reports or
+metrics.
 The HFClean CI workflow runs every minimal module combination on SQLite and the
-complete module set on clean PostgreSQL and MySQL service databases. This keeps
-Composer resolution, migration installation, CLI boot, and the HTTP homepage
-covered on every supported database family.
+complete module set plus all 39 E2E scenarios on clean PostgreSQL and MySQL
+service databases. This keeps Composer resolution, migrations, CLI/HTTP boot,
+functional flows, and performance budgets covered on every supported database
+family.
 
 ## 6. Web server
 

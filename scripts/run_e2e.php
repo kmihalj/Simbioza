@@ -14,6 +14,7 @@
  * Usage / Uporaba:
  *   php scripts/run_e2e.php
  *   php scripts/run_e2e.php --local
+ *   php scripts/run_e2e.php --local --database=mysql
  *   php scripts/run_e2e.php --headed --keep
  */
 
@@ -26,6 +27,7 @@ use AaiEduHr\HeartPhrameModuleAuth\Service\AuthApiKeyService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthSettingsService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use HeartPhrame\App;
+use PDO;
 use RuntimeException;
 use Throwable;
 
@@ -41,13 +43,20 @@ const E2E_USER_PASSWORD = 'E2eUser!2026';
  * HR: Čita jednostavne E2E CLI zastavice.
  * EN: Reads the simple E2E CLI flags.
  *
- * @return array{local:bool,headed:bool,keep:bool}
+ * @return array{database:string,local:bool,headed:bool,keep:bool}
  */
 function e2eOptions(): array
 {
-    $options = getopt('', ['local', 'headed', 'keep']);
+    $options = getopt('', ['database:', 'local', 'headed', 'keep']);
+    $database = is_string($options['database'] ?? null)
+    ? strtolower(trim($options['database']))
+    : 'sqlite';
+    if (!in_array($database, ['sqlite', 'mysql', 'mariadb', 'pgsql'], true)) {
+        throw new RuntimeException('Unsupported E2E database: ' . $database);
+    }
 
     return [
+        'database' => $database,
         'local' => array_key_exists('local', $options),
         'headed' => array_key_exists('headed', $options),
         'keep' => array_key_exists('keep', $options),
@@ -94,6 +103,53 @@ function assertSafeE2eProject(string $projectDirectory, string $temporaryRoot): 
     }
 
     return $realProject;
+}
+
+/**
+ * HR: Prije mrežnog E2E testa potvrđuje da je operator predao praznu bazu.
+ *     Alat nikada sam ne briše niti preuređuje postojeću shemu.
+ *
+ * EN: Confirms the operator supplied an empty database before a network E2E
+ *     run. The tool never deletes or rearranges an existing schema itself.
+ */
+function assertEmptyE2eNetworkDatabase(string $database): void
+{
+    if ($database === 'sqlite') {
+        return;
+    }
+
+    $configuration = matrixDatabaseConfiguration($database, sys_get_temp_dir());
+    $connections = $configuration['connections'] ?? null;
+    $connection = is_array($connections) ? ($connections['default'] ?? null) : null;
+    if (!is_array($connection)) {
+        throw new RuntimeException('E2E network database configuration is invalid.');
+    }
+
+    $host = is_scalar($connection['host'] ?? null) ? (string)$connection['host'] : '127.0.0.1';
+    $port = is_numeric($connection['port'] ?? null) ? (int)$connection['port'] : 0;
+    $name = is_scalar($connection['database'] ?? null) ? (string)$connection['database'] : '';
+    $username = is_scalar($connection['username'] ?? null) ? (string)$connection['username'] : '';
+    $password = is_scalar($connection['password'] ?? null) ? (string)$connection['password'] : '';
+    $driver = $database === 'pgsql' ? 'pgsql' : 'mysql';
+    $dsn = $driver === 'pgsql'
+    ? sprintf('pgsql:host=%s;port=%d;dbname=%s', $host, $port, $name)
+    : sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, $name);
+    $pdo = new PDO($dsn, $username, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $sql = $driver === 'pgsql'
+    ? "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ANY(current_schemas(false)) AND table_type = 'BASE TABLE'"
+    : "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'";
+    $statement = $pdo->query($sql);
+    if ($statement === false) {
+        throw new RuntimeException('Unable to inspect the E2E network database.');
+    }
+
+    $tableCount = (int)$statement->fetchColumn();
+    if ($tableCount !== 0) {
+        throw new RuntimeException(sprintf(
+            'E2E network database must be empty; found %d existing tables.',
+            $tableCount,
+        ));
+    }
 }
 
 /**
@@ -273,10 +329,12 @@ function startE2eServer(
     string $sourceRoot,
     string $projectDirectory,
     int $port,
+    string $database,
     string $queryLogPath,
     string $requestLogPath,
 ) {
-    $logPath = $sourceRoot . '/build/e2e-server.log';
+    $suffix = $database === 'sqlite' ? '' : '-' . $database;
+    $logPath = $sourceRoot . '/build/e2e-server' . $suffix . '.log';
     $descriptors = [
         0 => ['pipe', 'r'],
         1 => ['file', $logPath, 'a'],
@@ -383,6 +441,7 @@ function runEndToEndSuite(): int
     $server = null;
 
     try {
+        assertEmptyE2eNetworkDatabase($options['database']);
         $rootComposerValue = json_decode(
             (string)file_get_contents($sourceRoot . '/composer.json'),
             true,
@@ -398,14 +457,18 @@ function runEndToEndSuite(): int
             $rootComposer = withLocalMatrixRepositories($rootComposer, dirname($sourceRoot));
         }
 
-        fwrite(STDOUT, "[START] Preparing isolated all-module E2E application.\n");
+        fwrite(
+            STDOUT,
+            '[START] Preparing isolated all-module E2E application on '
+            . $options['database'] . ".\n",
+        );
         $result = verifyMatrixCase(
             'e2e-all',
             MATRIX_CASES['all'],
             $rootComposer,
             $sourceRoot,
             $temporaryRoot,
-            'sqlite',
+            $options['database'],
             true,
         );
         $candidate = $result['project_directory'] ?? null;
@@ -422,11 +485,12 @@ function runEndToEndSuite(): int
         $fixtures = seedE2eFixtures($projectDirectory);
         $port = e2eFreePort();
         $baseUrl = 'http://127.0.0.1:' . $port;
-        $queryLogPath = $sourceRoot . '/build/e2e-query-log.jsonl';
+        $logSuffix = $options['database'] === 'sqlite' ? '' : '-' . $options['database'];
+        $queryLogPath = $sourceRoot . '/build/e2e-query-log' . $logSuffix . '.jsonl';
         if (is_file($queryLogPath) && !unlink($queryLogPath)) {
             throw new RuntimeException('Unable to reset the E2E query log.');
         }
-        $requestLogPath = $sourceRoot . '/build/e2e-request-log.jsonl';
+        $requestLogPath = $sourceRoot . '/build/e2e-request-log' . $logSuffix . '.jsonl';
         if (is_file($requestLogPath) && !unlink($requestLogPath)) {
             throw new RuntimeException('Unable to reset the E2E request log.');
         }
@@ -434,6 +498,7 @@ function runEndToEndSuite(): int
             $sourceRoot,
             $projectDirectory,
             $port,
+            $options['database'],
             $queryLogPath,
             $requestLogPath,
         );
@@ -450,7 +515,11 @@ function runEndToEndSuite(): int
             $command[] = '--headed';
         }
 
-        fwrite(STDOUT, "[START] Running browser and API E2E scenarios.\n");
+        fwrite(
+            STDOUT,
+            '[START] Running browser, API, and performance E2E scenarios on '
+            . $options['database'] . ".\n",
+        );
         $testResult = runMatrixCommand(
             $command,
             $sourceRoot,
@@ -472,7 +541,11 @@ function runEndToEndSuite(): int
             return $testResult->exitCode;
         }
 
-        fwrite(STDOUT, "[SUCCESS] Browser and API E2E scenarios passed.\n");
+        fwrite(
+            STDOUT,
+            '[SUCCESS] Browser, API, and performance E2E scenarios passed on '
+            . $options['database'] . ".\n",
+        );
         return 0;
     } catch (Throwable $throwable) {
         fwrite(STDERR, '[FAIL] ' . $throwable->getMessage() . PHP_EOL);

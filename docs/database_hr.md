@@ -118,5 +118,7 @@ zasebnu praznu bazu jer test instalira cijelu shemu. JSON izvještaj sadrži
 driver i rezultate, ali nikada pristupne varijable okruženja.
 
 CI priprema jednokratne PostgreSQL i MySQL servisne baze te na obje pokreće
-kandidat sa svim modulima. SQLite CI dodatno pokreće svaki minimalni slučaj,
-uključujući samo Framework, samo Theme, samo Menu te Theme zajedno s Menuom.
+kandidat sa svim modulima. Na zasebnoj praznoj bazi za svaki mrežni driver
+pokreće i potpuni browser, API i performance E2E skup. SQLite CI dodatno pokreće
+svaki minimalni slučaj, uključujući samo Framework, samo Theme, samo Menu te
+Theme zajedno s Menuom.

@@ -65,7 +65,8 @@ zaseban [engleski indeks](docs/index_en.md).
 - [End-to-end testiranje](docs/end-to-end-testing_hr.md)
 
 E2E skup uključuje neosjetljiva ORM i HTTP mjerenja te trajne budžete za broj
-SQL upita, trajanje zahtjeva, vršnu memoriju i veličinu odgovora.
+SQL upita, trajanje zahtjeva, vršnu memoriju i veličinu odgovora. Isti potpuni
+skup u CI-ju se pokreće na SQLiteu, PostgreSQL-u i MySQL-u.
 
 ## Uključeni moduli
 

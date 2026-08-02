@@ -119,6 +119,34 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
   });
 
+  test('Theme live preview remains readable in narrow containers', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/theme');
+
+    for (const width of [390, 1100]) {
+      await page.setViewportSize({ width, height: 844 });
+      const preview = page.locator('[data-theme-preview]').first();
+      await expect(preview).toBeVisible();
+
+      const geometry = await preview.evaluate((element) => {
+        const subtitle = element.querySelector('.theme-preview-hero__subtitle')?.getBoundingClientRect();
+        const label = element.querySelector('[data-theme-preview-content] > p')?.getBoundingClientRect();
+
+        return {
+          subtitleBottom: subtitle?.bottom ?? 0,
+          labelTop: label?.top ?? 0,
+        };
+      });
+      expect(geometry.labelTop).toBeGreaterThanOrEqual(geometry.subtitleBottom);
+
+      const pageWidth = await page.evaluate(() => ({
+        documentWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+      }));
+      expect(pageWidth.documentWidth).toBeLessThanOrEqual(pageWidth.viewportWidth);
+    }
+  });
+
   test('Theme clone, package export, portable backup, deletion, and backup import round-trip', async ({ page }) => {
     test.setTimeout(90_000);
     await login(page, adminLogin, adminPassword);

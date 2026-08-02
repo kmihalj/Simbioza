@@ -3,14 +3,19 @@
 HFClean has a browser and HTTP API end-to-end suite for the assembled
 application. Unlike a module unit test, it installs the latest `dev-main`
 Framework and module heads into a new temporary project, runs all official
-migrations against a new SQLite database, starts a real HTTP server, and drives
-Chromium through Playwright.
+migrations against a new SQLite database by default, starts a real HTTP server,
+and drives Chromium through Playwright. The same runner accepts an explicitly
+prepared empty PostgreSQL, MySQL, or MariaDB database for a complete
+cross-driver run.
 
-The suite never uses `config/database.php` from your working application. Test
-users, the Bearer key, Workspace records, sessions, logs, and caches exist only
-inside a directory below the operating system's temporary
-`heartphrame-clean-matrix` directory. The runner refuses to work outside that
-directory and removes the project when it finishes.
+The suite never uses `config/database.php` from your working application. With
+SQLite, test users, the Bearer key, Workspace records, sessions, logs, and
+caches exist below the operating system's temporary
+`heartphrame-clean-matrix` directory. For a network driver, credentials are
+read only from `HPH_MATRIX_DB_*` and the operator must provide a dedicated empty
+disposable database. The runner removes the temporary project but never creates
+or drops a network database; explicit database cleanup remains with the
+operator.
 
 The Workspace, page, draft, and published versions created by the browser test
 are synthetic fixtures, not starter or demonstration content. They are never
@@ -18,13 +23,13 @@ copied into HFClean, a module package, or an administrator's installation.
 
 ## What is covered
 
-The 36 scenarios cover every module shipped by HFClean. They exercise public
+The 39 scenarios cover every module shipped by HFClean. They exercise public
 behavior rather than private implementation details.
 
 | Area | End-to-end coverage |
 |---|---|
-| Clean host and ORM | A new application, SQLite database, all official migrations, real front controller, sessions, logs, cache directories, and teardown safety. |
-| Theme and Menu | Desktop/mobile navigation, right-side mobile drawer, locale persistence, menu save, responsive hero artwork, equal Home/Inner sizes, edge-to-edge layout, theme clone, package export, portable backup, deletion, and backup import. |
+| Clean host and ORM | A new application, SQLite/PostgreSQL/MySQL database, all official migrations, real front controller, sessions, logs, cache directories, and teardown safety. |
+| Theme and Menu | Desktop/mobile navigation, right-side mobile drawer, locale persistence, menu save, full-height responsive hero artwork, adaptive collision-free mobile content overlap, equal Home/Inner sizes, edge-to-edge layout, collision-free narrow live preview, theme clone, package export, portable backup, deletion, and backup import. |
 | Auth | Guest redirect, administrator and regular-user authorization, local login/logout, profile and notification preference updates, reversible password change, group/user CRUD, memberships, ETags, safe output, audit records, and cleanup. |
 | API | Bearer authentication, dynamic scopes, discovery, raw OpenAPI 3.1, CORS preflight, pagination, RFC 9457 problems, rate-limit headers, idempotent replay, `If-Match`, personal key request, administrator approval, one-time reveal, and scope/domain-permission separation. |
 | Workspace | Creation, concealed unauthorized reads, subject search, workspace and node ACLs, tree links, complete ordering, updates, node deletion, soft deletion, deleted list, and restore. |
@@ -44,16 +49,17 @@ ranges, and unsupported upload idempotency must remain stable contracts.
 ## Performance budgets
 
 The E2E server registers the ORM query observer only for the isolated test run.
-It writes `build/e2e-query-log.jsonl` and never records SQL bindings, API
+It writes `build/e2e-query-log.jsonl` for SQLite or a driver-suffixed file such
+as `build/e2e-query-log-mysql.jsonl`, and never records SQL bindings, API
 tokens, request query strings, or response bodies. Normal application requests
 do not enable this observer.
 
-The same isolated run writes `build/e2e-request-log.jsonl` with the method,
-path without its query string, status, duration, memory use, response-body byte
-count, and content type. It does not record headers, cookies, request bodies, or
-response bodies. Query and request records are buffered and flushed once per
-request so the profiler does not distort the measured hot path with per-query
-file writes.
+The same isolated run writes `build/e2e-request-log.jsonl`, or its corresponding
+driver-suffixed file, with the method, path without its query string, status,
+duration, memory use, response-body byte count, and content type. It does not
+record headers, cookies, request bodies, or response bodies. Query and request
+records are buffered and flushed once per request so the profiler does not
+distort the measured hot path with per-query file writes.
 
 The final scenario marks representative Home, current-user, user-list,
 Workspace-list, Calendar-list, and Notification-list requests. It enforces a
@@ -83,6 +89,23 @@ npm install --no-package-lock
 npx playwright install chromium
 composer e2e
 ```
+
+For a real MySQL or PostgreSQL run, create a dedicated empty test database and
+provide its connection only through the process environment:
+
+```bash
+HPH_MATRIX_DB_HOST=127.0.0.1 \
+HPH_MATRIX_DB_PORT=3306 \
+HPH_MATRIX_DB_NAME=heartphrame_e2e \
+HPH_MATRIX_DB_USER=heartphrame_e2e \
+HPH_MATRIX_DB_PASSWORD='local-test-secret' \
+php scripts/run_e2e.php --local --database=mysql
+```
+
+Use `--database=pgsql` and port `5432` for PostgreSQL. The database must be
+empty before every run. Do not use a production schema or production account.
+Avoid `--keep` with a network driver unless retaining its temporary connection
+configuration for diagnostics is intentional.
 
 The application and internal packages intentionally follow moving `dev-main`
 heads. Therefore `package-lock.json` and `composer.lock` are not committed.
@@ -114,15 +137,18 @@ composer e2e -- --local --headed --keep
 The runner prints the retained project path. Playwright traces, screenshots,
 videos, and the HTML report are written below `build/`; the PHP server output is
 in `build/e2e-server.log`, and non-sensitive query measurements are in
-`build/e2e-query-log.jsonl`. All these paths are ignored by Git. Remove a
-retained project after inspection or rerun without `--keep`.
+`build/e2e-query-log.jsonl`. Network-database runs append the selected driver,
+for example `build/e2e-server-mysql.log`, `build/e2e-query-log-mysql.jsonl`, and
+`build/e2e-request-log-mysql.jsonl`. All these paths are ignored by Git. Remove
+a retained project after inspection or rerun without `--keep`.
 
 ## CI
 
 GitHub Actions installs the latest Node.js, resolves the latest npm package,
 installs Chromium with its Linux dependencies, and runs `composer e2e`. A test
 failure retains the Playwright report, traces, screenshots, videos, and server
-log as a downloadable CI artifact.
+and performance logs as a downloadable CI artifact. A separate job runs the
+same complete suite on clean PostgreSQL and MySQL databases.
 
 The browser suite is deliberately a separate job from PHP unit and static
 analysis jobs. This makes it clear whether a failure belongs to an isolated

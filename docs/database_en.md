@@ -117,6 +117,7 @@ empty database because the test installs the complete schema. The JSON report
 contains the driver and results but never the credential environment variables.
 
 CI provisions disposable PostgreSQL and MySQL service databases and runs the
-complete-module candidate against both. SQLite CI additionally runs every
-minimal module case, including Framework-only, Theme-only, Menu-only, and
-Theme plus Menu.
+complete-module candidate against both. It also executes the complete browser,
+API, and performance E2E suite on a separate empty database for each network
+driver. SQLite CI additionally runs every minimal module case, including
+Framework-only, Theme-only, Menu-only, and Theme plus Menu.

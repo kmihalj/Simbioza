@@ -66,7 +66,8 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 
 The E2E suite includes non-sensitive ORM and HTTP measurements plus durable
-budgets for SQL count, request duration, peak memory, and response size.
+budgets for SQL count, request duration, peak memory, and response size. The
+same complete suite runs on SQLite, PostgreSQL, and MySQL in CI.
 
 ## Enabled modules
 
