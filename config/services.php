@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use App\Performance\QueryLogWriter;
 use HeartPhrame\Authn\ArrayAuthnHandler;
 use HeartPhrame\Authn\AuthnHandlerInterface;
 use HeartPhrame\Cache\Cache;
@@ -29,6 +31,24 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 return [
+    // HR: ORM profiler ostaje potpuno isključen dok alat za performanse ne
+    //     postavi ciljnu JSONL datoteku. Normalni zahtjevi nemaju diskovni log.
+    // EN: ORM profiling remains fully disabled until the performance tool sets
+    //     a JSONL target. Normal requests perform no query-log disk writes.
+    Database::class => function (ContainerInterface $container): Database {
+        /** @var ConfigInterface $config */
+        $config = $container->get(ConfigInterface::class);
+        /** @var Helper $helper */
+        $helper = $container->get(Helper::class);
+        $database = new Database($config, $helper);
+        $queryLogPath = trim((string)getenv('HPH_QUERY_LOG'));
+        if ($queryLogPath !== '') {
+            $database->listen(new QueryLogWriter($queryLogPath));
+        }
+
+        return $database;
+    },
+
     // PSR-7 Server Request
     ServerRequestInterface::class => fn(): \HeartPhrame\Http\Request => Request::fromGlobals(),
 

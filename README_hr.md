@@ -64,6 +64,9 @@ zaseban [engleski indeks](docs/index_en.md).
 - [API v1 ugovor](docs/api-v1-contract_hr.md)
 - [End-to-end testiranje](docs/end-to-end-testing_hr.md)
 
+E2E skup uključuje neosjetljiva mjerenja ORM upita i trajne SQL budžete za
+reprezentativna čitanja aplikacije i API-ja.
+
 ## Uključeni moduli
 
 HFClean povezuje API, Auth, Calendar, Comment, HTML Editor, E-mail, Menu,

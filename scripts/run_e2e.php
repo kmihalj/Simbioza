@@ -273,6 +273,7 @@ function startE2eServer(
     string $sourceRoot,
     string $projectDirectory,
     int $port,
+    string $queryLogPath,
 ) {
     $logPath = $sourceRoot . '/build/e2e-server.log';
     $descriptors = [
@@ -285,6 +286,7 @@ function startE2eServer(
     $environment['HPH_APP_PATH'] = $projectDirectory;
     $environment['HPH_CONFIG_PATH'] = $projectDirectory . '/config';
     $environment['HPH_E2E_PROJECT'] = $projectDirectory;
+    $environment['HPH_QUERY_LOG'] = $queryLogPath;
 
     $process = proc_open(
         [
@@ -418,7 +420,11 @@ function runEndToEndSuite(): int
         $fixtures = seedE2eFixtures($projectDirectory);
         $port = e2eFreePort();
         $baseUrl = 'http://127.0.0.1:' . $port;
-        $server = startE2eServer($sourceRoot, $projectDirectory, $port);
+        $queryLogPath = $sourceRoot . '/build/e2e-query-log.jsonl';
+        if (is_file($queryLogPath) && !unlink($queryLogPath)) {
+            throw new RuntimeException('Unable to reset the E2E query log.');
+        }
+        $server = startE2eServer($sourceRoot, $projectDirectory, $port, $queryLogPath);
         awaitE2eServer($server, $baseUrl);
 
         $command = [
@@ -444,6 +450,7 @@ function runEndToEndSuite(): int
                 'HPH_E2E_USER_PASSWORD' => E2E_USER_PASSWORD,
                 'HPH_E2E_API_TOKEN' => $fixtures['admin_api_token'],
                 'HPH_E2E_USER_API_TOKEN' => $fixtures['user_api_token'],
+                'HPH_E2E_QUERY_LOG' => $queryLogPath,
             ],
         );
         fwrite(STDOUT, $testResult->output);

@@ -18,7 +18,7 @@ copied into HFClean, a module package, or an administrator's installation.
 
 ## What is covered
 
-The 35 scenarios cover every module shipped by HFClean. They exercise public
+The 36 scenarios cover every module shipped by HFClean. They exercise public
 behavior rather than private implementation details.
 
 | Area | End-to-end coverage |
@@ -40,6 +40,27 @@ behavior rather than private implementation details.
 Negative paths are intentional coverage: concealed `404` responses, `403`
 permission failures, invalid keys, missing or stale preconditions, invalid
 ranges, and unsupported upload idempotency must remain stable contracts.
+
+## SQL performance budgets
+
+The E2E server registers the ORM query observer only for the isolated test run.
+It writes `build/e2e-query-log.jsonl` and never records SQL bindings, API
+tokens, request query strings, or response bodies. Normal application requests
+do not enable this observer.
+
+The final scenario marks representative Home, current-user, user-list,
+Workspace-list, Calendar-list, and Notification-list requests. It enforces a
+query-count budget for each request and also rejects repeated schema discovery,
+repeated Auth provider-setting reads, and Auth-group writes during GET requests.
+This turns measured optimizations into regression contracts instead of relying
+on a one-time benchmark.
+
+To inspect the most expensive requests after a run:
+
+```bash
+jq -s 'group_by(.request_id) | map({path:.[0].path, queries:length}) | sort_by(.queries) | reverse | .[:20]' \
+  build/e2e-query-log.jsonl
+```
 
 ## First run
 
@@ -81,8 +102,9 @@ composer e2e -- --local --headed --keep
 
 The runner prints the retained project path. Playwright traces, screenshots,
 videos, and the HTML report are written below `build/`; the PHP server output is
-in `build/e2e-server.log`. All these paths are ignored by Git. Remove a retained
-project after inspection or rerun without `--keep`.
+in `build/e2e-server.log`, and non-sensitive query measurements are in
+`build/e2e-query-log.jsonl`. All these paths are ignored by Git. Remove a
+retained project after inspection or rerun without `--keep`.
 
 ## CI
 

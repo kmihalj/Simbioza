@@ -18,7 +18,7 @@ ne kopiraju u HFClean, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-Svih 35 scenarija pokriva svaki modul koji HFClean isporučuje. Provjerava se
+Svih 36 scenarija pokriva svaki modul koji HFClean isporučuje. Provjerava se
 javno ponašanje, a ne privatni detalji implementacije.
 
 | Područje | End-to-end pokrivenost |
@@ -40,6 +40,27 @@ javno ponašanje, a ne privatni detalji implementacije.
 Negativni tokovi namjerna su pokrivenost: skriveni odgovori `404`, zabrane `403`,
 neispravni ključevi, nedostajući ili zastarjeli preduvjeti, neispravni rasponi i
 nepodržana idempotentnost uploada moraju ostati stabilni ugovori.
+
+## SQL performance budžeti
+
+E2E poslužitelj registrira ORM query observer samo tijekom izoliranog testa.
+Zapisuje `build/e2e-query-log.jsonl`, ali nikada SQL bind vrijednosti, API
+tokene, query string zahtjeva ni tijela odgovora. Observer nije uključen u
+normalnim zahtjevima aplikacije.
+
+Zadnji scenarij označava reprezentativne zahtjeve za naslovnicu, aktualnog
+korisnika te popise korisnika, Workspacea, kalendara i obavijesti. Za svaki
+zahtjev provjerava query-count budžet, a dodatno odbija ponovljeno otkrivanje
+sheme, ponovljeno čitanje Auth provider postavki i zapisivanje Auth grupa tijekom
+GET zahtjeva. Tako izmjerene optimizacije postaju trajni regresijski ugovor, a
+ne jednokratni benchmark.
+
+Najskuplje zahtjeve nakon testa možeš pregledati ovako:
+
+```bash
+jq -s 'group_by(.request_id) | map({path:.[0].path, queries:length}) | sort_by(.queries) | reverse | .[:20]' \
+  build/e2e-query-log.jsonl
+```
 
 ## Prvo pokretanje
 
@@ -80,9 +101,10 @@ composer e2e -- --local --headed --keep
 ```
 
 Runner ispisuje putanju sačuvanog projekta. Playwright traceovi, slike zaslona,
-videozapisi i HTML izvještaj zapisuju se ispod `build/`, a izlaz PHP poslužitelja
-u `build/e2e-server.log`. Git ignorira sve te putanje. Sačuvani projekt uklonite
-nakon pregleda ili ponovno pokrenite test bez `--keep`.
+videozapisi i HTML izvještaj zapisuju se ispod `build/`, izlaz PHP poslužitelja u
+`build/e2e-server.log`, a neosjetljiva mjerenja upita u
+`build/e2e-query-log.jsonl`. Git ignorira sve te putanje. Sačuvani projekt
+uklonite nakon pregleda ili ponovno pokrenite test bez `--keep`.
 
 ## CI
 

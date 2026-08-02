@@ -65,6 +65,9 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 
+The E2E suite includes non-sensitive ORM query measurements and durable SQL
+budgets for representative application and API reads.
+
 ## Enabled modules
 
 HFClean integrates API, Auth, Calendar, Comment, HTML Editor, E-mail, Menu,
