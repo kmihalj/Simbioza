@@ -15,8 +15,11 @@ use RuntimeException;
  * EN: Writes non-sensitive ORM query events as JSONL for repeatable query-count
  *     and duration analysis during performance tests.
  */
-final readonly class QueryLogWriter
+final class QueryLogWriter
 {
+    /** @var list<string> */
+    private array $records = [];
+
     /**
      * HR: Provjerava ciljnu datoteku; direktorij mora unaprijed postojati kako
      *     pogrešna varijabla okruženja ne bi stvarala proizvoljne putanje.
@@ -24,11 +27,13 @@ final readonly class QueryLogWriter
      * EN: Validates the target file; its directory must already exist so a bad
      *     environment variable cannot create arbitrary paths.
      */
-    public function __construct(private string $path)
+    public function __construct(private readonly string $path)
     {
         if (trim($path) === '' || !is_dir(dirname($path))) {
             throw new InvalidArgumentException('Query log target directory does not exist.');
         }
+
+        register_shutdown_function([$this, 'flush']);
     }
 
     /**
@@ -54,10 +59,28 @@ final readonly class QueryLogWriter
             'sql' => preg_replace('/\s+/', ' ', trim($event->sql)) ?? trim($event->sql),
         ];
 
-        $json = json_encode($record, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
-        if (file_put_contents($this->path, $json . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
+        $this->records[] = json_encode($record, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * HR: Zapisuje cijeli request u jednom zaključanom diskovnom pozivu kako
+     *     profiler ne bi sam dominirao mjerenim vremenom velikih zahtjeva.
+     *
+     * EN: Writes the complete request in one locked disk operation so the
+     *     profiler itself does not dominate large-request measurements.
+     */
+    public function flush(): void
+    {
+        if ($this->records === []) {
+            return;
+        }
+
+        $payload = implode(PHP_EOL, $this->records) . PHP_EOL;
+        if (file_put_contents($this->path, $payload, FILE_APPEND | LOCK_EX) === false) {
             throw new RuntimeException('Unable to append the performance query log.');
         }
+
+        $this->records = [];
     }
 
     /**

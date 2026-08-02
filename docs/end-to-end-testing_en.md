@@ -41,25 +41,36 @@ Negative paths are intentional coverage: concealed `404` responses, `403`
 permission failures, invalid keys, missing or stale preconditions, invalid
 ranges, and unsupported upload idempotency must remain stable contracts.
 
-## SQL performance budgets
+## Performance budgets
 
 The E2E server registers the ORM query observer only for the isolated test run.
 It writes `build/e2e-query-log.jsonl` and never records SQL bindings, API
 tokens, request query strings, or response bodies. Normal application requests
 do not enable this observer.
 
+The same isolated run writes `build/e2e-request-log.jsonl` with the method,
+path without its query string, status, duration, memory use, response-body byte
+count, and content type. It does not record headers, cookies, request bodies, or
+response bodies. Query and request records are buffered and flushed once per
+request so the profiler does not distort the measured hot path with per-query
+file writes.
+
 The final scenario marks representative Home, current-user, user-list,
 Workspace-list, Calendar-list, and Notification-list requests. It enforces a
-query-count budget for each request and also rejects repeated schema discovery,
-repeated Auth provider-setting reads, and Auth-group writes during GET requests.
-This turns measured optimizations into regression contracts instead of relying
-on a one-time benchmark.
+query-count, request-duration, peak-memory, and response-size budgets for each
+request. It also rejects repeated schema discovery, repeated Auth
+provider-setting reads, Auth-group repair writes, and unexpected API-key usage
+writes. This turns measured optimizations into regression contracts instead of
+relying on a one-time benchmark.
 
 To inspect the most expensive requests after a run:
 
 ```bash
 jq -s 'group_by(.request_id) | map({path:.[0].path, queries:length}) | sort_by(.queries) | reverse | .[:20]' \
   build/e2e-query-log.jsonl
+
+jq -s 'sort_by(.duration_ms) | reverse | .[:20] | map({path,duration_ms,peak_memory_bytes,response_bytes})' \
+  build/e2e-request-log.jsonl
 ```
 
 ## First run

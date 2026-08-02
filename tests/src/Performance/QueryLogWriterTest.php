@@ -56,6 +56,8 @@ final class QueryLogWriterTest extends TestCase
         $writer = new QueryLogWriter($this->logPath);
 
         $writer(new QueryExecuted(" SELECT  *\n FROM workspaces WHERE owner_id = ? ", 'default', 1.23456789));
+        $this->assertSame('', file_get_contents($this->logPath));
+        $writer->flush();
 
         $contents = file_get_contents($this->logPath);
         $this->assertIsString($contents);

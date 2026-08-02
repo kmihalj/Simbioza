@@ -10,9 +10,10 @@ import {
 
 const { adminApiToken } = e2eEnvironment();
 const queryLogPath = process.env.HPH_E2E_QUERY_LOG;
+const requestLogPath = process.env.HPH_E2E_REQUEST_LOG;
 
-if (!queryLogPath) {
-  throw new Error('HPH_E2E_QUERY_LOG is required. Run the suite through composer e2e.');
+if (!queryLogPath || !requestLogPath) {
+  throw new Error('HPH_E2E_QUERY_LOG and HPH_E2E_REQUEST_LOG are required. Run the suite through composer e2e.');
 }
 
 /**
@@ -25,6 +26,21 @@ function queryEvents(marker) {
     .filter(Boolean)
     .map((line) => JSON.parse(line))
     .filter((event) => event.request_id === marker);
+}
+
+/**
+ * HR: Vraća HTTP metriku označenog zahtjeva.
+ * EN: Returns the HTTP metric for one marked request.
+ */
+function requestEvent(marker) {
+  const events = readFileSync(requestLogPath, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter((event) => event.request_id === marker);
+
+  expect(events, `${marker} did not produce exactly one HTTP metric`).toHaveLength(1);
+  return events[0];
 }
 
 /**
@@ -48,13 +64,38 @@ function expectRecordedBudget(name, marker, budget) {
     sql.some((statement) => statement.startsWith('UPDATE "auth_groups"')),
     `${name} triggered an unexpected Auth group repair write`,
   ).toBe(false);
+  expect(
+    sql.some((statement) => statement.startsWith('UPDATE "auth_api_keys" SET')),
+    `${name} triggered an unexpected API-key usage write`,
+  ).toBe(false);
+}
+
+/**
+ * HR: Provjerava trajanje, vršnu memoriju i veličinu tijela odgovora.
+ * EN: Verifies duration, peak memory, and response-body size budgets.
+ */
+function expectRequestBudget(name, marker, budget) {
+  const event = requestEvent(marker);
+  expect(event.duration_ms, `${name} exceeded its request-duration budget`)
+    .toBeLessThanOrEqual(budget.durationMs);
+  expect(event.peak_memory_bytes, `${name} exceeded its peak-memory budget`)
+    .toBeLessThanOrEqual(budget.peakMemoryBytes);
+  expect(event.response_bytes, `${name} exceeded its response-size budget`)
+    .toBeLessThanOrEqual(budget.responseBytes);
 }
 
 /**
  * HR: Izvršava jedan GET i provjerava njegov trajni SQL budžet.
  * EN: Executes one GET request and verifies its durable SQL budget.
  */
-async function expectQueryBudget(request, name, path, budget, authenticated = true) {
+async function expectQueryBudget(
+  request,
+  name,
+  path,
+  queryBudget,
+  requestBudget,
+  authenticated = true,
+) {
   const marker = `budget-${name}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const headers = authenticated
     ? apiHeaders(adminApiToken, { 'X-HPH-Performance-Run': marker })
@@ -62,16 +103,25 @@ async function expectQueryBudget(request, name, path, budget, authenticated = tr
   const response = await request.get(path, { headers });
 
   expect(response.status(), `${name} returned an unexpected status`).toBe(200);
-  expectRecordedBudget(name, marker, budget);
+  expectRecordedBudget(name, marker, queryBudget);
+  expectRequestBudget(name, marker, requestBudget);
 }
 
 test('representative read paths remain inside measured SQL budgets', async ({ request }) => {
-  await expectQueryBudget(request, 'home', '/', 12, false);
-  await expectQueryBudget(request, 'current-user', '/api/v1/me', 16);
-  await expectQueryBudget(request, 'users', '/api/v1/users?page[limit]=20', 30);
-  await expectQueryBudget(request, 'workspaces', '/api/v1/workspaces?page[limit]=20', 24);
-  await expectQueryBudget(request, 'calendars', '/api/v1/calendars?page[limit]=20', 24);
-  await expectQueryBudget(request, 'notifications', '/api/v1/notifications?page[limit]=20', 20);
+  const apiReadBudget = { durationMs: 500, peakMemoryBytes: 32 * 1024 * 1024, responseBytes: 32 * 1024 };
+  await expectQueryBudget(
+    request,
+    'home',
+    '/',
+    12,
+    { durationMs: 500, peakMemoryBytes: 32 * 1024 * 1024, responseBytes: 16 * 1024 },
+    false,
+  );
+  await expectQueryBudget(request, 'current-user', '/api/v1/me', 16, apiReadBudget);
+  await expectQueryBudget(request, 'users', '/api/v1/users?page[limit]=20', 30, apiReadBudget);
+  await expectQueryBudget(request, 'workspaces', '/api/v1/workspaces?page[limit]=20', 24, apiReadBudget);
+  await expectQueryBudget(request, 'calendars', '/api/v1/calendars?page[limit]=20', 24, apiReadBudget);
+  await expectQueryBudget(request, 'notifications', '/api/v1/notifications?page[limit]=20', 20, apiReadBudget);
 });
 
 test('Auth create and update mutations remain inside measured SQL budgets', async ({ request }) => {
@@ -97,6 +147,11 @@ test('Auth create and update mutations remain inside measured SQL budgets', asyn
   });
   const created = await expectData(createdResponse, 201);
   expectRecordedBudget('auth-create', createMarker, 64);
+  expectRequestBudget('auth-create', createMarker, {
+    durationMs: 2_000,
+    peakMemoryBytes: 32 * 1024 * 1024,
+    responseBytes: 16 * 1024,
+  });
 
   const current = await getDataWithEtag(request, `/api/v1/users/${created.id}`, apiHeaders(adminApiToken));
   const updateMarker = `budget-auth-update-${suffix}`;
@@ -110,6 +165,11 @@ test('Auth create and update mutations remain inside measured SQL budgets', asyn
   });
   expect((await expectData(updatedResponse)).display_name).toBe('Updated Performance User');
   expectRecordedBudget('auth-update', updateMarker, 64);
+  expectRequestBudget('auth-update', updateMarker, {
+    durationMs: 750,
+    peakMemoryBytes: 32 * 1024 * 1024,
+    responseBytes: 16 * 1024,
+  });
 });
 
 test('page creation, publication, and public rendering stay inside measured SQL budgets', async ({ request }) => {
@@ -143,6 +203,11 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     },
   }), 201);
   expectRecordedBudget('page-create', createMarker, 65);
+  expectRequestBudget('page-create', createMarker, {
+    durationMs: 1_000,
+    peakMemoryBytes: 32 * 1024 * 1024,
+    responseBytes: 16 * 1024,
+  });
 
   const draft = await getDataWithEtag(
     request,
@@ -159,6 +224,11 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     data: {},
   }));
   expectRecordedBudget('page-publish', publishMarker, 45);
+  expectRequestBudget('page-publish', publishMarker, {
+    durationMs: 1_000,
+    peakMemoryBytes: 32 * 1024 * 1024,
+    responseBytes: 16 * 1024,
+  });
 
   const publicMarker = `budget-page-public-${suffix}`;
   const publicResponse = await request.get(`/workspace/${workspaceSlug}/${pageSlug}`, {
@@ -166,4 +236,9 @@ test('page creation, publication, and public rendering stay inside measured SQL 
   });
   expect(publicResponse.status()).toBe(200);
   expectRecordedBudget('page-public', publicMarker, 35);
+  expectRequestBudget('page-public', publicMarker, {
+    durationMs: 1_000,
+    peakMemoryBytes: 32 * 1024 * 1024,
+    responseBytes: 64 * 1024,
+  });
 });

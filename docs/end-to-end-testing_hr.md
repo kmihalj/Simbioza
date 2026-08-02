@@ -41,25 +41,36 @@ Negativni tokovi namjerna su pokrivenost: skriveni odgovori `404`, zabrane `403`
 neispravni ključevi, nedostajući ili zastarjeli preduvjeti, neispravni rasponi i
 nepodržana idempotentnost uploada moraju ostati stabilni ugovori.
 
-## SQL performance budžeti
+## Performance budžeti
 
 E2E poslužitelj registrira ORM query observer samo tijekom izoliranog testa.
 Zapisuje `build/e2e-query-log.jsonl`, ali nikada SQL bind vrijednosti, API
 tokene, query string zahtjeva ni tijela odgovora. Observer nije uključen u
 normalnim zahtjevima aplikacije.
 
+Isti izolirani run zapisuje `build/e2e-request-log.jsonl` s metodom, putanjom
+bez query stringa, statusom, trajanjem, uporabom memorije, brojem bajtova tijela
+odgovora i content typeom. Ne zapisuje zaglavlja, kolačiće, tijelo zahtjeva ni
+tijelo odgovora. Query i request zapisi spremaju se u međuspremnik i zapisuju
+jednom po zahtjevu kako profiler ne bi iskrivio prometnu putanju zasebnim
+zapisivanjem datoteke za svaki upit.
+
 Zadnji scenarij označava reprezentativne zahtjeve za naslovnicu, aktualnog
 korisnika te popise korisnika, Workspacea, kalendara i obavijesti. Za svaki
-zahtjev provjerava query-count budžet, a dodatno odbija ponovljeno otkrivanje
-sheme, ponovljeno čitanje Auth provider postavki i zapisivanje Auth grupa tijekom
-GET zahtjeva. Tako izmjerene optimizacije postaju trajni regresijski ugovor, a
-ne jednokratni benchmark.
+zahtjev provjerava budžete broja upita, trajanja, vršne memorije i veličine
+odgovora. Dodatno odbija ponovljeno otkrivanje sheme, ponovljeno čitanje Auth
+provider postavki, popravne zapise Auth grupa i neočekivane zapise uporabe API
+ključa. Tako izmjerene optimizacije postaju trajni regresijski ugovor, a ne
+jednokratni benchmark.
 
 Najskuplje zahtjeve nakon testa možeš pregledati ovako:
 
 ```bash
 jq -s 'group_by(.request_id) | map({path:.[0].path, queries:length}) | sort_by(.queries) | reverse | .[:20]' \
   build/e2e-query-log.jsonl
+
+jq -s 'sort_by(.duration_ms) | reverse | .[:20] | map({path,duration_ms,peak_memory_bytes,response_bytes})' \
+  build/e2e-request-log.jsonl
 ```
 
 ## Prvo pokretanje
