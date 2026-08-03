@@ -148,6 +148,64 @@ test.describe('module browser surfaces', () => {
     }
   });
 
+  test('Theme editor keeps page order and previews light and dark branding immediately', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/theme?theme=simbioza');
+
+    const editor = page.locator('#theme-editor-form');
+    const sectionIds = await editor.locator(
+      '.theme-editor-sections > .theme-editor-section[data-theme-section-id]',
+    ).evaluateAll((sections) => sections.map((section) => section.dataset.themeSectionId));
+    expect(sectionIds).toEqual([
+      'accessibility',
+      'header',
+      'navigation',
+      'hero',
+      'page-content',
+      'card-presentation',
+      'base',
+      'buttons',
+      'cards_tables',
+      'feedback_badges',
+      'forms_content',
+      'assets',
+    ]);
+    await expect(editor.locator('[data-theme-section-id="assets"]')).toHaveCount(1);
+
+    await editor.locator('[data-theme-section-id="hero"] > summary').click();
+    const lightHeroSelect = editor.locator(
+      '[data-theme-hero-visual-source][data-variant="light"]',
+    );
+    const darkHeroSelect = editor.locator(
+      '[data-theme-hero-visual-source][data-variant="dark"]',
+    );
+    await expect(lightHeroSelect).toHaveCount(1);
+    await expect(darkHeroSelect).toHaveCount(1);
+    expect(await lightHeroSelect.inputValue()).not.toBe(await darkHeroSelect.inputValue());
+
+    const alternateHero = lightHeroSelect.locator('option[data-preview-src]:not([value=""])').nth(1);
+    const alternateHeroValue = await alternateHero.getAttribute('value');
+    const alternateHeroSource = await alternateHero.getAttribute('data-preview-src');
+    expect(alternateHeroValue).toBeTruthy();
+    expect(alternateHeroSource).toBeTruthy();
+    await lightHeroSelect.selectOption(alternateHeroValue);
+    await expect(page.locator('[data-theme-preview="light"] [data-theme-preview-hero-visual]'))
+      .toHaveAttribute('src', alternateHeroSource);
+
+    await editor.locator('[data-theme-section-id="header"] > summary').click();
+    const lightLogoSelect = editor.locator(
+      '[data-theme-header-logo-source][data-variant="light"]',
+    ).first();
+    const alternateLogo = lightLogoSelect.locator('option[data-preview-src]:not([value=""])').nth(1);
+    const alternateLogoValue = await alternateLogo.getAttribute('value');
+    const alternateLogoSource = await alternateLogo.getAttribute('data-preview-src');
+    expect(alternateLogoValue).toBeTruthy();
+    expect(alternateLogoSource).toBeTruthy();
+    await lightLogoSelect.selectOption(alternateLogoValue);
+    await expect(page.locator('[data-theme-preview="light"] [data-theme-preview-header] img'))
+      .toHaveAttribute('src', alternateLogoSource);
+  });
+
   test('Theme clone, package export, complete export, deletion, and import round-trip', async ({ page }) => {
     test.setTimeout(90_000);
     await login(page, adminLogin, adminPassword);

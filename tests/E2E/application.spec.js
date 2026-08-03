@@ -16,24 +16,19 @@ const {
 } = e2eEnvironment();
 
 /**
- * HR: Predaje stvarni HTML obrazac i potvrđuje odgovor očekivane POST rute bez
- * oslanjanja na utrku događaja učitavanja stranice.
- * EN: Submits the real HTML form and verifies the expected POST route response
- * without relying on a page-load event race.
+ * HR: Klikom predaje stvarni HTML obrazac, čeka navigaciju i potvrđuje odgovor
+ * očekivane POST rute bez utrke između novog dokumenta i sljedeće radnje.
+ * EN: Submits the real HTML form by clicking, waits for navigation, and verifies
+ * the expected POST response without racing the next action against the new document.
  */
 async function submitFormAndExpectPost(page, button, expectedPath) {
   const responsePromise = page.waitForResponse((response) => response.request().method() === 'POST'
     && new URL(response.url()).pathname === expectedPath);
 
-  await button.evaluate((control) => {
-    if (!(control instanceof HTMLButtonElement) || !(control.form instanceof HTMLFormElement)) {
-      throw new Error('The selected submit control is not attached to an HTML form.');
-    }
-
-    control.form.requestSubmit(control);
-  });
-
-  const response = await responsePromise;
+  const [response] = await Promise.all([
+    responsePromise,
+    button.click(),
+  ]);
   expect([200, 302, 303]).toContain(response.status());
 }
 
@@ -45,7 +40,7 @@ test.describe('browser flows', () => {
     expect(homeResponse?.status()).toBe(200);
     await expect(page.locator('.hph-hero')).toBeVisible();
 
-    const visual = page.locator('.hph-hero__visual img');
+    const visual = page.locator('.hph-hero__visual img:visible');
     await expect(visual).toBeVisible();
     await expect.poll(() => visual.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
 

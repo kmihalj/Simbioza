@@ -15,7 +15,7 @@
             "skip_link": true,
             "header": {
                 "enabled": true,
-                "sticky": false,
+                "sticky": true,
                 "container": "wide",
                 "items": [
                     {
@@ -24,13 +24,14 @@
                         "position": "start",
                         "text": [],
                         "href": "/hfc/",
-                        "src": "@theme-assets/simbioza/icon-natural-dark.svg",
                         "alt": {
                             "hr": "Simbioza znak",
                             "en": "Simbioza mark"
                         },
                         "height": 48,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "@theme-assets/simbioza/icon-adriatic-light.png",
+                        "src_dark": "@theme-assets/simbioza/icon-adriatic-dark.png"
                     },
                     {
                         "id": "header-2",
@@ -41,10 +42,11 @@
                             "en": "Simbioza"
                         },
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     },
                     {
                         "id": "header-3",
@@ -52,10 +54,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     },
                     {
                         "id": "header-4",
@@ -63,10 +66,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     }
                 ]
             },
@@ -91,14 +95,6 @@
             "hero": {
                 "home_enabled": true,
                 "inner_enabled": true,
-                "gradient_preset": "blue-teal",
-                "gradient_colors": [
-                    "#25408F",
-                    "#2872A0",
-                    "#2F9EAA",
-                    "#3CB4AD",
-                    "#4CC0AD"
-                ],
                 "container": "fluid",
                 "home_size": "medium",
                 "inner_size": "medium",
@@ -106,25 +102,21 @@
                 "content_min_height_px": 0,
                 "content_padding_top_px": 0,
                 "content_padding_bottom_px": 0,
-                "text_color": "#FFF8EE",
-                "title_color": "#FFF8EE",
-                "subtitle_color": "#D9F2EE",
-                "muted_color": "#B7D8D5",
                 "visual_enabled": true,
-                "visual_src": "@theme-assets/simbioza/hero-botanical-dark.png",
                 "visual_alt": [],
                 "visual_decorative": true,
                 "visual_width_px": 560,
                 "visual_top_px": -48,
                 "visual_right_px": 24,
                 "visual_rotation_deg": 0,
-                "wave": true
+                "wave": true,
+                "visual_src_light": "@theme-assets/simbioza/hero-adriatic-light.svg",
+                "visual_src_dark": "@theme-assets/simbioza/hero-adriatic-dark.svg"
             },
             "content": {
                 "container": "wide",
                 "inner_title_placement": "hero",
                 "application_title_placement": "hero",
-                "title_supporting_text_color": "#547078",
                 "surface": "plain",
                 "inner_hero_overlap": "large",
                 "density": "comfortable",
@@ -234,7 +226,17 @@
                 "navbar_text": "#FFF8EE",
                 "navbar_link": "#FFF8EE",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D424B"
+                "navbar_active_bg": "#0D424B",
+                "hero_text": "#FFF8EE",
+                "hero_title": "#FFF8EE",
+                "hero_subtitle": "#D9F2EE",
+                "hero_muted": "#B7D8D5",
+                "title_supporting_text": "#547078",
+                "hero_gradient_1": "#25408F",
+                "hero_gradient_2": "#2872A0",
+                "hero_gradient_3": "#2F9EAA",
+                "hero_gradient_4": "#3CB4AD",
+                "hero_gradient_5": "#4CC0AD"
             }
         },
         "dark": {
@@ -330,7 +332,17 @@
                 "navbar_text": "#FFF8EE",
                 "navbar_link": "#FFF8EE",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D424B"
+                "navbar_active_bg": "#0D424B",
+                "hero_text": "#FFF8EE",
+                "hero_title": "#FFF8EE",
+                "hero_subtitle": "#D9F2EE",
+                "hero_muted": "#B7D8D5",
+                "title_supporting_text": "#547078",
+                "hero_gradient_1": "#25408F",
+                "hero_gradient_2": "#2872A0",
+                "hero_gradient_3": "#2F9EAA",
+                "hero_gradient_4": "#3CB4AD",
+                "hero_gradient_5": "#4CC0AD"
             }
         }
     },
@@ -359,13 +371,14 @@
                         "position": "start",
                         "text": [],
                         "href": "/hfc/",
-                        "src": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
                         "alt": {
                             "hr": "Simbioza znak",
                             "en": "Simbioza mark"
                         },
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
+                        "src_dark": "@theme-assets/srce-sup/icon-simbioza-natural-light.png"
                     },
                     {
                         "id": "header-2",
@@ -376,10 +389,11 @@
                             "en": "Simbioza"
                         },
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     },
                     {
                         "id": "header-3",
@@ -387,10 +401,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     },
                     {
                         "id": "header-4",
@@ -398,10 +413,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     }
                 ]
             },
@@ -426,14 +442,6 @@
             "hero": {
                 "home_enabled": true,
                 "inner_enabled": true,
-                "gradient_preset": "custom",
-                "gradient_colors": [
-                    "#83CCD9",
-                    "#53D5FD",
-                    "#94E3FE",
-                    "#CAF0FE",
-                    "#8CCAC4"
-                ],
                 "container": "fluid",
                 "home_size": "medium",
                 "inner_size": "medium",
@@ -441,25 +449,21 @@
                 "content_min_height_px": 0,
                 "content_padding_top_px": 0,
                 "content_padding_bottom_px": 0,
-                "text_color": "#1F2933",
-                "title_color": "#FFFFFF",
-                "subtitle_color": "#FFFFFF",
-                "muted_color": "#44515B",
                 "visual_enabled": true,
-                "visual_src": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg",
                 "visual_alt": [],
                 "visual_decorative": true,
                 "visual_width_px": 250,
                 "visual_top_px": 48,
                 "visual_right_px": 0,
                 "visual_rotation_deg": -90,
-                "wave": true
+                "wave": true,
+                "visual_src_light": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg",
+                "visual_src_dark": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg"
             },
             "content": {
                 "container": "wide",
                 "inner_title_placement": "hero",
                 "application_title_placement": "hero",
-                "title_supporting_text_color": "#606060",
                 "surface": "title-card",
                 "inner_hero_overlap": "large",
                 "density": "compact",
@@ -569,7 +573,17 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#80CBD7"
+                "navbar_active_bg": "#80CBD7",
+                "hero_text": "#1F2933",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#FFFFFF",
+                "hero_muted": "#44515B",
+                "title_supporting_text": "#606060",
+                "hero_gradient_1": "#83CCD9",
+                "hero_gradient_2": "#53D5FD",
+                "hero_gradient_3": "#94E3FE",
+                "hero_gradient_4": "#CAF0FE",
+                "hero_gradient_5": "#8CCAC4"
             }
         },
         "dark": {
@@ -665,7 +679,17 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#245E69"
+                "navbar_active_bg": "#245E69",
+                "hero_text": "#1F2933",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#FFFFFF",
+                "hero_muted": "#44515B",
+                "title_supporting_text": "#606060",
+                "hero_gradient_1": "#83CCD9",
+                "hero_gradient_2": "#53D5FD",
+                "hero_gradient_3": "#94E3FE",
+                "hero_gradient_4": "#CAF0FE",
+                "hero_gradient_5": "#8CCAC4"
             }
         }
     },
@@ -694,13 +718,14 @@
                         "position": "start",
                         "text": [],
                         "href": "/hfc/",
-                        "src": "@theme-assets/standard/icon-simbioza-natural-light.png",
                         "alt": {
                             "hr": "Simbioza znak",
                             "en": "Simbioza mark"
                         },
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "@theme-assets/standard/icon-simbioza-natural-light.png",
+                        "src_dark": "@theme-assets/standard/icon-simbioza-natural-light.png"
                     },
                     {
                         "id": "header-2",
@@ -711,10 +736,11 @@
                             "en": "Simbioza"
                         },
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     },
                     {
                         "id": "header-3",
@@ -722,10 +748,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     },
                     {
                         "id": "header-4",
@@ -733,10 +760,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
-                        "src": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false
+                        "new_tab": false,
+                        "src_light": "",
+                        "src_dark": ""
                     }
                 ]
             },
@@ -761,14 +789,6 @@
             "hero": {
                 "home_enabled": true,
                 "inner_enabled": true,
-                "gradient_preset": "red-orange",
-                "gradient_colors": [
-                    "#D71635",
-                    "#D93F2D",
-                    "#DC6824",
-                    "#E0801D",
-                    "#E39717"
-                ],
                 "container": "fluid",
                 "home_size": "medium",
                 "inner_size": "compact",
@@ -776,25 +796,21 @@
                 "content_min_height_px": 0,
                 "content_padding_top_px": 0,
                 "content_padding_bottom_px": 0,
-                "text_color": "#FFFFFF",
-                "title_color": "#FFFFFF",
-                "subtitle_color": "#EBEBEB",
-                "muted_color": "#EBEBEB",
                 "visual_enabled": true,
-                "visual_src": "@theme-assets/standard/hero-universal-artwork.svg",
                 "visual_alt": [],
                 "visual_decorative": true,
                 "visual_width_px": 480,
                 "visual_top_px": 0,
                 "visual_right_px": 0,
                 "visual_rotation_deg": 0,
-                "wave": true
+                "wave": true,
+                "visual_src_light": "@theme-assets/standard/hero-universal-artwork.svg",
+                "visual_src_dark": "@theme-assets/standard/hero-universal-artwork.svg"
             },
             "content": {
                 "container": "wide",
                 "inner_title_placement": "hero",
                 "application_title_placement": "hero",
-                "title_supporting_text_color": "#6C757D",
                 "surface": "plain",
                 "inner_hero_overlap": "large",
                 "density": "comfortable",
@@ -904,7 +920,17 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#212529"
+                "navbar_active_bg": "#212529",
+                "hero_text": "#FFFFFF",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#EBEBEB",
+                "hero_muted": "#EBEBEB",
+                "title_supporting_text": "#6C757D",
+                "hero_gradient_1": "#D71635",
+                "hero_gradient_2": "#D93F2D",
+                "hero_gradient_3": "#DC6824",
+                "hero_gradient_4": "#E0801D",
+                "hero_gradient_5": "#E39717"
             }
         },
         "dark": {
@@ -1000,7 +1026,17 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#232323"
+                "navbar_active_bg": "#232323",
+                "hero_text": "#FFFFFF",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#EBEBEB",
+                "hero_muted": "#EBEBEB",
+                "title_supporting_text": "#6C757D",
+                "hero_gradient_1": "#D71635",
+                "hero_gradient_2": "#D93F2D",
+                "hero_gradient_3": "#DC6824",
+                "hero_gradient_4": "#E0801D",
+                "hero_gradient_5": "#E39717"
             }
         }
     }

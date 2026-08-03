@@ -69,12 +69,16 @@ final class SimbiozaBrandingTest extends TestCase
             }
         }
 
-        $selectedHero = is_string($hero['visual_src'] ?? null) ? $hero['visual_src'] : '';
-        $selectedIcon = is_string($logo['src'] ?? null) ? $logo['src'] : '';
-        $this->assertTrue(str_starts_with($selectedHero, '@theme-assets/simbioza/'));
-        $this->assertTrue(str_starts_with($selectedIcon, '@theme-assets/simbioza/'));
-        $this->assertSame('hero', $manifestFiles[basename($selectedHero)]['role'] ?? null);
-        $this->assertContains($manifestFiles[basename($selectedIcon)]['role'] ?? null, ['icon', 'logo']);
+        foreach (['light', 'dark'] as $variant) {
+            $heroSource = $hero['visual_src_' . $variant] ?? null;
+            $iconSource = $logo['src_' . $variant] ?? null;
+            $selectedHero = is_string($heroSource) ? $heroSource : '';
+            $selectedIcon = is_string($iconSource) ? $iconSource : '';
+            $this->assertTrue(str_starts_with($selectedHero, '@theme-assets/simbioza/'));
+            $this->assertTrue(str_starts_with($selectedIcon, '@theme-assets/simbioza/'));
+            $this->assertSame('hero', $manifestFiles[basename($selectedHero)]['role'] ?? null);
+            $this->assertContains($manifestFiles[basename($selectedIcon)]['role'] ?? null, ['icon', 'logo']);
+        }
 
         $palettes = [
             'natural-light',
