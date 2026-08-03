@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "assets": [
+        {
+            "file": "hero-universal-artwork.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Univerzalni hero vizual",
+                "en": "Universal hero artwork"
+            },
+            "mime": "image/svg+xml",
+            "width": 394,
+            "height": 335,
+            "bytes": 16192,
+            "sha256": "b4549d85bb9739acc1d5f959a45f4e034898d15e0dc3ec007149943c61dd6816"
+        },
+        {
+            "file": "icon-simbioza-natural-light.png",
+            "role": "icon",
+            "label": {
+                "hr": "Simbioza - prirodna svijetla ikona",
+                "en": "Simbioza - natural light icon"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 74770,
+            "sha256": "df43eca54b2b0f83d1f452b300072e8834e9519f1f528f9e55ab25d3d39cdcbc"
+        }
+    ]
+}

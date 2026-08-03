@@ -35,13 +35,17 @@ Directory for runtime data. By default, it contains:
 - logs/ — Application logs. Ensure this directory is writable by the web
 server user.
 - cache/ — Cache storage. Also, it must be writable.
+- themes/ — Persistent theme-owned files. Preset theme libraries shipped by
+  Simbioza are versioned; files uploaded by administrators remain here and are
+  included by complete-theme export/import.
 
 You are free to choose a different location for these directories
 (see [Configuration](configuration_en.md) on how to override the default
 locations).
 
-Ensure this directory is writable by the web server user. Do not commit
-runtime artifacts to version control.
+Ensure this directory is writable by the web server user. Do not commit cache,
+logs, or other runtime artifacts to version control. The maintained preset
+libraries below `data/themes/` are the intentional exception.
 
 
 ### Build artifacts (`build/`)

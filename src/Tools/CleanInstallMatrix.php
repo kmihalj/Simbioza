@@ -460,6 +460,10 @@ function verifyMatrixCase(
             copyMatrixPath($sourceRoot . '/' . $path, $projectDirectory . '/' . $path);
         }
 
+        // HR: Zadane biblioteke tema dio su aplikacije, a cache i logovi nisu.
+        // EN: Preset theme libraries belong to the application; caches and logs do not.
+        copyMatrixPath($sourceRoot . '/data/themes', $projectDirectory . '/data/themes');
+
         foreach (['LICENSE'] as $file) {
             copyMatrixPath($sourceRoot . '/' . $file, $projectDirectory . '/' . $file);
         }

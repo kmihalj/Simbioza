@@ -8,19 +8,21 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+use function basename;
 use function dirname;
 use function file_get_contents;
 use function is_array;
 use function is_string;
 use function json_decode;
+use function str_starts_with;
 
 #[CoversNothing]
 final class SimbiozaBrandingTest extends TestCase
 {
     /**
-     * HR: Dokazuje da je nova tema aktivna i da su svi odobreni vizuali zasebne datoteke.
+     * HR: Dokazuje da je tema aktivna i da branding sadrži 24 cjelovita upravljana asseta.
      *
-     * EN: Proves that the new theme is active and every approved artwork is a separate file.
+     * EN: Proves the theme is active and branding contains 24 complete managed assets.
      */
     public function testSimbiozaThemeAndApprovedArtworkAreInstalled(): void
     {
@@ -56,27 +58,63 @@ final class SimbiozaBrandingTest extends TestCase
         $this->assertSame('medium', $hero['inner_size']);
         $this->assertSame(560, $hero['visual_width_px']);
         $this->assertSame(-48, $hero['visual_top_px']);
-        $this->assertSame(
-            '@app/theme-assets/simbioza/simbioza-mark-natural-dark.png',
-            $hero['visual_src'],
-        );
-        $this->assertSame(
-            '@app/theme-assets/simbioza/simbioza-app-icon.png',
-            $logo['src'],
-        );
-
-        foreach (
-            [
-                '01-natural-light.png',
-                '02-adriatic-light.png',
-                '03-botanical-light.png',
-                '04-natural-dark.png',
-                '05-adriatic-dark.png',
-                '06-botanical-dark.png',
-            ] as $preview
-        ) {
-            $this->assertFileExists($root . '/public/theme-assets/simbioza/previews/' . $preview);
+        $themeRoot = $root . '/data/themes/simbioza';
+        $manifest = $this->decodeJsonFile($themeRoot . '/theme-assets.json');
+        $assets = $this->arrayValue($manifest, 'assets');
+        $this->assertCount(24, $assets);
+        $manifestFiles = [];
+        foreach ($assets as $asset) {
+            if (is_array($asset) && is_string($asset['file'] ?? null)) {
+                $manifestFiles[$asset['file']] = $asset;
+            }
         }
+
+        $selectedHero = is_string($hero['visual_src'] ?? null) ? $hero['visual_src'] : '';
+        $selectedIcon = is_string($logo['src'] ?? null) ? $logo['src'] : '';
+        $this->assertTrue(str_starts_with($selectedHero, '@theme-assets/simbioza/'));
+        $this->assertTrue(str_starts_with($selectedIcon, '@theme-assets/simbioza/'));
+        $this->assertSame('hero', $manifestFiles[basename($selectedHero)]['role'] ?? null);
+        $this->assertContains($manifestFiles[basename($selectedIcon)]['role'] ?? null, ['icon', 'logo']);
+
+        $palettes = [
+            'natural-light',
+            'adriatic-light',
+            'botanical-light',
+            'natural-dark',
+            'adriatic-dark',
+            'botanical-dark',
+        ];
+        foreach ($palettes as $palette) {
+            foreach (['hero' => 1600, 'icon' => 512] as $kind => $size) {
+                foreach (['png', 'svg'] as $extension) {
+                    $file = $kind . '-' . $palette . '.' . $extension;
+                    $path = $themeRoot . '/assets/' . $file;
+                    $this->assertFileExists($path);
+                    $this->assertArrayHasKey($file, $manifestFiles);
+                    $this->assertSame(hash_file('sha256', $path), $manifestFiles[$file]['sha256']);
+
+                    if ($extension === 'png') {
+                        $dimensions = getimagesize($path);
+                        $this->assertIsArray($dimensions);
+                        $this->assertSame([$size, $size], [$dimensions[0], $dimensions[1]]);
+                        $header = file_get_contents($path, false, null, 0, 26);
+                        $this->assertIsString($header);
+                        $this->assertSame(6, ord($header[25]), $file . ' must use RGBA transparency.');
+                    } else {
+                        $svg = file_get_contents($path);
+                        $this->assertIsString($svg);
+                        $this->assertStringContainsString(
+                            'width="' . $size . '" height="' . $size . '" viewBox="0 0 1600 1600"',
+                            $svg,
+                        );
+                        $this->assertStringContainsString('<path ', $svg);
+                    }
+                }
+            }
+        }
+
+        $this->assertFileExists($themeRoot . '/source/simbioza-master-natural-dark.png');
+        $this->assertFileDoesNotExist($root . '/public/theme-assets/simbioza');
     }
 
     /**

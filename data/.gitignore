@@ -2,4 +2,7 @@
 
 !/cache/
 !/logs/
+!/themes/
+!/themes/**
+**/.DS_Store
 !.gitignore

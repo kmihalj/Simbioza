@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "assets": [
+        {
+            "file": "hero-kruzici-pred-footer.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Krugovi - hero vizual",
+                "en": "Circles - hero artwork"
+            },
+            "mime": "image/svg+xml",
+            "width": 157,
+            "height": 122,
+            "bytes": 1153,
+            "sha256": "7a81102cfcfac3efa9b6f182c77c7129f98db7bcbe33cd069c0ed96350e63ac4"
+        },
+        {
+            "file": "icon-simbioza-natural-light.png",
+            "role": "icon",
+            "label": {
+                "hr": "Simbioza - prirodna svijetla ikona",
+                "en": "Simbioza - natural light icon"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 74770,
+            "sha256": "df43eca54b2b0f83d1f452b300072e8834e9519f1f528f9e55ab25d3d39cdcbc"
+        }
+    ]
+}

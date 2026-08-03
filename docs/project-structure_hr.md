@@ -33,12 +33,16 @@ Direktorij za podatke nastale tijekom rada. Zadano sadrži:
 - `logs/` — aplikacijske zapise; direktorij mora biti zapisiv korisniku
   web-poslužitelja
 - `cache/` — predmemoriju; također mora biti zapisiva
+- `themes/` — trajne datoteke pojedinih tema. Biblioteke zadanih tema koje
+  isporučuje Simbioza spremaju se u repozitorij; datoteke koje prenesu
+  administratori ostaju ovdje i obuhvaćene su potpunim izvozom i uvozom teme
 
 Lokacije se mogu promijeniti. Postupak je opisan u dokumentu
 [Konfiguracija](configuration_hr.md).
 
-Osigurajte prava pisanja i nemojte spremati runtime artefakte u sustav kontrole
-verzija.
+Osigurajte prava pisanja i nemojte spremati cache, zapise ni druge runtime
+artefakte u sustav kontrole verzija. Održavane zadane biblioteke u
+`data/themes/` namjerna su iznimka.
 
 ### Artefakti izgradnje (`build/`)
 

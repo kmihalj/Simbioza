@@ -148,7 +148,7 @@ test.describe('module browser surfaces', () => {
     }
   });
 
-  test('Theme clone, package export, portable backup, deletion, and backup import round-trip', async ({ page }) => {
+  test('Theme clone, package export, complete export, deletion, and import round-trip', async ({ page }) => {
     test.setTimeout(90_000);
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/theme');
@@ -167,12 +167,12 @@ test.describe('module browser surfaces', () => {
     expect(packageDownload.suggestedFilename()).toMatch(/\.zip$/);
     expect(await packageDownload.path()).toBeTruthy();
 
-    const backupDownloadPromise = page.waitForEvent('download');
-    await page.getByRole('link', { name: 'Export theme backup' }).click();
-    const backupDownload = await backupDownloadPromise;
-    const backupPath = await backupDownload.path();
-    expect(backupDownload.suggestedFilename()).toMatch(/\.zip$/);
-    expect(backupPath).toBeTruthy();
+    const completeDownloadPromise = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export complete theme' }).click();
+    const completeDownload = await completeDownloadPromise;
+    const completePath = await completeDownload.path();
+    expect(completeDownload.suggestedFilename()).toMatch(/\.zip$/);
+    expect(completePath).toBeTruthy();
 
     page.once('dialog', (dialog) => dialog.accept());
     await Promise.all([
@@ -181,7 +181,7 @@ test.describe('module browser surfaces', () => {
     ]);
     await expect(page.getByRole('heading', { name: new RegExp(`Edit theme: ${cloneName}`) })).toHaveCount(0);
 
-    await page.locator('input[type="file"]').setInputFiles(backupPath);
+    await page.locator('input[name="complete_theme"]').setInputFiles(completePath);
     await Promise.all([
       page.waitForLoadState('networkidle'),
       page.getByRole('button', { name: 'Import theme', exact: true }).click(),

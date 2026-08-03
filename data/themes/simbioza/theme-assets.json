@@ -1,0 +1,317 @@
+{
+    "version": 1,
+    "assets": [
+        {
+            "file": "hero-natural-light.png",
+            "role": "hero",
+            "label": {
+                "hr": "Prirodna svijetla - hero PNG",
+                "en": "Natural light - hero PNG"
+            },
+            "mime": "image/png",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 180378,
+            "sha256": "f15bf4a40535487ef1b9aa061e6bb555c3b2f3beefa6576fded20df9c52a20dc"
+        },
+        {
+            "file": "hero-natural-light.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Prirodna svijetla - hero SVG",
+                "en": "Natural light - hero SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 89224,
+            "sha256": "99d122c6b8d719eb7754ed3aff7920209b4ef554d1afdc54b95468732c877ca5"
+        },
+        {
+            "file": "icon-natural-light.png",
+            "role": "icon",
+            "label": {
+                "hr": "Prirodna svijetla - ikona PNG",
+                "en": "Natural light - icon PNG"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 74770,
+            "sha256": "df43eca54b2b0f83d1f452b300072e8834e9519f1f528f9e55ab25d3d39cdcbc"
+        },
+        {
+            "file": "icon-natural-light.svg",
+            "role": "icon",
+            "label": {
+                "hr": "Prirodna svijetla - ikona SVG",
+                "en": "Natural light - icon SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 512,
+            "height": 512,
+            "bytes": 89222,
+            "sha256": "e3a3f3bc31ab799b4a624f760bd9b086413a42fccadf9fef3f370b409369106a"
+        },
+        {
+            "file": "hero-adriatic-light.png",
+            "role": "hero",
+            "label": {
+                "hr": "Jadranska svijetla - hero PNG",
+                "en": "Adriatic light - hero PNG"
+            },
+            "mime": "image/png",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 181248,
+            "sha256": "9d01ed4665376e4d62a916c6797a341593d74538a1bed72b85cab29514a68002"
+        },
+        {
+            "file": "hero-adriatic-light.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Jadranska svijetla - hero SVG",
+                "en": "Adriatic light - hero SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 89224,
+            "sha256": "a066da659da76cc489955429d9bbc33c04ec1bf942a102193d47d45d6c2aade8"
+        },
+        {
+            "file": "icon-adriatic-light.png",
+            "role": "icon",
+            "label": {
+                "hr": "Jadranska svijetla - ikona PNG",
+                "en": "Adriatic light - icon PNG"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 74792,
+            "sha256": "b095ed40ed403be19c3256e76c763885eab81f294162b3666d8c87f61099fb52"
+        },
+        {
+            "file": "icon-adriatic-light.svg",
+            "role": "icon",
+            "label": {
+                "hr": "Jadranska svijetla - ikona SVG",
+                "en": "Adriatic light - icon SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 512,
+            "height": 512,
+            "bytes": 89222,
+            "sha256": "b86293dae74868870425e275e33b2e9fb27c8da79796816cafd85f24c0812f46"
+        },
+        {
+            "file": "hero-botanical-light.png",
+            "role": "hero",
+            "label": {
+                "hr": "Botanička svijetla - hero PNG",
+                "en": "Botanical light - hero PNG"
+            },
+            "mime": "image/png",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 181444,
+            "sha256": "689236551baa3ff6bb0338fe1535c9130c4b862cbb594fa925c7bf8ae540c337"
+        },
+        {
+            "file": "hero-botanical-light.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Botanička svijetla - hero SVG",
+                "en": "Botanical light - hero SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 89224,
+            "sha256": "563d072ea04d2c9badbab3a8fa3114922a361aeba5d44b4262e0f150033147f0"
+        },
+        {
+            "file": "icon-botanical-light.png",
+            "role": "icon",
+            "label": {
+                "hr": "Botanička svijetla - ikona PNG",
+                "en": "Botanical light - icon PNG"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 74610,
+            "sha256": "28a4aaf0a9ed2e3f0a9b1ccae7c2cac96c26ca0d784aa7e4289a5f185a5eb9b4"
+        },
+        {
+            "file": "icon-botanical-light.svg",
+            "role": "icon",
+            "label": {
+                "hr": "Botanička svijetla - ikona SVG",
+                "en": "Botanical light - icon SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 512,
+            "height": 512,
+            "bytes": 89222,
+            "sha256": "3f785836084b31cf2a31bddd7630f525500331d190a3dbd969de8cb3c93ce74b"
+        },
+        {
+            "file": "hero-natural-dark.png",
+            "role": "hero",
+            "label": {
+                "hr": "Prirodna tamna - hero PNG",
+                "en": "Natural dark - hero PNG"
+            },
+            "mime": "image/png",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 181439,
+            "sha256": "a0b3261479b9907f3df5f24190f22e4ea449154b5488d2a08596cb1ca2ad3fa5"
+        },
+        {
+            "file": "hero-natural-dark.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Prirodna tamna - hero SVG",
+                "en": "Natural dark - hero SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 89224,
+            "sha256": "3d6f5dc94305bf4bd6b6360d1a76435a1c5e3331c320ed6ff73bf725419756f7"
+        },
+        {
+            "file": "icon-natural-dark.png",
+            "role": "icon",
+            "label": {
+                "hr": "Prirodna tamna - ikona PNG",
+                "en": "Natural dark - icon PNG"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 68929,
+            "sha256": "8ed433b9346c80064a2a674c5fbcbe34707fc3cf94c28901e77a2d581e533a24"
+        },
+        {
+            "file": "icon-natural-dark.svg",
+            "role": "icon",
+            "label": {
+                "hr": "Prirodna tamna - ikona SVG",
+                "en": "Natural dark - icon SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 512,
+            "height": 512,
+            "bytes": 89222,
+            "sha256": "ba66be4f3406a4e69f9d0ef1eff094399db2ecccd20d2a6ea3bb76240ff2606d"
+        },
+        {
+            "file": "hero-adriatic-dark.png",
+            "role": "hero",
+            "label": {
+                "hr": "Jadranska tamna - hero PNG",
+                "en": "Adriatic dark - hero PNG"
+            },
+            "mime": "image/png",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 181744,
+            "sha256": "ab8275d724bc6dc3dd3d8196033b14fc0a98afc9d9f517d9466270d0ca00e296"
+        },
+        {
+            "file": "hero-adriatic-dark.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Jadranska tamna - hero SVG",
+                "en": "Adriatic dark - hero SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 89224,
+            "sha256": "79ccf27e4d46de7f532edf24b14357bd07a20cdd27f721d85afa1acac6cd153d"
+        },
+        {
+            "file": "icon-adriatic-dark.png",
+            "role": "icon",
+            "label": {
+                "hr": "Jadranska tamna - ikona PNG",
+                "en": "Adriatic dark - icon PNG"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 71082,
+            "sha256": "849dd7aaa28297f06bced5eb09536aac1800a61dbb2fb766e576670928efadd1"
+        },
+        {
+            "file": "icon-adriatic-dark.svg",
+            "role": "icon",
+            "label": {
+                "hr": "Jadranska tamna - ikona SVG",
+                "en": "Adriatic dark - icon SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 512,
+            "height": 512,
+            "bytes": 89222,
+            "sha256": "b481fd995524630f91ae953516bca4358ee2d66a2c137f5146fc634610b6e041"
+        },
+        {
+            "file": "hero-botanical-dark.png",
+            "role": "hero",
+            "label": {
+                "hr": "Botanička tamna - hero PNG",
+                "en": "Botanical dark - hero PNG"
+            },
+            "mime": "image/png",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 181303,
+            "sha256": "c252402d93de2f8ee24faedfcfdb97bb7e14b97feaf5dfb9ca77fd46a024a948"
+        },
+        {
+            "file": "hero-botanical-dark.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Botanička tamna - hero SVG",
+                "en": "Botanical dark - hero SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 89224,
+            "sha256": "674a849025de0a75d1fca35713cd5291184a57df98eac6796e0a5882544e209a"
+        },
+        {
+            "file": "icon-botanical-dark.png",
+            "role": "icon",
+            "label": {
+                "hr": "Botanička tamna - ikona PNG",
+                "en": "Botanical dark - icon PNG"
+            },
+            "mime": "image/png",
+            "width": 512,
+            "height": 512,
+            "bytes": 68824,
+            "sha256": "7e8f775dbcc7775131989482ea6fba4cf92a096eca0d7769848c9907dcefa0b8"
+        },
+        {
+            "file": "icon-botanical-dark.svg",
+            "role": "icon",
+            "label": {
+                "hr": "Botanička tamna - ikona SVG",
+                "en": "Botanical dark - icon SVG"
+            },
+            "mime": "image/svg+xml",
+            "width": 512,
+            "height": 512,
+            "bytes": 89222,
+            "sha256": "7e966e0e07679d410af0a7e4959dde26b36b2293b05efa19e93cc2dca5702063"
+        }
+    ]
+}

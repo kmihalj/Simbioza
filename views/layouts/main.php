@@ -412,7 +412,7 @@ if (
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($title) ? $this->escape(__($title)) : $this->escape($appName) ?></title>
     <link rel="icon"
-          href="<?= $this->urlGenerator->getBasePath() ?>/theme-assets/simbioza/simbioza-app-icon.png"
+          href="<?= $this->urlGenerator->getBasePath() ?>/theme/assets/library/simbioza/icon-natural-light.png"
           type="image/png">
 
     <?php // phpcs:ignore ?>

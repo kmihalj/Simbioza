@@ -17,11 +17,25 @@ sjena. Široka baza moruzgve pričvršćena je uz kućicu, a spirala kućice zav
 malim srcem. Aktivna paleta Natural Dark koristi koraljnu `#FF8064` za
 moruzgvu, zlatnu `#E9B84A` za kućicu i boju morske pjene `#72D4C8` za raka.
 
-Produkcijski asseti nalaze se u `public/theme-assets/simbioza/`. Prozirni znak
-koristi hero, a kvadratna ikona s unutarnjim razmakom koristi se u zaglavlju i
-kao favicon preglednika. Šest zasebnih preview datoteka u direktoriju
-`previews/` čuva sve odobrene svijetle i tamne varijante palete.
+Cijeli branding paket nalazi se u `data/themes/simbioza/`, izvan javnog web
+korijena. Direktorij `assets/` sadrži šest cjelovitih prozirnih hero PNG
+datoteka veličine 1600 x 1600, šest pripadajućih vektorskih SVG datoteka te svih
+šest varijanti kao aplikacijske PNG i SVG ikone veličine 512 x 512. Nijedna
+datoteka nije izrezana iz kontaktne slike. Ponovljivi geometrijski master čuva
+se u `source/`, a `theme-assets.json` sadrži dvojezične nazive, namjene,
+dimenzije, veličine i SHA-256 kontrolne zbrojeve. Cijeli se skup ponovno izrađuje
+naredbom:
 
-Tema `simbioza` referencira lokalne aplikacijske assete. Izvoz paketa teme
-uključuje hero vizual i znak zaglavlja, a prijenosni backup teme uključuje svaki
-referencirani lokalni asset i sigurno prepisuje reference pri uvozu.
+```bash
+php scripts/generate_simbioza_brand_assets.php
+```
+
+Aktivna tema `simbioza` odabire `hero-natural-dark.png` i
+`icon-natural-light.png` kroz upravljane reference `@theme-assets/...`.
+Aplikacija kroz rutu Theme modula isporučuje samo zatražene datoteke biblioteke;
+ne duplicira biblioteku teme u `public` ili `vendor`.
+
+`Preuzmi paket teme` uključuje samo vizual i ikonu koje tema koristi. `Izvezi
+cijelu temu` uključuje cijeli direktorij `data/themes/simbioza`, zajedno s
+nekorištenim varijantama i izvornim materijalom, pa kasniji uvoz vraća cijelu
+biblioteku dostupnu za uređivanje.
