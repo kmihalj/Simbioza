@@ -6,7 +6,7 @@ odgovarajući modul prisutan. Opcionalni modul ne smije postati skriveni uvjet
 za osnovni rad.
 
 Svi moduli koriste Framework i međusobne interne ovisnosti s pomične grane
-`dev-main`. Repozitoriji modula i HFClean ne spremaju `composer.lock`; CI pri
+`dev-main`. Repozitoriji modula i Simbioza ne spremaju `composer.lock`; CI pri
 svakom pokretanju izvršava `composer update --with-all-dependencies`, dohvaća
 najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
 

@@ -1,6 +1,6 @@
-# HFClean installation
+# Simbioza installation
 
-HFClean is the integration application for the moving `dev-main` versions of
+Simbioza is the collaborative knowledge application for the moving `dev-main` versions of
 HeartPhrame Framework and its modules. It is not the upstream Framework and it
 does not include demo accounts or sample domain data.
 
@@ -15,14 +15,14 @@ does not include demo accounts or sample domain data.
 ## 2. Install current module heads
 
 ```bash
-git clone <your-hfclean-repository> HFClean
-cd HFClean
+git clone <your-simbioza-repository> Simbioza
+cd Simbioza
 composer update --with-all-dependencies
 composer check-platform-reqs
 ```
 
 Internal packages intentionally use `dev-main`. The root application therefore
-has `"minimum-stability": "dev"` and `"prefer-stable": true`. HFClean does not
+has `"minimum-stability": "dev"` and `"prefer-stable": true`. Simbioza does not
 commit `composer.lock`; every CI/deployment resolves and tests the current
 heads. Use `composer install` only when your deployment process intentionally
 provides a generated lock file.
@@ -45,7 +45,7 @@ Theme and Menu JSON files live below `resources/config/theme/` and
 
 ## 4. Migrate an empty database
 
-HFClean already commits the nine official initial migrations. Inspect and run
+Simbioza already commits the nine official initial migrations. Inspect and run
 them:
 
 ```bash
@@ -93,7 +93,7 @@ the complete browser, API, and performance suite with
 `php scripts/run_e2e.php --local --database=pgsql` or `--database=mysql`.
 The matrix and E2E tools never write database credentials to their reports or
 metrics.
-The HFClean CI workflow runs every minimal module combination on SQLite and the
+The Simbioza CI workflow runs every minimal module combination on SQLite and the
 complete module set plus all 40 E2E scenarios on clean PostgreSQL and MySQL
 service databases. This keeps Composer resolution, migrations, CLI/HTTP boot,
 functional flows, and performance budgets covered on every supported database
@@ -101,7 +101,7 @@ family.
 
 ## 6. Web server
 
-Point the document root to `HFClean/public`, make `data/` writable by the PHP
+Point the document root to `Simbioza/public`, make `data/` writable by the PHP
 process, and route unknown paths to `public/index.php`. For local development:
 
 ```bash

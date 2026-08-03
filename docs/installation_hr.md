@@ -1,6 +1,6 @@
-# Instalacija HFCleana
+# Instalacija Simbioze
 
-HFClean je integracijska aplikacija za pomične `dev-main` verzije HeartPhrame
+Simbioza je aplikacija za zajedničko znanje koja koristi pomične `dev-main` verzije HeartPhrame
 Frameworka i modula. Nije uzvodni Framework i ne sadrži demo račune ni probne
 domenske podatke.
 
@@ -15,14 +15,14 @@ domenske podatke.
 ## 2. Instaliranje aktualnih stanja modula
 
 ```bash
-git clone <tvoj-hfclean-repozitorij> HFClean
-cd HFClean
+git clone <tvoj-simbioza-repozitorij> Simbioza
+cd Simbioza
 composer update --with-all-dependencies
 composer check-platform-reqs
 ```
 
 Interni paketi namjerno koriste `dev-main`, zato aplikacija ima
-`"minimum-stability": "dev"` i `"prefer-stable": true`. HFClean ne sprema
+`"minimum-stability": "dev"` i `"prefer-stable": true`. Simbioza ne sprema
 `composer.lock`; svaki CI ili deployment razrješava i testira aktualna stanja.
 `composer install` koristi se samo kada deployment namjerno dobiva generirani
 lock file.
@@ -45,7 +45,7 @@ kako naziv PHP datoteke ne bi kolidirao s istoimenim direktorijem.
 
 ## 4. Migriranje prazne baze
 
-HFClean već sprema devet službenih početnih migracija. Pregledajte ih i
+Simbioza već sprema devet službenih početnih migracija. Pregledajte ih i
 pokrenite:
 
 ```bash
@@ -93,7 +93,7 @@ potpuni browser, API i performance skup naredbom
 `php scripts/run_e2e.php --local --database=pgsql` ili `--database=mysql`.
 Matrica i E2E alati nikada ne spremaju pristupne podatke baze u izvještaje ni
 metrike.
-HFClean CI tijek rada pokreće svaku minimalnu kombinaciju modula na SQLiteu te
+Simbioza CI tijek rada pokreće svaku minimalnu kombinaciju modula na SQLiteu te
 potpuni skup modula i svih 40 E2E scenarija na čistim PostgreSQL i MySQL
 servisnim bazama. Tako se na svakoj podržanoj obitelji baza provjeravaju
 Composer razrješavanje, migracije, CLI/HTTP pokretanje, funkcionalni tokovi i
@@ -101,7 +101,7 @@ performance budžeti.
 
 ## 6. Web-poslužitelj
 
-Document root usmjerite na `HFClean/public`, omogućite PHP procesu pisanje u
+Document root usmjerite na `Simbioza/public`, omogućite PHP procesu pisanje u
 `data/` i nepoznate putanje usmjerite na `public/index.php`. Za lokalni razvoj:
 
 ```bash

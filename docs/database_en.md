@@ -1,7 +1,7 @@
 # Database configuration
 
 Database-backed modules use `heartphrame-module-orm`; Theme and Menu do not
-need ORM or a database. HFClean is verified on SQLite, PostgreSQL, MySQL, and
+need ORM or a database. Simbioza is verified on SQLite, PostgreSQL, MySQL, and
 MariaDB-compatible connections.
 
 ## Local file

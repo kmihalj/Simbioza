@@ -412,8 +412,8 @@ if (
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($title) ? $this->escape(__($title)) : $this->escape($appName) ?></title>
     <link rel="icon"
-          href="<?= $this->urlGenerator->getBasePath() ?>/favicon.svg"
-          type="image/svg+xml">
+          href="<?= $this->urlGenerator->getBasePath() ?>/theme-assets/simbioza/simbioza-app-icon.png"
+          type="image/png">
 
     <?php // phpcs:ignore ?>
     <link rel="stylesheet" href="<?= $this->urlGenerator->getBasePath() ?>/http_cdn.jsdelivr.net_npm_bootstrap@5.2.3_dist_css_bootstrap.css">
@@ -621,7 +621,7 @@ if (
 
     <footer class="mt-5 pt-3 border-top text-center text-muted">
         <div class="container-fluid">
-            <p>&copy; <?= date('Y') ?> <?= __('HeartPhrame. All rights reserved.') ?></p>
+            <p>&copy; <?= date('Y') ?> <?= __('Simbioza by HeartPhrame. All rights reserved.') ?></p>
         </div>
     </footer>
 

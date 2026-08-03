@@ -1,7 +1,7 @@
 # Konfiguracija baze
 
 Moduli koji spremaju podatke koriste `heartphrame-module-orm`; Theme i Menu ne
-trebaju ORM ni bazu. HFClean je provjeren na SQLite, PostgreSQL, MySQL i
+trebaju ORM ni bazu. Simbioza je provjerena na SQLite, PostgreSQL, MySQL i
 MariaDB-kompatibilnim vezama.
 
 ## Lokalna datoteka

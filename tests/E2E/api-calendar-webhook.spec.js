@@ -372,7 +372,7 @@ test.describe.serial('CalDAV discovery, collection, and object lifecycle', () =>
     const icalendar = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//HFClean E2E//EN',
+      'PRODID:-//Simbioza E2E//EN',
       'BEGIN:VEVENT',
       'UID:e2e-caldav-event',
       'DTSTART:20260820T080000Z',

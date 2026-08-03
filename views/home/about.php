@@ -13,27 +13,10 @@ $themeShowsInnerHero = isset($themeLayoutRenderer)
 && method_exists($themeLayoutRenderer, 'heroEnabled')
 && $themeLayoutRenderer->heroEnabled(false);
 
-$psrItems = [
-    'PSR-3 Logger Interface',
-    'PSR-4 Autoloading',
-    'PSR-7 HTTP Message Interface',
-    'PSR-11 Container Interface',
-    'PSR-12 Extended Coding Style Guide',
-    'PSR-14 Event Dispatcher',
-    'PSR-15 HTTP Server Request Handlers',
-    'PSR-16 Caching Interface',
-    'PSR-17 HTTP Factories',
-];
-
-$functionalityItems = [
-    'Routing',
-    'Templating',
-    'Localization',
-    'Configuration',
-    'Sessions',
-    'Authentication',
-    'Encryption',
-    'Database abstraction',
+$principles = [
+    'Structured knowledge without losing human context.',
+    'Collaboration supported by clear roles and permissions.',
+    'A modular foundation that adapts to each community.',
 ];
 ?>
 
@@ -44,19 +27,16 @@ $functionalityItems = [
     </div>
     <?php endif; ?>
     <div class="card-body">
-        <p><?= $this->escape(__('Follows Model-View-Controller architecture.')) ?></p>
-
-        <p><?= $this->escape(__('Custom implementation for several PSR recommendations')) ?></p>
+        <p class="lead"><?= $this->escape(__(
+            'Simbioza is a shared knowledge environment for pages, spaces, collaboration, and publication.',
+        )) ?></p>
+        <p><?= $this->escape(__(
+            'It is powered by HeartPhrame and grows through focused modules '
+            . 'without locking the application to one workflow.',
+        )) ?></p>
         <ul>
-            <?php foreach ($psrItems as $item) : ?>
-                <li><?= $this->escape(__($item)) ?></li>
-            <?php endforeach; ?>
-        </ul>
-
-        <p><?= $this->escape(__('Other notable functionalities:')) ?></p>
-        <ul>
-            <?php foreach ($functionalityItems as $item) : ?>
-                <li><?= $this->escape(__($item)) ?></li>
+            <?php foreach ($principles as $principle) : ?>
+                <li><?= $this->escape(__($principle)) ?></li>
             <?php endforeach; ?>
         </ul>
     </div>

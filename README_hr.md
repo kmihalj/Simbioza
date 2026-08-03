@@ -1,16 +1,18 @@
-# HFClean HeartPhrame aplikacija
+# Simbioza
 
 [English version](README.md)
 
-HFClean je integracijska aplikacija za HeartPhrame Framework i njegove
-samostalno održavane module. Aplikacijski razvoj pripada ovdje i u repozitorije
+> Znanje koje živi zajedno.
+
+Simbioza je aplikacija za zajedničko znanje izgrađena na HeartPhrame Frameworku i njegovim
+samostalno održavanim modulima. Aplikacijski razvoj pripada ovdje i u repozitorije
 modula; Framework se koristi s uzvodne grane `main` i ne razvija se u ovom
 repozitoriju.
 
 ## Ovisnosti
 
 Svaki HeartPhrame modul zahtijeva
-`aaieduhr/heartphrame-framework:dev-main`. HFClean trenutačno povezuje ORM,
+`aaieduhr/heartphrame-framework:dev-main`. Simbioza trenutačno povezuje ORM,
 Menu, Theme, Auth, E-mail, Notification, HTML Editor, Task, Comment, Workspace,
 Calendar i API. Obavezni redoslijed modula i opcionalne mogućnosti navedeni su
 u [matrici ovisnosti](docs/module-dependencies_hr.md).
@@ -63,6 +65,7 @@ zaseban [engleski indeks](docs/index_en.md).
 - [Konfiguracija baze](docs/database_hr.md)
 - [API v1 ugovor](docs/api-v1-contract_hr.md)
 - [End-to-end testiranje](docs/end-to-end-testing_hr.md)
+- [Vizualni identitet i tema](docs/branding_hr.md)
 
 E2E skup uključuje neosjetljiva ORM i HTTP mjerenja te trajne budžete za broj
 SQL upita, trajanje zahtjeva, vršnu memoriju i veličinu odgovora. Isti potpuni
@@ -70,7 +73,7 @@ skup u CI-ju se pokreće na SQLiteu, PostgreSQL-u i MySQL-u.
 
 ## Uključeni moduli
 
-HFClean povezuje API, Auth, Calendar, Comment, HTML Editor, E-mail, Menu,
+Simbioza povezuje API, Auth, Calendar, Comment, HTML Editor, E-mail, Menu,
 Notification, ORM, Task, Theme i Workspace. Moduli zadržavaju vlasništvo nad
 svojim domenskim pravilima, a aplikacija ih povezuje i daje postavke deploymenta.
 

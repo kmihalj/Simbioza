@@ -1,6 +1,6 @@
 # End-to-end testing
 
-HFClean has a browser and HTTP API end-to-end suite for the assembled
+Simbioza has a browser and HTTP API end-to-end suite for the assembled
 application. Unlike a module unit test, it installs the latest `dev-main`
 Framework and module heads into a new temporary project, runs all official
 migrations against a new SQLite database by default, starts a real HTTP server,
@@ -19,11 +19,11 @@ operator.
 
 The Workspace, page, draft, and published versions created by the browser test
 are synthetic fixtures, not starter or demonstration content. They are never
-copied into HFClean, a module package, or an administrator's installation.
+copied into Simbioza, a module package, or an administrator's installation.
 
 ## What is covered
 
-The 40 scenarios cover every module shipped by HFClean. They exercise public
+The 40 scenarios cover every module shipped by Simbioza. They exercise public
 behavior rather than private implementation details.
 
 | Area | End-to-end coverage |

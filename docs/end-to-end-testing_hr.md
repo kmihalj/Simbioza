@@ -1,6 +1,6 @@
 # End-to-end testiranje
 
-HFClean ima end-to-end skup testova preglednika i HTTP API-ja za sastavljenu
+Simbioza ima end-to-end skup testova preglednika i HTTP API-ja za sastavljenu
 aplikaciju. Za razliku od jediničnog testa modula, ovaj test instalira najnovije
 `dev-main` stanje Frameworka i modula u novi privremeni projekt, pokreće sve
 službene migracije zadano nad novom SQLite bazom, podiže stvarni HTTP
@@ -18,11 +18,11 @@ operatoru.
 
 Workspace, stranica, nacrt i objavljene verzije koje stvara browser test
 sintetički su testni podaci, a ne početni ili demonstracijski sadržaj. Nikada se
-ne kopiraju u HFClean, paket modula ni administratorsku instalaciju.
+ne kopiraju u Simbiozu, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-Svih 40 scenarija pokriva svaki modul koji HFClean isporučuje. Provjerava se
+Svih 40 scenarija pokriva svaki modul koji Simbioza isporučuje. Provjerava se
 javno ponašanje, a ne privatni detalji implementacije.
 
 | Područje | End-to-end pokrivenost |

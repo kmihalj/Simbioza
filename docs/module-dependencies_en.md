@@ -6,7 +6,7 @@ corresponding module is present. An optional module must not become a hidden
 requirement for basic operation.
 
 All modules use the Framework and internal module dependencies from the moving
-`dev-main` branch. Module repositories and HFClean do not commit
+`dev-main` branch. Module repositories and Simbioza do not commit
 `composer.lock`; CI runs `composer update --with-all-dependencies` on every run,
 resolves the latest `main` heads, and then executes the complete
 `composer on-commit` suite.

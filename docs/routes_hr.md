@@ -28,7 +28,7 @@ Primjer iz `config/routes.php`:
 ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
 ```
 
-Početni HFClean kontroler provjerava i neutralni servis
+Početni kontroler Simbioze provjerava i neutralni servis
 `heartphrame.application_homepage_resolver`. Workspace taj servis registrira
 samo dok je modul uključen. Pronađena objavljena stranica ili ACL-vidljiv cilj
 Sažetaka daje privremeni privatni redirect na svoj kanonski Workspace URL;

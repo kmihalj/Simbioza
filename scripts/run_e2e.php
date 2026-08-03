@@ -173,7 +173,7 @@ function configureE2eApplication(string $projectDirectory): void
     }
 
     $config = matrixStringKeyedArray($configValue, 'E2E application configuration');
-    $config['name'] = 'HFClean E2E';
+    $config['name'] = 'Simbioza E2E';
     $localization = is_array($config['localization'] ?? null) ? $config['localization'] : [];
     $localization['locale'] = 'en';
     $localization['fallback_locale'] = 'en';
@@ -216,7 +216,7 @@ function configureE2eApplication(string $projectDirectory): void
         ],
         'sender' => [
             'email' => 'e2e@example.invalid',
-            'name' => 'HFClean E2E',
+            'name' => 'Simbioza E2E',
         ],
         'application_base_url' => 'http://127.0.0.1',
         'notifications_enabled' => false,
@@ -239,7 +239,7 @@ function configureE2eApplication(string $projectDirectory): void
     }
 
     $themeSettings = matrixStringKeyedArray($themeSettingsValue, 'E2E theme settings');
-    $themeSettings['active_theme'] = 'srce-sup';
+    $themeSettings['active_theme'] = 'simbioza';
     $encodedThemeSettings = json_encode(
         $themeSettings,
         JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
@@ -325,7 +325,7 @@ function seedE2eFixtures(string $projectDirectory): array
     return [
         'admin_api_token' => $apiKeys->issue(
             $adminId,
-            'HFClean E2E administrator',
+            'Simbioza E2E administrator',
             'Ephemeral administrator key for the isolated E2E suite.',
             $scopes,
             [],
@@ -334,7 +334,7 @@ function seedE2eFixtures(string $projectDirectory): array
         )->plainTextToken,
         'user_api_token' => $apiKeys->issue(
             $userId,
-            'HFClean E2E regular user',
+            'Simbioza E2E regular user',
             'Ephemeral regular-user key for authorization boundary tests.',
             $scopes,
             [],

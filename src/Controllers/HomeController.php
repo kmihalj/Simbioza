@@ -47,12 +47,13 @@ class HomeController
         return $this->responseFactory->view(
             'home/index',
             [
-                'title' => 'Welcome to the HeartPhrame Framework',
-                'content' => 'This is a sample homepage showcasing our PHP framework.',
+                'title' => 'Simbioza',
+                'content' => 'A shared space for knowledge, collaboration, and content that grows with your community.',
                 'themeHero' => [
                     'is_home' => true,
-                    'title' => __('Welcome to the HeartPhrame Framework'),
-                    'subtitle' => __('This is a sample homepage showcasing our PHP framework.'),
+                    'eyebrow' => __('Simbioza by HeartPhrame'),
+                    'title' => __('Simbioza'),
+                    'subtitle' => __('Knowledge that lives together.'),
                 ],
             ],
             true,
@@ -102,9 +103,9 @@ class HomeController
             'title' => 'About',
             'themeHero' => [
                 'is_home' => false,
-                'eyebrow' => __('HeartPhrame'),
-                'title' => __('About'),
-                'subtitle' => __('A lightweight PHP framework built around PSR standards.'),
+                'eyebrow' => __('Simbioza by HeartPhrame'),
+                'title' => __('About Simbioza'),
+                'subtitle' => __('Knowledge that lives together.'),
             ],
         ]);
     }

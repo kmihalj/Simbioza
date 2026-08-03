@@ -1,8 +1,12 @@
-# HFClean dokumentacija (HR)
+# Dokumentacija Simbioze (HR)
 
-Ovo je dokumentacija integracijske HFClean aplikacije i uključenih HeartPhrame
-modula. Framework se koristi s uzvodne grane `main`; ne razvija se u ovom
+Ovo je dokumentacija aplikacije Simbioza za zajedničko znanje i njezinih uključenih
+HeartPhrame modula. Framework se koristi s uzvodne grane `main`; ne razvija se u ovom
 repozitoriju.
+
+Slogan brenda: **Znanje koje živi zajedno.**
+
+- [Vizualni identitet i tema Simbioza](branding_hr.md)
 
 Dokumentacija je strukturirana za početnike i napredne korisnike. Svaka tema
 ima zasebnu hrvatsku i englesku datoteku.

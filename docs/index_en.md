@@ -1,8 +1,12 @@
-# HFClean documentation (EN)
+# Simbioza documentation (EN)
 
-This is the documentation for the HFClean integration application and its
+This is the documentation for the Simbioza collaborative knowledge application and its
 enabled HeartPhrame modules. The Framework is consumed from upstream `main`; it
 is not developed in this repository.
+
+Brand slogan: **Knowledge that lives together.**
+
+- [Brand identity and the Simbioza theme](branding_en.md)
 
 The documentation is structured for beginners and advanced users. Each topic
 has a separate English and Croatian file.

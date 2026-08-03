@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // Application name
-    'name' => 'HFClean',
+    'name' => 'Simbioza',
 
     // Localization
     'localization' => [

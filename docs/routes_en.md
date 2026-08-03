@@ -32,7 +32,7 @@ Here is an example from `config/routes.php`:
 ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
 ```
 
-HFClean's root controller also checks the neutral
+Simbioza's root controller also checks the neutral
 `heartphrame.application_homepage_resolver` service. Workspace registers that
 service only while the module is enabled. A resolved published page or
 ACL-visible Summaries target produces a temporary private redirect to its

@@ -533,7 +533,7 @@ function verifyMatrixCase(
         }
 
         $appConfig = matrixStringKeyedArray($appConfigValue, 'Application configuration');
-        $appConfig['name'] = 'HFClean matrix: ' . $caseName;
+        $appConfig['name'] = 'Simbioza matrix: ' . $caseName;
         $appConfig['cache_dir'] = $projectDirectory . '/data/cache';
         $logsConfig = $appConfig['logs'] ?? [];
         $logsConfig = is_array($logsConfig) ? $logsConfig : [];
@@ -620,7 +620,10 @@ function verifyMatrixCase(
         if (
             $httpResult->exitCode !== 0
             || !str_contains($httpResult->output, '<html lang="hr">')
-            || !str_contains($httpResult->output, 'Dobrodošli u HeartPhrame Framework')
+            || !str_contains(
+                $httpResult->output,
+                'Zajednički prostor za znanje, suradnju i sadržaj koji raste s vašom zajednicom.',
+            )
         ) {
             throw new RuntimeException("HTTP homepage failed:\n" . $httpResult->output);
         }
