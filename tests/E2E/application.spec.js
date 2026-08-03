@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { e2eEnvironment, login } from './helpers.js';
+import {
+  apiHeaders,
+  e2eEnvironment,
+  expectData,
+  idempotencyKey,
+  login,
+} from './helpers.js';
 
 const {
   adminLogin,
@@ -89,8 +95,8 @@ test.describe('browser flows', () => {
     await expect(page.locator('body')).toContainText(/Access denied|Pristup nije dozvoljen/i);
   });
 
-  test('administrator publishes content while drafts and immutable versions remain separated', async ({ page }) => {
-    test.setTimeout(60_000);
+  test('administrator publishes content while drafts and immutable versions remain separated', async ({ page, request }) => {
+    test.setTimeout(90_000);
 
     const workspaceSlug = 'e2e-content-workspace';
     const pageSlug = 'e2e-published-page';
@@ -153,6 +159,130 @@ test.describe('browser flows', () => {
     ]);
     await expect(page.getByRole('heading', { name: secondDraftBody, exact: true })).toBeVisible();
     await expect(page.getByText(firstPublishedBody, { exact: true })).toHaveCount(0);
+
+    await expectData(await request.put(`/api/v1/workspaces/${workspaceSlug}/acl`, {
+      headers: apiHeaders(apiToken, {
+        'Idempotency-Key': idempotencyKey('browser-workspace-public-acl'),
+      }),
+      data: {
+        subjects: [{
+          type: 'public',
+          permissions: {
+            can_view: true,
+            can_add: false,
+            can_edit: false,
+            can_publish: false,
+            can_delete: false,
+            can_manage: false,
+          },
+        }],
+      },
+    }));
+    const tree = await expectData(await request.get(
+      `/api/v1/workspaces/${workspaceSlug}/tree?lang=en`,
+      { headers: apiHeaders(apiToken) },
+    ));
+    const publishedNode = tree.find((node) => node.slug === pageSlug);
+    expect(publishedNode?.id).toBeTruthy();
+
+    await page.getByRole('link', { name: /Shorts|Sažetci/i }).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`);
+    await expect(page.getByRole('heading', { name: /^(Shorts|Sažetci)$/i })).toBeVisible();
+    await expect(page.locator('.workspace-short-card')).toContainText(secondDraftBody);
+    await expect(page.getByRole('link', { name: /Read more|Pročitaj više/i })).toBeVisible();
+    await expect(page.locator('#workspace-shorts-depth')).toHaveValue('1');
+    await expect(page.locator('#workspace-shorts-limit')).toHaveValue('10');
+    await expect(page.locator('#workspace-shorts-order')).toHaveValue('hierarchy');
+    await expect(page.locator('#workspace-shorts-limit option[value="all"]')).toBeEnabled();
+    const excerptGeometry = await page.locator('.workspace-short-excerpt').evaluate((excerpt) => {
+      const style = getComputedStyle(excerpt);
+      const fade = getComputedStyle(excerpt, '::after');
+
+      return {
+        maxHeight: Number.parseFloat(style.maxHeight),
+        overflow: style.overflow,
+        fadeBackground: fade.backgroundImage,
+      };
+    });
+    expect(excerptGeometry.maxHeight).toBeGreaterThan(0);
+    expect(excerptGeometry.overflow).toBe('hidden');
+    expect(excerptGeometry.fadeBackground).toContain('linear-gradient');
+
+    await page.getByRole('link', { name: /Read more|Pročitaj više/i }).click();
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.reload();
+    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    await page.getByRole('button', {
+      name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
+    }).click();
+
+    const nodeDialog = page.locator('#workspace-node-editor-modal');
+    await expect(nodeDialog).toBeVisible();
+    const stacking = await nodeDialog.evaluate((modal) => {
+      const backdrop = document.querySelector('.modal-backdrop');
+
+      return {
+        directBodyChild: modal.parentElement === document.body,
+        modalZIndex: Number.parseInt(getComputedStyle(modal).zIndex, 10),
+        backdropZIndex: backdrop instanceof HTMLElement
+          ? Number.parseInt(getComputedStyle(backdrop).zIndex, 10)
+          : 0,
+      };
+    });
+    expect(stacking.directBodyChild).toBe(true);
+    expect(stacking.modalZIndex).toBeGreaterThan(stacking.backdropZIndex);
+
+    const publicAclRow = nodeDialog.getByRole('row').filter({ hasText: /Public|Javno/i });
+    const inheritedView = publicAclRow.locator('.workspace-acl-checkbox-inherited').first();
+    const directView = publicAclRow.locator('.workspace-acl-checkbox-direct').first();
+    await expect(inheritedView).toBeChecked();
+    await expect(inheritedView).toBeDisabled();
+    await expect(directView).toBeEnabled();
+    await expect(directView).not.toBeChecked();
+    await directView.check();
+
+    const aclColors = await publicAclRow.evaluate((row) => {
+      const inherited = row.querySelector('.workspace-acl-checkbox-inherited');
+      const direct = row.querySelector('.workspace-acl-checkbox-direct');
+      if (!(inherited instanceof HTMLElement) || !(direct instanceof HTMLElement)) {
+        throw new Error('ACL color controls are missing.');
+      }
+
+      return {
+        inherited: getComputedStyle(inherited).backgroundColor,
+        direct: getComputedStyle(direct).backgroundColor,
+        body: getComputedStyle(document.body).backgroundColor,
+      };
+    });
+    expect(aclColors.inherited).not.toBe(aclColors.direct);
+    expect(aclColors.inherited).not.toBe(aclColors.body);
+    expect(aclColors.direct).not.toBe(aclColors.body);
+
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`),
+      nodeDialog.getByRole('button', { name: /Save restrictions|Spremi ograničenja/i }).click(),
+    ]);
+    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    await page.getByRole('button', {
+      name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
+    }).click();
+    await expect(nodeDialog).toBeVisible();
+    await expect(
+      nodeDialog.getByRole('row').filter({ hasText: /Public|Javno/i })
+        .locator('.workspace-acl-checkbox-direct').first(),
+    ).toBeChecked();
+
+    const titleInput = nodeDialog.locator('input[name="title"]');
+    await expect(titleInput).toBeEnabled();
+    await titleInput.fill('E2E Published Page Renamed');
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`),
+      nodeDialog.getByRole('button', { name: /Save item|Spremi stavku/i }).click(),
+    ]);
+    await expect(page.getByRole('link', {
+      name: 'E2E Published Page Renamed',
+      exact: true,
+    })).toBeVisible();
 
     await page.getByRole('button', { name: 'History' }).click();
     const historyDialog = page.getByRole('dialog', { name: 'Version history' });
