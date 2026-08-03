@@ -220,7 +220,9 @@ test.describe('browser flows', () => {
 
     await page.getByRole('link', { name: /Shorts|Summaries|Sažetci/i }).click();
     await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`);
-    await expect(page.getByRole('heading', { name: /^(Shorts|Summaries|Sažetci)$/i })).toBeVisible();
+    await expect(page.getByRole('heading', {
+      name: /^(Shorts|Summaries|Sažetci) · /i,
+    })).toBeVisible();
     await expect(page.locator('.workspace-short-card')).toContainText(secondDraftBody);
     await expect(page.getByRole('link', { name: /Read more|Pročitaj više/i })).toBeVisible();
     await expect(page.locator('#workspace-shorts-depth')).toHaveValue('2');
@@ -242,8 +244,15 @@ test.describe('browser flows', () => {
     expect(excerptGeometry.overflow).toBe('hidden');
     expect(excerptGeometry.fadeBackground).toContain('linear-gradient');
 
+    await expect(page.locator('#workspace-page-tree')).toHaveClass(/\bshow\b/);
+    await expect(page.locator('#workspace-shorts-display-options')).not.toHaveClass(/\bshow\b/);
+    await expect(page.getByRole('button', { name: 'Page tree', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Display options', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Page tree', exact: true })).toHaveText('');
+    await expect(page.getByRole('button', { name: 'Display options', exact: true })).toHaveText('');
+
     await page.goto(`/workspace/${workspaceSlug}/shorts?lang=en&tree=0&options=0`);
-    await expect(page.getByRole('heading', { name: 'Summaries', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Summaries · / })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Page tree', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Display options', exact: true })).toBeVisible();
     await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
@@ -260,13 +269,13 @@ test.describe('browser flows', () => {
       && url.searchParams.get('lang') === 'hr'
       && url.searchParams.get('tree') === '0'
       && url.searchParams.get('options') === '0');
-    await expect(page.getByRole('heading', { name: 'Sažetci', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Sažetci · / })).toBeVisible();
     await expect(page.locator('.workspace-short-card')).toContainText(secondDraftBody);
 
     const currentShortsUrl = new URL(page.url());
     const currentShortsPath = `${currentShortsUrl.pathname}${currentShortsUrl.search}`;
     await page.goto(`/locale/en?next=${encodeURIComponent(currentShortsPath)}`);
-    await expect(page.getByRole('heading', { name: 'Summaries', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Summaries · / })).toBeVisible();
 
     await page.getByRole('link', { name: /Read more|Pročitaj više/i }).click();
     await page.emulateMedia({ colorScheme: 'dark' });
