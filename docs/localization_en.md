@@ -7,11 +7,14 @@ your application into multiple languages.
 
 The localization system is configured in your `config/app.php` file:
 
+Croatian is the site's default and fallback language. Browser detection and a
+manual language selection can still activate any supported locale.
+
 ```php
 return [
     'localization' => [
-        'locale' => 'en',
-        'fallback_locale' => 'en',
+        'locale' => 'hr',
+        'fallback_locale' => 'hr',
         'detect_browser_locale' => true,
         'translations_dir' => __DIR__ . '/../lang',
     ],

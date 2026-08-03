@@ -619,8 +619,8 @@ function verifyMatrixCase(
         ];
         if (
             $httpResult->exitCode !== 0
-            || !str_contains($httpResult->output, '<html')
-            || !str_contains($httpResult->output, 'Welcome to the HeartPhrame Framework')
+            || !str_contains($httpResult->output, '<html lang="hr">')
+            || !str_contains($httpResult->output, 'Dobrodošli u HeartPhrame Framework')
         ) {
             throw new RuntimeException("HTTP homepage failed:\n" . $httpResult->output);
         }

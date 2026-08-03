@@ -8,8 +8,8 @@ return [
 
     // Localization
     'localization' => [
-        'locale' => 'en',
-        'fallback_locale' => 'en',
+        'locale' => 'hr',
+        'fallback_locale' => 'hr',
         'supported_locales' => ['hr', 'en'],
         'detect_browser_locale' => true,
         'translations_dir' => __DIR__ . '/../lang',

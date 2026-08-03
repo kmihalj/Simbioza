@@ -7,11 +7,14 @@ više jezika.
 
 Lokalizacija se podešava u `config/app.php`:
 
+Hrvatski je zadani jezik sitea i jezik povratnog prikaza. Automatsko otkrivanje
+preglednika i ručni odabir i dalje mogu aktivirati bilo koji podržani jezik.
+
 ```php
 return [
     'localization' => [
         'locale' => 'hr',
-        'fallback_locale' => 'en',
+        'fallback_locale' => 'hr',
         'detect_browser_locale' => true,
         'translations_dir' => __DIR__ . '/../lang',
     ],
