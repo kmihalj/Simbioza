@@ -173,6 +173,30 @@ test.describe('module browser surfaces', () => {
     await expect(editor.locator('[data-theme-section-id="assets"]')).toHaveCount(1);
 
     await editor.locator('[data-theme-section-id="hero"] > summary').click();
+    const heroColorControls = editor.locator(
+      '[data-theme-section-id="hero"] [data-theme-color-control]',
+    );
+    await expect(heroColorControls).toHaveCount(18);
+    const allColorInputs = editor.locator('input[type="color"]');
+    await expect(editor.locator('[data-theme-color-control]')).toHaveCount(await allColorInputs.count());
+
+    const lightGradientPicker = editor.locator(
+      '[data-theme-gradient-color][data-variant="light"]',
+    ).first();
+    const lightGradientHex = lightGradientPicker.locator(
+      'xpath=ancestor::*[@data-theme-color-control]//*[@data-theme-color-text]',
+    );
+    await lightGradientHex.fill('#112233');
+    await expect(lightGradientPicker).toHaveValue('#112233');
+    await expect.poll(() => page.locator('[data-theme-preview="light"]').evaluate(
+      (preview) => preview.style.getPropertyValue('--hph-hero-gradient-1'),
+    )).toBe('#112233');
+    await lightGradientPicker.evaluate((input) => {
+      input.value = '#445566';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await expect(lightGradientHex).toHaveValue('#445566');
+
     const lightHeroSelect = editor.locator(
       '[data-theme-hero-visual-source][data-variant="light"]',
     );
