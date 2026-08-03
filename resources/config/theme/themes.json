@@ -784,8 +784,8 @@
                 "visual_src": "@app/theme-assets/simbioza/simbioza-mark-natural-dark.png",
                 "visual_alt": [],
                 "visual_decorative": true,
-                "visual_width_px": 500,
-                "visual_top_px": -12,
+                "visual_width_px": 560,
+                "visual_top_px": -48,
                 "visual_right_px": 24,
                 "visual_rotation_deg": 0,
                 "wave": true

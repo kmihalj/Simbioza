@@ -54,6 +54,8 @@ final class SimbiozaBrandingTest extends TestCase
 
         $this->assertSame('medium', $hero['home_size']);
         $this->assertSame('medium', $hero['inner_size']);
+        $this->assertSame(560, $hero['visual_width_px']);
+        $this->assertSame(-48, $hero['visual_top_px']);
         $this->assertSame(
             '@app/theme-assets/simbioza/simbioza-mark-natural-dark.png',
             $hero['visual_src'],
