@@ -376,6 +376,12 @@ function startE2eServer(
     $process = proc_open(
         [
             PHP_BINARY,
+            // HR: Arhiva cijele teme može sadržavati više upravljanih datoteka.
+            // EN: A complete-theme archive may contain several managed files.
+            '-d',
+            'upload_max_filesize=64M',
+            '-d',
+            'post_max_size=65M',
             '-S',
             '127.0.0.1:' . $port,
             '-t',
