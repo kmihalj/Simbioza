@@ -1,6 +1,6 @@
 {
-    "name": "aaieduhr/heartphrame",
-    "description": "A HeartPhrame Application",
+    "name": "heartphrame/simbioza",
+    "description": "Simbioza - a collaborative knowledge application powered by HeartPhrame",
     "type": "project",
     "license": "EUPL-1.2",
     "minimum-stability": "dev",
