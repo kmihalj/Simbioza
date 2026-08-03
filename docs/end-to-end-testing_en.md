@@ -23,7 +23,7 @@ copied into HFClean, a module package, or an administrator's installation.
 
 ## What is covered
 
-The 39 scenarios cover every module shipped by HFClean. They exercise public
+The 40 scenarios cover every module shipped by HFClean. They exercise public
 behavior rather than private implementation details.
 
 | Area | End-to-end coverage |

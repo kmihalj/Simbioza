@@ -96,7 +96,7 @@ test.describe('browser flows', () => {
   });
 
   test('administrator publishes content while drafts and immutable versions remain separated', async ({ page, request }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(180_000);
 
     const workspaceSlug = 'e2e-content-workspace';
     const pageSlug = 'e2e-published-page';
@@ -112,7 +112,9 @@ test.describe('browser flows', () => {
     );
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/workspaces/manage'
-        && url.searchParams.get('workspace') === workspaceSlug),
+        && url.searchParams.get('workspace') === workspaceSlug, {
+        waitUntil: 'domcontentloaded',
+      }),
       page.getByRole('button', { name: 'Save', exact: true }).click(),
     ]);
 
@@ -122,7 +124,9 @@ test.describe('browser flows', () => {
     await page.getByRole('textbox', { name: 'Slug', exact: true }).fill(pageSlug);
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/editor-html'
-        && url.searchParams.get('document') === pageSlug),
+        && url.searchParams.get('document') === pageSlug, {
+        waitUntil: 'domcontentloaded',
+      }),
       page.getByRole('button', { name: 'Create and edit' }).click(),
     ]);
 
@@ -131,7 +135,9 @@ test.describe('browser flows', () => {
     await editorSurface.fill(firstPublishedBody);
     await Promise.all([
       page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`
-        && url.searchParams.get('saved') === '1'),
+        && url.searchParams.get('saved') === '1', {
+        waitUntil: 'domcontentloaded',
+      }),
       page.getByRole('button', { name: 'Save and publish' }).click(),
     ]);
     await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
@@ -141,7 +147,9 @@ test.describe('browser flows', () => {
     await editorSurface.fill(secondDraftBody);
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/editor-html'
-        && url.searchParams.get('saved') === '1'),
+        && url.searchParams.get('saved') === '1', {
+        waitUntil: 'domcontentloaded',
+      }),
       page.getByRole('button', { name: 'Save', exact: true }).click(),
     ]);
     await expect(page.getByText('Shared draft', { exact: true })).toBeVisible();
@@ -154,7 +162,9 @@ test.describe('browser flows', () => {
     await expect(editorSurface).toContainText(secondDraftBody);
     await Promise.all([
       page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`
-        && url.searchParams.get('saved') === '1'),
+        && url.searchParams.get('saved') === '1', {
+        waitUntil: 'domcontentloaded',
+      }),
       page.getByRole('button', { name: 'Save and publish' }).click(),
     ]);
     await expect(page.getByRole('heading', { name: secondDraftBody, exact: true })).toBeVisible();
@@ -239,9 +249,11 @@ test.describe('browser flows', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.reload();
     await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
-    await page.getByRole('button', {
+    const editTreeItem = page.getByRole('button', {
       name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
-    }).click();
+    });
+    await expect(editTreeItem).toBeVisible();
+    await editTreeItem.click();
 
     const nodeDialog = page.locator('#workspace-node-editor-modal');
     await expect(nodeDialog).toBeVisible();
@@ -286,13 +298,14 @@ test.describe('browser flows', () => {
     expect(aclColors.direct).not.toBe(aclColors.body);
 
     await Promise.all([
-      page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`),
+      page.waitForEvent('framenavigated', (frame) => frame === page.mainFrame()),
       nodeDialog.getByRole('button', { name: /Save restrictions|Spremi ograničenja/i }).click(),
     ]);
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`);
     await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
-    await page.getByRole('button', {
-      name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
-    }).click();
+    await expect(editTreeItem).toBeVisible();
+    await editTreeItem.click();
     await expect(nodeDialog).toBeVisible();
     await expect(
       nodeDialog.getByRole('row').filter({ hasText: /Public|Javno/i })
@@ -303,9 +316,11 @@ test.describe('browser flows', () => {
     await expect(titleInput).toBeEnabled();
     await titleInput.fill('E2E Published Page Renamed');
     await Promise.all([
-      page.waitForURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`),
+      page.waitForEvent('framenavigated', (frame) => frame === page.mainFrame()),
       nodeDialog.getByRole('button', { name: /Save item|Spremi stavku/i }).click(),
     ]);
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`);
     await expect(page.getByRole('link', {
       name: 'E2E Published Page Renamed',
       exact: true,

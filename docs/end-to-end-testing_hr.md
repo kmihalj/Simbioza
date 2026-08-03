@@ -22,7 +22,7 @@ ne kopiraju u HFClean, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-Svih 39 scenarija pokriva svaki modul koji HFClean isporučuje. Provjerava se
+Svih 40 scenarija pokriva svaki modul koji HFClean isporučuje. Provjerava se
 javno ponašanje, a ne privatni detalji implementacije.
 
 | Područje | End-to-end pokrivenost |
