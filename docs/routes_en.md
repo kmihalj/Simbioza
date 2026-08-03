@@ -34,10 +34,12 @@ Here is an example from `config/routes.php`:
 
 HFClean's root controller also checks the neutral
 `heartphrame.application_homepage_resolver` service. Workspace registers that
-service only while the module is enabled. A resolved published page produces a
-temporary private redirect to its canonical Workspace URL; otherwise the
-built-in sample homepage is rendered. This keeps Auth and the host application
-fully operational without Workspace.
+service only while the module is enabled. A resolved published page or
+ACL-visible Summaries target produces a temporary private redirect to its
+canonical Workspace URL; otherwise the built-in sample homepage is rendered.
+Summaries targets carry structured `tree` and `options` visibility values, not
+an administrator-supplied free-form query string. This keeps Auth and the host
+application fully operational without Workspace.
 
 Alternatively, you can use the `Route` class for a more explicit definition:
 

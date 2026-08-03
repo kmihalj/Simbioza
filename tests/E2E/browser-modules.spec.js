@@ -267,7 +267,7 @@ test.describe('module browser surfaces', () => {
     const signedInTitle = `E2E Signed-in Homepage ${suffix}`;
     const headers = apiHeaders(adminApiToken);
 
-    await expectData(await page.request.post('/api/v1/workspaces', {
+    const homepageWorkspace = await expectData(await page.request.post('/api/v1/workspaces', {
       headers: apiHeaders(adminApiToken, {
         'Idempotency-Key': idempotencyKey('homepage-workspace'),
       }),
@@ -339,7 +339,7 @@ test.describe('module browser surfaces', () => {
     await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
 
     await page.goto('/auth/account/profile');
-    await page.locator('#workspace-personal-homepage').selectOption('0');
+    await page.locator('#workspace-personal-homepage').selectOption('default');
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
       page.getByRole('button', { name: 'Save personal homepage' }).click(),
@@ -348,8 +348,27 @@ test.describe('module browser surfaces', () => {
 
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/workspaces/homepage');
-    await page.locator('#workspace-public-homepage').selectOption('0');
-    await page.locator('#workspace-authenticated-homepage').selectOption('0');
+    await page.locator('#workspace-public-homepage').selectOption(`shorts:${homepageWorkspace.id}`);
+    await page.locator('#workspace-authenticated-homepage').selectOption('default');
+    await page.locator('#workspace-public-show-tree').uncheck();
+    await page.locator('#workspace-public-show-options').uncheck();
+    await Promise.all([
+      page.waitForURL('/settings/workspaces/homepage'),
+      page.getByRole('button', { name: 'Save homepage settings' }).click(),
+    ]);
+    await page.goto('/auth/logout');
+    await page.goto('/');
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`
+      && url.searchParams.get('lang') === 'en'
+      && url.searchParams.get('tree') === '0'
+      && url.searchParams.get('options') === '0');
+    await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
+    await expect(page.locator('#workspace-shorts-display-options')).not.toHaveClass(/\bshow\b/);
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/workspaces/homepage');
+    await page.locator('#workspace-public-homepage').selectOption('default');
+    await page.locator('#workspace-authenticated-homepage').selectOption('default');
     await Promise.all([
       page.waitForURL('/settings/workspaces/homepage'),
       page.getByRole('button', { name: 'Save homepage settings' }).click(),

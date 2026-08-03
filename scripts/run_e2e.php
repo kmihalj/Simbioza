@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols -- This CLI runner defines and invokes local helpers.
+
 /**
  * HR: Izrađuje izoliranu HeartPhrame aplikaciju sa svim modulima, dodaje
  *     isključivo testne korisnike i API ključ, pokreće pravi HTTP poslužitelj
@@ -136,7 +138,8 @@ function assertEmptyE2eNetworkDatabase(string $database): void
     : sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, $name);
     $pdo = new PDO($dsn, $username, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     $sql = $driver === 'pgsql'
-    ? "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ANY(current_schemas(false)) AND table_type = 'BASE TABLE'"
+    ? "SELECT COUNT(*) FROM information_schema.tables"
+    . " WHERE table_schema = ANY(current_schemas(false)) AND table_type = 'BASE TABLE'"
     : "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'";
     $statement = $pdo->query($sql);
     if ($statement === false) {
@@ -223,6 +226,27 @@ function configureE2eApplication(string $projectDirectory): void
         ],
         'menu' => ['auto_register_settings' => true],
     ]);
+
+    $themeSettingsPath = $projectDirectory . '/resources/config/theme/settings.json';
+    $themeSettingsJson = file_get_contents($themeSettingsPath);
+    if ($themeSettingsJson === false) {
+        throw new RuntimeException('E2E theme settings could not be read.');
+    }
+
+    $themeSettingsValue = json_decode($themeSettingsJson, true, flags: JSON_THROW_ON_ERROR);
+    if (!is_array($themeSettingsValue)) {
+        throw new RuntimeException('E2E theme settings are invalid.');
+    }
+
+    $themeSettings = matrixStringKeyedArray($themeSettingsValue, 'E2E theme settings');
+    $themeSettings['active_theme'] = 'srce-sup';
+    $encodedThemeSettings = json_encode(
+        $themeSettings,
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+    );
+    if (file_put_contents($themeSettingsPath, $encodedThemeSettings . PHP_EOL) === false) {
+        throw new RuntimeException('E2E theme settings could not be written.');
+    }
 }
 
 /**
@@ -292,6 +316,7 @@ function seedE2eFixtures(string $projectDirectory): array
     if (!$scopeRegistry instanceof ApiScopeRegistry) {
         throw new RuntimeException('The API scope registry is unavailable in the all-module installation.');
     }
+
     $scopes = $scopeRegistry->all();
     if ($scopes === []) {
         throw new RuntimeException('The all-module E2E scope catalog is empty.');
@@ -365,6 +390,7 @@ function startE2eServer(
     if (!is_resource($process)) {
         throw new RuntimeException('Unable to start the E2E HTTP server.');
     }
+
     fclose($pipes[0]);
 
     return $process;
@@ -384,7 +410,7 @@ function awaitE2eServer($server, string $baseUrl): void
             'ignore_errors' => true,
         ],
     ]);
-    for ($attempt = 0; $attempt < 100; $attempt++) {
+    for ($attempt = 0; $attempt < 100; ++$attempt) {
         $status = proc_get_status($server);
         if (!$status['running']) {
             throw new RuntimeException('The E2E HTTP server stopped before becoming ready.');
@@ -394,6 +420,7 @@ function awaitE2eServer($server, string $baseUrl): void
         if (is_string($response) && str_contains($response, '<html')) {
             return;
         }
+
         usleep(100_000);
     }
 
@@ -421,6 +448,7 @@ function stopE2eServer($server): void
             proc_terminate($server, 9);
         }
     }
+
     proc_close($server);
 }
 
@@ -475,6 +503,7 @@ function runEndToEndSuite(): int
         if (!is_string($candidate)) {
             throw new RuntimeException('The clean installer did not return an E2E project directory.');
         }
+
         $projectDirectory = assertSafeE2eProject($candidate, $temporaryRoot);
         if (($result['status'] ?? null) !== 'success') {
             $error = is_string($result['error'] ?? null) ? $result['error'] : 'Unknown clean-install failure.';
@@ -490,10 +519,12 @@ function runEndToEndSuite(): int
         if (is_file($queryLogPath) && !unlink($queryLogPath)) {
             throw new RuntimeException('Unable to reset the E2E query log.');
         }
+
         $requestLogPath = $sourceRoot . '/build/e2e-request-log' . $logSuffix . '.jsonl';
         if (is_file($requestLogPath) && !unlink($requestLogPath)) {
             throw new RuntimeException('Unable to reset the E2E request log.');
         }
+
         $server = startE2eServer(
             $sourceRoot,
             $projectDirectory,

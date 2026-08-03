@@ -130,6 +130,7 @@
             "vendor/bin/phpstan analyze -c phpstan-dev.neon --memory-limit=1024M",
             "php scripts/audit_bilingual_phpdoc.php",
             "php scripts/audit_module_documentation.php",
+            "php scripts/audit_module_translations.php",
             "vendor/bin/phpunit"
         ],
         "clean-matrix": "php scripts/verify_clean_install_matrix.php",

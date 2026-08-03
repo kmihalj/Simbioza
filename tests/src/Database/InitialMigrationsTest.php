@@ -316,6 +316,33 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_HOMEPAGE_SETTINGS, [
+            'id',
+            'public_node_id',
+            'public_target_type',
+            'public_workspace_id',
+            'public_show_tree',
+            'public_show_display_options',
+            'authenticated_node_id',
+            'authenticated_target_type',
+            'authenticated_workspace_id',
+            'authenticated_show_tree',
+            'authenticated_show_display_options',
+            'allow_user_selection',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_USER_HOMEPAGES, [
+            'id',
+            'user_id',
+            'node_id',
+            'target_type',
+            'workspace_id',
+            'show_tree',
+            'show_display_options',
+            'created_at',
+            'updated_at',
+        ]);
         $this->assertColumns(ModuleEmail::TABLE_OUTBOX, [
             'id',
             'uuid',

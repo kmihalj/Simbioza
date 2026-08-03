@@ -30,9 +30,11 @@ Primjer iz `config/routes.php`:
 
 Početni HFClean kontroler provjerava i neutralni servis
 `heartphrame.application_homepage_resolver`. Workspace taj servis registrira
-samo dok je modul uključen. Pronađena objavljena stranica daje privremeni
-privatni redirect na svoj kanonski Workspace URL; inače se prikazuje ugrađena
-probna naslovnica. Auth i host aplikacija zato potpuno rade bez Workspacea.
+samo dok je modul uključen. Pronađena objavljena stranica ili ACL-vidljiv cilj
+Sažetaka daje privremeni privatni redirect na svoj kanonski Workspace URL;
+inače se prikazuje ugrađena probna naslovnica. Cilj Sažetaka nosi strukturirane
+vrijednosti vidljivosti `tree` i `options`, a ne administratorski slobodno
+sastavljen query string. Auth i host aplikacija zato potpuno rade bez Workspacea.
 
 Za eksplicitniju definiciju upotrijebite klasu `Route`:
 
