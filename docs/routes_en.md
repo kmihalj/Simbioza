@@ -32,6 +32,13 @@ Here is an example from `config/routes.php`:
 ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
 ```
 
+HFClean's root controller also checks the neutral
+`heartphrame.application_homepage_resolver` service. Workspace registers that
+service only while the module is enabled. A resolved published page produces a
+temporary private redirect to its canonical Workspace URL; otherwise the
+built-in sample homepage is rendered. This keeps Auth and the host application
+fully operational without Workspace.
+
 Alternatively, you can use the `Route` class for a more explicit definition:
 
 ```php

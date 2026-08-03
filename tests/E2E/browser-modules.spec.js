@@ -38,6 +38,7 @@ test.describe('module browser surfaces', () => {
       '/workspaces',
       '/workspaces/manage',
       '/settings/workspaces',
+      '/settings/workspaces/homepage',
       '/settings/workspaces/all',
       '/settings/workspaces/deleted',
       '/editor-html',
@@ -253,6 +254,107 @@ test.describe('module browser surfaces', () => {
       page.waitForURL('/auth/account/profile'),
       page.getByRole('button', { name: 'Save profile' }).click(),
     ]);
+  });
+
+  test('Workspace application homepage follows public, signed-in, and personal precedence', async ({ page }) => {
+    test.setTimeout(90_000);
+
+    const suffix = Date.now();
+    const workspaceSlug = `e2e-homepage-${suffix}`;
+    const publicSlug = `public-homepage-${suffix}`;
+    const signedInSlug = `signed-in-homepage-${suffix}`;
+    const publicTitle = `E2E Public Homepage ${suffix}`;
+    const signedInTitle = `E2E Signed-in Homepage ${suffix}`;
+    const headers = apiHeaders(adminApiToken);
+
+    await expectData(await page.request.post('/api/v1/workspaces', {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('homepage-workspace'),
+      }),
+      data: {
+        name: `E2E Homepage ${suffix}`,
+        slug: workspaceSlug,
+        visibility: 'public',
+      },
+    }), 201);
+
+    const publishPage = async (title, slug) => {
+      const created = await expectData(await page.request.post('/api/v1/pages', {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey(`homepage-page-${slug}`),
+        }),
+        data: {
+          title,
+          slug,
+          workspace_slug: workspaceSlug,
+          language: 'en',
+          html: `<h1>${title}</h1><p>Homepage precedence E2E fixture.</p>`,
+        },
+      }), 201);
+      const draft = await getDataWithEtag(
+        page.request,
+        `/api/v1/pages/${created.id}/draft?lang=en`,
+        headers,
+      );
+      await expectData(await page.request.post(`/api/v1/pages/${created.id}/publish?lang=en`, {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey(`homepage-publish-${slug}`),
+          'If-Match': draft.etag,
+        }),
+        data: {},
+      }));
+    };
+
+    await publishPage(publicTitle, publicSlug);
+    await publishPage(signedInTitle, signedInSlug);
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/workspaces/homepage');
+    await expect(page.getByRole('heading', { name: 'Application homepage' })).toBeVisible();
+    await page.locator('#workspace-public-homepage').selectOption({ label: publicTitle });
+    await page.locator('#workspace-authenticated-homepage').selectOption({ label: signedInTitle });
+    await page.locator('#workspace-allow-user-homepage').check();
+    await Promise.all([
+      page.waitForURL('/settings/workspaces/homepage'),
+      page.getByRole('button', { name: 'Save homepage settings' }).click(),
+    ]);
+
+    await page.goto('/auth/logout');
+    await page.goto('/');
+    await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
+
+    await login(page, userLogin, userPassword);
+    await expect(page).toHaveURL(
+      new RegExp(`/workspace/${workspaceSlug}/${signedInSlug}\\?lang=en$`),
+    );
+
+    await page.goto('/auth/account/profile');
+    await expect(page.getByRole('heading', { name: 'Personal homepage' })).toBeVisible();
+    await page.locator('#workspace-personal-homepage').selectOption({ label: publicTitle });
+    await Promise.all([
+      page.waitForURL('/auth/account/profile'),
+      page.getByRole('button', { name: 'Save personal homepage' }).click(),
+    ]);
+    await page.goto('/');
+    await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
+
+    await page.goto('/auth/account/profile');
+    await page.locator('#workspace-personal-homepage').selectOption('0');
+    await Promise.all([
+      page.waitForURL('/auth/account/profile'),
+      page.getByRole('button', { name: 'Save personal homepage' }).click(),
+    ]);
+    await page.goto('/auth/logout');
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/workspaces/homepage');
+    await page.locator('#workspace-public-homepage').selectOption('0');
+    await page.locator('#workspace-authenticated-homepage').selectOption('0');
+    await Promise.all([
+      page.waitForURL('/settings/workspaces/homepage'),
+      page.getByRole('button', { name: 'Save homepage settings' }).click(),
+    ]);
+    await page.goto('/auth/logout');
   });
 
   test('personal API-key request, administrator approval, and one-time reveal work', async ({ page }) => {

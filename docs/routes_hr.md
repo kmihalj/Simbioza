@@ -28,6 +28,12 @@ Primjer iz `config/routes.php`:
 ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
 ```
 
+Početni HFClean kontroler provjerava i neutralni servis
+`heartphrame.application_homepage_resolver`. Workspace taj servis registrira
+samo dok je modul uključen. Pronađena objavljena stranica daje privremeni
+privatni redirect na svoj kanonski Workspace URL; inače se prikazuje ugrađena
+probna naslovnica. Auth i host aplikacija zato potpuno rade bez Workspacea.
+
 Za eksplicitniju definiciju upotrijebite klasu `Route`:
 
 ```php
