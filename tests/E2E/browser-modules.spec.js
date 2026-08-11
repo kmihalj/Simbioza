@@ -148,6 +148,43 @@ test.describe('module browser surfaces', () => {
     }
   });
 
+  test('Supporting copy beneath automatic hero titles uses the hero subtitle color', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+
+    for (const route of ['/calendars', '/workspaces']) {
+      await page.goto(route);
+
+      const supportingCopy = page.locator(
+        '.hph-page-heading-support > p:first-of-type',
+      ).first();
+      await expect(supportingCopy, route).toBeVisible();
+
+      const colors = await supportingCopy.evaluate((element) => {
+        const rootStyle = getComputedStyle(document.documentElement);
+
+        return {
+          actual: getComputedStyle(element).color,
+          hero: rootStyle.getPropertyValue('--hph-hero-subtitle').trim(),
+          muted: rootStyle.getPropertyValue('--hph-muted-text').trim(),
+        };
+      });
+
+      expect(colors.hero, route).not.toBe('');
+      expect(colors.hero.toLowerCase(), route).not.toBe(colors.muted.toLowerCase());
+      expect(colors.actual, route).toBe(
+        await page.evaluate((heroColor) => {
+          const probe = document.createElement('span');
+          probe.style.color = heroColor;
+          document.body.append(probe);
+          const resolved = getComputedStyle(probe).color;
+          probe.remove();
+
+          return resolved;
+        }, colors.hero),
+      );
+    }
+  });
+
   test('Theme editor keeps page order and previews light and dark branding immediately', async ({ page }) => {
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/theme?theme=simbioza');
@@ -569,7 +606,7 @@ test.describe('module browser surfaces', () => {
         body: getComputedStyle(bodyText).color,
         expectedBody: colorFromVariable('--hph-body-text'),
         secondary: getComputedStyle(secondaryText).color,
-        expectedSecondary: colorFromVariable('--hph-muted-text'),
+        expectedSecondary: colorFromVariable('--hph-hero-subtitle'),
       };
     });
     expect(notificationColors.body).toBe(notificationColors.expectedBody);

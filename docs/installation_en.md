@@ -94,7 +94,7 @@ the complete browser, API, and performance suite with
 The matrix and E2E tools never write database credentials to their reports or
 metrics.
 The Simbioza CI workflow runs every minimal module combination on SQLite and the
-complete module set plus all 40 E2E scenarios on clean PostgreSQL and MySQL
+complete module set plus all 42 E2E scenarios on clean PostgreSQL and MySQL
 service databases. This keeps Composer resolution, migrations, CLI/HTTP boot,
 functional flows, and performance budgets covered on every supported database
 family.
