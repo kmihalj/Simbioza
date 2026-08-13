@@ -21,15 +21,18 @@ test.describe('complete Backup workflow', () => {
     await expect(page.getByRole('heading', { name: /Backup (i vraćanje|and restore)/i })).toBeVisible();
 
     /*
-     * HR: Potpuni arhiv mora sadržavati pružatelje stvarnih modula, a ne samo
-     *     host konfiguraciju. Time regresija u opcionalnoj registraciji odmah
-     *     postaje vidljiva u administratorskom sučelju.
-     * EN: A full archive must expose providers from the real modules rather
-     *     than host configuration alone. Optional-registration regressions
-     *     therefore become visible immediately in the administration UI.
+     * HR: Sučelje prikazuje potpune poslovne cjeline, a interne tehničke
+     *     providere namjerno ne izlaže korisniku. Kod potpunog backupa cjeline
+     *     su informativne i automatski uključene pa njihove kvačice moraju biti
+     *     onemogućene.
+     * EN: The UI exposes complete business components and intentionally hides
+     *     internal technical providers. A full-site backup includes every
+     *     component automatically, so their checkboxes are informational and
+     *     must remain disabled.
      */
-    const providerCheckboxes = page.locator('#backup-create-form input[name="providers[]"]');
-    expect(await providerCheckboxes.count()).toBeGreaterThan(10);
+    const componentCheckboxes = page.locator('#backup-create-form input[name="components[]"]');
+    expect(await componentCheckboxes.count()).toBeGreaterThan(5);
+    await expect(componentCheckboxes.first()).toBeDisabled();
     await page.locator('#backup-create-form input[name="label"]').fill('e2e-full-site');
     await page.locator('#backup-create-form input[name="passphrase"]').fill(passphrase);
 
