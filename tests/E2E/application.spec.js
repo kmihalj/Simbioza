@@ -1,11 +1,20 @@
 import { expect, test } from '@playwright/test';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
 import {
   apiHeaders,
   e2eEnvironment,
   expectData,
+  expectUsableModal,
   idempotencyKey,
   login,
 } from './helpers.js';
+
+const execFileAsync = promisify(execFile);
 
 const {
   adminLogin,
@@ -30,6 +39,17 @@ async function submitFormAndExpectPost(page, button, expectedPath) {
     button.click(),
   ]);
   expect([200, 302, 303]).toContain(response.status());
+}
+
+/**
+ * HR: Zatvara modal njegovom eksplicitnom kontrolom i čeka dovršetak fade
+ *     tranzicije prije sljedećeg otvaranja.
+ * EN: Closes a modal through its explicit control and waits for the fade
+ *     transition to finish before the next modal opens.
+ */
+async function closeModal(dialog) {
+  await dialog.locator('[data-bs-dismiss="modal"]').last().click();
+  await expect(dialog).toBeHidden();
 }
 
 test.describe('browser flows', () => {
@@ -112,7 +132,11 @@ test.describe('browser flows', () => {
     await expect(page.locator('body')).toContainText(/Access denied|Pristup nije dozvoljen/i);
   });
 
-  test('administrator publishes content while drafts and immutable versions remain separated', async ({ page, request }) => {
+  test('administrator publishes content while drafts and immutable versions remain separated', async ({
+    browser,
+    page,
+    request,
+  }) => {
     test.setTimeout(90_000);
 
     const workspaceSlug = 'e2e-content-workspace';
@@ -148,8 +172,72 @@ test.describe('browser flows', () => {
     await expect(page).toHaveURL((url) => url.pathname === '/editor-html'
       && url.searchParams.get('document') === pageSlug);
 
+    /*
+     * HR: Editorovi glavni gumbi moraju koristiti pune tematske stilove, a
+     *     modal za otvaranje dokumenta mora biti iznad Bootstrap backdroppa.
+     * EN: The editor's main actions must use filled theme styles, and the
+     *     open-document modal must remain above the Bootstrap backdrop.
+    */
+    const openDocumentButton = page.getByRole('button', { name: 'Open', exact: true }).first();
+    await expect(openDocumentButton).toHaveClass(/btn-secondary/);
+    await expect(openDocumentButton).not.toHaveClass(/btn-outline-secondary/);
+    for (const actionName of ['Translations', 'History']) {
+      const action = page.getByRole('button', { name: actionName, exact: true });
+      if (await action.count() > 0) {
+        await expect(action).toHaveClass(/btn-secondary/);
+        await expect(action).not.toHaveClass(/btn-outline-secondary/);
+      }
+    }
+    const viewAction = page.getByRole('link', { name: 'View', exact: true });
+    await expect(viewAction).toHaveClass(/btn-secondary/);
+    await expect(viewAction).not.toHaveClass(/btn-outline-secondary/);
+
+    await openDocumentButton.click();
+    const openDocumentDialog = page.getByRole('dialog', { name: 'Open document' });
+    await expect(openDocumentDialog).toBeVisible();
+    await expectUsableModal(openDocumentDialog);
+    await closeModal(openDocumentDialog);
+
+    /*
+     * HR: Provjerava svaki modal dostupan u zaglavlju uređivača, ne samo
+     *     prijavljeni dijalog za povijest verzija.
+     * EN: Verifies every modal exposed by the editor header, not only the
+     *     reported version-history dialog.
+     */
+    for (const modalAction of [
+      { button: 'Create', dialog: 'Create document' },
+      { button: 'Translations', dialog: 'Copy translation' },
+      { button: 'History', dialog: 'Version history' },
+    ]) {
+      const trigger = page.getByRole('button', { name: modalAction.button, exact: true });
+      if (await trigger.count() === 0) {
+        continue;
+      }
+
+      await trigger.click();
+      const dialog = page.getByRole('dialog', { name: modalAction.dialog });
+      await expectUsableModal(dialog);
+      await closeModal(dialog);
+    }
+
     const editorSurface = page.locator('[data-editor-html-surface]');
     await expect(editorSurface).toBeVisible();
+
+    for (const toolbarModal of [
+      { button: 'Insert calendar', dialog: 'Insert calendar' },
+      { button: 'Insert task list', dialog: 'Insert task list' },
+    ]) {
+      const trigger = page.getByRole('button', { name: toolbarModal.button, exact: true });
+      if (await trigger.count() === 0) {
+        continue;
+      }
+
+      await trigger.click();
+      const dialog = page.getByRole('dialog', { name: toolbarModal.dialog });
+      await expectUsableModal(dialog);
+      await closeModal(dialog);
+    }
+
     await editorSurface.fill(firstPublishedBody);
     await submitFormAndExpectPost(
       page,
@@ -242,21 +330,27 @@ test.describe('browser flows', () => {
     await expect(page.locator('#workspace-page-tree')).toHaveClass(/\bshow\b/);
     await expect(page.locator('#workspace-shorts-display-options')).not.toHaveClass(/\bshow\b/);
     await expect(page.getByRole('button', { name: 'Page tree', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Display options', exact: true })).toBeVisible();
+    const displayOptionsButton = page.getByRole('button', {
+      name: /^(View options|Display options|Opcije prikaza)$/i,
+    });
+    await expect(displayOptionsButton).toBeVisible();
     await expect(page.getByRole('button', { name: 'Page tree', exact: true })).toHaveText('');
-    await expect(page.getByRole('button', { name: 'Display options', exact: true })).toHaveText('');
+    await expect(displayOptionsButton).toHaveText('');
 
     await page.goto(`/workspace/${workspaceSlug}/shorts?lang=en&tree=0&options=0`);
     await expect(page.getByRole('heading', { name: /^Summaries · / })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Page tree', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Display options', exact: true })).toBeVisible();
+    const hiddenDisplayOptionsButton = page.getByRole('button', {
+      name: /^(View options|Display options|Opcije prikaza)$/i,
+    });
+    await expect(hiddenDisplayOptionsButton).toBeVisible();
     await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
     await expect(page.locator('#workspace-shorts-display-options')).not.toHaveClass(/\bshow\b/);
-    await page.getByRole('button', { name: 'Display options', exact: true }).click();
+    await hiddenDisplayOptionsButton.click();
     await expect(page.locator('#workspace-shorts-display-options')).toHaveClass(/\bshow\b/);
-    await expect(page.getByLabel('Displayed levels')).toHaveValue('2');
-    await expect(page.getByLabel('Number of articles')).toHaveValue('10');
-    await expect(page.getByLabel('Order')).toHaveValue('newest');
+    await expect(page.getByLabel(/Displayed levels|Prikazane razine/i)).toHaveValue('2');
+    await expect(page.getByLabel(/Number of articles|Broj članaka/i)).toHaveValue('10');
+    await expect(page.getByLabel(/Order|Redoslijed/i)).toHaveValue('newest');
 
     const croatianShorts = `/workspace/${workspaceSlug}/shorts?lang=en&tree=0&options=0`;
     await page.goto(`/locale/hr?next=${encodeURIComponent(croatianShorts)}`);
@@ -276,6 +370,17 @@ test.describe('browser flows', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.reload();
     await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+
+    const addTreeItemButton = page.getByRole('button', {
+      name: /Add item|Dodaj stavku/i,
+      exact: true,
+    });
+    await expect(addTreeItemButton).toBeVisible();
+    await addTreeItemButton.click();
+    const addTreeItemDialog = page.locator('#workspace-add-tree-item-modal');
+    await expectUsableModal(addTreeItemDialog);
+    await closeModal(addTreeItemDialog);
+
     const editTreeItem = page.getByRole('button', {
       name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
     });
@@ -284,19 +389,7 @@ test.describe('browser flows', () => {
 
     const nodeDialog = page.locator('#workspace-node-editor-modal');
     await expect(nodeDialog).toBeVisible();
-    const stacking = await nodeDialog.evaluate((modal) => {
-      const backdrop = document.querySelector('.modal-backdrop');
-
-      return {
-        directBodyChild: modal.parentElement === document.body,
-        modalZIndex: Number.parseInt(getComputedStyle(modal).zIndex, 10),
-        backdropZIndex: backdrop instanceof HTMLElement
-          ? Number.parseInt(getComputedStyle(backdrop).zIndex, 10)
-          : 0,
-      };
-    });
-    expect(stacking.directBodyChild).toBe(true);
-    expect(stacking.modalZIndex).toBeGreaterThan(stacking.backdropZIndex);
+    await expectUsableModal(nodeDialog);
 
     const publicAclRow = nodeDialog.getByRole('row').filter({ hasText: /Public|Javno/i });
     const inheritedView = publicAclRow.locator('.workspace-acl-checkbox-inherited').first();
@@ -355,11 +448,21 @@ test.describe('browser flows', () => {
 
     await page.getByRole('button', { name: 'History' }).click();
     const historyDialog = page.getByRole('dialog', { name: 'Version history' });
-    await expect(historyDialog).toBeVisible();
+    await expectUsableModal(historyDialog);
     await expect(historyDialog.getByRole('row')).toHaveCount(4);
     await expect(historyDialog).toContainText('#3');
     await expect(historyDialog).toContainText('#2');
     await expect(historyDialog).toContainText('#1');
+
+    /*
+     * HR: Zatvaranje i ponovno otvaranje istog modala mora ostati ispravno;
+     *     tako pokrivamo kvar koji se ranije pojavljivao tek nakon nekoliko klikova.
+     * EN: Closing and reopening the same modal must remain correct; this covers
+     *     the former failure that sometimes appeared only after several clicks.
+     */
+    await closeModal(historyDialog);
+    await page.getByRole('button', { name: 'History' }).click();
+    await expectUsableModal(historyDialog);
 
     const firstPublicationLink = historyDialog.locator('a[href*="version=2"]');
     await expect(firstPublicationLink).toHaveCount(1);
@@ -371,6 +474,192 @@ test.describe('browser flows', () => {
       && url.searchParams.get('version') === '2');
     await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
     await expect(page.getByText(secondDraftBody, { exact: true })).toHaveCount(0);
+
+    await page.goto(`/workspaces/manage?workspace=${workspaceSlug}`);
+    await page.getByRole('link', { name: /Export Workspace to HTML|Izvezi područje u HTML/i }).click();
+    await expect(page.getByRole('heading', {
+      name: /Export Workspace to HTML|Izvezi područje u HTML/i,
+    })).toBeVisible();
+    await expect(page.getByRole('radio', { name: /Complete Workspace|Cijelo područje/i })).toBeChecked();
+    await page.getByRole('radio', { name: /Selected pages|Odabrane stranice/i }).check();
+    await expect(page.getByLabel('E2E Published Page Renamed')).toBeEnabled();
+    await page.getByRole('radio', { name: /Complete Workspace|Cijelo područje/i }).check();
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', {
+      name: /Export Workspace to HTML|Izvezi područje u HTML/i,
+    }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/^simbioza-e2e-content-workspace-\d{8}-\d{6}\.zip$/);
+    const downloadPath = await download.path();
+    expect(downloadPath).not.toBeNull();
+    const archive = await readFile(downloadPath);
+    expect([...archive.subarray(0, 4)]).toEqual([0x50, 0x4B, 0x03, 0x04]);
+    expect(archive.length).toBeGreaterThan(1_000);
+
+    /*
+     * HR: ZIP se otvara stvarnom PHP ZipArchive ekstenzijom, provjerava da ne
+     *     umnaža nepostojeći prijevod i zatim se pregledava izravno kroz file://.
+     * EN: The ZIP is opened by the real PHP ZipArchive extension, checked for
+     *     nonexistent-translation duplication, and then viewed directly via file://.
+     */
+    const extractedDirectory = await mkdtemp(join(tmpdir(), 'simbioza-workspace-export-'));
+    try {
+      const inspectionScript = String.raw`
+        $zip = new ZipArchive();
+        if ($zip->open($argv[1]) !== true) { fwrite(STDERR, "Unable to open ZIP\n"); exit(2); }
+        $entries = [];
+        for ($index = 0; $index < $zip->numFiles; ++$index) {
+          $entries[] = $zip->getNameIndex($index);
+        }
+        $page = 'index.html';
+        $html = $zip->getFromName($page);
+        if (!is_string($html)) { fwrite(STDERR, "Offline shell missing\n"); exit(3); }
+        preg_match_all('#(?:src|href)="(assets/theme/[^"]+)"#', $html, $matches);
+        $directPages = array_values(array_filter(
+          $entries,
+          fn($entry) => preg_match('#^(hr|en)/[^/]+\.html$#', $entry) === 1,
+        ));
+        $themeAssetFiles = array_values(array_filter(
+          $entries,
+          fn($entry) => str_starts_with($entry, 'assets/theme/'),
+        ));
+        $missing = [];
+        foreach (array_unique($matches[1] ?? []) as $asset) {
+          if ($zip->locateName($asset) === false) { $missing[] = $asset; }
+        }
+        if (!$zip->extractTo($argv[2])) { fwrite(STDERR, "Unable to extract ZIP\n"); exit(4); }
+        $zip->close();
+        echo json_encode([
+          'page' => $page,
+          'has_hr_pages' => count(array_filter($entries, fn($entry) => str_starts_with($entry, 'hr/'))) > 0,
+          'has_en_pages' => count(array_filter($entries, fn($entry) => str_starts_with($entry, 'en/'))) > 0,
+          'direct_pages' => $directPages,
+          'theme_reference_count' => count(array_unique($matches[1] ?? [])),
+          'embedded_theme_image_count' => preg_match_all('#src="data:image/[^;]+;base64,#', $html),
+          'theme_asset_files' => $themeAssetFiles,
+          'missing_theme_assets' => $missing,
+          'has_export_note' => str_contains($html, 'E2E Content Workspace'),
+          'has_all_languages' => str_contains($html, 'value="hr"') && str_contains($html, 'value="en"'),
+          'has_duplicate_shell_title' => preg_match(
+            '#hph-hero__title[^>]*>\s*Simbioza\s*-\s*E2E Content Workspace#',
+            $html,
+          ) === 1,
+        ], JSON_THROW_ON_ERROR);
+      `;
+      const { stdout } = await execFileAsync('php', [
+        '-r',
+        inspectionScript,
+        downloadPath,
+        extractedDirectory,
+      ]);
+      const inspection = JSON.parse(stdout);
+
+      expect(inspection.has_en_pages).toBe(true);
+      expect(inspection.has_hr_pages).toBe(false);
+      expect(inspection.direct_pages).toEqual(['en/e2e-published-page.html']);
+      expect(inspection.has_export_note).toBe(true);
+      expect(inspection.has_all_languages).toBe(true);
+      expect(inspection.has_duplicate_shell_title).toBe(false);
+      expect(inspection.theme_reference_count).toBe(0);
+      expect(inspection.embedded_theme_image_count).toBeGreaterThanOrEqual(2);
+      expect(inspection.theme_asset_files.length).toBeGreaterThanOrEqual(2);
+      expect(inspection.missing_theme_assets).toEqual([]);
+
+      const offlineContext = await browser.newContext();
+      const offlinePage = await offlineContext.newPage();
+      await offlinePage.setViewportSize({ width: 1600, height: 1000 });
+      await offlinePage.goto(pathToFileURL(join(extractedDirectory, inspection.page)).href);
+      await expect(offlinePage.getByRole('heading', {
+        name: 'E2E Published Page',
+        exact: true,
+      })).toBeVisible();
+      await expect(offlinePage.getByRole('link', {
+        name: 'E2E Published Page Renamed',
+        exact: true,
+      })).toBeVisible();
+      await expect(offlinePage.locator('[data-export-language] option')).toHaveCount(2);
+      const offlineLogo = offlinePage.locator('.hph-site-header__logo:visible');
+      const offlineHeroVisual = offlinePage.locator('.hph-hero__visual img:visible');
+      await expect(offlineLogo).toBeVisible();
+      await expect(offlineHeroVisual).toBeVisible();
+      await expect(offlineLogo).toHaveAttribute('src', /^data:image\//);
+      await expect(offlineHeroVisual).toHaveAttribute('src', /^data:image\//);
+      await expect.poll(() => offlineLogo.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+      await expect.poll(() => offlineHeroVisual.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+
+      /*
+       * HR: Mišem odabrana stavka stabla smije ostati semantički trenutačna,
+       *     ali ne smije zadržati Bootstrapovu `.active` pozadinu niti fokus
+       *     namijenjen tipkovnici.
+       * EN: A tree item selected by mouse may remain semantically current, but
+       *     must not retain Bootstrap's `.active` background or keyboard-only
+       *     focus treatment.
+       */
+      const offlineTreeLink = offlinePage.getByRole('link', {
+        name: 'E2E Published Page Renamed',
+        exact: true,
+      });
+      await offlineTreeLink.click();
+      await expect(offlineTreeLink).toHaveAttribute('aria-current', 'page');
+      await expect(offlineTreeLink).not.toHaveClass(/\bactive\b/);
+
+      const outlineToggle = offlinePage.getByRole('button', { name: /Content|Sadržaj/i });
+      if (await outlineToggle.count() > 0 && await outlineToggle.getAttribute('aria-expanded') === 'true') {
+        await outlineToggle.click();
+      }
+      const offlineGeometry = await offlinePage.locator('[data-workspace-export-layout]').evaluate((layout) => {
+        const main = layout.querySelector('.workspace-export-main');
+        const layoutRect = layout.getBoundingClientRect();
+        const mainRect = main?.getBoundingClientRect();
+        const layoutStyle = getComputedStyle(layout);
+
+        return {
+          contentRight: layoutRect.right - Number.parseFloat(layoutStyle.paddingRight),
+          mainRight: mainRect?.right ?? 0,
+        };
+      });
+      expect(Math.abs(offlineGeometry.contentRight - offlineGeometry.mainRight)).toBeLessThanOrEqual(1);
+
+      const overlapGeometry = await offlinePage.locator('.hph-page-stage').evaluate((stage) => {
+        const hero = stage.querySelector('.hph-hero')?.getBoundingClientRect();
+        const main = stage.querySelector('.hph-main-content')?.getBoundingClientRect();
+
+        return {
+          overlap: (hero?.bottom ?? 0) - (main?.top ?? 0),
+        };
+      });
+      expect(overlapGeometry.overlap).toBeGreaterThan(0);
+
+      const standalonePage = await offlineContext.newPage();
+      await standalonePage.goto(pathToFileURL(join(
+        extractedDirectory,
+        inspection.direct_pages[0],
+      )).href);
+      await expect(standalonePage.locator('#editor-html-standalone-content')).toBeVisible();
+      await expect(standalonePage.locator('.hph-site-header')).toHaveCount(0);
+      await expect(standalonePage.locator('link[href="../assets/css/theme.css"]')).toHaveCount(0);
+      expect(await standalonePage.locator('body').evaluate(
+        (body) => getComputedStyle(body).backgroundColor,
+      )).toBe('rgb(255, 255, 255)');
+      await offlineContext.close();
+    } finally {
+      await rm(extractedDirectory, { recursive: true, force: true });
+    }
+
+    /*
+     * HR: Neprivilegirani korisnik ne smije ni otvoriti export formu, iako
+     *     smije vidjeti javno područje i njegovu objavljenu stranicu.
+     * EN: An unprivileged user must not open the export form even when the
+     *     public Workspace and its published page remain visible.
+     */
+    const userContext = await browser.newContext({ baseURL: new URL(page.url()).origin });
+    const userPage = await userContext.newPage();
+    await login(userPage, userLogin, userPassword);
+    const deniedExport = await userPage.goto(`/workspaces/export?workspace=${workspaceSlug}`);
+    expect(deniedExport?.status()).toBe(403);
+    await expect(userPage.locator('body')).toContainText(/Access denied|Nedozvoljen pristup/i);
+    await userContext.close();
   });
 });
 

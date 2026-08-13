@@ -42,7 +42,9 @@ return [
             'cookie_samesite' => 'Lax',
             'use_only_cookies' => 1,
             'name' => 'HEARTPHRAME_SESSION',
-            'gc_maxlifetime' => 1440,
+            // HR: Auth modul primjenjuje kraće, administratorski podesivo trajanje prijave.
+            // EN: The Auth module enforces the shorter administrator-configured login duration.
+            'gc_maxlifetime' => 31536000,
             'cookie_lifetime' => 0,
         ],
         // List of route prefixes for which the session will not be started by the StartSessionMiddleware.
@@ -71,7 +73,9 @@ return [
             'aaieduhr/heartphrame-module-task',
             'aaieduhr/heartphrame-module-comment',
             'aaieduhr/heartphrame-module-workspace',
+            'aaieduhr/heartphrame-module-workspace-search',
             'aaieduhr/heartphrame-module-calendar',
+            'aaieduhr/heartphrame-module-backup',
         ],
     ],
 

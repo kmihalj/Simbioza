@@ -5,6 +5,10 @@
             "hr": "Meni",
             "en": "Menu"
         },
+        "translation_key": null,
+        "route": null,
+        "url": null,
+        "query": [],
         "order": 10,
         "enabled": true,
         "children": [
@@ -14,12 +18,15 @@
                     "hr": "Gornji meni",
                     "en": "Top menu"
                 },
-                "order": 10,
-                "enabled": true,
+                "translation_key": null,
                 "route": "menu.settings",
+                "url": null,
                 "query": {
                     "section": "top"
-                }
+                },
+                "order": 10,
+                "enabled": true,
+                "children": []
             },
             {
                 "id": "menu.settings",
@@ -27,12 +34,15 @@
                     "hr": "Meni postavki",
                     "en": "Settings menu"
                 },
-                "order": 20,
-                "enabled": true,
+                "translation_key": null,
                 "route": "menu.settings",
+                "url": null,
                 "query": {
                     "section": "settings"
-                }
+                },
+                "order": 20,
+                "enabled": true,
+                "children": []
             },
             {
                 "id": "menu.contexts.top",
@@ -40,12 +50,15 @@
                     "hr": "Posebni gornji meniji",
                     "en": "Special top menus"
                 },
-                "order": 30,
-                "enabled": true,
+                "translation_key": null,
                 "route": "menu.settings",
+                "url": null,
                 "query": {
                     "section": "contexts_top"
-                }
+                },
+                "order": 30,
+                "enabled": true,
+                "children": []
             },
             {
                 "id": "menu.contexts.left",
@@ -53,12 +66,15 @@
                     "hr": "Posebni lijevi meniji",
                     "en": "Special left menus"
                 },
-                "order": 40,
-                "enabled": true,
+                "translation_key": null,
                 "route": "menu.settings",
+                "url": null,
                 "query": {
                     "section": "contexts_left"
-                }
+                },
+                "order": 40,
+                "enabled": true,
+                "children": []
             }
         ]
     },
@@ -68,7 +84,7 @@
             "hr": "Tema",
             "en": "Theme"
         },
-        "order": 20,
+        "order": 80,
         "enabled": true,
         "children": [
             {
@@ -77,12 +93,10 @@
                     "hr": "Postavke teme",
                     "en": "Theme settings"
                 },
-                "order": 10,
-                "enabled": true,
                 "route": "theme.settings",
-                "query": {
-                    "section": "theme"
-                }
+                "query": "section=theme",
+                "order": 10,
+                "enabled": true
             }
         ]
     },
@@ -275,34 +289,18 @@
         ]
     },
     {
-        "id": "calendar.settings.group",
-        "parent_id": "",
+        "id": "auth.setup.api-keys",
+        "parent_id": "auth",
         "label": {
-            "hr": "Kalendari",
-            "en": "Calendars"
+            "hr": "API ključevi",
+            "en": "API keys"
         },
-        "route": "",
+        "route": "auth.setup.api-keys",
         "url": "",
         "query": "",
-        "order": 50,
+        "order": 70,
         "enabled": true,
-        "level": 0,
-        "children": [
-            {
-                "id": "calendar.settings.admin",
-                "parent_id": "calendar.settings.group",
-                "label": {
-                    "hr": "Administracija kalendara",
-                    "en": "Calendar administration"
-                },
-                "route": "calendar.admin",
-                "url": "",
-                "query": "",
-                "order": 10,
-                "enabled": true,
-                "level": 1
-            }
-        ]
+        "level": 1
     },
     {
         "id": "editor-html",
@@ -365,20 +363,6 @@
         ]
     },
     {
-        "id": "auth.setup.api-keys",
-        "parent_id": "auth",
-        "label": {
-            "hr": "API ključevi",
-            "en": "API keys"
-        },
-        "route": "auth.setup.api-keys",
-        "url": "",
-        "query": "",
-        "order": 70,
-        "enabled": true,
-        "level": 1
-    },
-    {
         "id": "email.settings.group",
         "parent_id": "",
         "label": {
@@ -409,6 +393,66 @@
         ]
     },
     {
+        "id": "calendar.settings.group",
+        "parent_id": "",
+        "label": {
+            "hr": "Kalendari",
+            "en": "Calendars"
+        },
+        "route": "",
+        "url": "",
+        "query": "",
+        "order": 50,
+        "enabled": true,
+        "level": 0,
+        "children": [
+            {
+                "id": "calendar.settings.admin",
+                "parent_id": "calendar.settings.group",
+                "label": {
+                    "hr": "Administracija kalendara",
+                    "en": "Calendar administration"
+                },
+                "route": "calendar.admin",
+                "url": "",
+                "query": "",
+                "order": 10,
+                "enabled": true,
+                "level": 1
+            }
+        ]
+    },
+    {
+        "id": "backup.settings.group",
+        "parent_id": "",
+        "label": {
+            "hr": "Sigurnosne kopije",
+            "en": "Backups"
+        },
+        "route": "",
+        "url": "",
+        "query": "",
+        "order": 100,
+        "enabled": true,
+        "level": 0,
+        "children": [
+            {
+                "id": "backup.settings",
+                "parent_id": "backup.settings.group",
+                "label": {
+                    "hr": "Backup i vraćanje",
+                    "en": "Backup and restore"
+                },
+                "route": "backup.settings",
+                "url": "",
+                "query": "",
+                "order": 10,
+                "enabled": true,
+                "level": 1
+            }
+        ]
+    },
+    {
         "id": "workspace.settings.group",
         "parent_id": "",
         "label": {
@@ -422,6 +466,20 @@
         "enabled": true,
         "level": 0,
         "children": [
+            {
+                "id": "workspace-search.settings",
+                "parent_id": "workspace.settings.group",
+                "label": {
+                    "hr": "Indeks pretrage",
+                    "en": "Search index"
+                },
+                "route": "workspace-search.settings",
+                "url": "",
+                "query": "",
+                "order": 50,
+                "enabled": true,
+                "level": 1
+            },
             {
                 "id": "workspace.settings",
                 "parent_id": "workspace.settings.group",
@@ -437,6 +495,20 @@
                 "level": 1
             },
             {
+                "id": "workspace.settings.homepage",
+                "parent_id": "workspace.settings.group",
+                "label": {
+                    "hr": "Naslovnica aplikacije",
+                    "en": "Application homepage"
+                },
+                "route": "workspace.settings.homepage",
+                "url": "",
+                "query": "",
+                "order": 20,
+                "enabled": true,
+                "level": 1
+            },
+            {
                 "id": "workspace.settings.all",
                 "parent_id": "workspace.settings.group",
                 "label": {
@@ -446,7 +518,7 @@
                 "route": "workspace.settings.all",
                 "url": "",
                 "query": "",
-                "order": 20,
+                "order": 30,
                 "enabled": true,
                 "level": 1
             },
@@ -460,7 +532,7 @@
                 "route": "workspace.settings.deleted",
                 "url": "",
                 "query": "",
-                "order": 30,
+                "order": 40,
                 "enabled": true,
                 "level": 1
             }

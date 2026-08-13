@@ -10,7 +10,7 @@ return [
         'filesystem_path' => 'editor-html',
     ],
     'view' => [
-        'table_of_contents' => true,
+        'table_of_contents' => false,
         'slug' => [
             'enabled' => false,
             'path' => 'view',

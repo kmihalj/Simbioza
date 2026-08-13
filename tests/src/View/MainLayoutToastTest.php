@@ -76,4 +76,73 @@ final class MainLayoutToastTest extends TestCase
             $layout,
         );
     }
+
+    /**
+     * HR: Svaki Bootstrap modal iz modula prije otvaranja mora prijeći iz
+     *     tematskog stacking contexta izravno pod `body`, gdje Bootstrap
+     *     umeće i njegov backdrop.
+     *
+     * EN: Every module Bootstrap modal must move out of the Theme stacking
+     *     context directly under `body` before opening, alongside the backdrop
+     *     that Bootstrap inserts there.
+     */
+    public function testNestedBootstrapModalsArePortaledToBodyBeforeShowing(): void
+    {
+        $layout = file_get_contents(dirname(__DIR__, 3) . '/views/layouts/main.php');
+
+        $this->assertIsString($layout);
+        $this->assertStringContainsString(
+            "document.addEventListener('show.bs.modal', (event) => {",
+            $layout,
+        );
+        $this->assertStringContainsString(
+            'modal.parentElement !== document.body',
+            $layout,
+        );
+        $this->assertStringContainsString(
+            'document.body.appendChild(modal);',
+            $layout,
+        );
+
+        $portalPosition = strpos($layout, "document.addEventListener('show.bs.modal'");
+        $bootstrapPosition = strpos(
+            $layout,
+            'bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
+        );
+
+        $this->assertIsInt($portalPosition);
+        $this->assertIsInt($bootstrapPosition);
+        $this->assertLessThan($bootstrapPosition, $portalPosition);
+    }
+
+    /**
+     * HR: Posebni lijevi meni mora imati sadržajno prilagodljiv stupac, vlastitu
+     *     SVG sklopku i početno sklopiti Workspace stablo.
+     *
+     * EN: The special left menu must have a content-sized column, its own SVG
+     *     toggle, and initially collapse the Workspace tree.
+     */
+    public function testSpecialLeftMenuLayoutIsResizableAndControlsWorkspaceTree(): void
+    {
+        $layout = file_get_contents(dirname(__DIR__, 3) . '/views/layouts/main.php');
+
+        $this->assertIsString($layout);
+        $this->assertStringContainsString('grid-template-columns: fit-content(18rem)', $layout);
+        $this->assertStringContainsString('data-hph-route-left-toggle', $layout);
+        $this->assertStringContainsString('data-hph-route-left-panel', $layout);
+        $this->assertStringContainsString(
+            'window.bootstrap.Collapse.getOrCreateInstance',
+            $layout,
+        );
+        $this->assertStringContainsString("'hidden.bs.collapse'", $layout);
+        $this->assertStringContainsString("queryTree = new URLSearchParams", $layout);
+        $this->assertStringContainsString(
+            "workspaceTree.classList.toggle('show', explicitlyShownTree)",
+            $layout,
+        );
+        $this->assertStringContainsString('<rect x="3" y="4" width="18" height="16" rx="2"/>', $layout);
+        $this->assertStringContainsString('document.body.appendChild(toggle);', $layout);
+        $this->assertStringContainsString('height: calc(100dvh - 1.5rem);', $layout);
+        $this->assertStringContainsString('top: 43%;', $layout);
+    }
 }

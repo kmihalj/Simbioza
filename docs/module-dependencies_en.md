@@ -16,6 +16,7 @@ resolves the latest `main` heads, and then executes the complete
 | Module | Required | Optional integrations |
 |---|---|---|
 | `module-orm` | Framework, `ext-pdo` | — |
+| `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth and Menu for the administrator GUI; business modules register their own providers |
 | `module-auth` | Framework, ORM | API, Menu, Notification |
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu and Theme for the GUI only |
 | `module-menu` | Framework | Auth |
@@ -27,6 +28,7 @@ resolves the latest `main` heads, and then executes the complete
 | `module-workspace` | Framework, Auth, ORM | HTML Editor, Menu, Notification; Email only indirectly through Notification |
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification |
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
+| `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 
 ## Loading rules
 
@@ -48,6 +50,13 @@ resolves the latest `main` heads, and then executes the complete
 - `module-api` requires only Auth and ORM. Calendar, HTML Editor, Notification,
   Task, and Workspace routes are registered only when the corresponding package
   is installed and the module is enabled.
+- `module-backup` requires only ORM. Its CLI remains available without Auth and
+  Menu; in Simbioza, Auth protects `/settings/backups` and Menu exposes
+  **Settings → Backups → Backup and restore**.
+- Business modules do not hard-depend on Backup. When Backup is enabled, each
+  module optionally registers its own database, filesystem, or finalizer providers.
+- `module-workspace-search` requires Workspace and Menu. The derived index is
+  not archived; Backup rebuilds it after a successful restore.
 
 ## Graph
 
@@ -56,6 +65,7 @@ optional integration.
 
 ```text
 ORM ----------> Framework
+Backup -------> ORM + Framework
 Auth ---------> ORM + Framework
 API ----------> Auth + ORM + Framework
 Calendar -----> Auth + ORM + Framework
@@ -65,6 +75,7 @@ Workspace ----> Auth + ORM + Framework
 Editor HTML --> Auth + ORM + Framework
 Task ---------> Editor HTML + Auth + ORM + Framework
 Comment ------> Editor HTML + Notification + Auth + ORM + Framework
+Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -75,4 +86,6 @@ Workspace    - - > Editor HTML, Menu, Notification
 Editor HTML  - - > API, Menu, Theme, Calendar, Workspace, Task, Comment
 Task         - - > API, Workspace, Notification
 Comment      - - > Workspace, Theme
+Business modules - - > Backup provider registration
+Workspace Search - - > API, Backup index rebuild
 ```

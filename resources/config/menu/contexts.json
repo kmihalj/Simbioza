@@ -1,1 +1,38 @@
-[]
+[
+    {
+        "id": "context.workspace.qa.sportska.redakcija",
+        "label": {
+            "hr": "Sportska redakcija",
+            "en": "Sportska redakcija"
+        },
+        "route_patterns": [],
+        "path_patterns": [
+            "/workspace/qa-sportska-redakcija",
+            "/workspace/qa-sportska-redakcija/*"
+        ],
+        "order": 10,
+        "enabled": true,
+        "top": {
+            "enabled": false,
+            "root_items": [],
+            "items": []
+        },
+        "left": {
+            "enabled": true,
+            "label": {
+                "hr": "test"
+            },
+            "items": [
+                {
+                    "id": "item.1",
+                    "label": {
+                        "hr": "test1"
+                    },
+                    "order": 10,
+                    "enabled": true,
+                    "route": "home"
+                }
+            ]
+        }
+    }
+]

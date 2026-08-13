@@ -13,7 +13,8 @@ not developed as part of this repository.
 
 Every HeartPhrame module requires `aaieduhr/heartphrame-framework:dev-main`.
 Simbioza currently integrates ORM, Menu, Theme, Auth, E-mail, Notification,
-HTML Editor, Task, Comment, Workspace, Calendar, and API. Required module order
+HTML Editor, Task, Comment, Workspace, Workspace Search, Calendar, API, and
+Backup. Required module order
 and optional capabilities are listed in
 [the dependency matrix](docs/module-dependencies_en.md).
 
@@ -74,8 +75,8 @@ same complete suite runs on SQLite, PostgreSQL, and MySQL in CI.
 
 ## Enabled modules
 
-Simbioza integrates API, Auth, Calendar, Comment, HTML Editor, E-mail, Menu,
-Notification, ORM, Task, Theme, and Workspace. Modules keep ownership of their
+Simbioza integrates API, Auth, Backup, Calendar, Comment, HTML Editor, E-mail,
+Menu, Notification, ORM, Task, Theme, Workspace, and Workspace Search. Modules keep ownership of their
 domain rules; the application composes them and supplies deployment settings.
 
 ## Licence

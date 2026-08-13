@@ -13,6 +13,7 @@ declare(strict_types=1);
 const DOCUMENTED_MODULES = [
     'heartphrame-module-api',
     'heartphrame-module-auth',
+    'heartphrame-module-backup',
     'heartphrame-module-calendar',
     'heartphrame-module-comment',
     'heartphrame-module-editor-html',
@@ -23,6 +24,7 @@ const DOCUMENTED_MODULES = [
     'heartphrame-module-task',
     'heartphrame-module-theme',
     'heartphrame-module-workspace',
+    'heartphrame-module-workspace-search',
 ];
 
 /**
@@ -49,9 +51,11 @@ function documentedModuleRoot(string $applicationRoot, string $module): string
     if (is_dir($sibling)) {
         return $sibling;
     }
-    $vendor = $applicationRoot . '/vendor/aaieduhr/' . $module;
-    if (is_dir($vendor)) {
-        return $vendor;
+    foreach (['aaieduhr', 'heartphrame'] as $vendorNamespace) {
+        $vendor = $applicationRoot . '/vendor/' . $vendorNamespace . '/' . $module;
+        if (is_dir($vendor)) {
+            return $vendor;
+        }
     }
 
     throw new RuntimeException('Unable to resolve documented module: ' . $module);
@@ -140,7 +144,10 @@ function runModuleDocumentationAudit(): int
             $readmeText = documentationText($root . '/' . $readme);
             $firstSection = implode("\n", array_slice(explode("\n", $readmeText), 0, 90));
             foreach ($composer['require'] as $package => $constraint) {
-                if (!is_string($package) || !str_starts_with($package, 'aaieduhr/')) {
+                if (
+                    !is_string($package)
+                    || (!str_starts_with($package, 'aaieduhr/') && !str_starts_with($package, 'heartphrame/'))
+                ) {
                     continue;
                 }
                 if (!str_contains($firstSection, $package)) {

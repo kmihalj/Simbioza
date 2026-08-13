@@ -240,7 +240,14 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     }),
     data: {},
   }));
-  expectRecordedBudget('page-publish', publishMarker, 42);
+  /*
+   * HR: Četiri dodatna, ograničena upita odmah sinkroniziraju točno objavljeni
+   *     čvor i jezik u Workspace Search bez skeniranja cijelog područja.
+   * EN: Four additional bounded queries immediately synchronize the exact
+   *     published node and language into Workspace Search without scanning
+   *     the complete Workspace.
+   */
+  expectRecordedBudget('page-publish', publishMarker, 46);
   expectRequestBudget('page-publish', publishMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,

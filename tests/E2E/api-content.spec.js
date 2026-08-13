@@ -18,6 +18,7 @@ test.describe.serial('Editor, attachment, translation, version, and Task lifecyc
   let userId;
   let taskUuid;
   let assetUuid;
+  let workspaceNodeId;
 
   test('an editor creates and updates a structured shared draft without gaining publish rights', async ({ request }) => {
     const users = await expectData(await request.get('/api/v1/users?page[limit]=100', {
@@ -61,6 +62,7 @@ test.describe.serial('Editor, attachment, translation, version, and Task lifecyc
         slug: documentId,
         workspace_slug: workspaceSlug,
         language: 'en',
+        contents_visibility: 'hidden',
         content: [
           { type: 'html', html: '<h1>E2E API Guide</h1><p>Initial draft.</p>' },
           {
@@ -75,6 +77,9 @@ test.describe.serial('Editor, attachment, translation, version, and Task lifecyc
     const draft = await expectData(created, 201);
     expect(draft.id).toBe(documentId);
     expect(draft.is_draft).toBe(true);
+    expect(draft.contents_visibility).toBe('hidden');
+    workspaceNodeId = draft.workspace_node.id;
+    expect(workspaceNodeId).toBeTruthy();
     taskUuid = draft.content.find((block) => block.type === 'task_list').items[0].uuid;
     expect(taskUuid).toBeTruthy();
 
@@ -105,13 +110,16 @@ test.describe.serial('Editor, attachment, translation, version, and Task lifecyc
       data: {
         title: 'E2E API Guide',
         draft_revision: currentDraft.data.draft_revision,
+        contents_visibility: 'shown',
         content: [
           { type: 'html', html: '<h1>E2E API Guide</h1><p>Edited by a non-publisher.</p>' },
           currentDraft.data.content.find((block) => block.type === 'task_list'),
         ],
       },
     });
-    expect((await expectData(updated)).html).toContain('Edited by a non-publisher');
+    const updatedDraft = await expectData(updated);
+    expect(updatedDraft.html).toContain('Edited by a non-publisher');
+    expect(updatedDraft.contents_visibility).toBe('shown');
   });
 
   test('normal and chunked attachment routes preserve bytes, metadata, cancellation, and visibility', async ({ request }) => {
@@ -232,6 +240,16 @@ test.describe.serial('Editor, attachment, translation, version, and Task lifecyc
     const renderedData = await expectData(rendered);
     expect(renderedData.rendered_html).toContain('Edited by a non-publisher');
     expect(renderedData.attachment_visibility).toBe('authenticated');
+
+    const exportedWorkspace = await request.post(`/api/v1/workspaces/${workspaceSlug}/exports/html`, {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('content-workspace-html-export'),
+      }),
+      data: { node_ids: [workspaceNodeId] },
+    });
+    expect(exportedWorkspace.status()).toBe(200);
+    expect(exportedWorkspace.headers()['content-type']).toContain('application/zip');
+    expect((await exportedWorkspace.body()).byteLength).toBeGreaterThan(100);
 
     const inbox = await request.get('/api/v1/notifications?page[limit]=100', { headers: adminHeaders });
     const notifications = await expectData(inbox);

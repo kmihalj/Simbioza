@@ -3,6 +3,7 @@ import {
   apiHeaders,
   e2eEnvironment,
   expectData,
+  expectUsableModal,
   getDataWithEtag,
   idempotencyKey,
   login,
@@ -17,6 +18,49 @@ const {
 } = e2eEnvironment();
 
 test.describe('module browser surfaces', () => {
+  test('every rendered Bootstrap modal remains interactive after repeated opening', async ({ page }) => {
+    test.setTimeout(90_000);
+    await login(page, adminLogin, adminPassword);
+
+    /*
+     * HR: Generički prolaz obuhvaća sve modalne okidače koje trenutna ruta
+     *     stvarno renderira. Tako novi modul automatski ulazi u regresijsku
+     *     zaštitu bez posebnog popisa ID-eva u testu.
+     * EN: This generic pass covers every modal trigger actually rendered by
+     *     the current route. New modules therefore join the regression guard
+     *     without a separate hard-coded ID list.
+     */
+    for (const route of [
+      '/calendars',
+      '/settings/auth?section=users',
+      '/editor-html',
+      '/settings/editor-html',
+    ]) {
+      const response = await page.goto(route);
+      expect(response?.status(), route).toBe(200);
+
+      const targets = await page.locator('[data-bs-toggle="modal"][data-bs-target^="#"]')
+        .evaluateAll((triggers) => [...new Set(triggers.map(
+          (trigger) => trigger.getAttribute('data-bs-target'),
+        ).filter((target) => typeof target === 'string' && target.length > 1))]);
+
+      for (const target of targets) {
+        const trigger = page.locator(`[data-bs-toggle="modal"][data-bs-target="${target}"]`).first();
+        if (!await trigger.isVisible() || await trigger.isDisabled()) {
+          continue;
+        }
+
+        for (let opening = 0; opening < 2; opening += 1) {
+          await trigger.click();
+          const dialog = page.locator(target);
+          await expectUsableModal(dialog);
+          await dialog.locator('[data-bs-dismiss="modal"]').last().click();
+          await expect(dialog).toBeHidden();
+        }
+      }
+    }
+  });
+
   test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page }) => {
     test.setTimeout(90_000);
     await login(page, adminLogin, adminPassword);
@@ -49,6 +93,7 @@ test.describe('module browser surfaces', () => {
       '/calendars',
       '/calendar/profile',
       '/settings/calendar',
+      '/settings/backups',
     ];
     for (const route of htmlRoutes) {
       const response = await page.goto(route);
@@ -96,6 +141,84 @@ test.describe('module browser surfaces', () => {
     const taskCsrf = await page.request.get('/tasks/csrf-token');
     expect(taskCsrf.status()).toBe(200);
     expect((await taskCsrf.json()).csrf.token).toBeTruthy();
+  });
+
+  test('Workspace display defaults, page override, and login lifetime are configurable', async ({ page }) => {
+    test.setTimeout(60_000);
+    const suffix = Date.now();
+    const workspace = {
+      name: `E2E Display ${suffix}`,
+      slug: `e2e-display-${suffix}`,
+      page: `display-page-${suffix}`,
+    };
+
+    await expectData(await page.request.post('/api/v1/workspaces', {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('workspace-display'),
+      }),
+      data: { name: workspace.name, slug: workspace.slug, visibility: 'public' },
+    }), 201);
+    const created = await expectData(await page.request.post('/api/v1/pages', {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('workspace-display-page'),
+      }),
+      data: {
+        title: `Display Page ${suffix}`,
+        slug: workspace.page,
+        workspace_slug: workspace.slug,
+        language: 'en',
+        html: '<h1>Display preference</h1><h2>Outline entry</h2><p>Visible document content.</p>',
+      },
+    }), 201);
+    const draft = await getDataWithEtag(
+      page.request,
+      `/api/v1/pages/${created.id}/draft?lang=en`,
+      apiHeaders(adminApiToken),
+    );
+    await expectData(await page.request.post(`/api/v1/pages/${created.id}/publish?lang=en`, {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('workspace-display-publish'),
+        'If-Match': draft.etag,
+      }),
+      data: {},
+    }));
+
+    await login(page, adminLogin, adminPassword);
+    const session = await page.context().cookies();
+    const loginCookie = session.find((cookie) => cookie.name === 'HEARTPHRAME_E2E_SESSION');
+    expect(loginCookie?.expires ?? -1).toBeGreaterThan(Math.floor(Date.now() / 1000) + 86_400);
+
+    await page.goto(`/workspaces/manage?workspace=${workspace.slug}`);
+    await page.locator('#workspace-tree-visibility').selectOption('hidden');
+    await page.locator('#workspace-contents-visibility').selectOption('hidden');
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/workspaces/manage'
+        && url.searchParams.get('workspace') === workspace.slug),
+      page.getByRole('button', { name: 'Save', exact: true }).click(),
+    ]);
+    await expect(page.locator('#workspace-tree-visibility')).toHaveValue('hidden');
+    await expect(page.locator('#workspace-contents-visibility')).toHaveValue('hidden');
+
+    await page.goto(`/workspace/${workspace.slug}/${workspace.page}?lang=en`);
+    await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
+    await expect(page.locator('#editor-html-toc-column')).toBeHidden();
+
+    await page.goto(`/editor-html?document=${created.id}&lang=en`);
+    await expect(page.locator('#editor-html-contents-visibility')).toHaveValue('inherit');
+    await page.locator('#editor-html-contents-visibility').selectOption('shown');
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/editor-html'
+        && url.searchParams.get('document') === created.id),
+      page.getByRole('button', { name: 'Save', exact: true }).click(),
+    ]);
+    await expect(page.locator('#editor-html-contents-visibility')).toHaveValue('shown');
+
+    await page.goto(`/workspace/${workspace.slug}/${workspace.page}?lang=en`);
+    await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
+    await expect(page.locator('#editor-html-toc-column')).toBeVisible();
+
+    await page.goto('/settings/auth?section=overview');
+    await expect(page.locator('#login_duration_days')).toHaveValue('30');
   });
 
   test('Menu configuration saves without changing its hierarchy and locale switching persists', async ({ page }) => {
@@ -183,6 +306,36 @@ test.describe('module browser surfaces', () => {
         }, colors.hero),
       );
     }
+
+    /*
+     * HR: Izvorni tekst koji ostaje unutar kartice mora koristiti sadržajnu
+     *     paletu, iako je njegov duplicirani naslov premješten u hero.
+     * EN: Source copy that remains inside a card must use the content palette,
+     *     even though its duplicate title was moved into the hero.
+     */
+    await page.goto('/settings/theme?theme=simbioza');
+    const settingsCopy = page.getByText(
+      /Site-wide theme configuration|Konfiguracija teme za cijeli site/i,
+    ).first();
+    await expect(settingsCopy).toBeVisible();
+    const settingsColors = await settingsCopy.evaluate((element) => {
+      const rootStyle = getComputedStyle(document.documentElement);
+
+      return {
+        actual: getComputedStyle(element).color,
+        muted: rootStyle.getPropertyValue('--hph-muted-text').trim(),
+      };
+    });
+    expect(settingsColors.actual).toBe(await page.evaluate((mutedColor) => {
+      const probe = document.createElement('span');
+      probe.style.color = mutedColor;
+      document.body.append(probe);
+      const resolved = getComputedStyle(probe).color;
+      probe.remove();
+
+      return resolved;
+    }, settingsColors.muted));
+
   });
 
   test('Theme editor keeps page order and previews light and dark branding immediately', async ({ page }) => {
@@ -312,6 +465,107 @@ test.describe('module browser surfaces', () => {
       page.waitForLoadState('networkidle'),
       page.getByRole('button', { name: 'Delete theme' }).click(),
     ]);
+  });
+
+  test('Workspace themes stay private and never mutate system themes or another workspace', async ({ page }) => {
+    test.setTimeout(90_000);
+    const suffix = Date.now();
+    const headers = apiHeaders(adminApiToken);
+    const alpha = {
+      name: `E2E Theme Alpha ${suffix}`,
+      slug: `e2e-theme-alpha-${suffix}`,
+      page: `alpha-page-${suffix}`,
+    };
+    const beta = {
+      name: `E2E Theme Beta ${suffix}`,
+      slug: `e2e-theme-beta-${suffix}`,
+      page: `beta-page-${suffix}`,
+    };
+
+    /*
+     * HR: Svako područje dobiva jednu stvarnu objavljenu stranicu kako bi test
+     *     provjerio request-scoped temu na javnoj ruti, a ne samo vrijednost forme.
+     * EN: Each Workspace receives one real published page so the test verifies
+     *     request-scoped theming on a public route, not only a form value.
+     */
+    const createWorkspacePage = async (workspace, title) => {
+      await expectData(await page.request.post('/api/v1/workspaces', {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey(`workspace-theme-${workspace.slug}`),
+        }),
+        data: { name: workspace.name, slug: workspace.slug, visibility: 'public' },
+      }), 201);
+      const created = await expectData(await page.request.post('/api/v1/pages', {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey(`workspace-theme-page-${workspace.page}`),
+        }),
+        data: {
+          title,
+          slug: workspace.page,
+          workspace_slug: workspace.slug,
+          language: 'en',
+          html: `<h1>${title}</h1><p>Private Workspace theme isolation fixture.</p>`,
+        },
+      }), 201);
+      const draft = await getDataWithEtag(
+        page.request,
+        `/api/v1/pages/${created.id}/draft?lang=en`,
+        headers,
+      );
+      await expectData(await page.request.post(`/api/v1/pages/${created.id}/publish?lang=en`, {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey(`workspace-theme-publish-${workspace.page}`),
+          'If-Match': draft.etag,
+        }),
+        data: {},
+      }));
+    };
+
+    await createWorkspacePage(alpha, `Alpha Theme Page ${suffix}`);
+    await createWorkspacePage(beta, `Beta Theme Page ${suffix}`);
+    await login(page, adminLogin, adminPassword);
+
+    await page.goto(`/workspaces/manage?workspace=${alpha.slug}`);
+    await page.getByRole('link', { name: 'Edit Workspace theme' }).click();
+    await expect(page.locator('#active_theme')).toHaveValue('__default__');
+    await page.locator('#active_theme').selectOption('standard');
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/workspaces/theme'
+        && url.searchParams.get('workspace') === alpha.slug),
+      page.getByRole('button', { name: 'Save workspace theme selection' }).click(),
+    ]);
+    await expect(page.locator('#active_theme')).toHaveValue('standard');
+    await expect(page.getByRole('link', { name: 'Export complete theme' })).toHaveCount(0);
+
+    /*
+     * HR: Spremanje neizmijenjenog naziva sistemske teme mora stvoriti privatni
+     *     naziv s područjem i tek tada administratoru ponuditi izvoz kopije.
+     * EN: Saving an unchanged system-theme label must create a private label
+     *     containing the Workspace and only then offer the copy export to an administrator.
+     */
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/workspaces/theme'
+        && url.searchParams.get('workspace') === alpha.slug),
+      page.getByRole('button', { name: 'Save theme' }).click(),
+    ]);
+    await expect(page.getByRole('heading', {
+      name: new RegExp(`Edit theme: Standard .* ${alpha.name}`),
+    })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Export complete theme' })).toBeVisible();
+
+    await page.goto(`/workspace/${alpha.slug}/${alpha.page}?lang=en`);
+    await expect(page.locator('style[data-hph-runtime-theme]')).toHaveCount(1);
+
+    await page.goto(`/workspace/${beta.slug}/${beta.page}?lang=en`);
+    await expect(page.locator('style[data-hph-runtime-theme]')).toHaveCount(0);
+
+    await page.goto(`/workspaces/manage?workspace=${beta.slug}`);
+    await page.getByRole('link', { name: 'Edit Workspace theme' }).click();
+    await expect(page.locator('#active_theme')).toHaveValue('__default__');
+
+    await page.goto('/settings/theme');
+    await expect(page.locator('#active_theme')).toHaveValue('simbioza');
+    await expect(page.locator('#active_theme option', { hasText: alpha.name })).toHaveCount(0);
   });
 
   test('Auth self-service profile, notification preference, and reversible password change work', async ({ page }) => {
@@ -606,7 +860,7 @@ test.describe('module browser surfaces', () => {
         body: getComputedStyle(bodyText).color,
         expectedBody: colorFromVariable('--hph-body-text'),
         secondary: getComputedStyle(secondaryText).color,
-        expectedSecondary: colorFromVariable('--hph-hero-subtitle'),
+        expectedSecondary: colorFromVariable('--hph-muted-text'),
       };
     });
     expect(notificationColors.body).toBe(notificationColors.expectedBody);

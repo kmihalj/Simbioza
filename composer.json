@@ -1,5 +1,5 @@
 {
-    "name": "heartphrame/simbioza",
+    "name": "aaieduhr/simbioza",
     "description": "Simbioza - a collaborative knowledge application powered by HeartPhrame",
     "type": "project",
     "license": "EUPL-1.2",
@@ -57,6 +57,14 @@
         {
             "type": "vcs",
             "url": "https://github.com/kmihalj/heartphrame-module-workspace.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/kmihalj/heartphrame-module-workspace-search.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/kmihalj/heartphrame-module-backup.git"
         }
     ],
     "require": {
@@ -73,7 +81,9 @@
         "aaieduhr/heartphrame-module-orm": "dev-main",
         "aaieduhr/heartphrame-module-task": "dev-main",
         "aaieduhr/heartphrame-module-theme": "dev-main",
-        "aaieduhr/heartphrame-module-workspace": "dev-main"
+        "aaieduhr/heartphrame-module-workspace": "dev-main",
+        "aaieduhr/heartphrame-module-workspace-search": "dev-main",
+        "aaieduhr/heartphrame-module-backup": "dev-main"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",

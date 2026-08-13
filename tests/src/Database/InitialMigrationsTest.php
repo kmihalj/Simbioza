@@ -6,6 +6,7 @@ namespace Tests\Database;
 
 use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
+use AaiEduHr\HeartPhrameModuleBackup\ModuleBackup;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
 use AaiEduHr\HeartPhrameModuleComment\ModuleComment;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
@@ -14,6 +15,7 @@ use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
+use AaiEduHr\HeartPhrameModuleWorkspaceSearch\ModuleWorkspaceSearch;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -49,20 +51,20 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće devet objedinjenih inicijalnih migracija te provjerava aktualne
-     * Auth, Calendar, Editor, Workspace, E-mail, Notification, Task, Comment i API
-     * sheme, početnog administratora i izostanak sadržaja.
+     * HR: Pokreće jedanaest objedinjenih inicijalnih migracija te provjerava aktualne
+     * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
+     * Task, Comment, API i Backup sheme, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs nine consolidated initial migrations and verifies the current
-     * Auth, Calendar, Editor, Workspace, E-mail, Notification, Task, Comment, and
-     * API schemas, the bootstrap administrator, and the absence of content data.
+     * EN: Runs eleven consolidated initial migrations and verifies the current Auth,
+     * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
+     * Comment, API, and Backup schemas, the bootstrap administrator, and no content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(9, $migrationFiles, 'Only consolidated initial migrations are expected.');
+        $this->assertCount(11, $migrationFiles, 'Only consolidated initial migrations are expected.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -343,6 +345,38 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_THEMES, [
+            'id',
+            'workspace_id',
+            'selection_type',
+            'source_theme_id',
+            'mode_policy',
+            'theme_json',
+            'updated_by_user_id',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspaceSearch::TABLE_INDEX, [
+            'id',
+            'workspace_id',
+            'node_id',
+            'workspace_slug',
+            'workspace_name',
+            'node_slug',
+            'document_key',
+            'language_code',
+            'title',
+            'body_text',
+            'normalized_text',
+            'author_user_id',
+            'author_name',
+            'published_at',
+            'version_number',
+            'content_hash',
+            'indexed_at',
+            'created_at',
+            'updated_at',
+        ]);
         $this->assertColumns(ModuleEmail::TABLE_OUTBOX, [
             'id',
             'uuid',
@@ -522,6 +556,46 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleBackup::TABLE_JOBS, [
+            'id',
+            'uuid',
+            'operation',
+            'scope_type',
+            'scope_identifier',
+            'status',
+            'conflict_mode',
+            'selected_providers_json',
+            'options_json',
+            'archive_path',
+            'archive_name',
+            'archive_sha256',
+            'archive_bytes',
+            'processed_bytes',
+            'error_summary',
+            'result_json',
+            'actor_user_id',
+            'started_at',
+            'completed_at',
+            'expires_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleBackup::TABLE_UPLOADS, [
+            'id',
+            'uuid',
+            'original_name',
+            'total_size',
+            'chunk_size',
+            'next_offset',
+            'temp_path',
+            'expected_sha256',
+            'actual_sha256',
+            'status',
+            'actor_user_id',
+            'expires_at',
+            'created_at',
+            'updated_at',
+        ]);
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -537,6 +611,8 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleEditorHtml::TABLE_ASSETS)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACES)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
+        $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->get());
+        $this->assertSame([], $this->database->table(ModuleWorkspaceSearch::TABLE_INDEX)->get());
         $this->assertSame([], $this->database->table(ModuleEmail::TABLE_OUTBOX)->get());
         $this->assertSame([], $this->database->table(ModuleNotification::TABLE_NOTIFICATIONS)->get());
         $this->assertSame([], $this->database->table(ModuleNotification::TABLE_USER_PREFERENCES)->get());
@@ -551,6 +627,8 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleApi::TABLE_KEY_REQUESTS)->get());
         $this->assertSame([], $this->database->table(ModuleApi::TABLE_WEBHOOK_SUBSCRIPTIONS)->get());
         $this->assertSame([], $this->database->table(ModuleApi::TABLE_WEBHOOK_DELIVERIES)->get());
+        $this->assertSame([], $this->database->table(ModuleBackup::TABLE_JOBS)->get());
+        $this->assertSame([], $this->database->table(ModuleBackup::TABLE_UPLOADS)->get());
     }
 
     /**

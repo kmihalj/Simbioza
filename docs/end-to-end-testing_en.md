@@ -23,16 +23,16 @@ copied into Simbioza, a module package, or an administrator's installation.
 
 ## What is covered
 
-All 42 scenarios cover every module shipped by Simbioza. They exercise public
+All 48 scenarios cover every module shipped by Simbioza. They exercise public
 behavior rather than private implementation details.
 
 | Area | End-to-end coverage |
 |---|---|
 | Clean host and ORM | A new application, SQLite/PostgreSQL/MySQL database, all official migrations, real front controller, sessions, logs, cache directories, and teardown safety. |
-| Theme and Menu | Desktop/mobile navigation, right-side mobile drawer, locale persistence, menu save, full-height responsive hero artwork, adaptive collision-free mobile content overlap, equal Home/Inner sizes, edge-to-edge layout, supporting copy beneath automatic hero titles using the Hero color settings, collision-free narrow live preview, theme clone, used-assets-only package export, complete theme export, deletion, and complete-theme import. |
+| Theme and Menu | Desktop/mobile navigation, right-side mobile drawer, locale persistence, menu save, full-height responsive hero artwork, adaptive collision-free mobile content overlap, equal Home/Inner sizes, edge-to-edge layout, supporting copy beneath automatic hero titles using the Hero color settings, collision-free narrow live preview, theme clone, used-assets-only package export, complete theme export, deletion, complete-theme import, and a request-scoped private Workspace copy that leaves system themes unchanged. |
 | Auth | Guest redirect, administrator and regular-user authorization, local login/logout, profile and notification preference updates, reversible password change, group/user CRUD, memberships, ETags, safe output, audit records, and cleanup. |
 | API | Bearer authentication, dynamic scopes, discovery, raw OpenAPI 3.1, CORS preflight, pagination, RFC 9457 problems, rate-limit headers, idempotent replay, `If-Match`, personal key request, administrator approval, one-time reveal, and scope/domain-permission separation. |
-| Workspace | Creation, concealed unauthorized reads, subject search, workspace and node ACLs, tree links, complete ordering, updates, node deletion, soft deletion, deleted list, restore, twelve-line Summaries, language fallback, collapsible tree/display controls, and structured Summaries homepage targets. |
+| Workspace | Creation, concealed unauthorized reads, subject search, workspace and node ACLs, tree links, complete ordering, updates, node deletion, soft deletion, deleted list, restore, twelve-line Summaries, language fallback, collapsible tree/display controls, structured Summaries homepage targets, and theme isolation between Workspaces. |
 | HTML Editor | Structured draft creation, concurrent revision rejection, review, publisher boundary, publication, immutable versions, rendered output, translations, version restore, draft discard, page deletion, and public Workspace route removal. |
 | Attachments | Standard multipart upload, rejection of unsupported upload idempotency, chunk upload and cancellation, visibility, listing, metadata update, byte-for-byte download, and deletion. |
 | Task | Discovery from versioned document content, ETag-protected state change, idempotent replay, and one-entry state history. |

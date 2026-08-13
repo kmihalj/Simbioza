@@ -94,7 +94,7 @@ potpuni browser, API i performance skup naredbom
 Matrica i E2E alati nikada ne spremaju pristupne podatke baze u izvještaje ni
 metrike.
 Simbioza CI tijek rada pokreće svaku minimalnu kombinaciju modula na SQLiteu te
-potpuni skup modula i sva 42 E2E scenarija na čistim PostgreSQL i MySQL
+potpuni skup modula i sva 52 E2E scenarija na čistim PostgreSQL i MySQL
 servisnim bazama. Tako se na svakoj podržanoj obitelji baza provjeravaju
 Composer razrješavanje, migracije, CLI/HTTP pokretanje, funkcionalni tokovi i
 performance budžeti.

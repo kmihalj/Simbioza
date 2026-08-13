@@ -24,14 +24,14 @@
                         "position": "start",
                         "text": [],
                         "href": "/hfc/",
+                        "src_light": "@theme-assets/simbioza/icon-adriatic-light.png",
+                        "src_dark": "@theme-assets/simbioza/icon-adriatic-dark.png",
                         "alt": {
                             "hr": "Simbioza znak",
                             "en": "Simbioza mark"
                         },
                         "height": 48,
-                        "new_tab": false,
-                        "src_light": "@theme-assets/simbioza/icon-adriatic-light.png",
-                        "src_dark": "@theme-assets/simbioza/icon-adriatic-dark.png"
+                        "new_tab": false
                     },
                     {
                         "id": "header-2",
@@ -42,11 +42,11 @@
                             "en": "Simbioza"
                         },
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     },
                     {
                         "id": "header-3",
@@ -54,11 +54,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     },
                     {
                         "id": "header-4",
@@ -66,11 +66,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     }
                 ]
             },
@@ -103,15 +103,15 @@
                 "content_padding_top_px": 0,
                 "content_padding_bottom_px": 0,
                 "visual_enabled": true,
+                "visual_src_light": "@theme-assets/simbioza/hero-adriatic-light.svg",
+                "visual_src_dark": "@theme-assets/simbioza/hero-adriatic-dark.svg",
                 "visual_alt": [],
                 "visual_decorative": true,
                 "visual_width_px": 560,
                 "visual_top_px": -48,
                 "visual_right_px": 24,
                 "visual_rotation_deg": 0,
-                "wave": true,
-                "visual_src_light": "@theme-assets/simbioza/hero-adriatic-light.svg",
-                "visual_src_dark": "@theme-assets/simbioza/hero-adriatic-dark.svg"
+                "wave": true
             },
             "content": {
                 "container": "wide",
@@ -165,6 +165,16 @@
                 "sidebar_card_text": "#123F4B",
                 "sidebar_card_border": "#D9E3DF",
                 "sidebar_card_accent": "#E9B84A",
+                "title_supporting_text": "#276E82",
+                "hero_gradient_1": "#25408F",
+                "hero_gradient_2": "#2872A0",
+                "hero_gradient_3": "#2F9EAA",
+                "hero_gradient_4": "#3CB4AD",
+                "hero_gradient_5": "#4CC0AD",
+                "hero_text": "#FFF8EE",
+                "hero_title": "#FFF8EE",
+                "hero_subtitle": "#D9F2EE",
+                "hero_muted": "#B7D8D5",
                 "table_header_bg": "#EAF3F0",
                 "table_header_text": "#123F4B",
                 "table_row_bg": "#FFFFFF",
@@ -201,6 +211,7 @@
                 "left_menu_hover_text": "#123F4B",
                 "left_menu_active_bg": "#0E6268",
                 "left_menu_active_text": "#FFFFFF",
+                "special_left_menu_accent": "#FF8064",
                 "pagination_bg": "#FFFFFF",
                 "pagination_text": "#0E6268",
                 "pagination_active_bg": "#0E6268",
@@ -226,17 +237,7 @@
                 "navbar_text": "#FFF8EE",
                 "navbar_link": "#FFF8EE",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D424B",
-                "hero_text": "#FFF8EE",
-                "hero_title": "#FFF8EE",
-                "hero_subtitle": "#D9F2EE",
-                "hero_muted": "#B7D8D5",
-                "title_supporting_text": "#547078",
-                "hero_gradient_1": "#25408F",
-                "hero_gradient_2": "#2872A0",
-                "hero_gradient_3": "#2F9EAA",
-                "hero_gradient_4": "#3CB4AD",
-                "hero_gradient_5": "#4CC0AD"
+                "navbar_active_bg": "#0D424B"
             }
         },
         "dark": {
@@ -271,6 +272,16 @@
                 "sidebar_card_text": "#E7F3F0",
                 "sidebar_card_border": "#31515A",
                 "sidebar_card_accent": "#E9B84A",
+                "title_supporting_text": "#A9C5C3",
+                "hero_gradient_1": "#25408F",
+                "hero_gradient_2": "#2872A0",
+                "hero_gradient_3": "#2F9EAA",
+                "hero_gradient_4": "#3CB4AD",
+                "hero_gradient_5": "#4CC0AD",
+                "hero_text": "#FFF8EE",
+                "hero_title": "#FFF8EE",
+                "hero_subtitle": "#D9F2EE",
+                "hero_muted": "#B7D8D5",
                 "table_header_bg": "#113A43",
                 "table_header_text": "#F7FBFA",
                 "table_row_bg": "#0B2A32",
@@ -307,6 +318,7 @@
                 "left_menu_hover_text": "#FFFFFF",
                 "left_menu_active_bg": "#45AFA6",
                 "left_menu_active_text": "#071F27",
+                "special_left_menu_accent": "#FF8064",
                 "pagination_bg": "#0B2A32",
                 "pagination_text": "#8AE1D7",
                 "pagination_active_bg": "#45AFA6",
@@ -332,17 +344,7 @@
                 "navbar_text": "#FFF8EE",
                 "navbar_link": "#FFF8EE",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D424B",
-                "hero_text": "#FFF8EE",
-                "hero_title": "#FFF8EE",
-                "hero_subtitle": "#D9F2EE",
-                "hero_muted": "#B7D8D5",
-                "title_supporting_text": "#547078",
-                "hero_gradient_1": "#25408F",
-                "hero_gradient_2": "#2872A0",
-                "hero_gradient_3": "#2F9EAA",
-                "hero_gradient_4": "#3CB4AD",
-                "hero_gradient_5": "#4CC0AD"
+                "navbar_active_bg": "#0D424B"
             }
         }
     },
@@ -371,14 +373,14 @@
                         "position": "start",
                         "text": [],
                         "href": "/hfc/",
+                        "src_light": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
+                        "src_dark": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
                         "alt": {
                             "hr": "Simbioza znak",
                             "en": "Simbioza mark"
                         },
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
-                        "src_dark": "@theme-assets/srce-sup/icon-simbioza-natural-light.png"
+                        "new_tab": false
                     },
                     {
                         "id": "header-2",
@@ -389,11 +391,11 @@
                             "en": "Simbioza"
                         },
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     },
                     {
                         "id": "header-3",
@@ -401,11 +403,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     },
                     {
                         "id": "header-4",
@@ -413,11 +415,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     }
                 ]
             },
@@ -450,15 +452,15 @@
                 "content_padding_top_px": 0,
                 "content_padding_bottom_px": 0,
                 "visual_enabled": true,
+                "visual_src_light": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg",
+                "visual_src_dark": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg",
                 "visual_alt": [],
                 "visual_decorative": true,
                 "visual_width_px": 250,
                 "visual_top_px": 48,
                 "visual_right_px": 0,
                 "visual_rotation_deg": -90,
-                "wave": true,
-                "visual_src_light": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg",
-                "visual_src_dark": "@theme-assets/srce-sup/hero-kruzici-pred-footer.svg"
+                "wave": true
             },
             "content": {
                 "container": "wide",
@@ -512,6 +514,16 @@
                 "sidebar_card_text": "#30343B",
                 "sidebar_card_border": "#D8DCE3",
                 "sidebar_card_accent": "#00D8DB",
+                "title_supporting_text": "#606060",
+                "hero_gradient_1": "#83CCD9",
+                "hero_gradient_2": "#53D5FD",
+                "hero_gradient_3": "#94E3FE",
+                "hero_gradient_4": "#CAF0FE",
+                "hero_gradient_5": "#8CCAC4",
+                "hero_text": "#1F2933",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#FFFFFF",
+                "hero_muted": "#44515B",
                 "table_header_bg": "#F8F9FA",
                 "table_header_text": "#000000",
                 "table_row_bg": "#FFFFFF",
@@ -548,6 +560,7 @@
                 "left_menu_hover_text": "#212529",
                 "left_menu_active_bg": "#0D6EFD",
                 "left_menu_active_text": "#FFFFFF",
+                "special_left_menu_accent": "#D71635",
                 "pagination_bg": "#FFFFFF",
                 "pagination_text": "#0D6EFD",
                 "pagination_active_bg": "#0D6EFD",
@@ -573,17 +586,7 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#80CBD7",
-                "hero_text": "#1F2933",
-                "hero_title": "#FFFFFF",
-                "hero_subtitle": "#FFFFFF",
-                "hero_muted": "#44515B",
-                "title_supporting_text": "#606060",
-                "hero_gradient_1": "#83CCD9",
-                "hero_gradient_2": "#53D5FD",
-                "hero_gradient_3": "#94E3FE",
-                "hero_gradient_4": "#CAF0FE",
-                "hero_gradient_5": "#8CCAC4"
+                "navbar_active_bg": "#80CBD7"
             }
         },
         "dark": {
@@ -618,6 +621,16 @@
                 "sidebar_card_text": "#E4E8EB",
                 "sidebar_card_border": "#46515A",
                 "sidebar_card_accent": "#46BCEB",
+                "title_supporting_text": "#606060",
+                "hero_gradient_1": "#83CCD9",
+                "hero_gradient_2": "#53D5FD",
+                "hero_gradient_3": "#94E3FE",
+                "hero_gradient_4": "#CAF0FE",
+                "hero_gradient_5": "#8CCAC4",
+                "hero_text": "#1F2933",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#FFFFFF",
+                "hero_muted": "#44515B",
                 "table_header_bg": "#343A40",
                 "table_header_text": "#DEE2E6",
                 "table_row_bg": "#212529",
@@ -654,6 +667,7 @@
                 "left_menu_hover_text": "#FFFFFF",
                 "left_menu_active_bg": "#0D6EFD",
                 "left_menu_active_text": "#FFFFFF",
+                "special_left_menu_accent": "#EE6678",
                 "pagination_bg": "#212529",
                 "pagination_text": "#6EA8FE",
                 "pagination_active_bg": "#0D6EFD",
@@ -679,17 +693,7 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#245E69",
-                "hero_text": "#1F2933",
-                "hero_title": "#FFFFFF",
-                "hero_subtitle": "#FFFFFF",
-                "hero_muted": "#44515B",
-                "title_supporting_text": "#606060",
-                "hero_gradient_1": "#83CCD9",
-                "hero_gradient_2": "#53D5FD",
-                "hero_gradient_3": "#94E3FE",
-                "hero_gradient_4": "#CAF0FE",
-                "hero_gradient_5": "#8CCAC4"
+                "navbar_active_bg": "#245E69"
             }
         }
     },
@@ -718,14 +722,14 @@
                         "position": "start",
                         "text": [],
                         "href": "/hfc/",
+                        "src_light": "@theme-assets/standard/icon-simbioza-natural-light.png",
+                        "src_dark": "@theme-assets/standard/icon-simbioza-natural-light.png",
                         "alt": {
                             "hr": "Simbioza znak",
                             "en": "Simbioza mark"
                         },
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "@theme-assets/standard/icon-simbioza-natural-light.png",
-                        "src_dark": "@theme-assets/standard/icon-simbioza-natural-light.png"
+                        "new_tab": false
                     },
                     {
                         "id": "header-2",
@@ -736,11 +740,11 @@
                             "en": "Simbioza"
                         },
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     },
                     {
                         "id": "header-3",
@@ -748,11 +752,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     },
                     {
                         "id": "header-4",
@@ -760,11 +764,11 @@
                         "position": "end",
                         "text": [],
                         "href": "",
+                        "src_light": "",
+                        "src_dark": "",
                         "alt": [],
                         "height": 44,
-                        "new_tab": false,
-                        "src_light": "",
-                        "src_dark": ""
+                        "new_tab": false
                     }
                 ]
             },
@@ -797,15 +801,15 @@
                 "content_padding_top_px": 0,
                 "content_padding_bottom_px": 0,
                 "visual_enabled": true,
+                "visual_src_light": "@theme-assets/standard/hero-universal-artwork.svg",
+                "visual_src_dark": "@theme-assets/standard/hero-universal-artwork.svg",
                 "visual_alt": [],
                 "visual_decorative": true,
                 "visual_width_px": 480,
                 "visual_top_px": 0,
                 "visual_right_px": 0,
                 "visual_rotation_deg": 0,
-                "wave": true,
-                "visual_src_light": "@theme-assets/standard/hero-universal-artwork.svg",
-                "visual_src_dark": "@theme-assets/standard/hero-universal-artwork.svg"
+                "wave": true
             },
             "content": {
                 "container": "wide",
@@ -859,6 +863,16 @@
                 "sidebar_card_text": "#212529",
                 "sidebar_card_border": "#DEE2E6",
                 "sidebar_card_accent": "#0D6EFD",
+                "title_supporting_text": "#6C757D",
+                "hero_gradient_1": "#D71635",
+                "hero_gradient_2": "#D93F2D",
+                "hero_gradient_3": "#DC6824",
+                "hero_gradient_4": "#E0801D",
+                "hero_gradient_5": "#E39717",
+                "hero_text": "#FFFFFF",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#EBEBEB",
+                "hero_muted": "#EBEBEB",
                 "table_header_bg": "#F8F9FA",
                 "table_header_text": "#000000",
                 "table_row_bg": "#FFFFFF",
@@ -895,6 +909,7 @@
                 "left_menu_hover_text": "#212529",
                 "left_menu_active_bg": "#0D6EFD",
                 "left_menu_active_text": "#FFFFFF",
+                "special_left_menu_accent": "#DC3545",
                 "pagination_bg": "#FFFFFF",
                 "pagination_text": "#0D6EFD",
                 "pagination_active_bg": "#0D6EFD",
@@ -920,17 +935,7 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#212529",
-                "hero_text": "#FFFFFF",
-                "hero_title": "#FFFFFF",
-                "hero_subtitle": "#EBEBEB",
-                "hero_muted": "#EBEBEB",
-                "title_supporting_text": "#6C757D",
-                "hero_gradient_1": "#D71635",
-                "hero_gradient_2": "#D93F2D",
-                "hero_gradient_3": "#DC6824",
-                "hero_gradient_4": "#E0801D",
-                "hero_gradient_5": "#E39717"
+                "navbar_active_bg": "#212529"
             }
         },
         "dark": {
@@ -965,6 +970,16 @@
                 "sidebar_card_text": "#DEE2E6",
                 "sidebar_card_border": "#495057",
                 "sidebar_card_accent": "#6EA8FE",
+                "title_supporting_text": "#6C757D",
+                "hero_gradient_1": "#D71635",
+                "hero_gradient_2": "#D93F2D",
+                "hero_gradient_3": "#DC6824",
+                "hero_gradient_4": "#E0801D",
+                "hero_gradient_5": "#E39717",
+                "hero_text": "#FFFFFF",
+                "hero_title": "#FFFFFF",
+                "hero_subtitle": "#EBEBEB",
+                "hero_muted": "#EBEBEB",
                 "table_header_bg": "#343A40",
                 "table_header_text": "#DEE2E6",
                 "table_row_bg": "#212529",
@@ -1001,6 +1016,7 @@
                 "left_menu_hover_text": "#FFFFFF",
                 "left_menu_active_bg": "#0D6EFD",
                 "left_menu_active_text": "#FFFFFF",
+                "special_left_menu_accent": "#DC3545",
                 "pagination_bg": "#212529",
                 "pagination_text": "#6EA8FE",
                 "pagination_active_bg": "#0D6EFD",
@@ -1026,17 +1042,7 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#232323",
-                "hero_text": "#FFFFFF",
-                "hero_title": "#FFFFFF",
-                "hero_subtitle": "#EBEBEB",
-                "hero_muted": "#EBEBEB",
-                "title_supporting_text": "#6C757D",
-                "hero_gradient_1": "#D71635",
-                "hero_gradient_2": "#D93F2D",
-                "hero_gradient_3": "#DC6824",
-                "hero_gradient_4": "#E0801D",
-                "hero_gradient_5": "#E39717"
+                "navbar_active_bg": "#232323"
             }
         }
     }

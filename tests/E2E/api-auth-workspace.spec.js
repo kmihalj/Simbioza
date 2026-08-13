@@ -21,10 +21,11 @@ test.describe.serial('Auth and API administration lifecycle', () => {
     const discoveryData = await expectData(discovery);
     expect(discoveryData.resources).toEqual(expect.arrayContaining([
       'users', 'groups', 'audit', 'workspace', 'page', 'attachment', 'calendar',
-      'task', 'notifications', 'webhooks',
+      'task', 'notifications', 'webhooks', 'workspace-search',
     ]));
     expect(discoveryData.scope_groups.map((group) => group.module)).toEqual(expect.arrayContaining([
       'auth', 'workspace', 'editor-html', 'calendar', 'task', 'notification', 'api',
+      'workspace-search',
     ]));
     expect(discoveryData.security).toMatchObject({
       authentication: 'bearer',
@@ -42,6 +43,7 @@ test.describe.serial('Auth and API administration lifecycle', () => {
       '/api/v1/workspaces/{workspaceSlug}',
       '/api/v1/pages/{documentId}/attachments/{assetUuid}',
       '/api/v1/calendars/{calendarUuid}/events/{eventId}',
+      '/api/v1/workspace-search',
       '/api/v1/notifications/{uuid}',
       '/api/v1/webhooks/{uuid}/deliveries/{deliveryUuid}',
     ]));
@@ -253,6 +255,97 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
       headers: userHeaders,
     });
     await expectProblem(stillCannotManage, 403, 'workspace_access_denied');
+
+    const theme = await expectData(await request.get(`/api/v1/workspaces/${workspaceSlug}/theme`, {
+      headers: adminHeaders,
+    }));
+    expect(theme.settings.active_theme).toBeTruthy();
+    expect(theme.themes.map((item) => item.id)).toEqual(expect.arrayContaining(['standard']));
+
+    const ordinaryTheme = await request.get(`/api/v1/workspaces/${workspaceSlug}/theme`, {
+      headers: userHeaders,
+    });
+    await expectProblem(ordinaryTheme, 403, 'workspace_access_denied');
+
+    const selectedTheme = await expectData(await request.put(
+      `/api/v1/workspaces/${workspaceSlug}/theme/selection`,
+      {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey('workspace-theme-selection'),
+        }),
+        data: { theme_id: 'standard', mode_policy: 'auto' },
+      },
+    ));
+    expect(selectedTheme.settings.active_theme).toBe('standard');
+
+    const uploadedTheme = await expectData(await request.post(
+      `/api/v1/workspaces/${workspaceSlug}/theme/assets`,
+      {
+        headers: adminHeaders,
+        multipart: {
+          role: 'other',
+          asset: {
+            name: 'e2e-workspace-mark.svg',
+            mimeType: 'image/svg+xml',
+            buffer: Buffer.from(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#1677ff"/></svg>',
+              'utf8',
+            ),
+          },
+        },
+      },
+    ));
+    const uploadedAsset = uploadedTheme.assets.find((asset) => asset.file.includes('e2e-workspace-mark'));
+    expect(uploadedAsset?.used).toBe(false);
+
+    const deletedThemeAsset = await expectData(await request.delete(
+      `/api/v1/workspaces/${workspaceSlug}/theme/assets/${encodeURIComponent(uploadedAsset.file)}`,
+      { headers: adminHeaders },
+    ));
+    expect(deletedThemeAsset.assets.map((asset) => asset.file)).not.toContain(uploadedAsset.file);
+
+    const savedTheme = await expectData(await request.patch(`/api/v1/workspaces/${workspaceSlug}/theme`, {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('workspace-theme-save'),
+      }),
+      data: { theme: deletedThemeAsset.selected_theme, mode_policy: 'dark' },
+    }));
+    expect(savedTheme.settings.mode_policy).toBe('dark');
+    expect(savedTheme.assets_read_only).toBe(false);
+
+    const exportedTheme = await request.get(`/api/v1/workspaces/${workspaceSlug}/theme/export`, {
+      headers: adminHeaders,
+    });
+    expect(exportedTheme.status()).toBe(200);
+    expect(exportedTheme.headers()['content-type']).toContain('application/zip');
+    const themeArchive = await exportedTheme.body();
+    expect(themeArchive.byteLength).toBeGreaterThan(100);
+
+    const importedTheme = await expectData(await request.post(
+      `/api/v1/workspaces/${workspaceSlug}/theme/import`,
+      {
+        headers: adminHeaders,
+        multipart: {
+          mode_policy: 'auto',
+          theme: {
+            name: 'e2e-workspace-theme.zip',
+            mimeType: 'application/zip',
+            buffer: themeArchive,
+          },
+        },
+      },
+    ));
+    expect(importedTheme.settings.mode_policy).toBe('auto');
+    expect(importedTheme.assets_read_only).toBe(false);
+
+    const homepageSettings = await expectData(await request.get('/api/v1/workspaces/homepage/settings', {
+      headers: adminHeaders,
+    }));
+    expect(homepageSettings).toHaveProperty('settings');
+    const ordinaryHomepageSettings = await request.get('/api/v1/workspaces/homepage/settings', {
+      headers: userHeaders,
+    });
+    await expectProblem(ordinaryHomepageSettings, 403, 'workspace_access_denied');
   });
 
   test('tree links, complete ordering, node ACL, updates, and deletion work', async ({ request }) => {
@@ -284,6 +377,20 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
       headers: adminHeaders,
     }));
     expect(tree.flatMap((node) => [node.id])).toEqual(expect.arrayContaining([firstNodeId, secondNodeId]));
+
+    const shorts = await expectData(await request.get(
+      `/api/v1/workspaces/${workspaceSlug}/shorts?lang=en&depth=2&limit=10&order=newest`,
+      { headers: adminHeaders },
+    ));
+    expect(shorts).toMatchObject({ depth: 2, limit: '10', order: 'newest', total: 0 });
+
+    const exportedWorkspace = await request.post(`/api/v1/workspaces/${workspaceSlug}/exports/html`, {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('workspace-html-export'),
+      }),
+      data: { node_ids: [firstNodeId, secondNodeId] },
+    });
+    await expectProblem(exportedWorkspace, 422, 'workspace_validation_failed');
 
     const reordered = await request.put(`/api/v1/workspaces/${workspaceSlug}/tree/order`, {
       headers: apiHeaders(adminApiToken, { 'Idempotency-Key': idempotencyKey('workspace-order') }),

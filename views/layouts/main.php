@@ -438,6 +438,171 @@ if (
         .navbar:not(.hph-primary-navigation) {
             margin-bottom: 2rem;
         }
+        /*
+         * HR: Posebni lijevi meni zauzima samo širinu koju traži njegov sadržaj.
+         *     Glavni sadržaj preuzima sav preostali prostor i širi se kada se meni sakrije.
+         * EN: The special left menu uses only the width required by its content.
+         *     Main content receives the remaining space and expands when the menu is hidden.
+         */
+        .hph-route-left-layout {
+            align-items: start;
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: fit-content(18rem) minmax(0, 1fr);
+        }
+        .hph-route-left-layout--menu-hidden {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        /*
+         * HR: Tijekom zatvaranja stupac ostaje rezerviran, a uklanja se tek
+         *     kada Bootstrap završi isti collapse prijelaz koji koristi stablo.
+         * EN: During closing, the column remains reserved and is removed only
+         *     after Bootstrap finishes the same collapse transition as the tree.
+         */
+        .hph-route-left-layout:has(.hph-route-left-layout__menu.collapse:not(.show)) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .hph-route-left-layout__menu {
+            max-width: min(18rem, 32vw);
+            min-width: 10rem;
+            position: sticky;
+            top: 1rem;
+            width: max-content;
+        }
+        .hph-route-left-layout__menu .menu-route-sidebar {
+            width: 100%;
+        }
+        .hph-route-left-layout__content {
+            min-width: 0;
+        }
+        .hph-route-left-toggle-host {
+            display: flex;
+            margin-bottom: .75rem;
+        }
+        .hph-route-left-toggle {
+            align-items: center;
+            display: inline-flex;
+            flex: 0 0 auto;
+            height: 2rem;
+            justify-content: center;
+            margin-right: auto;
+            opacity: .68;
+            padding: 0;
+            width: 2rem;
+        }
+        .hph-route-left-toggle:hover,
+        .hph-route-left-toggle:focus-visible {
+            opacity: 1;
+        }
+        .hph-route-left-toggle__icon {
+            fill: none;
+            height: 1rem;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 2;
+            width: 1rem;
+        }
+        .hph-route-left-mobile-header,
+        .hph-route-left-backdrop {
+            display: none;
+        }
+        .hph-route-left-layout:not(.hph-route-left-layout--ready) #workspace-page-tree {
+            display: none;
+        }
+        @media (max-width: 991.98px) {
+            .hph-route-left-layout {
+                display: block;
+            }
+            .hph-route-left-toggle-host {
+                display: none;
+            }
+            .hph-route-left-layout__menu {
+                bottom: 0;
+                display: block !important;
+                left: 0;
+                margin: 0;
+                max-height: 100dvh;
+                max-width: none;
+                overflow: visible;
+                padding: .75rem;
+                position: fixed;
+                top: 0;
+                transform: translateX(-105%);
+                transition: transform .2s ease, visibility .2s step-end;
+                visibility: hidden;
+                width: min(22rem, calc(100vw - 3rem));
+                z-index: 1090;
+            }
+            .hph-route-left-layout__menu .menu-route-sidebar {
+                box-shadow: 0 .75rem 2rem rgba(15, 23, 42, .28) !important;
+                height: calc(100vh - 1.5rem);
+                height: calc(100dvh - 1.5rem);
+                overflow: hidden;
+            }
+            .hph-route-left-layout__menu .menu-route-sidebar > .card-body {
+                height: 100%;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+            }
+            .hph-route-left-layout__menu.hph-route-left-layout__menu--open {
+                transform: translateX(0);
+                transition: transform .2s ease, visibility 0s;
+                visibility: visible;
+            }
+            .hph-route-left-mobile-header {
+                align-items: center;
+                display: flex;
+                gap: 1rem;
+                justify-content: space-between;
+                margin-bottom: 1rem;
+                min-height: 2.5rem;
+            }
+            .hph-route-left-desktop-title {
+                display: none;
+            }
+            .hph-route-left-mobile-close {
+                align-items: center;
+                background: transparent;
+                border: 0;
+                color: inherit;
+                display: inline-flex;
+                font-size: 1.75rem;
+                height: 2.5rem;
+                justify-content: center;
+                line-height: 1;
+                padding: 0;
+                width: 2.5rem;
+            }
+            .hph-route-left-toggle {
+                background: var(--hph-card-bg, var(--bs-body-bg, #fff));
+                border: 1px solid var(--hph-card-border, var(--bs-border-color));
+                border-left: 0;
+                border-radius: 0 .5rem .5rem 0;
+                box-shadow: 0 .25rem .75rem rgba(15, 23, 42, .14);
+                color: var(--hph-link, var(--hph-primary, var(--bs-primary)));
+                height: 3rem;
+                left: 0;
+                margin: 0;
+                opacity: .82;
+                position: fixed;
+                top: 43%;
+                width: 2rem;
+                z-index: 1040;
+            }
+            .hph-route-left-backdrop {
+                background: rgba(15, 23, 42, .45);
+                inset: 0;
+                position: fixed;
+                z-index: 1085;
+            }
+            .hph-route-left-backdrop:not([hidden]) {
+                display: block;
+            }
+            body.hph-route-left-mobile-open {
+                overflow: hidden;
+            }
+        }
         <?php if (!$layoutThemeEnabled) : ?>
         /*
          * HR: Osnovni layout čuva naslov i razmak kada Theme modul nije aktivan.
@@ -517,16 +682,43 @@ if (
         <?php endif; ?>
 
         <?php if ($renderedRouteLeftMenu !== '') : ?>
-            <div class="row g-4">
-                <div class="col-lg-3">
+            <div class="hph-route-left-layout" data-hph-route-left-layout>
+                <aside
+                    id="hph-route-left-menu"
+                    class="hph-route-left-layout__menu collapse show"
+                    data-hph-route-left-panel
+                >
             <?= $renderedRouteLeftMenu ?>
-                </div>
+                </aside>
                 <div
-                    class="col-lg-9"
+                    class="hph-route-left-layout__content"
+                    data-hph-route-left-content
             <?= $layoutTitleContext === 'application' ? 'data-hph-content-title-scope' : '' ?>
                 >
+                    <div class="hph-route-left-toggle-host" data-hph-route-left-toggle-host>
+                        <button
+                            class="btn btn-outline-secondary btn-sm hph-route-left-toggle"
+                            type="button"
+                            data-hph-route-left-toggle
+                            aria-controls="hph-route-left-menu"
+                            aria-expanded="true"
+                            title="<?= $this->escape(__('Show or hide special left menu')) ?>"
+                            aria-label="<?= $this->escape(__('Show or hide special left menu')) ?>"
+                        >
+                            <svg
+                                class="hph-route-left-toggle__icon"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                focusable="false"
+                            >
+                                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                                <path d="M9 4v16M6 10l-2 2 2 2"/>
+                            </svg>
+                        </button>
+                    </div>
             <?= $content ?>
                 </div>
+                <div class="hph-route-left-backdrop" data-hph-route-left-backdrop hidden></div>
             </div>
         <?php else : ?>
             <?= $content ?>
@@ -535,6 +727,266 @@ if (
 
     <?php if ($layoutHeroHtml !== '') : ?>
         </div>
+    <?php endif; ?>
+
+    <?php if ($renderedRouteLeftMenu !== '') : ?>
+        <script>
+            (() => {
+                const layout = document.querySelector('[data-hph-route-left-layout]');
+                if (!(layout instanceof HTMLElement)) {
+                    return;
+                }
+
+                const panel = layout.querySelector('[data-hph-route-left-panel]');
+                const content = layout.querySelector('[data-hph-route-left-content]');
+                const toggle = layout.querySelector('[data-hph-route-left-toggle]');
+                const toggleHost = layout.querySelector('[data-hph-route-left-toggle-host]');
+                const close = panel instanceof HTMLElement
+                    ? panel.querySelector('[data-hph-route-left-close]')
+                    : null;
+                const backdrop = layout.querySelector('[data-hph-route-left-backdrop]');
+                const mobileQuery = window.matchMedia('(max-width: 991.98px)');
+
+                if (!(panel instanceof HTMLElement) || !(toggle instanceof HTMLButtonElement)) {
+                    return;
+                }
+
+                const originalPanelParent = panel.parentElement;
+                const originalPanelNextSibling = panel.nextSibling;
+                const originalBackdropParent = backdrop instanceof HTMLElement
+                    ? backdrop.parentElement
+                    : null;
+
+                /**
+                 * HR: Na mobilnom prikazu premješta panel i njegovu pozadinu pod `body`
+                 *     kako ih hero ili drugi tematski stacking context ne bi odrezao.
+                 * EN: On mobile, portals the panel and its backdrop under `body` so the
+                 *     Hero or another themed stacking context cannot clip them.
+                 */
+                const synchronizePortal = () => {
+                    if (!(originalPanelParent instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    if (mobileQuery.matches) {
+                        toggle.classList.remove('editor-html-view-action');
+                        document.body.appendChild(toggle);
+                        if (backdrop instanceof HTMLElement) {
+                            document.body.appendChild(backdrop);
+                        }
+                        document.body.appendChild(panel);
+                        return;
+                    }
+
+                    if (desktopToggleParent instanceof HTMLElement) {
+                        if (actionRow instanceof HTMLElement) {
+                            toggle.classList.add('editor-html-view-action');
+                        }
+                        desktopToggleParent.prepend(toggle);
+                    }
+
+                    if (
+                        originalPanelNextSibling instanceof Node
+                        && originalPanelNextSibling.parentNode === originalPanelParent
+                    ) {
+                        originalPanelParent.insertBefore(panel, originalPanelNextSibling);
+                    } else {
+                        originalPanelParent.prepend(panel);
+                    }
+                    if (
+                        backdrop instanceof HTMLElement
+                        && originalBackdropParent instanceof HTMLElement
+                    ) {
+                        originalBackdropParent.appendChild(backdrop);
+                    }
+                };
+
+                /*
+                 * HR: Sklopku premještamo na početak postojećeg reda akcija dokumenta.
+                 *     Ako prikaz nema takav red, ostaje u vlastitom diskretnom retku.
+                 * EN: Move the toggle to the start of the existing document action row.
+                 *     If the view has no such row, it remains in its own discreet row.
+                 */
+                const actionRow = content instanceof HTMLElement
+                    ? content.querySelector('.editor-html-view-actions')
+                    : null;
+                const desktopToggleParent = actionRow instanceof HTMLElement
+                    ? actionRow
+                    : toggleHost;
+                if (actionRow instanceof HTMLElement) {
+                    toggle.classList.add('editor-html-view-action');
+                    actionRow.prepend(toggle);
+                    if (toggleHost instanceof HTMLElement) {
+                        toggleHost.hidden = true;
+                    }
+                }
+
+                const workspaceTree = content instanceof HTMLElement
+                    ? content.querySelector('#workspace-page-tree')
+                    : null;
+                const queryTree = new URLSearchParams(window.location.search).get('tree');
+                const explicitlyShownTree = ['1', 'true', 'on', 'shown'].includes(
+                    (queryTree || '').toLowerCase(),
+                );
+
+                /*
+                 * HR: Posebni lijevi meni ima prednost nad zadanom postavkom područja,
+                 *     ali izričit `tree=1` i postojeća ikona i dalje mogu otvoriti stablo.
+                 * EN: The special left menu takes precedence over the Workspace default,
+                 *     while explicit `tree=1` and the existing icon can still open the tree.
+                 */
+                if (workspaceTree instanceof HTMLElement) {
+                    workspaceTree.classList.toggle('show', explicitlyShownTree);
+                    content.querySelectorAll('[aria-controls="workspace-page-tree"]').forEach((control) => {
+                        control.setAttribute('aria-expanded', explicitlyShownTree ? 'true' : 'false');
+                    });
+                }
+
+                let desktopOpen = true;
+                let mobileOpen = false;
+                let desktopCollapse = null;
+
+                /**
+                 * HR: Bootstrap komponentu dohvaćamo tek kada korisnik klikne jer
+                 *     se zajednički bundle učitava nakon ovog prikaza.
+                 * EN: Resolve the Bootstrap component only when the user clicks
+                 *     because the shared bundle loads after this view.
+                 */
+                const getDesktopCollapse = () => {
+                    if (
+                        !window.bootstrap
+                        || typeof window.bootstrap.Collapse !== 'function'
+                    ) {
+                        return null;
+                    }
+
+                    if (!desktopCollapse) {
+                        desktopCollapse = window.bootstrap.Collapse.getOrCreateInstance(
+                            panel,
+                            { toggle: false },
+                        );
+                    }
+
+                    return desktopCollapse;
+                };
+
+                /*
+                 * HR: Mobilni drawer zadržava bočni prijelaz. Desktop koristi
+                 *     Bootstrapov vertikalni collapse od 350 ms kao stablo stranica.
+                 * EN: The mobile drawer keeps its side transition. Desktop uses
+                 *     Bootstrap's 350 ms vertical collapse like the page tree.
+                 */
+                const synchronizePanel = (focusPanel = false, animateDesktop = false) => {
+                    synchronizePortal();
+                    const open = mobileQuery.matches ? mobileOpen : desktopOpen;
+                    panel.classList.toggle('hph-route-left-layout__menu--open', mobileQuery.matches && open);
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    if (backdrop instanceof HTMLElement) {
+                        backdrop.hidden = !mobileQuery.matches || !open;
+                    }
+                    document.body.classList.toggle(
+                        'hph-route-left-mobile-open',
+                        mobileQuery.matches && open,
+                    );
+
+                    if (mobileQuery.matches) {
+                        panel.hidden = false;
+                        panel.inert = !open;
+                        panel.toggleAttribute('aria-hidden', !open);
+                    } else {
+                        panel.hidden = false;
+                        panel.classList.add('collapse');
+                        if (animateDesktop) {
+                            const collapse = getDesktopCollapse();
+                            if (open) {
+                                layout.classList.remove('hph-route-left-layout--menu-hidden');
+                                panel.inert = false;
+                                panel.removeAttribute('aria-hidden');
+                                if (collapse) {
+                                    collapse.show();
+                                } else {
+                                    panel.classList.add('show');
+                                }
+                            } else if (collapse) {
+                                collapse.hide();
+                            } else {
+                                panel.classList.remove('show');
+                                layout.classList.add('hph-route-left-layout--menu-hidden');
+                                panel.inert = true;
+                                panel.setAttribute('aria-hidden', 'true');
+                            }
+                        } else {
+                            panel.classList.remove('collapsing');
+                            panel.style.removeProperty('height');
+                            panel.classList.toggle('show', open);
+                            layout.classList.toggle('hph-route-left-layout--menu-hidden', !open);
+                            panel.inert = !open;
+                            panel.toggleAttribute('aria-hidden', !open);
+                        }
+                    }
+
+                    if (focusPanel && mobileQuery.matches && open) {
+                        const closeButton = panel.querySelector('[data-hph-route-left-close]');
+                        if (closeButton instanceof HTMLElement) {
+                            closeButton.focus({ preventScroll: true });
+                        }
+                    }
+                };
+
+                panel.addEventListener('show.bs.collapse', () => {
+                    if (!mobileQuery.matches) {
+                        desktopOpen = true;
+                        layout.classList.remove('hph-route-left-layout--menu-hidden');
+                        panel.inert = false;
+                        panel.removeAttribute('aria-hidden');
+                    }
+                });
+                panel.addEventListener('hidden.bs.collapse', () => {
+                    if (!mobileQuery.matches) {
+                        desktopOpen = false;
+                        layout.classList.add('hph-route-left-layout--menu-hidden');
+                        panel.inert = true;
+                        panel.setAttribute('aria-hidden', 'true');
+                    }
+                });
+
+                toggle.addEventListener('click', () => {
+                    if (mobileQuery.matches) {
+                        mobileOpen = !mobileOpen;
+                    } else {
+                        desktopOpen = !desktopOpen;
+                    }
+                    synchronizePanel(true, !mobileQuery.matches);
+                });
+                if (close instanceof HTMLElement) {
+                    close.addEventListener('click', () => {
+                        mobileOpen = false;
+                        synchronizePanel();
+                        toggle.focus({ preventScroll: true });
+                    });
+                }
+                if (backdrop instanceof HTMLElement) {
+                    backdrop.addEventListener('click', () => {
+                        mobileOpen = false;
+                        synchronizePanel();
+                    });
+                }
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && mobileOpen) {
+                        mobileOpen = false;
+                        synchronizePanel();
+                        toggle.focus({ preventScroll: true });
+                    }
+                });
+                mobileQuery.addEventListener('change', () => {
+                    mobileOpen = false;
+                    synchronizePanel();
+                });
+
+                layout.classList.add('hph-route-left-layout--ready');
+                synchronizePanel();
+            })();
+        </script>
     <?php endif; ?>
 
     <?php if ($layoutInnerTitlePlacement === 'content-card' && $layoutInnerPageTitle !== '') : ?>
@@ -624,6 +1076,28 @@ if (
             <p>&copy; <?= date('Y') ?> <?= __('Simbioza by HeartPhrame. All rights reserved.') ?></p>
         </div>
     </footer>
+
+    <script>
+        (() => {
+            /*
+             * HR: Bootstrap umeće pozadinu modala izravno u `body`. Svaki
+             *     modal zato prije otvaranja premještamo na istu razinu, izvan
+             *     hero i tematskih stacking contexta koji bi ga inače mogli
+             *     ostaviti ispod vlastite pozadine i učiniti neklikabilnim.
+             *
+             * EN: Bootstrap inserts modal backdrops directly under `body`.
+             *     Before a modal opens, move it to the same level and outside
+             *     Hero or Theme stacking contexts that could otherwise leave
+             *     it below its own backdrop and make it unclickable.
+             */
+            document.addEventListener('show.bs.modal', (event) => {
+                const modal = event.target;
+                if (modal instanceof HTMLElement && modal.parentElement !== document.body) {
+                    document.body.appendChild(modal);
+                }
+            });
+        })();
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 

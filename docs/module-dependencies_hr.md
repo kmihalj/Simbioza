@@ -15,6 +15,7 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
 | Modul | Obavezno | Opcionalne integracije |
 |---|---|---|
 | `module-orm` | Framework, `ext-pdo` | — |
+| `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth i Menu za administratorski GUI; poslovni moduli prijavljuju vlastite providere |
 | `module-auth` | Framework, ORM | API, Menu, Notification |
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu i Theme samo za GUI |
 | `module-menu` | Framework | Auth |
@@ -26,6 +27,7 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
 | `module-workspace` | Framework, Auth, ORM | HTML Editor, Menu, Notification; Email samo posredno kroz Notification |
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification |
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
+| `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 
 ## Pravila učitavanja
 
@@ -47,6 +49,13 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
 - `module-api` zahtijeva samo Auth i ORM. Calendar, HTML Editor, Notification,
   Task i Workspace rute registrira samo kada je odgovarajući paket instaliran i
   modul uključen.
+- `module-backup` zahtijeva samo ORM. CLI ostaje dostupan bez Autha i Menua;
+  u Simbiozi Auth štiti `/settings/backups`, a Menu prikazuje stavku
+  **Postavke → Sigurnosne kopije → Backup i vraćanje**.
+- Poslovni moduli ne ovise tvrdo o Backupu. Kada je Backup uključen, svaki od
+  njih opcionalno prijavljuje vlastite tablične, datotečne ili završne providere.
+- `module-workspace-search` zahtijeva Workspace i Menu. Indeks nije dio arhiva;
+  Backup nakon uspješnog vraćanja pokreće njegovu ponovnu izgradnju.
 
 ## Graf
 
@@ -55,6 +64,7 @@ integraciju.
 
 ```text
 ORM ----------> Framework
+Backup -------> ORM + Framework
 Auth ---------> ORM + Framework
 API ----------> Auth + ORM + Framework
 Calendar -----> Auth + ORM + Framework
@@ -64,6 +74,7 @@ Workspace ----> Auth + ORM + Framework
 Editor HTML --> Auth + ORM + Framework
 Task ---------> Editor HTML + Auth + ORM + Framework
 Comment ------> Editor HTML + Notification + Auth + ORM + Framework
+Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -74,4 +85,6 @@ Workspace    - - > Editor HTML, Menu, Notification
 Editor HTML  - - > API, Menu, Theme, Calendar, Workspace, Task, Comment
 Task         - - > API, Workspace, Notification
 Comment      - - > Workspace, Theme
+Business modules - - > Backup provider registration
+Workspace Search - - > API, Backup index rebuild
 ```

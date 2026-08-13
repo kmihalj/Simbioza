@@ -142,6 +142,33 @@ test.describe.serial('Calendar API, ACL, event, and ICS lifecycle', () => {
     });
     expect((await expectData(updated)).description).toContain('protected Calendar');
 
+    const imported = await request.post('/api/v1/calendars/import', {
+      headers: apiHeaders(userApiToken, {
+        'Idempotency-Key': idempotencyKey('calendar-ics-import'),
+      }),
+      data: {
+        calendar_id: calendar.data.id,
+        merge_mode: 'skip',
+        ics: [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Simbioza E2E//Calendar API//EN',
+          'BEGIN:VEVENT',
+          'UID:e2e-imported-event@example.invalid',
+          'DTSTAMP:20260812T100000Z',
+          'DTSTART:20260820T100000Z',
+          'DTEND:20260820T110000Z',
+          'SUMMARY:E2E imported event',
+          'END:VEVENT',
+          'END:VCALENDAR',
+          '',
+        ].join('\r\n'),
+      },
+    });
+    const importedData = await expectData(imported);
+    expect(importedData.calendar.uuid).toBe(calendarUuid);
+    expect(importedData.created).toBe(1);
+
     const deletedEvent = await request.delete(`/api/v1/calendars/${calendarUuid}/events/${eventId}`, {
       headers: apiHeaders(userApiToken, { 'Idempotency-Key': idempotencyKey('calendar-event-delete') }),
     });

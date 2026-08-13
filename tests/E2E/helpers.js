@@ -40,6 +40,55 @@ export async function login(page, loginIdentifier, password) {
 }
 
 /**
+ * HR: Potvrđuje da je Bootstrap modal stvarno interaktivan, a ne samo vidljiv
+ *     ispod vlastite pozadine. Provjera obuhvaća DOM portal, z-index, cilj u
+ *     središtu dijaloga i fokus koji mora ostati unutar otvorenog modala.
+ *
+ * EN: Confirms a Bootstrap modal is genuinely interactive rather than merely
+ *     visible below its own backdrop. The check covers the DOM portal, z-index,
+ *     center hit target, and focus that must remain inside the open modal.
+ */
+export async function expectUsableModal(modal) {
+  await expect(modal).toBeVisible();
+  const state = await modal.evaluate((element) => {
+    const backdrop = document.querySelector('.modal-backdrop.show');
+    const dialog = element.querySelector('.modal-dialog');
+    const rectangle = (dialog || element).getBoundingClientRect();
+    const centerTarget = document.elementFromPoint(
+      rectangle.left + (rectangle.width / 2),
+      rectangle.top + (rectangle.height / 2),
+    );
+    const modalZIndex = Number.parseInt(getComputedStyle(element).zIndex, 10);
+    const backdropZIndex = backdrop instanceof HTMLElement
+      ? Number.parseInt(getComputedStyle(backdrop).zIndex, 10)
+      : 0;
+
+    return {
+      directBodyChild: element.parentElement === document.body,
+      modalZIndex,
+      backdropZIndex,
+      centerBelongsToModal: centerTarget instanceof Element && element.contains(centerTarget),
+      pointerEvents: getComputedStyle(element).pointerEvents,
+    };
+  });
+
+  expect(state.directBodyChild).toBe(true);
+  expect(state.modalZIndex).toBeGreaterThan(state.backdropZIndex);
+  expect(state.centerBelongsToModal).toBe(true);
+  expect(state.pointerEvents).not.toBe('none');
+
+  /*
+   * HR: Bootstrap aktivira focus trap tek po završetku fade tranzicije, pa
+   *     pristupačnost provjeravamo čekanjem umjesto trenutnim očitanjem.
+   * EN: Bootstrap activates its focus trap only after the fade transition,
+   *     so accessibility is verified by polling rather than an instant read.
+   */
+  await expect.poll(() => modal.evaluate((element) => (
+    document.activeElement instanceof Element && element.contains(document.activeElement)
+  ))).toBe(true);
+}
+
+/**
  * HR: Gradi standardna zaglavlja za verzionirani API bez otkrivanja tokena.
  * EN: Builds standard versioned API headers without exposing the token.
  */

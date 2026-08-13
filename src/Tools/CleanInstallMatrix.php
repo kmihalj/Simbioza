@@ -35,8 +35,10 @@ const MATRIX_MODULE_ORDER = [
     'aaieduhr/heartphrame-module-task',
     'aaieduhr/heartphrame-module-comment',
     'aaieduhr/heartphrame-module-workspace',
+    'aaieduhr/heartphrame-module-workspace-search',
     'aaieduhr/heartphrame-module-calendar',
     'aaieduhr/heartphrame-module-api',
+    'aaieduhr/heartphrame-module-backup',
 ];
 
 const MATRIX_CASES = [
@@ -54,9 +56,11 @@ const MATRIX_CASES = [
     'email' => ['aaieduhr/heartphrame-module-email'],
     'notification' => ['aaieduhr/heartphrame-module-notification'],
     'workspace' => ['aaieduhr/heartphrame-module-workspace'],
+    'workspace-search' => ['aaieduhr/heartphrame-module-workspace-search'],
     'task' => ['aaieduhr/heartphrame-module-task'],
     'comment' => ['aaieduhr/heartphrame-module-comment'],
     'api' => ['aaieduhr/heartphrame-module-api'],
+    'backup' => ['aaieduhr/heartphrame-module-backup'],
     'all' => MATRIX_MODULE_ORDER,
 ];
 
@@ -67,9 +71,11 @@ const MATRIX_MIGRATION_COMMANDS = [
     'aaieduhr/heartphrame-module-email' => 'email:install-migration',
     'aaieduhr/heartphrame-module-notification' => 'notification:install-migration',
     'aaieduhr/heartphrame-module-workspace' => 'workspace:install-migration',
+    'aaieduhr/heartphrame-module-workspace-search' => 'workspace-search:install-migration',
     'aaieduhr/heartphrame-module-task' => 'task:install-migration',
     'aaieduhr/heartphrame-module-comment' => 'comment:install-migration',
     'aaieduhr/heartphrame-module-api' => 'api:install-migration',
+    'aaieduhr/heartphrame-module-backup' => 'backup:install-migration',
 ];
 
 const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
@@ -85,6 +91,8 @@ const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
     'aaieduhr/heartphrame-module-task' => 'heartphrame-module-task',
     'aaieduhr/heartphrame-module-theme' => 'heartphrame-module-theme',
     'aaieduhr/heartphrame-module-workspace' => 'heartphrame-module-workspace',
+    'aaieduhr/heartphrame-module-workspace-search' => 'heartphrame-module-workspace-search',
+    'aaieduhr/heartphrame-module-backup' => 'heartphrame-module-backup',
 ];
 
 /**
@@ -365,11 +373,15 @@ function matrixDatabaseConfiguration(
 }
 
 /**
- * HR: Lokalnim dopuštenim modulima daje prednost pred udaljenim VCS izvorima.
- *     Framework i demo namjerno nisu na popisu lokalnih izvora.
+ * HR: U lokalnom načinu dopuštene module učitava isključivo iz lokalnih path
+ *     repozitorija. Time Composer ne može tiho posegnuti za zastarjelim ili još
+ *     neobjavljenim VCS repozitorijem. Framework ostaje udaljeni izvor, a demo
+ *     namjerno nije na popisu lokalnih izvora.
  *
- * EN: Gives allowed local modules priority over remote VCS sources. Framework
- *     and demo are intentionally absent from the local source list.
+ * EN: In local mode, loads allowed modules exclusively from local path
+ *     repositories. Composer therefore cannot silently fall back to a stale or
+ *     not-yet-published VCS repository. Framework remains remote, while demo is
+ *     intentionally absent from the local source list.
  *
  * @param array<string, mixed> $rootComposer
  * @return array<string, mixed>
@@ -398,7 +410,20 @@ function withLocalMatrixRepositories(array $rootComposer, string $workspaceRoot)
         throw new RuntimeException('Root Composer repositories must be an array.');
     }
 
-    $rootComposer['repositories'] = array_merge($localRepositories, $configuredRepositories);
+    $remoteNonModuleRepositories = array_values(array_filter(
+        $configuredRepositories,
+        static function (mixed $repository): bool {
+            if (!is_array($repository)) {
+                return true;
+            }
+
+            $type = is_string($repository['type'] ?? null) ? $repository['type'] : '';
+            $url = is_string($repository['url'] ?? null) ? $repository['url'] : '';
+            return !in_array($type, ['vcs', 'path'], true)
+                || !str_contains(strtolower($url), 'heartphrame-module-');
+        },
+    ));
+    $rootComposer['repositories'] = array_merge($localRepositories, $remoteNonModuleRepositories);
 
     return $rootComposer;
 }

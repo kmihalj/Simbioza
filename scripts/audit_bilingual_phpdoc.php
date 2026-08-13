@@ -17,6 +17,7 @@ const AUDITED_PROJECTS = [
     'HFClean',
     'heartphrame-module-api',
     'heartphrame-module-auth',
+    'heartphrame-module-backup',
     'heartphrame-module-calendar',
     'heartphrame-module-comment',
     'heartphrame-module-editor-html',
@@ -27,6 +28,7 @@ const AUDITED_PROJECTS = [
     'heartphrame-module-task',
     'heartphrame-module-theme',
     'heartphrame-module-workspace',
+    'heartphrame-module-workspace-search',
 ];
 
 /**
@@ -70,9 +72,11 @@ function auditedProjectDirectory(string $applicationRoot, string $project): stri
     if (is_dir($sibling)) {
         return $sibling;
     }
-    $vendor = $applicationRoot . '/vendor/aaieduhr/' . $project;
-    if (is_dir($vendor)) {
-        return $vendor;
+    foreach (['aaieduhr', 'heartphrame'] as $vendorNamespace) {
+        $vendor = $applicationRoot . '/vendor/' . $vendorNamespace . '/' . $project;
+        if (is_dir($vendor)) {
+            return $vendor;
+        }
     }
 
     throw new RuntimeException('Unable to resolve audited project: ' . $project);
