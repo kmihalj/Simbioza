@@ -7,11 +7,8 @@
     "prefer-stable": true,
     "repositories": [
         {
-            "type": "path",
-            "url": "../heartphrame-module-audit",
-            "options": {
-                "symlink": true
-            }
+            "type": "vcs",
+            "url": "https://github.com/kmihalj/heartphrame-module-audit.git"
         },
         {
             "type": "vcs",
