@@ -20,7 +20,9 @@ add additional entries to these files, as needed.
 ### Global application settings (`app.php`)
 
 - Global settings: application name, timezone, cache folder, logs
-(directory/filename), views defaults, session options.
+(directory, active filename, level, rotation size, and retained files), view
+defaults, session options. These settings control the technical PSR-3 log only;
+the activity audit is stored separately in `audit_events`.
 - CSRF configuration (exclusions if needed).
 - Module system settings (loadable types and enabled modules).
 

@@ -56,8 +56,23 @@ zadanim postavkama spremaju u datoteku definiranu u `config/app.php`.
 
 ```php
 /** @var \Psr\Log\LoggerInterface $logger */
-$logger->info('Korisnik je prijavljen.', ['userId' => $userId]);
+$logger->warning('Ponovni pokušaj Calendar workera je zakazan.', [
+    'module' => 'calendar',
+    'event_uuid' => $eventUuid,
+    'attempt' => $attempt,
+    'exception' => $exception,
+]);
 ```
+
+PSR-3 koristite za dijagnostiku, neočekivane kvarove, ponovne pokušaje workera
+i operativni kontekst. Uvijek navedite stabilni `module` kanal i strukturirane,
+neosjetljive identifikatore. Nikad ne zapisujte zaporke, tokene, kolačiće,
+tijelo zahtjeva ili odgovora, sadržaj dokumenta ili e-pošte ni sadržaj učitane
+datoteke. Rotirajući handler dodatno redigira uobičajene oblike vjerodajnica.
+
+Poslovne radnje pripadaju u `AuditLogService` ili neutralni domenski događaj
+koji Audit sluša. Taj append-only zapis u bazi je pretraživ i po izboru prenosiv
+kroz Backup. Datoteke tehničkog loga namjerno su isključene iz svih backupa.
 
 #### PSR-7 poslužiteljski zahtjev
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Database;
 
 use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
+use AaiEduHr\HeartPhrameModuleAudit\ModuleAudit;
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
 use AaiEduHr\HeartPhrameModuleBackup\ModuleBackup;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
@@ -51,20 +52,20 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće jedanaest objedinjenih inicijalnih migracija te provjerava aktualne
+     * HR: Pokreće dvanaest objedinjenih inicijalnih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
-     * Task, Comment, API i Backup sheme, početnog administratora i izostanak sadržaja.
+     * Task, Comment, API, Backup i Audit sheme, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs eleven consolidated initial migrations and verifies the current Auth,
+     * EN: Runs twelve consolidated initial migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
-     * Comment, API, and Backup schemas, the bootstrap administrator, and no content data.
+     * Comment, API, Backup, and Audit schemas, the bootstrap administrator, and no content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(11, $migrationFiles, 'Only consolidated initial migrations are expected.');
+        $this->assertCount(12, $migrationFiles, 'Only consolidated initial migrations are expected.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -596,6 +597,33 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleAudit::TABLE_EVENTS, [
+            'id',
+            'uuid',
+            'occurred_at',
+            'module',
+            'event_key',
+            'action',
+            'outcome',
+            'actor_type',
+            'actor_user_id',
+            'actor_label',
+            'impersonator_user_id',
+            'auth_method',
+            'channel',
+            'workspace_id',
+            'page_id',
+            'target_type',
+            'target_id',
+            'target_label',
+            'version_id',
+            'language',
+            'request_id',
+            'correlation_id',
+            'ip_address',
+            'user_agent',
+            'metadata_json',
+        ]);
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -629,6 +657,7 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleApi::TABLE_WEBHOOK_DELIVERIES)->get());
         $this->assertSame([], $this->database->table(ModuleBackup::TABLE_JOBS)->get());
         $this->assertSame([], $this->database->table(ModuleBackup::TABLE_UPLOADS)->get());
+        $this->assertSame([], $this->database->table(ModuleAudit::TABLE_EVENTS)->get());
     }
 
     /**

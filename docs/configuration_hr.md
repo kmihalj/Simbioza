@@ -17,7 +17,9 @@ odgovarajućeg odjeljka. Prema potrebi možete dodati vlastite stavke.
 ### Globalne postavke aplikacije (`app.php`)
 
 - opće postavke: naziv aplikacije, vremenska zona, direktorij predmemorije,
-  zapisi, zadane vrijednosti prikaza i mogućnosti sesije
+  direktorij i naziv tehničkog loga, razina, veličina rotacije i broj sačuvanih
+  datoteka, zadane vrijednosti prikaza i mogućnosti sesije. Te postavke vrijede
+  samo za PSR-3 tehnički log; dnevnik aktivnosti odvojeno je u `audit_events`.
 - CSRF postavke, uključujući opravdane iznimke
 - postavke sustava modula: vrste paketa koje je moguće učitati i uključeni
   moduli

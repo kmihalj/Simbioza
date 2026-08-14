@@ -28,6 +28,7 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification |
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
+| `module-audit` | Framework, Auth, ORM | Menu za Postavke, Backup za prenosivi dnevnik aktivnosti, API za `audit:read` te svi instalirani proizvođači poslovnih događaja |
 
 ## Pravila učitavanja
 
@@ -56,6 +57,10 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
   njih opcionalno prijavljuje vlastite tablične, datotečne ili završne providere.
 - `module-workspace-search` zahtijeva Workspace i Menu. Indeks nije dio arhiva;
   Backup nakon uspješnog vraćanja pokreće njegovu ponovnu izgradnju.
+- `module-audit` čuva poslovni dnevnik aktivnosti u bazi, a odvojeni PSR-3
+  tehnički log u rotirajućim datotekama. Poslovni moduli rade i bez Audita te
+  objavljuju neutralne događaje gdje je potreban precizniji zapis. Datoteke
+  tehničkog loga nikad se ne registriraju u Backupu.
 
 ## Graf
 
@@ -75,6 +80,7 @@ Editor HTML --> Auth + ORM + Framework
 Task ---------> Editor HTML + Auth + ORM + Framework
 Comment ------> Editor HTML + Notification + Auth + ORM + Framework
 Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
+Audit --------> Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -87,4 +93,5 @@ Task         - - > API, Workspace, Notification
 Comment      - - > Workspace, Theme
 Business modules - - > Backup provider registration
 Workspace Search - - > API, Backup index rebuild
+Audit        - - > Menu, Backup, API, svi proizvođači poslovnih događaja
 ```

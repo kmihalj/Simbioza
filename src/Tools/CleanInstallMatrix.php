@@ -29,6 +29,7 @@ const MATRIX_MODULE_ORDER = [
     'aaieduhr/heartphrame-module-menu',
     'aaieduhr/heartphrame-module-theme',
     'aaieduhr/heartphrame-module-auth',
+    'aaieduhr/heartphrame-module-audit',
     'aaieduhr/heartphrame-module-email',
     'aaieduhr/heartphrame-module-notification',
     'aaieduhr/heartphrame-module-editor-html',
@@ -51,6 +52,7 @@ const MATRIX_CASES = [
     ],
     'orm' => ['aaieduhr/heartphrame-module-orm'],
     'auth' => ['aaieduhr/heartphrame-module-auth'],
+    'audit' => ['aaieduhr/heartphrame-module-audit'],
     'calendar' => ['aaieduhr/heartphrame-module-calendar'],
     'editor-html' => ['aaieduhr/heartphrame-module-editor-html'],
     'email' => ['aaieduhr/heartphrame-module-email'],
@@ -66,6 +68,7 @@ const MATRIX_CASES = [
 
 const MATRIX_MIGRATION_COMMANDS = [
     'aaieduhr/heartphrame-module-auth' => 'auth:install-migration',
+    'aaieduhr/heartphrame-module-audit' => 'audit:install-migration',
     'aaieduhr/heartphrame-module-calendar' => 'calendar:install-migration',
     'aaieduhr/heartphrame-module-editor-html' => 'editor-html:install-migration',
     'aaieduhr/heartphrame-module-email' => 'email:install-migration',
@@ -81,6 +84,7 @@ const MATRIX_MIGRATION_COMMANDS = [
 const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
     'aaieduhr/heartphrame-module-api' => 'heartphrame-module-api',
     'aaieduhr/heartphrame-module-auth' => 'heartphrame-module-auth',
+    'aaieduhr/heartphrame-module-audit' => 'heartphrame-module-audit',
     'aaieduhr/heartphrame-module-calendar' => 'heartphrame-module-calendar',
     'aaieduhr/heartphrame-module-comment' => 'heartphrame-module-comment',
     'aaieduhr/heartphrame-module-editor-html' => 'heartphrame-module-editor-html',

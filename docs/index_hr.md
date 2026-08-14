@@ -66,6 +66,7 @@ composer e2e
 - [Šifriranje](encryption_hr.md)
 - [Dispečer događaja](event-dispatcher_hr.md)
 - [End-to-end testiranje](end-to-end-testing_hr.md)
+- [Dnevnik aktivnosti i tehničko zapisivanje](audit-logging_hr.md)
 
 Aplikacija uključuje `aaieduhr/heartphrame-module-api` odmah nakon Autha. Rute
 pod `/api/v1` koriste Bearer ključeve i namjerno preskaču pokretanje PHP sesije
@@ -77,6 +78,7 @@ uvjetni ekran API ključeva.
 
 - [Uobičajeni tijekovi rada](common-workflows_hr.md)
 - [Rješavanje problema](troubleshooting_hr.md)
+- [Dnevnik aktivnosti i tehničko zapisivanje](audit-logging_hr.md)
 
 ## English version
 

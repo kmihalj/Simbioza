@@ -96,7 +96,21 @@ $services = [
         $logsDir = rtrim($config->getAsNonEmptyStringOrFail('app.logs.dir'), '/') . '/' ;
         $appLogName = $config->getAsNonEmptyStringOrFail('app.logs.filename');
         $logLevel = $config->getAsNonEmptyStringOrFail('env.log_level');
-        $handler = new FileLogHandler($logsDir . '/' .  $appLogName, $logLevel);
+        $logPath = $logsDir . '/' . $appLogName;
+        // HR: Audit modul donosi sigurnu rotaciju i uklanjanje tajni iz
+        //     tehničkog loga. Aplikacija i dalje radi s framework handlerom
+        //     kada taj opcionalni modul nije instaliran.
+        // EN: The Audit module provides safe rotation and secret redaction for
+        //     the technical log. The app still works with the framework handler
+        //     when that optional module is not installed.
+        $handler = class_exists(\AaiEduHr\HeartPhrameModuleAudit\Log\RotatingFileLogHandler::class)
+            ? new \AaiEduHr\HeartPhrameModuleAudit\Log\RotatingFileLogHandler(
+                $logPath,
+                $logLevel,
+                max(1048576, $config->getAsInt('app.logs.max_bytes', 10485760) ?? 10485760),
+                max(2, $config->getAsInt('app.logs.max_files', 10) ?? 10),
+            )
+            : new FileLogHandler($logPath, $logLevel);
         $logger->addHandler($handler);
         return $logger;
     },
@@ -191,6 +205,7 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
                 ],
                 true,
                 false,
+                componentGroups: [\AaiEduHr\HeartPhrameModuleBackup\Value\BackupComponentGroup::SETTINGS],
             ),
             $filesystem,
             $providerFiles,

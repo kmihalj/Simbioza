@@ -29,6 +29,7 @@ resolves the latest `main` heads, and then executes the complete
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification |
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
+| `module-audit` | Framework, Auth, ORM | Menu for Settings, Backup for portable activity-audit archives, API for `audit:read`, and every installed business-event producer |
 
 ## Loading rules
 
@@ -57,6 +58,10 @@ resolves the latest `main` heads, and then executes the complete
   module optionally registers its own database, filesystem, or finalizer providers.
 - `module-workspace-search` requires Workspace and Menu. The derived index is
   not archived; Backup rebuilds it after a successful restore.
+- `module-audit` keeps the business activity audit in the database and the
+  separate PSR-3 technical log in rotating files. Business modules remain
+  usable without Audit and publish neutral events where richer records are
+  useful. Technical log files are never registered with Backup.
 
 ## Graph
 
@@ -76,6 +81,7 @@ Editor HTML --> Auth + ORM + Framework
 Task ---------> Editor HTML + Auth + ORM + Framework
 Comment ------> Editor HTML + Notification + Auth + ORM + Framework
 Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
+Audit --------> Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -88,4 +94,5 @@ Task         - - > API, Workspace, Notification
 Comment      - - > Workspace, Theme
 Business modules - - > Backup provider registration
 Workspace Search - - > API, Backup index rebuild
+Audit        - - > Menu, Backup, API, all business-event producers
 ```

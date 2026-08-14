@@ -119,6 +119,18 @@ async function expectQueryBudget(
 
 test('representative read paths remain inside measured SQL budgets', async ({ request }) => {
   const apiReadBudget = { durationMs: 500, peakMemoryBytes: 32 * 1024 * 1024, responseBytes: 32 * 1024 };
+  /*
+   * HR: Prethodni backup/restore scenarij namjerno vraća i audit vremena
+   *     uporabe API ključa. Jedan neoznačeni zahtjev osvježava taj audit kako
+   *     bi mjerenje provjeravalo stabilno stanje, a ne jednokratno auditno
+   *     pisanje nakon stvarnog restorea.
+   * EN: The preceding backup/restore scenario intentionally restores the API
+   *     key usage audit timestamp. One unmarked request refreshes that audit
+   *     so the measurement checks steady state rather than the one-time audit
+   *     write following a real restore.
+   */
+  const warmup = await request.get('/api/v1/me', { headers: apiHeaders(adminApiToken) });
+  expect(warmup.status()).toBe(200);
   await expectQueryBudget(
     request,
     'home',
@@ -219,7 +231,13 @@ test('page creation, publication, and public rendering stay inside measured SQL 
       content: [{ type: 'html', html: '<h1>Performance Page</h1><p>Measured content.</p>' }],
     },
   }), 201);
-  expectRecordedBudget('page-create', createMarker, 60);
+  /*
+   * HR: Dva odvojena audit INSERT-a trajno bilježe nastanak HTML dokumenta i
+   *     njegovo vezanje u stablo područja; generički HTTP duplikat se preskače.
+   * EN: Two separate audit INSERTs durably record creation of the HTML document
+   *     and its Workspace-tree binding; the generic HTTP duplicate is skipped.
+   */
+  expectRecordedBudget('page-create', createMarker, 61);
   expectRequestBudget('page-create', createMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,

@@ -5,10 +5,6 @@
             "hr": "Meni",
             "en": "Menu"
         },
-        "translation_key": null,
-        "route": null,
-        "url": null,
-        "query": [],
         "order": 10,
         "enabled": true,
         "children": [
@@ -18,15 +14,12 @@
                     "hr": "Gornji meni",
                     "en": "Top menu"
                 },
-                "translation_key": null,
-                "route": "menu.settings",
-                "url": null,
-                "query": {
-                    "section": "top"
-                },
                 "order": 10,
                 "enabled": true,
-                "children": []
+                "route": "menu.settings",
+                "query": {
+                    "section": "top"
+                }
             },
             {
                 "id": "menu.settings",
@@ -34,15 +27,12 @@
                     "hr": "Meni postavki",
                     "en": "Settings menu"
                 },
-                "translation_key": null,
-                "route": "menu.settings",
-                "url": null,
-                "query": {
-                    "section": "settings"
-                },
                 "order": 20,
                 "enabled": true,
-                "children": []
+                "route": "menu.settings",
+                "query": {
+                    "section": "settings"
+                }
             },
             {
                 "id": "menu.contexts.top",
@@ -50,15 +40,12 @@
                     "hr": "Posebni gornji meniji",
                     "en": "Special top menus"
                 },
-                "translation_key": null,
-                "route": "menu.settings",
-                "url": null,
-                "query": {
-                    "section": "contexts_top"
-                },
                 "order": 30,
                 "enabled": true,
-                "children": []
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_top"
+                }
             },
             {
                 "id": "menu.contexts.left",
@@ -66,37 +53,12 @@
                     "hr": "Posebni lijevi meniji",
                     "en": "Special left menus"
                 },
-                "translation_key": null,
-                "route": "menu.settings",
-                "url": null,
-                "query": {
-                    "section": "contexts_left"
-                },
                 "order": 40,
                 "enabled": true,
-                "children": []
-            }
-        ]
-    },
-    {
-        "id": "theme",
-        "label": {
-            "hr": "Tema",
-            "en": "Theme"
-        },
-        "order": 80,
-        "enabled": true,
-        "children": [
-            {
-                "id": "theme.settings",
-                "label": {
-                    "hr": "Postavke teme",
-                    "en": "Theme settings"
-                },
-                "route": "theme.settings",
-                "query": "section=theme",
-                "order": 10,
-                "enabled": true
+                "route": "menu.settings",
+                "query": {
+                    "section": "contexts_left"
+                }
             }
         ]
     },
@@ -106,10 +68,7 @@
             "hr": "Korisnici",
             "en": "Users"
         },
-        "route": null,
-        "url": null,
-        "query": [],
-        "order": 30,
+        "order": 20,
         "enabled": true,
         "children": [
             {
@@ -118,13 +77,13 @@
                     "hr": "Postavke prijave",
                     "en": "Login settings"
                 },
+                "order": 10,
+                "enabled": true,
                 "route": "auth.setup",
-                "url": null,
                 "query": {
                     "section": "overview"
                 },
-                "order": 10,
-                "enabled": true,
+                "url": null,
                 "children": []
             },
             {
@@ -133,13 +92,13 @@
                     "hr": "Atributi korisnika",
                     "en": "User attributes"
                 },
+                "order": 20,
+                "enabled": true,
                 "route": "auth.setup",
-                "url": null,
                 "query": {
                     "section": "attributes"
                 },
-                "order": 20,
-                "enabled": true,
+                "url": null,
                 "children": []
             },
             {
@@ -148,13 +107,13 @@
                     "hr": "Grupe",
                     "en": "Groups"
                 },
+                "order": 30,
+                "enabled": true,
                 "route": "auth.setup",
-                "url": null,
                 "query": {
                     "section": "groups"
                 },
-                "order": 30,
-                "enabled": true,
+                "url": null,
                 "children": []
             },
             {
@@ -163,13 +122,13 @@
                     "hr": "Korisnici",
                     "en": "Users"
                 },
+                "order": 40,
+                "enabled": true,
                 "route": "auth.setup",
-                "url": null,
                 "query": {
                     "section": "users"
                 },
-                "order": 40,
-                "enabled": true,
+                "url": null,
                 "children": []
             },
             {
@@ -178,13 +137,13 @@
                     "hr": "Lokalna prijava",
                     "en": "Local login"
                 },
+                "order": 50,
+                "enabled": true,
                 "route": "auth.setup",
-                "url": null,
                 "query": {
                     "section": "local"
                 },
-                "order": 50,
-                "enabled": true,
+                "url": null,
                 "children": []
             },
             {
@@ -193,349 +152,413 @@
                     "hr": "Preuzmi korisnika",
                     "en": "Impersonate user"
                 },
+                "order": 60,
+                "enabled": true,
                 "route": "auth.setup.impersonation",
                 "url": null,
                 "query": [],
-                "order": 60,
-                "enabled": true,
                 "children": []
+            },
+            {
+                "id": "auth.setup.api-keys",
+                "label": {
+                    "hr": "API ključevi",
+                    "en": "API keys"
+                },
+                "order": 70,
+                "enabled": true,
+                "route": "auth.setup.api-keys",
+                "parent_id": "auth",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "auth.sso",
+                "label": {
+                    "hr": "SSO provideri",
+                    "en": "SSO providers"
+                },
+                "order": 80,
+                "enabled": true,
+                "children": [
+                    {
+                        "id": "auth.setup.provider.saml",
+                        "label": {
+                            "hr": "SAML",
+                            "en": "SAML"
+                        },
+                        "order": 10,
+                        "enabled": true,
+                        "route": "auth.setup",
+                        "query": {
+                            "section": "provider-saml"
+                        },
+                        "children": [
+                            {
+                                "id": "auth.setup.provider.saml.profile.saml-aai-eduhr",
+                                "label": {
+                                    "hr": "AAI@EduHR",
+                                    "en": "AAI@EduHR"
+                                },
+                                "order": 10,
+                                "enabled": true,
+                                "route": "auth.setup",
+                                "query": {
+                                    "section": "provider-saml",
+                                    "mode": "edit",
+                                    "profile_key": "saml-aai-eduhr"
+                                },
+                                "url": null,
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno",
+                                "children": []
+                            }
+                        ],
+                        "url": null
+                    },
+                    {
+                        "id": "auth.setup.provider.cas",
+                        "label": {
+                            "hr": "CAS",
+                            "en": "CAS"
+                        },
+                        "order": 20,
+                        "enabled": true,
+                        "route": "auth.setup",
+                        "query": {
+                            "section": "provider-cas"
+                        },
+                        "children": [
+                            {
+                                "id": "auth.setup.provider.cas.profile.cas-aai-eduhr",
+                                "label": {
+                                    "hr": "AAI@EduHR",
+                                    "en": "AAI@EduHR"
+                                },
+                                "order": 10,
+                                "enabled": true,
+                                "route": "auth.setup",
+                                "query": {
+                                    "section": "provider-cas",
+                                    "mode": "edit",
+                                    "profile_key": "cas-aai-eduhr"
+                                },
+                                "url": null,
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno",
+                                "children": []
+                            }
+                        ],
+                        "url": null
+                    }
+                ],
+                "route": null,
+                "url": null,
+                "query": []
             }
-        ]
-    },
-    {
-        "id": "auth.sso",
-        "label": {
-            "hr": "SSO provideri",
-            "en": "SSO providers"
-        },
+        ],
         "route": null,
         "url": null,
-        "query": [],
-        "order": 40,
-        "enabled": true,
-        "children": [
-            {
-                "id": "auth.setup.provider.saml",
-                "label": {
-                    "hr": "SAML",
-                    "en": "SAML"
-                },
-                "route": "auth.setup",
-                "url": null,
-                "query": {
-                    "section": "provider-saml"
-                },
-                "order": 10,
-                "enabled": true,
-                "children": [
-                    {
-                        "id": "auth.setup.provider.saml.profile.saml-aai-eduhr",
-                        "label": {
-                            "hr": "AAI@EduHR",
-                            "en": "AAI@EduHR"
-                        },
-                        "route": "auth.setup",
-                        "url": null,
-                        "query": {
-                            "section": "provider-saml",
-                            "mode": "edit",
-                            "profile_key": "saml-aai-eduhr"
-                        },
-                        "order": 10,
-                        "enabled": true,
-                        "children": [],
-                        "status_icon": "✓",
-                        "status_class": "text-success",
-                        "status_label": "Testirano i operativno"
-                    }
-                ]
-            },
-            {
-                "id": "auth.setup.provider.cas",
-                "label": {
-                    "hr": "CAS",
-                    "en": "CAS"
-                },
-                "route": "auth.setup",
-                "url": null,
-                "query": {
-                    "section": "provider-cas"
-                },
-                "order": 20,
-                "enabled": true,
-                "children": [
-                    {
-                        "id": "auth.setup.provider.cas.profile.cas-aai-eduhr",
-                        "label": {
-                            "hr": "AAI@EduHR",
-                            "en": "AAI@EduHR"
-                        },
-                        "route": "auth.setup",
-                        "url": null,
-                        "query": {
-                            "section": "provider-cas",
-                            "mode": "edit",
-                            "profile_key": "cas-aai-eduhr"
-                        },
-                        "order": 10,
-                        "enabled": true,
-                        "children": [],
-                        "status_icon": "✓",
-                        "status_class": "text-success",
-                        "status_label": "Testirano i operativno"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "auth.setup.api-keys",
-        "parent_id": "auth",
-        "label": {
-            "hr": "API ključevi",
-            "en": "API keys"
-        },
-        "route": "auth.setup.api-keys",
-        "url": "",
-        "query": "",
-        "order": 70,
-        "enabled": true,
-        "level": 1
-    },
-    {
-        "id": "editor-html",
-        "parent_id": "",
-        "label": {
-            "hr": "HTML editor",
-            "en": "HTML editor"
-        },
-        "route": "",
-        "url": "",
-        "query": "",
-        "order": 90,
-        "enabled": true,
-        "level": 0,
-        "children": [
-            {
-                "id": "editor-html.settings",
-                "parent_id": "editor-html",
-                "label": {
-                    "hr": "Postavke HTML editora",
-                    "en": "HTML editor settings"
-                },
-                "route": "editor-html.settings",
-                "url": "",
-                "query": "",
-                "order": 10,
-                "enabled": true,
-                "level": 1
-            },
-            {
-                "id": "editor-html.documents",
-                "parent_id": "editor-html",
-                "label": {
-                    "hr": "Dokumenti",
-                    "en": "Documents"
-                },
-                "route": "",
-                "url": "",
-                "query": "",
-                "order": 20,
-                "enabled": true,
-                "level": 1,
-                "children": [
-                    {
-                        "id": "editor-html.documents.deleted",
-                        "parent_id": "editor-html.documents",
-                        "label": {
-                            "hr": "Obrisani dokumenti",
-                            "en": "Deleted documents"
-                        },
-                        "route": "editor-html.documents.deleted",
-                        "url": "",
-                        "query": "",
-                        "order": 10,
-                        "enabled": true,
-                        "level": 2
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "email.settings.group",
-        "parent_id": "",
-        "label": {
-            "hr": "E-mail",
-            "en": "E-mail"
-        },
-        "route": "",
-        "url": "",
-        "query": "",
-        "order": 70,
-        "enabled": true,
-        "level": 0,
-        "children": [
-            {
-                "id": "email.settings",
-                "parent_id": "email.settings.group",
-                "label": {
-                    "hr": "SMTP postavke",
-                    "en": "SMTP settings"
-                },
-                "route": "email.settings",
-                "url": "",
-                "query": "",
-                "order": 10,
-                "enabled": true,
-                "level": 1
-            }
-        ]
+        "query": []
     },
     {
         "id": "calendar.settings.group",
-        "parent_id": "",
         "label": {
             "hr": "Kalendari",
             "en": "Calendars"
         },
-        "route": "",
-        "url": "",
-        "query": "",
-        "order": 50,
+        "order": 30,
         "enabled": true,
-        "level": 0,
         "children": [
             {
                 "id": "calendar.settings.admin",
-                "parent_id": "calendar.settings.group",
                 "label": {
                     "hr": "Administracija kalendara",
                     "en": "Calendar administration"
                 },
-                "route": "calendar.admin",
-                "url": "",
-                "query": "",
                 "order": 10,
                 "enabled": true,
+                "route": "calendar.admin",
+                "parent_id": "calendar.settings.group",
+                "url": "",
+                "query": "",
                 "level": 1
+            }
+        ],
+        "parent_id": "",
+        "route": "",
+        "url": "",
+        "query": "",
+        "level": 0
+    },
+    {
+        "id": "email.settings.group",
+        "label": {
+            "hr": "E-mail",
+            "en": "E-mail"
+        },
+        "order": 50,
+        "enabled": true,
+        "children": [
+            {
+                "id": "email.settings",
+                "label": {
+                    "hr": "SMTP postavke",
+                    "en": "SMTP settings"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "email.settings",
+                "parent_id": "email.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            }
+        ],
+        "parent_id": "",
+        "route": "",
+        "url": "",
+        "query": "",
+        "level": 0
+    },
+    {
+        "id": "theme",
+        "label": {
+            "hr": "Tema",
+            "en": "Theme"
+        },
+        "order": 60,
+        "enabled": true,
+        "children": [
+            {
+                "id": "theme.settings",
+                "label": {
+                    "hr": "Postavke teme",
+                    "en": "Theme settings"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "theme.settings"
             }
         ]
     },
     {
-        "id": "backup.settings.group",
+        "id": "editor-html",
+        "label": {
+            "hr": "HTML editor",
+            "en": "HTML editor"
+        },
+        "order": 70,
+        "enabled": true,
+        "children": [
+            {
+                "id": "editor-html.settings",
+                "label": {
+                    "hr": "Postavke HTML editora",
+                    "en": "HTML editor settings"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "editor-html.settings",
+                "parent_id": "editor-html",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "editor-html.documents",
+                "label": {
+                    "hr": "Dokumenti",
+                    "en": "Documents"
+                },
+                "order": 20,
+                "enabled": true,
+                "children": [
+                    {
+                        "id": "editor-html.documents.deleted",
+                        "label": {
+                            "hr": "Obrisani dokumenti",
+                            "en": "Deleted documents"
+                        },
+                        "order": 10,
+                        "enabled": true,
+                        "route": "editor-html.documents.deleted",
+                        "parent_id": "editor-html.documents",
+                        "url": "",
+                        "query": "",
+                        "level": 2
+                    }
+                ],
+                "parent_id": "editor-html",
+                "route": "",
+                "url": "",
+                "query": "",
+                "level": 1
+            }
+        ],
         "parent_id": "",
+        "route": "",
+        "url": "",
+        "query": "",
+        "level": 0
+    },
+    {
+        "id": "backup.settings.group",
         "label": {
             "hr": "Sigurnosne kopije",
             "en": "Backups"
         },
-        "route": "",
-        "url": "",
-        "query": "",
-        "order": 100,
+        "order": 80,
         "enabled": true,
-        "level": 0,
         "children": [
             {
                 "id": "backup.settings",
-                "parent_id": "backup.settings.group",
                 "label": {
                     "hr": "Backup i vraćanje",
                     "en": "Backup and restore"
                 },
-                "route": "backup.settings",
-                "url": "",
-                "query": "",
                 "order": 10,
                 "enabled": true,
-                "level": 1
+                "route": "backup.settings"
+            }
+        ]
+    },
+    {
+        "id": "audit.logs",
+        "label": {
+            "hr": "Dnevnici",
+            "en": "Logs"
+        },
+        "order": 95,
+        "enabled": true,
+        "children": [
+            {
+                "id": "audit.settings",
+                "label": {
+                    "hr": "Dnevnik aktivnosti",
+                    "en": "Activity audit"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "audit.settings",
+                "url": "",
+                "query": ""
+            },
+            {
+                "id": "audit.technical",
+                "label": {
+                    "hr": "Tehnički log",
+                    "en": "Technical log"
+                },
+                "order": 20,
+                "enabled": true,
+                "route": "audit.technical",
+                "url": "",
+                "query": ""
             }
         ]
     },
     {
         "id": "workspace.settings.group",
-        "parent_id": "",
         "label": {
             "hr": "Područja",
             "en": "Workspaces"
         },
-        "route": "",
-        "url": "",
-        "query": "",
-        "order": 55,
+        "order": 40,
         "enabled": true,
-        "level": 0,
         "children": [
             {
                 "id": "workspace-search.settings",
-                "parent_id": "workspace.settings.group",
                 "label": {
                     "hr": "Indeks pretrage",
                     "en": "Search index"
                 },
+                "order": 50,
+                "enabled": true,
                 "route": "workspace-search.settings",
+                "parent_id": "workspace.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "workspace.settings",
+                "label": {
+                    "hr": "Opće postavke",
+                    "en": "General settings"
+                },
+                "order": 10,
+                "enabled": true,
+                "route": "workspace.settings",
+                "parent_id": "workspace.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "workspace.settings.homepage",
+                "label": {
+                    "hr": "Naslovnica aplikacije",
+                    "en": "Application homepage"
+                },
+                "order": 20,
+                "enabled": true,
+                "route": "workspace.settings.homepage",
+                "parent_id": "workspace.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "workspace.settings.all",
+                "label": {
+                    "hr": "Sva područja",
+                    "en": "All workspaces"
+                },
+                "order": 30,
+                "enabled": true,
+                "route": "workspace.settings.all",
+                "parent_id": "workspace.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "workspace.settings.deleted",
+                "label": {
+                    "hr": "Obrisana područja",
+                    "en": "Deleted workspaces"
+                },
+                "order": 40,
+                "enabled": true,
+                "route": "workspace.settings.deleted",
+                "parent_id": "workspace.settings.group",
+                "url": "",
+                "query": "",
+                "level": 1
+            },
+            {
+                "id": "workspace.settings.maintenance",
+                "parent_id": "workspace.settings.group",
+                "label": {
+                    "hr": "Održavanje",
+                    "en": "Maintenance"
+                },
+                "route": "workspace.settings.maintenance",
                 "url": "",
                 "query": "",
                 "order": 50,
                 "enabled": true,
                 "level": 1
-            },
-            {
-                "id": "workspace.settings",
-                "parent_id": "workspace.settings.group",
-                "label": {
-                    "hr": "Opće postavke",
-                    "en": "General settings"
-                },
-                "route": "workspace.settings",
-                "url": "",
-                "query": "",
-                "order": 10,
-                "enabled": true,
-                "level": 1
-            },
-            {
-                "id": "workspace.settings.homepage",
-                "parent_id": "workspace.settings.group",
-                "label": {
-                    "hr": "Naslovnica aplikacije",
-                    "en": "Application homepage"
-                },
-                "route": "workspace.settings.homepage",
-                "url": "",
-                "query": "",
-                "order": 20,
-                "enabled": true,
-                "level": 1
-            },
-            {
-                "id": "workspace.settings.all",
-                "parent_id": "workspace.settings.group",
-                "label": {
-                    "hr": "Sva područja",
-                    "en": "All workspaces"
-                },
-                "route": "workspace.settings.all",
-                "url": "",
-                "query": "",
-                "order": 30,
-                "enabled": true,
-                "level": 1
-            },
-            {
-                "id": "workspace.settings.deleted",
-                "parent_id": "workspace.settings.group",
-                "label": {
-                    "hr": "Obrisana područja",
-                    "en": "Deleted workspaces"
-                },
-                "route": "workspace.settings.deleted",
-                "url": "",
-                "query": "",
-                "order": 40,
-                "enabled": true,
-                "level": 1
             }
-        ]
+        ],
+        "parent_id": "",
+        "route": "",
+        "url": "",
+        "query": "",
+        "level": 0
     }
 ]

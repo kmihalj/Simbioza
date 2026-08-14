@@ -58,8 +58,24 @@ written to the file defined in your `config/app.php` file.
 
 ```php
 /** @var \Psr\Log\LoggerInterface $logger */
-$logger->info('User logged in.', ['userId' => $userId]);
+$logger->warning('Calendar worker retry scheduled.', [
+    'module' => 'calendar',
+    'event_uuid' => $eventUuid,
+    'attempt' => $attempt,
+    'exception' => $exception,
+]);
 ```
+
+Use PSR-3 for diagnostic information, unexpected failures, worker retries, and
+operational context. Always supply a stable `module` channel and structured,
+non-sensitive identifiers. Never log passwords, tokens, cookies, request or
+response bodies, document contents, e-mail bodies, or uploaded file contents.
+The rotating handler redacts common credential forms as a final safety net.
+
+Business actions belong in `AuditLogService` or a neutral domain event handled
+by Audit. That append-only database record is searchable and optionally
+portable through Backup. Technical log files are deliberately excluded from
+all backups.
 
 #### PSR-7 Server Request
 

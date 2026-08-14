@@ -159,8 +159,8 @@ test.describe.serial('Auth and API administration lifecycle', () => {
     const audit = await request.get('/api/v1/audit?page[limit]=100', { headers: adminHeaders });
     const auditData = await expectData(audit);
     expect(auditData.map((event) => event.event_key)).toEqual(expect.arrayContaining([
-      'api_group_created', 'api_user_created', 'api_user_groups_replaced',
-      'api_group_updated', 'api_user_updated',
+      'auth.api_group_created', 'auth.api_user_created', 'auth.api_user_groups_replaced',
+      'auth.api_group_updated', 'auth.api_user_updated',
     ]));
 
     const currentUser = await getDataWithEtag(request, `/api/v1/users/${createdUserId}`, adminHeaders);
@@ -196,6 +196,12 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
   let secondNodeId;
 
   test('workspace creation, concealed reads, ACL, and subject search work', async ({ request }) => {
+    const adminIdentity = await expectData(await request.get('/api/v1/me', {
+      headers: adminHeaders,
+    }));
+    const adminUserId = Number(adminIdentity.user.id);
+    expect(adminUserId).toBeGreaterThan(0);
+
     const users = await expectData(await request.get('/api/v1/users?page[limit]=100', {
       headers: adminHeaders,
     }));
@@ -214,6 +220,11 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
     const workspace = await expectData(created, 201);
     workspaceId = workspace.id;
     expect(workspace.permissions.can_manage).toBe(true);
+
+    const adminVisible = await request.get(`/api/v1/workspaces/${workspaceSlug}`, {
+      headers: adminHeaders,
+    });
+    expect((await expectData(adminVisible)).permissions.can_manage).toBe(true);
 
     const concealed = await request.get(`/api/v1/workspaces/${workspaceSlug}`, { headers: userHeaders });
     await expectProblem(concealed, 404, 'workspace_not_found');
@@ -251,6 +262,26 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
 
     const visible = await request.get(`/api/v1/workspaces/${workspaceSlug}`, { headers: userHeaders });
     expect((await expectData(visible)).permissions.can_view).toBe(true);
+
+    /*
+     * HR: I GET pristupi kroz stateless API moraju nositi stvarnog izvršitelja,
+     *     ne oznaku gosta. Provjeravamo administratorsko i obično korisničko
+     *     čitanje istoga područja.
+     * EN: Stateless API GET access must also carry the real actor rather than
+     *     a guest label. Verify both administrator and regular-user reads of
+     *     the same workspace.
+     */
+    const readAudit = await expectData(await request.get(
+      `/api/v1/audit?page[limit]=100&event_key=workspace.view&channel=api&target=${encodeURIComponent(workspaceSlug)}`,
+      { headers: adminHeaders },
+    ));
+    expect(readAudit.length).toBeGreaterThanOrEqual(2);
+    expect(readAudit.every((event) => Number(event.actor_user_id) > 0)).toBe(true);
+    expect(readAudit.map((event) => Number(event.actor_user_id))).toEqual(expect.arrayContaining([
+      adminUserId, Number(ordinaryUserId),
+    ]));
+    expect(readAudit.every((event) => !/^guest$|^gost$/i.test(String(event.actor_label ?? '')))).toBe(true);
+
     const stillCannotManage = await request.get(`/api/v1/workspaces/${workspaceSlug}/acl`, {
       headers: userHeaders,
     });

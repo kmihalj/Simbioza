@@ -7,6 +7,13 @@
     "prefer-stable": true,
     "repositories": [
         {
+            "type": "path",
+            "url": "../heartphrame-module-audit",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
             "type": "vcs",
             "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-framework.git"
         },
@@ -71,6 +78,7 @@
         "php": ">=8.2",
         "aaieduhr/heartphrame-framework": "dev-main",
         "aaieduhr/heartphrame-module-api": "dev-main",
+        "aaieduhr/heartphrame-module-audit": "dev-main",
         "aaieduhr/heartphrame-module-auth": "dev-main",
         "aaieduhr/heartphrame-module-calendar": "dev-main",
         "aaieduhr/heartphrame-module-comment": "dev-main",

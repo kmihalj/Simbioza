@@ -16,6 +16,7 @@ declare(strict_types=1);
 const AUDITED_PROJECTS = [
     'HFClean',
     'heartphrame-module-api',
+    'heartphrame-module-audit',
     'heartphrame-module-auth',
     'heartphrame-module-backup',
     'heartphrame-module-calendar',

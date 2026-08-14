@@ -14,7 +14,7 @@ return [
         /** @var ConfigInterface $config */
         $config = $container->get(ConfigInterface::class);
 
-        if (is_string($timezone = $config->get('timezone'))) {
+        if (is_string($timezone = $config->get('app.timezone'))) {
             ini_set('date.timezone', $timezone);
         }
 

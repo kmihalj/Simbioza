@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 const DOCUMENTED_MODULES = [
     'heartphrame-module-api',
+    'heartphrame-module-audit',
     'heartphrame-module-auth',
     'heartphrame-module-backup',
     'heartphrame-module-calendar',

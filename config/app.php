@@ -23,6 +23,10 @@ return [
         // Logs directory
         'dir' => __DIR__ . '/../data/logs',
         'filename' => 'app.log',
+        // HR: Rotacija ograničava rast tehničkog loga na približno 100 MB.
+        // EN: Rotation limits technical-log growth to approximately 100 MB.
+        'max_bytes' => 10485760,
+        'max_files' => 10,
     ],
 
     // Views configuration
@@ -66,6 +70,7 @@ return [
             'aaieduhr/heartphrame-module-menu',
             'aaieduhr/heartphrame-module-theme',
             'aaieduhr/heartphrame-module-auth',
+            'aaieduhr/heartphrame-module-audit',
             'aaieduhr/heartphrame-module-api',
             'aaieduhr/heartphrame-module-email',
             'aaieduhr/heartphrame-module-notification',

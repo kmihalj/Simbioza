@@ -31,8 +31,29 @@ test.describe('complete Backup workflow', () => {
      *     must remain disabled.
      */
     const componentCheckboxes = page.locator('#backup-create-form input[name="components[]"]');
-    expect(await componentCheckboxes.count()).toBeGreaterThan(5);
+    await expect(componentCheckboxes).toHaveCount(6);
+    expect(await componentCheckboxes.evaluateAll((checkboxes) => (
+      checkboxes.map((checkbox) => checkbox.value)
+    ))).toEqual(['users', 'workspaces', 'themes', 'settings', 'calendars', 'audit']);
     await expect(componentCheckboxes.first()).toBeDisabled();
+
+    /*
+     * HR: Izrada i vraćanje su jedan vertikalni accordion. Otvaranje vraćanja
+     *     zatvara izradu, a ponovno otvaranje izrade vraća obrazac za nastavak.
+     * EN: Create and restore form one vertical accordion. Opening restore
+     *     closes create, and reopening create returns the form for this flow.
+     */
+    const createAccordion = page.locator('.backup-accordion').nth(0);
+    const restoreAccordion = page.locator('.backup-accordion').nth(1);
+    await expect(createAccordion).toHaveAttribute('open', '');
+    await expect(restoreAccordion).not.toHaveAttribute('open', '');
+    await restoreAccordion.locator(':scope > summary').click();
+    await expect(createAccordion).not.toHaveAttribute('open', '');
+    await expect(restoreAccordion).toHaveAttribute('open', '');
+    await createAccordion.locator(':scope > summary').click();
+    await expect(createAccordion).toHaveAttribute('open', '');
+    await expect(restoreAccordion).not.toHaveAttribute('open', '');
+
     await page.locator('#backup-create-form input[name="label"]').fill('e2e-full-site');
     await page.locator('#backup-create-form input[name="passphrase"]').fill(passphrase);
 
@@ -50,6 +71,56 @@ test.describe('complete Backup workflow', () => {
      */
     const archivePath = testInfo.outputPath(download.suggestedFilename());
     await download.saveAs(archivePath);
+    await expect(page.locator('#backup-toast')).toContainText(
+      /Backup je izrađen i preuzet|Backup created and downloaded/i,
+    );
+    const latestJob = page.locator('#backup-jobs-body tr').first();
+    await expect(latestJob).toBeVisible();
+    await expect(latestJob.locator('[data-backup-download]')).toHaveCount(0);
+    await expect(latestJob.locator('td').first()).toHaveText(
+      /(?:\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/,
+    );
+    const jobsResponse = await page.request.get('/settings/backups/jobs', {
+      headers: { Accept: 'application/json' },
+    });
+    expect(jobsResponse.status()).toBe(200);
+    const jobsPayload = await jobsResponse.json();
+    expect(jobsPayload.jobs[0].download_available).toBe(false);
+    const secondDownload = await page.request.get(
+      `/settings/backups/download?job=${encodeURIComponent(jobsPayload.jobs[0].uuid)}`,
+    );
+    expect(secondDownload.status()).toBe(404);
+    /*
+     * HR: Jezik sučelja mijenja se istom lokalizacijskom rutom koju koristi
+     *     izbornik u zaglavlju. Parametar `lang` pripada jeziku sadržaja i ne
+     *     smije utjecati na format datuma administracijskog sučelja.
+     * EN: Switch the interface language through the same locale route used by
+     *     the header selector. The `lang` parameter belongs to content language
+     *     and must not control the administration UI date format.
+     */
+    await page.goto(`/locale/hr?next=${encodeURIComponent('/settings/backups')}`);
+    const hrJobs = await (await page.request.get('/settings/backups/jobs')).json();
+    expect(hrJobs.timezone).toBe('Europe/Zagreb');
+    expect(hrJobs.jobs[0].created_at_display).toMatch(
+      /^\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}$/,
+    );
+    await page.goto(`/locale/en?next=${encodeURIComponent('/settings/backups')}`);
+    const enJobs = await (await page.request.get('/settings/backups/jobs')).json();
+    expect(enJobs.jobs[0].created_at_display).toMatch(
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
+    );
+
+    /*
+     * HR: Izrada je nakon preuzimanja i dalje otvorena, stoga prije rada s
+     *     uploadom otvaramo accordion za vraćanje. Time test slijedi isti
+     *     korisnički tijek kao stvarno sučelje.
+     * EN: Create remains open after the download, so open the restore
+     *     accordion before interacting with its upload controls. This keeps
+     *     the test aligned with the real user flow.
+     */
+    await restoreAccordion.locator(':scope > summary').click();
+    await expect(createAccordion).not.toHaveAttribute('open', '');
+    await expect(restoreAccordion).toHaveAttribute('open', '');
 
     await page.locator('#backup-file').setInputFiles(archivePath);
     await page.locator('#backup-passphrase').fill(passphrase);
@@ -66,7 +137,11 @@ test.describe('complete Backup workflow', () => {
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#backup-restore').click();
     await expect(page.locator('#backup-result')).toContainText('"restored": true', { timeout: 90_000 });
+    await expect(page.locator('#backup-result')).toContainText('"uploaded_archive_deleted": true');
     await expect(page.locator('#backup-result')).toContainText('safety_snapshot');
+    await expect(page.locator('#backup-toast')).toContainText(
+      /Vraćanje je dovršeno|Restore completed/i,
+    );
   });
 
   test('administrator copies one complete Workspace and rebuilds its search index', async ({ page }, testInfo) => {
