@@ -490,7 +490,7 @@ test.describe('browser flows', () => {
       name: /Export Workspace to HTML|Izvezi područje u HTML/i,
     }).click();
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/^simbioza-e2e-content-workspace-\d{8}-\d{6}\.zip$/);
+    expect(download.suggestedFilename()).toMatch(new RegExp(`^simbioza-${workspaceSlug}-\\d{8}-\\d{6}\\.zip$`));
     const downloadPath = await download.path();
     expect(downloadPath).not.toBeNull();
     const archive = await readFile(downloadPath);
