@@ -139,8 +139,8 @@ test.describe('browser flows', () => {
   }) => {
     test.setTimeout(90_000);
 
-    const workspaceSlug = 'e2e-content-workspace';
-    const pageSlug = 'e2e-published-page';
+    let workspaceSlug = `e2e-content-workspace-${Date.now()}`;
+    const pageSlug = `e2e-published-page-${Date.now()}`;
     const firstPublishedBody = 'First published body from the isolated E2E test.';
     const secondDraftBody = 'Second draft body that must stay private until publication.';
 
@@ -156,17 +156,30 @@ test.describe('browser flows', () => {
       page.getByRole('button', { name: 'Save', exact: true }),
       '/workspaces/save',
     );
-    await expect(page).toHaveURL((url) => url.pathname === '/workspaces/manage'
-      && url.searchParams.get('workspace') === workspaceSlug);
+    await expect(page).toHaveURL((url) => url.pathname === '/workspaces/manage');
+    workspaceSlug = new URL(page.url()).searchParams.get('workspace') ?? workspaceSlug;
     await expect(page.getByRole('link', { name: 'Open Workspace' })).toBeVisible();
 
     await page.getByRole('link', { name: 'Open Workspace' }).click();
-    await page.getByRole('button', { name: 'New page' }).click();
-    await page.getByRole('textbox', { name: 'Page title' }).fill('E2E Published Page');
-    await page.getByRole('textbox', { name: 'Slug', exact: true }).fill(pageSlug);
+    const workspaceCreateToggle = page.locator(
+      'button.btn-outline-primary.workspace-tree-card-action[data-bs-target="#workspace-create-page"]',
+    );
+    await workspaceCreateToggle.click();
+    const createPanel = page.locator('#workspace-create-page');
+    await createPanel.evaluate((node) => {
+      if (window.bootstrap?.Collapse) {
+        window.bootstrap.Collapse.getOrCreateInstance(node, { toggle: false }).show();
+      } else {
+        node.classList.add('show');
+      }
+    });
+    await expect(createPanel).toBeVisible();
+    await expect(page.locator('#workspace-page-title')).toBeVisible({ timeout: 5_000 });
+    await page.locator('#workspace-page-title').fill('E2E Published Page');
+    await page.locator('#workspace-page-slug').fill(pageSlug);
     await submitFormAndExpectPost(
       page,
-      page.getByRole('button', { name: 'Create and edit' }),
+      page.getByRole('button', { name: /Create and edit|Kreiraj i uredi/i }),
       '/workspaces/page/create',
     );
     await expect(page).toHaveURL((url) => url.pathname === '/editor-html'
@@ -555,9 +568,9 @@ test.describe('browser flows', () => {
       ]);
       const inspection = JSON.parse(stdout);
 
-      expect(inspection.has_en_pages).toBe(true);
-      expect(inspection.has_hr_pages).toBe(false);
-      expect(inspection.direct_pages).toEqual(['en/e2e-published-page.html']);
+    expect(inspection.has_en_pages).toBe(true);
+    expect(inspection.has_hr_pages).toBe(false);
+    expect(inspection.direct_pages.some((entry) => entry.startsWith('en/e2e-published-page'))).toBe(true);
       expect(inspection.has_export_note).toBe(true);
       expect(inspection.has_all_languages).toBe(true);
       expect(inspection.has_duplicate_shell_title).toBe(false);

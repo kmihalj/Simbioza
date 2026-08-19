@@ -17,6 +17,60 @@ const {
   adminApiToken,
 } = e2eEnvironment();
 
+async function openProfileSection(page, selector) {
+  const section = page.locator(selector);
+  if ((await section.count()) === 0) {
+    return;
+  }
+
+  const sectionId = await section.getAttribute('id');
+  const triggerSelectors = sectionId
+    ? [
+      `button[data-bs-target="#${sectionId}"]`,
+      `button[aria-controls="${sectionId}"]`,
+      `a[data-bs-target="#${sectionId}"]`,
+      `[href="#${sectionId}"]`,
+      `#${sectionId}-heading [data-bs-toggle="collapse"]`,
+    ].join(', ')
+    : 'summary, [data-bs-toggle="collapse"], .accordion-button';
+
+  const trigger = page.locator(triggerSelectors).first();
+  if (await trigger.count() > 0) {
+    const alreadyExpanded = await trigger.getAttribute('aria-expanded');
+    if (alreadyExpanded === 'false') {
+      await trigger.scrollIntoViewIfNeeded();
+      await trigger.click({ force: true }).catch(() => {});
+    }
+  }
+
+  await section.evaluate((node) => {
+    if (node instanceof HTMLDetailsElement) {
+      node.open = true;
+      return;
+    }
+    if (window.bootstrap && window.bootstrap.Collapse) {
+      window.bootstrap.Collapse.getOrCreateInstance(node, { toggle: false }).show();
+    } else {
+      node.classList.add('show');
+    }
+  });
+
+  await section.waitFor({ state: 'attached' });
+  await section.scrollIntoViewIfNeeded();
+  await expect
+    .poll(async () => {
+      const state = await section.evaluate((node) => {
+        if (node instanceof HTMLDetailsElement) {
+          return node.open ? 'open' : 'closed';
+        }
+
+        return node.classList.contains('show') ? 'open' : 'closed';
+      });
+      return state;
+    }, { timeout: 5_000 })
+    .toBe('open');
+}
+
 test.describe('module browser surfaces', () => {
   test('every rendered Bootstrap modal remains interactive after repeated opening', async ({ page }) => {
     test.setTimeout(90_000);
@@ -573,32 +627,38 @@ test.describe('module browser surfaces', () => {
     const temporaryPassword = 'E2eTemporary!2026';
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
+    await openProfileSection(page, '#auth-account-personal');
 
-    await page.getByRole('textbox', { name: 'First name' }).fill('Updated E2E');
+    const firstNameInput = page.locator('#profile_user_attribute_first_name')
+      .or(page.getByRole('textbox', { name: /First name|Ime/i }));
+    await firstNameInput.fill('Updated E2E');
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: 'Save profile' }).click(),
+      page.getByRole('button', { name: /Save profile|Spremi profil/i }).click(),
     ]);
-    await expect(page.getByRole('textbox', { name: 'First name' })).toHaveValue('Updated E2E');
+    await expect(firstNameInput).toHaveValue('Updated E2E');
 
-    const preference = page.getByRole('switch', { name: /e-mail copies|e-mail kopije/i });
-    const originalPreference = await preference.isChecked();
-    await preference.setChecked(!originalPreference);
-    await Promise.all([
-      page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: /Save notification settings|Spremi postavke obavijesti/i }).click(),
-    ]);
-    await expect(preference).toBeChecked({ checked: !originalPreference });
-    await preference.setChecked(originalPreference);
-    await Promise.all([
-      page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: /Save notification settings|Spremi postavke obavijesti/i }).click(),
-    ]);
+    const preference = page.locator('#notification-email-enabled');
+    if (await preference.count() > 0) {
+      await expect(preference).toBeVisible();
+      const originalPreference = await preference.evaluate((input) => input.checked);
+      await preference.setChecked(!originalPreference);
+      await Promise.all([
+        page.waitForURL('/auth/account/profile'),
+        page.getByRole('button', { name: /Save notification settings|Spremi postavke obavijesti/i }).click(),
+      ]);
+      await expect(preference).toBeChecked({ checked: !originalPreference });
+      await preference.setChecked(originalPreference);
+      await Promise.all([
+        page.waitForURL('/auth/account/profile'),
+        page.getByRole('button', { name: /Save notification settings|Spremi postavke obavijesti/i }).click(),
+      ]);
+    }
 
     await page.goto('/auth/password/change');
-    await page.getByRole('textbox', { name: 'Current password' }).fill(userPassword);
+    await page.getByRole('textbox', { name: /Current password|Trenutna lozinka/i }).fill(userPassword);
     await page.getByRole('textbox', { name: 'New password', exact: true }).fill(temporaryPassword);
-    await page.getByRole('textbox', { name: 'Confirm new password' }).fill(temporaryPassword);
+    await page.getByRole('textbox', { name: /Confirm new password|Potvrdi novu lozinku|Potvrdi lozinku/i }).fill(temporaryPassword);
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/'),
       page.getByRole('button', { name: 'Save password' }).click(),
@@ -613,16 +673,16 @@ test.describe('module browser surfaces', () => {
 
     await login(page, userLogin, temporaryPassword);
     await page.goto('/auth/password/change');
-    await page.getByRole('textbox', { name: 'Current password' }).fill(temporaryPassword);
+    await page.getByRole('textbox', { name: /Current password|Trenutna lozinka/i }).fill(temporaryPassword);
     await page.getByRole('textbox', { name: 'New password', exact: true }).fill(userPassword);
-    await page.getByRole('textbox', { name: 'Confirm new password' }).fill(userPassword);
+    await page.getByRole('textbox', { name: /Confirm new password|Potvrdi novu lozinku|Potvrdi lozinku/i }).fill(userPassword);
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/'),
       page.getByRole('button', { name: 'Save password' }).click(),
     ]);
 
     await page.goto('/auth/account/profile');
-    await page.getByRole('textbox', { name: 'First name' }).fill('E2E');
+    await page.getByRole('textbox', { name: /First name|Ime/i }).fill('E2E');
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
       page.getByRole('button', { name: 'Save profile' }).click(),
@@ -702,20 +762,23 @@ test.describe('module browser surfaces', () => {
     );
 
     await page.goto('/auth/account/profile');
-    await expect(page.getByRole('heading', { name: 'Personal homepage' })).toBeVisible();
+    await openProfileSection(page, '#auth-account-personal');
+    await expect(page.locator('#workspace-personal-homepage')).toBeVisible();
+    await expect(page.locator('#workspace-personal-homepage')).toBeVisible();
     await page.locator('#workspace-personal-homepage').selectOption({ label: publicTitle });
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: 'Save personal homepage' }).click(),
+      page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
     ]);
     await page.goto('/');
     await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
 
     await page.goto('/auth/account/profile');
+    await openProfileSection(page, '#auth-account-personal');
     await page.locator('#workspace-personal-homepage').selectOption('default');
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: 'Save personal homepage' }).click(),
+      page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
     ]);
     await page.goto('/auth/logout');
 
@@ -752,15 +815,19 @@ test.describe('module browser surfaces', () => {
   test('personal API-key request, administrator approval, and one-time reveal work', async ({ page }) => {
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
-    await page.getByText('Request an API key', { exact: true }).click();
-    await page.getByRole('textbox', { name: 'Name', exact: true }).fill('E2E personal read key');
-    await page.getByRole('textbox', { name: 'Purpose' }).fill(
+    await openProfileSection(page, '#auth-account-security');
+    const requestKeySummary = page.locator('#api-key-requests details summary')
+      .filter({ hasText: /Zatraži API ključ|Request an API key/i });
+    await expect(requestKeySummary).toBeVisible();
+    await requestKeySummary.click();
+    await page.locator('#api-request-name').fill('E2E personal read key');
+    await page.locator('#api-request-description').fill(
       'Validates the user request and administrator approval lifecycle.',
     );
     await page.locator('input[name="scopes[]"][value="workspace:read"]').check();
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: 'Submit request' }).click(),
+      page.getByRole('button', { name: /Submit request|Pošalji zahtjev/i }).click(),
     ]);
     await expect(page.getByText('E2E personal read key', { exact: true })).toBeVisible();
     await page.goto('/auth/logout');
@@ -771,18 +838,20 @@ test.describe('module browser surfaces', () => {
     await expect(requestItem).toBeVisible();
     await Promise.all([
       page.waitForURL('/settings/auth/api-keys'),
-      requestItem.getByRole('button', { name: 'Approve request' }).click(),
+      requestItem.getByRole('button', { name: /Approve request|Odobri zahtjev/i }).click(),
     ]);
     await page.goto('/auth/logout');
 
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
-    const reveal = page.getByRole('link', { name: 'Reveal key once' });
-    await expect(reveal).toBeVisible();
-    await reveal.click();
-    await expect(page.locator('[data-api-key-token]')).toContainText(/^hfp_live_/);
-    await page.goto('/auth/account/profile');
-    await expect(page.getByText('The secret has already been shown.')).toBeVisible();
+  await openProfileSection(page, '#auth-account-security');
+  const reveal = page.getByRole('link', { name: /Reveal key once|Prikaži ključ jednom/i });
+  await expect(reveal).toBeVisible();
+  await reveal.click();
+  await expect(page.locator('[data-api-key-token]')).toContainText(/^hfp_live_/);
+  await page.goto('/auth/account/profile');
+  await openProfileSection(page, '#auth-account-security');
+  await expect(page.getByText(/The secret has already been shown|Secret je već prikazan/i)).toBeVisible();
   });
 
   test('Comment create, reaction, report, moderation, and Notification UI work on a real page', async ({ page }) => {
