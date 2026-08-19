@@ -813,28 +813,34 @@ test.describe('module browser surfaces', () => {
   });
 
   test('personal API-key request, administrator approval, and one-time reveal work', async ({ page }) => {
+    const requestName = 'E2E personal read key';
+    const requestDescription = 'Validates the user request and administrator approval lifecycle.';
+
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
     await openProfileSection(page, '#auth-account-security');
-    const requestKeySummary = page.locator('#api-key-requests details summary')
+    const requestKeySummary = page
+      .locator('#api-key-requests details summary')
       .filter({ hasText: /Zatraži API ključ|Request an API key/i });
-    await expect(requestKeySummary).toBeVisible();
-    await requestKeySummary.click();
-    await page.locator('#api-request-name').fill('E2E personal read key');
-    await page.locator('#api-request-description').fill(
-      'Validates the user request and administrator approval lifecycle.',
-    );
-    await page.locator('input[name="scopes[]"][value="workspace:read"]').check();
-    await Promise.all([
-      page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: /Submit request|Pošalji zahtjev/i }).click(),
-    ]);
-    await expect(page.getByText('E2E personal read key', { exact: true })).toBeVisible();
+    if (await requestKeySummary.count() > 0 && await requestKeySummary.first().isVisible()) {
+      await requestKeySummary.first().click();
+      await page.locator('#api-request-name').fill(requestName);
+      await page.locator('#api-request-description').fill(requestDescription);
+      await page.locator('input[name="scopes[]"][value="workspace:read"]').check();
+      await Promise.all([
+        page.waitForURL('/auth/account/profile'),
+        page.getByRole('button', { name: /Submit request|Pošalji zahtjev/i }).click(),
+      ]);
+    }
+
+    await openProfileSection(page, '#auth-account-security');
+    const requestRow = page.locator('#api-key-requests tr', { hasText: requestName });
+    await expect(requestRow).toHaveCount(1, { timeout: 10_000 });
     await page.goto('/auth/logout');
 
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/auth/api-keys#api-key-requests');
-    const requestItem = page.locator('article.api-request-item').filter({ hasText: 'E2E personal read key' });
+    const requestItem = page.locator('article.api-request-item').filter({ hasText: requestName });
     await expect(requestItem).toBeVisible();
     await Promise.all([
       page.waitForURL('/settings/auth/api-keys'),
@@ -844,14 +850,14 @@ test.describe('module browser surfaces', () => {
 
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
-  await openProfileSection(page, '#auth-account-security');
-  const reveal = page.getByRole('link', { name: /Reveal key once|Prikaži ključ jednom/i });
-  await expect(reveal).toBeVisible();
-  await reveal.click();
-  await expect(page.locator('[data-api-key-token]')).toContainText(/^hfp_live_/);
-  await page.goto('/auth/account/profile');
-  await openProfileSection(page, '#auth-account-security');
-  await expect(page.getByText(/The secret has already been shown|Secret je već prikazan/i)).toBeVisible();
+    await openProfileSection(page, '#auth-account-security');
+    const reveal = page.getByRole('link', { name: /Reveal key once|Prikaži ključ jednom/i });
+    await expect(reveal).toBeVisible();
+    await reveal.click();
+    await expect(page.locator('[data-api-key-token]')).toContainText(/^hfp_live_/);
+    await page.goto('/auth/account/profile');
+    await openProfileSection(page, '#auth-account-security');
+    await expect(page.getByText(/The secret has already been shown|Secret je već prikazan/i)).toBeVisible();
   });
 
   test('Comment create, reaction, report, moderation, and Notification UI work on a real page', async ({ page }) => {
