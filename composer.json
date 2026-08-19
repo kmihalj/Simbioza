@@ -69,6 +69,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/kmihalj/heartphrame-module-backup.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/kmihalj/simbioza-module-user.git"
         }
     ],
     "require": {
@@ -88,7 +92,8 @@
         "aaieduhr/heartphrame-module-theme": "dev-main",
         "aaieduhr/heartphrame-module-workspace": "dev-main",
         "aaieduhr/heartphrame-module-workspace-search": "dev-main",
-        "aaieduhr/heartphrame-module-backup": "dev-main"
+        "aaieduhr/heartphrame-module-backup": "dev-main",
+        "aaieduhr/simbioza-module-user": "dev-main"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
