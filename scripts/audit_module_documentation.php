@@ -26,6 +26,7 @@ const DOCUMENTED_MODULES = [
     'heartphrame-module-theme',
     'heartphrame-module-workspace',
     'heartphrame-module-workspace-search',
+    'simbioza-module-user',
 ];
 
 /**

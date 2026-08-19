@@ -17,6 +17,7 @@ use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
 use AaiEduHr\HeartPhrameModuleWorkspaceSearch\ModuleWorkspaceSearch;
+use AaiEduHr\SimbiozaModuleUser\ModuleSimbiozaUser;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -52,20 +53,22 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće dvanaest objedinjenih inicijalnih migracija te provjerava aktualne
+     * HR: Pokreće petnaest aktualnih aplikacijskih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
-     * Task, Comment, API, Backup i Audit sheme, početnog administratora i izostanak sadržaja.
+     * Task, Comment, API, Backup, Audit i Simbioza User sheme, izvedeni backlink
+     * indeks, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs twelve consolidated initial migrations and verifies the current Auth,
+     * EN: Runs fifteen current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
-     * Comment, API, Backup, and Audit schemas, the bootstrap administrator, and no content data.
+     * Comment, API, Backup, Audit, and Simbioza User schemas, the derived backlink
+     * index, the bootstrap administrator, and no content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(12, $migrationFiles, 'Only consolidated initial migrations are expected.');
+        $this->assertCount(15, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -357,6 +360,26 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_BACKLINKS, [
+            'id',
+            'source_workspace_id',
+            'source_node_id',
+            'source_language_code',
+            'source_version_number',
+            'source_title',
+            'target_workspace_id',
+            'target_node_id',
+            'link_text',
+            'indexed_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_BACKLINK_INDEX_STATE, [
+            'id',
+            'rebuilt_at',
+            'created_at',
+            'updated_at',
+        ]);
         $this->assertColumns(ModuleWorkspaceSearch::TABLE_INDEX, [
             'id',
             'workspace_id',
@@ -624,6 +647,60 @@ final class InitialMigrationsTest extends TestCase
             'user_agent',
             'metadata_json',
         ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_PREFERENCES, [
+            'id',
+            'user_id',
+            'email_mode',
+            'notify_own_changes',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_FOLLOWS, [
+            'id',
+            'uuid',
+            'user_id',
+            'target_type',
+            'target_id',
+            'workspace_id',
+            'page_id',
+            'document_id',
+            'label_snapshot',
+            'email_mode_override',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_PENDING_DELIVERIES, [
+            'id',
+            'uuid',
+            'user_id',
+            'event_key',
+            'target_type',
+            'target_id',
+            'workspace_id',
+            'page_id',
+            'document_id',
+            'actor_user_id',
+            'importance',
+            'title',
+            'message',
+            'link_url',
+            'payload_json',
+            'dedup_key',
+            'occurrence_count',
+            'deliver_after',
+            'delivered_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_FOLLOW_EXCLUSIONS, [
+            'id',
+            'user_id',
+            'target_type',
+            'target_id',
+            'source',
+            'created_at',
+            'updated_at',
+        ]);
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -640,6 +717,7 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACES)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->get());
+        $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_BACKLINKS)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspaceSearch::TABLE_INDEX)->get());
         $this->assertSame([], $this->database->table(ModuleEmail::TABLE_OUTBOX)->get());
         $this->assertSame([], $this->database->table(ModuleNotification::TABLE_NOTIFICATIONS)->get());
@@ -658,6 +736,10 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleBackup::TABLE_JOBS)->get());
         $this->assertSame([], $this->database->table(ModuleBackup::TABLE_UPLOADS)->get());
         $this->assertSame([], $this->database->table(ModuleAudit::TABLE_EVENTS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PREFERENCES)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_FOLLOWS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PENDING_DELIVERIES)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_FOLLOW_EXCLUSIONS)->get());
     }
 
     /**

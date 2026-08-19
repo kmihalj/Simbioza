@@ -80,6 +80,7 @@ return [
             'aaieduhr/heartphrame-module-workspace',
             'aaieduhr/heartphrame-module-workspace-search',
             'aaieduhr/heartphrame-module-calendar',
+            'aaieduhr/simbioza-module-user',
             'aaieduhr/heartphrame-module-backup',
         ],
     ],

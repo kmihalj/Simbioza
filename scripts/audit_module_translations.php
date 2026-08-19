@@ -123,8 +123,11 @@ function translationCatalogue(string $path): array
 }
 
 $vendorRoot = dirname(__DIR__) . '/vendor/aaieduhr';
-$moduleRoots = glob($vendorRoot . '/heartphrame-module-*', GLOB_ONLYDIR);
-if (!is_array($moduleRoots) || $moduleRoots === []) {
+$moduleRoots = [
+    ...(glob($vendorRoot . '/heartphrame-module-*', GLOB_ONLYDIR) ?: []),
+    ...(glob($vendorRoot . '/simbioza-module-*', GLOB_ONLYDIR) ?: []),
+];
+if ($moduleRoots === []) {
     fwrite(STDERR, "[FAIL] No installed HeartPhrame modules were found.\n");
     exit(1);
 }
