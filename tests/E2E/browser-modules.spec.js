@@ -140,6 +140,7 @@ test.describe('module browser surfaces', () => {
       '/settings/workspaces/all',
       '/settings/workspaces/deleted',
       '/settings/personal-workspaces',
+      '/settings/confluence-import',
       '/editor-html',
       '/settings/editor-html',
       '/settings/editor-html/documents/deleted',
@@ -182,6 +183,7 @@ test.describe('module browser surfaces', () => {
       ['/calendar/assets/calendar.js', 'javascript'],
       ['/menu/assets/flags/hr.svg', 'image/svg+xml'],
       ['/theme/assets/flags/hr.svg', 'image/svg+xml'],
+      ['/confluence-import/assets.css', 'text/css'],
     ];
     for (const [route, contentType] of assets) {
       const response = await page.request.get(route);

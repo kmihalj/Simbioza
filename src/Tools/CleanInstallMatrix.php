@@ -40,6 +40,7 @@ const MATRIX_MODULE_ORDER = [
     'aaieduhr/heartphrame-module-calendar',
     'aaieduhr/heartphrame-module-api',
     'aaieduhr/simbioza-module-user',
+    'aaieduhr/simbioza-module-confluence-import',
     'aaieduhr/heartphrame-module-backup',
 ];
 
@@ -64,6 +65,7 @@ const MATRIX_CASES = [
     'comment' => ['aaieduhr/heartphrame-module-comment'],
     'api' => ['aaieduhr/heartphrame-module-api'],
     'simbioza-user' => ['aaieduhr/simbioza-module-user'],
+    'simbioza-confluence-import' => ['aaieduhr/simbioza-module-confluence-import'],
     'backup' => ['aaieduhr/heartphrame-module-backup'],
     'all' => MATRIX_MODULE_ORDER,
 ];
@@ -81,6 +83,7 @@ const MATRIX_MIGRATION_COMMANDS = [
     'aaieduhr/heartphrame-module-comment' => 'comment:install-migration',
     'aaieduhr/heartphrame-module-api' => 'api:install-migration',
     'aaieduhr/simbioza-module-user' => 'simbioza-user:install-migration',
+    'aaieduhr/simbioza-module-confluence-import' => 'simbioza-confluence-import:install-migration',
     'aaieduhr/heartphrame-module-backup' => 'backup:install-migration',
 ];
 
@@ -101,6 +104,7 @@ const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
     'aaieduhr/heartphrame-module-workspace-search' => 'heartphrame-module-workspace-search',
     'aaieduhr/heartphrame-module-backup' => 'heartphrame-module-backup',
     'aaieduhr/simbioza-module-user' => 'simbioza-module-user',
+    'aaieduhr/simbioza-module-confluence-import' => 'simbioza-module-confluence-import',
 ];
 
 /**

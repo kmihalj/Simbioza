@@ -17,6 +17,7 @@ use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
 use AaiEduHr\HeartPhrameModuleWorkspaceSearch\ModuleWorkspaceSearch;
+use AaiEduHr\SimbiozaModuleConfluenceImport\ModuleSimbiozaConfluenceImport;
 use AaiEduHr\SimbiozaModuleUser\ModuleSimbiozaUser;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -53,14 +54,14 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće šesnaest aktualnih aplikacijskih migracija te provjerava aktualne
+     * HR: Pokreće sedamnaest aktualnih aplikacijskih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
-     * Task, Comment, API, Backup, Audit i Simbioza User sheme, izvedeni backlink
+     * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs sixteen current application migrations and verifies the current Auth,
+     * EN: Runs seventeen current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
-     * Comment, API, Backup, Audit, and Simbioza User schemas, the derived backlink
+     * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the bootstrap administrator, and no content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
@@ -68,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(16, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(17, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -724,6 +725,33 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleSimbiozaConfluenceImport::TABLE_JOBS, [
+            'id',
+            'uuid',
+            'operation',
+            'status',
+            'stage',
+            'archive_path',
+            'workspace_id',
+            'actor_user_id',
+            'created_at',
+            'updated_at',
+        ]);
+        foreach (
+            [
+                ModuleSimbiozaConfluenceImport::TABLE_SPACES,
+                ModuleSimbiozaConfluenceImport::TABLE_CONTENT,
+                ModuleSimbiozaConfluenceImport::TABLE_IDENTITIES,
+                ModuleSimbiozaConfluenceImport::TABLE_GROUPS,
+                ModuleSimbiozaConfluenceImport::TABLE_LINKS,
+                ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS,
+            ] as $confluenceImportTable
+        ) {
+            $this->assertTrue(
+                $this->database->schema()->hasTable($confluenceImportTable),
+                'Missing table: ' . $confluenceImportTable,
+            );
+        }
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -766,6 +794,13 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_SETTINGS)->get());
         $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PERSONAL_WORKSPACES)->get());
         $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PERSONAL_WORKSPACE_POLICIES)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_JOBS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_SPACES)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_CONTENT)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_IDENTITIES)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_GROUPS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_LINKS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS)->get());
     }
 
     /**

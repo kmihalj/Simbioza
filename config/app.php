@@ -81,6 +81,7 @@ return [
             'aaieduhr/heartphrame-module-workspace-search',
             'aaieduhr/heartphrame-module-calendar',
             'aaieduhr/simbioza-module-user',
+            'aaieduhr/simbioza-module-confluence-import',
             'aaieduhr/heartphrame-module-backup',
         ],
     ],
