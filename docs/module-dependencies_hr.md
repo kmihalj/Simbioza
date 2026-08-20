@@ -29,6 +29,7 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 | `module-audit` | Framework, Auth, ORM | Menu za Postavke, Backup za prenosivi dnevnik aktivnosti, API za `audit:read` te svi instalirani proizvođači poslovnih događaja |
+| `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
 
 ## Pravila učitavanja
 
@@ -61,6 +62,10 @@ najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
   tehnički log u rotirajućim datotekama. Poslovni moduli rade i bez Audita te
   objavljuju neutralne događaje gdje je potreban precizniji zapis. Datoteke
   tehničkog loga nikad se ne registriraju u Backupu.
+- `simbioza-module-user` sluša neutralni Auth događaj uspješne prijave i tada
+  prema pravilima izrađuje ograničeno osobno područje. Auth zato i dalje radi
+  bez Workspacea i Simbioza Usera. Backup čuva korisnička mapiranja,
+  administratorska pravila i mapiranja unutar pojedinog područja.
 
 ## Graf
 
@@ -81,6 +86,7 @@ Task ---------> Editor HTML + Auth + ORM + Framework
 Comment ------> Editor HTML + Notification + Auth + ORM + Framework
 Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
 Audit --------> Auth + ORM + Framework
+Simbioza User -> Workspace + Notification + Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -94,4 +100,5 @@ Comment      - - > Workspace, Theme
 Business modules - - > Backup provider registration
 Workspace Search - - > API, Backup index rebuild
 Audit        - - > Menu, Backup, API, svi proizvođači poslovnih događaja
+Simbioza User- - > API, Audit, Backup, Calendar, Comment, Email, Task, Theme
 ```

@@ -22,14 +22,14 @@ ne kopiraju u Simbiozu, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-Svih 48 scenarija pokriva svaki modul koji Simbioza isporučuje. Provjerava se
+Svih 56 scenarija pokriva svaki modul koji Simbioza isporučuje. Provjerava se
 javno ponašanje, a ne privatni detalji implementacije.
 
 | Područje | End-to-end pokrivenost |
 |---|---|
 | Čisti host i ORM | Nova aplikacija, SQLite/PostgreSQL/MySQL baza, sve službene migracije, stvarni front controller, sesije, logovi, cache direktoriji i sigurno uklanjanje. |
 | Theme i Menu | Desktop/mobilna navigacija, desni mobilni panel, pamćenje jezika, spremanje menija, responzivni hero vizual pune visine, prilagodljivo mobilno preklapanje sadržaja bez sudara, jednake Home/Inner veličine, prikaz od ruba do ruba, prateći tekst automatskih hero naslova u bojama Hero postavki, uski pregled uživo bez sudara teksta, kopiranje teme, izvoz paketa samo s korištenim assetima, potpuni izvoz teme, brisanje, uvoz cijele teme i request-scoped privatna kopija područja koja ne mijenja sistemske teme. |
-| Auth | Preusmjeravanje gosta, ovlasti administratora i običnog korisnika, lokalna prijava/odjava, profil i postavka obavijesti, povratna promjena lozinke, CRUD grupa/korisnika, članstva, ETagovi, siguran izlaz, audit i čišćenje. |
+| Auth | Preusmjeravanje gosta, ovlasti administratora i običnog korisnika, lokalna prijava/odjava, profil i postavka obavijesti, povratna promjena lozinke, jednokratna izrada osobnog područja, poveznica u profilu, skrivanje od gosta, administratorski ekran pravila, CRUD grupa/korisnika, članstva, ETagovi, siguran izlaz, audit i čišćenje. |
 | API | Bearer autentikacija, dinamički scopeovi, discovery, izvorni OpenAPI 3.1, CORS preflight, paginacija, RFC 9457 problemi, rate-limit zaglavlja, idempotentni replay, `If-Match`, zahtjev za osobni ključ, odobrenje administratora, jednokratni prikaz i odvajanje scopea od domenskih prava. |
 | Workspace | Kreiranje, skriveni nedopušteni dohvat, pretraga subjekata, ACL područja i čvorova, poveznice stabla, potpuni poredak, izmjene, brisanje čvora, soft-delete područja, popis obrisanih, oporavak, Sažetci od dvanaest redaka, jezični fallback, sklopivo stablo/opcije, strukturirani ciljevi Sažetaka na naslovnici i izolacija tema između područja. |
 | HTML Editor | Strukturirani nacrt, odbijanje zastarjele revizije, slanje na pregled, granica prava objavljivača, objava, nepromjenjive verzije, renderirani izlaz, prijevodi, povrat verzije, odbacivanje nacrta, brisanje stranice i uklanjanje javne Workspace rute. |

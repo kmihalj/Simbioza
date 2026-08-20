@@ -14,7 +14,7 @@ repozitoriju.
 Svaki HeartPhrame modul zahtijeva
 `aaieduhr/heartphrame-framework:dev-main`. Simbioza trenutačno povezuje ORM,
 Menu, Theme, Auth, E-mail, Notification, HTML Editor, Task, Comment, Workspace,
-Workspace Search, Calendar, API, Backup i Audit. Obavezni redoslijed modula i opcionalne mogućnosti navedeni su
+Workspace Search, Calendar, API, Backup, Audit i Simbioza User. Obavezni redoslijed modula i opcionalne mogućnosti navedeni su
 u [matrici ovisnosti](docs/module-dependencies_hr.md).
 
 Najmanje provjerene instalacije su samo Framework, Framework + Theme,
@@ -74,7 +74,9 @@ skup u CI-ju se pokreće na SQLiteu, PostgreSQL-u i MySQL-u.
 ## Uključeni moduli
 
 Simbioza povezuje API, Audit, Auth, Backup, Calendar, Comment, HTML Editor,
-E-mail, Menu, Notification, ORM, Task, Theme, Workspace i Workspace Search. Moduli zadržavaju vlasništvo nad
+E-mail, Menu, Notification, ORM, Simbioza User, Task, Theme, Workspace i Workspace Search. Simbioza User dodaje
+praćenja, pravila dostave obavijesti i ograničena osobna područja koja se mogu
+izraditi pri prvoj prijavi prema administratorskom pravilu. Moduli zadržavaju vlasništvo nad
 svojim domenskim pravilima, a aplikacija ih povezuje i daje postavke deploymenta.
 
 ## Licencija

@@ -30,6 +30,7 @@ resolves the latest `main` heads, and then executes the complete
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 | `module-audit` | Framework, Auth, ORM | Menu for Settings, Backup for portable activity-audit archives, API for `audit:read`, and every installed business-event producer |
+| `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
 
 ## Loading rules
 
@@ -62,6 +63,10 @@ resolves the latest `main` heads, and then executes the complete
   separate PSR-3 technical log in rotating files. Business modules remain
   usable without Audit and publish neutral events where richer records are
   useful. Technical log files are never registered with Backup.
+- `simbioza-module-user` listens to Auth's neutral successful-sign-in event to
+  provision a restricted personal Workspace. Auth therefore remains usable
+  without Workspace or Simbioza User. Backup preserves user mappings,
+  administrator policies, and Workspace-scoped mappings.
 
 ## Graph
 
@@ -82,6 +87,7 @@ Task ---------> Editor HTML + Auth + ORM + Framework
 Comment ------> Editor HTML + Notification + Auth + ORM + Framework
 Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
 Audit --------> Auth + ORM + Framework
+Simbioza User -> Workspace + Notification + Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -95,4 +101,5 @@ Comment      - - > Workspace, Theme
 Business modules - - > Backup provider registration
 Workspace Search - - > API, Backup index rebuild
 Audit        - - > Menu, Backup, API, all business-event producers
+Simbioza User- - > API, Audit, Backup, Calendar, Comment, Email, Task, Theme
 ```

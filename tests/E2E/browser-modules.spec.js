@@ -139,6 +139,7 @@ test.describe('module browser surfaces', () => {
       '/settings/workspaces/homepage',
       '/settings/workspaces/all',
       '/settings/workspaces/deleted',
+      '/settings/personal-workspaces',
       '/editor-html',
       '/settings/editor-html',
       '/settings/editor-html/documents/deleted',
@@ -687,6 +688,62 @@ test.describe('module browser surfaces', () => {
       page.waitForURL('/auth/account/profile'),
       page.getByRole('button', { name: 'Save profile' }).click(),
     ]);
+  });
+
+  test('personal Workspace is created once, linked from profile, and concealed from guests', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await login(page, userLogin, userPassword);
+    await page.goto('/auth/account/profile');
+    await openProfileSection(page, '#auth-account-personal');
+
+    await expect(page.getByRole('heading', {
+      name: /My personal Workspace|Moje osobno područje/i,
+    })).toBeVisible();
+    const personalLink = page.locator('a[href*="/workspace/osobno-"]').first();
+    await expect(personalLink).toBeVisible();
+    const personalPath = await personalLink.getAttribute('href');
+    expect(personalPath).toMatch(/^\/workspace\/osobno-/);
+
+    await personalLink.click();
+    await expect(page).toHaveURL(new RegExp(`${personalPath}$`));
+    const englishTitle = page.getByRole('heading', { name: /^Workspace of:/i }).first();
+    await expect(englishTitle).toBeVisible();
+    await expect(page.getByText(/Personal Workspace of user /i).first()).toBeVisible();
+    await expect(page.getByText(/^Područje od:/i)).toHaveCount(0);
+    await expect(page.getByText(/^Osobno područje korisnika /i)).toHaveCount(0);
+
+    /*
+     * HR: Naslov osobnog područja na desktopu mora ostati u jednom retku.
+     * EN: The personal Workspace title must remain on one line on desktop.
+     */
+    await expect.poll(async () => englishTitle.evaluate((element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+
+      return range.getClientRects().length;
+    })).toBe(1);
+
+    await page.goto('/locale/hr');
+    await page.goto(personalPath);
+    await expect(page.getByRole('heading', { name: /^Područje od:/i }).first()).toBeVisible();
+    await expect(page.getByText(/Osobno područje korisnika /i).first()).toBeVisible();
+    await expect(page.getByText(/^Workspace of:/i)).toHaveCount(0);
+    await expect(page.getByText(/^Personal Workspace of user /i)).toHaveCount(0);
+
+    await page.goto('/auth/logout');
+    const guestResponse = await page.goto(personalPath);
+    expect(guestResponse?.status()).toBe(403);
+
+    await login(page, userLogin, userPassword);
+    await page.goto('/auth/account/profile');
+    await openProfileSection(page, '#auth-account-personal');
+    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
+
+    await page.goto('/auth/logout');
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/personal-workspaces');
+    await expect(page.locator('#personal-workspaces-auto-create')).toBeChecked();
+    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
   });
 
   test('Workspace application homepage follows public, signed-in, and personal precedence', async ({ page }) => {

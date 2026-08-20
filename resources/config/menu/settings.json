@@ -584,6 +584,20 @@
                 "order": 50,
                 "enabled": true,
                 "level": 1
+            },
+            {
+                "id": "simbioza-user.personal-workspaces.settings",
+                "parent_id": "workspace.settings.group",
+                "label": {
+                    "hr": "Osobna područja",
+                    "en": "Personal Workspaces"
+                },
+                "route": "simbioza-user.personal-workspaces.settings",
+                "url": "",
+                "query": "",
+                "order": 60,
+                "enabled": true,
+                "level": 1
             }
         ]
     }

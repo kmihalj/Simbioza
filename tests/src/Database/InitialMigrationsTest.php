@@ -53,12 +53,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće petnaest aktualnih aplikacijskih migracija te provjerava aktualne
+     * HR: Pokreće šesnaest aktualnih aplikacijskih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit i Simbioza User sheme, izvedeni backlink
      * indeks, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs fifteen current application migrations and verifies the current Auth,
+     * EN: Runs sixteen current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, and Simbioza User schemas, the derived backlink
      * index, the bootstrap administrator, and no content data.
@@ -68,7 +68,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(15, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(16, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -701,6 +701,29 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_SETTINGS, [
+            'id',
+            'setting_key',
+            'setting_value',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_PERSONAL_WORKSPACES, [
+            'id',
+            'user_id',
+            'workspace_id',
+            'created_automatically',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleSimbiozaUser::TABLE_PERSONAL_WORKSPACE_POLICIES, [
+            'id',
+            'user_id',
+            'auto_create_enabled',
+            'updated_by_user_id',
+            'created_at',
+            'updated_at',
+        ]);
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);
@@ -740,6 +763,9 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_FOLLOWS)->get());
         $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PENDING_DELIVERIES)->get());
         $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_FOLLOW_EXCLUSIONS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_SETTINGS)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PERSONAL_WORKSPACES)->get());
+        $this->assertSame([], $this->database->table(ModuleSimbiozaUser::TABLE_PERSONAL_WORKSPACE_POLICIES)->get());
     }
 
     /**
