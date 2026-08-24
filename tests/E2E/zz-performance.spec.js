@@ -276,10 +276,23 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     headers: { 'X-HPH-Performance-Run': publicMarker },
   });
   expect(publicResponse.status()).toBe(200);
-  expectRecordedBudget('page-public', publicMarker, 35);
+  /*
+   * HR: Dva dodatna ograničena upita pronalaze stranice koje dinamički uključuju
+   *     prikazanu stranicu, bez skeniranja dokumenata ili cijelog područja.
+   * EN: Two additional bounded queries find pages that dynamically include the
+   *     displayed page, without scanning documents or the complete Workspace.
+   */
+  expectRecordedBudget('page-public', publicMarker, 37);
   expectRequestBudget('page-public', publicMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,
-    responseBytes: 64 * 1024,
+    /*
+     * HR: Prikaz sada uključuje tematski oblikovane povratne poveznice i
+     *     reference uključenih stranica; 80 KiB ostaje čvrsta granica koja
+     *     otkriva nenamjerno ugrađivanje velikog sadržaja.
+     * EN: The view now includes themed backlinks and included-page references;
+     *     80 KiB remains a firm guard against accidentally embedding large content.
+     */
+    responseBytes: 80 * 1024,
   });
 });

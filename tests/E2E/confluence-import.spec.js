@@ -100,7 +100,11 @@ test('administrator imports a Confluence space while ACL and private files remai
     await childLink.click();
     await expect(page.locator('body')).toContainText('Imported child body.');
 
-    const attachmentLink = page.locator('a[href*="/confluence-import/attachment/"]').first();
+    // HR: Importirani privitak koristi javni ugovor nativnog HTML Editor privitka;
+    //     test ne smije ovisiti o internoj ruti Confluence importera.
+    // EN: The imported attachment uses the native HTML Editor attachment contract;
+    //     the test must not depend on the Confluence importer's internal route.
+    const attachmentLink = page.getByRole('link', { name: 'Download sample' });
     await expect(attachmentLink).toBeVisible();
     const attachmentResponse = await page.request.get(await attachmentLink.getAttribute('href'));
     expect(attachmentResponse.status()).toBe(200);

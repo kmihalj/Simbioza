@@ -784,6 +784,7 @@ final class InitialMigrationsTest extends TestCase
                 'Missing table: ' . $confluenceImportTable,
             );
         }
+
         $this->assertTrue(
             $this->database->schema()->hasIndex(
                 ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS,
