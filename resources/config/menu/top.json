@@ -5,9 +5,13 @@
             "hr": "Početna",
             "en": "Home"
         },
+        "translation_key": null,
+        "route": "home",
+        "url": null,
+        "query": [],
         "order": 10,
         "enabled": true,
-        "route": "home"
+        "children": []
     },
     {
         "id": "about",
@@ -15,9 +19,13 @@
             "hr": "O aplikaciji",
             "en": "About"
         },
+        "translation_key": null,
+        "route": "about",
+        "url": null,
+        "query": [],
         "order": 20,
         "enabled": true,
-        "route": "about"
+        "children": []
     },
     {
         "id": "settings",
@@ -25,9 +33,13 @@
             "hr": "Postavke",
             "en": "Settings"
         },
+        "translation_key": null,
+        "route": "settings",
+        "url": null,
+        "query": [],
         "order": 30,
         "enabled": true,
-        "route": "settings"
+        "children": []
     },
     {
         "id": "calendar",
@@ -35,13 +47,13 @@
             "hr": "Kalendari",
             "en": "Calendars"
         },
+        "translation_key": null,
+        "route": "calendar.index",
+        "url": "",
+        "query": [],
         "order": 40,
         "enabled": true,
-        "route": "calendar.index",
-        "parent_id": "",
-        "url": "",
-        "query": "",
-        "level": 0
+        "children": []
     },
     {
         "id": "editor-html",
@@ -49,9 +61,13 @@
             "hr": "Editor",
             "en": "Editor"
         },
+        "translation_key": null,
+        "route": "editor-html.index",
+        "url": null,
+        "query": [],
         "order": 60,
         "enabled": false,
-        "route": "editor-html.index"
+        "children": []
     },
     {
         "id": "workspaces",
@@ -59,12 +75,14 @@
             "hr": "Područja",
             "en": "Workspaces"
         },
-        "order": 50,
-        "enabled": true,
+        "translation_key": null,
         "route": "workspace.index",
-        "parent_id": "",
         "url": "",
         "query": "",
+        "order": 50,
+        "enabled": true,
+        "children": [],
+        "parent_id": "",
         "level": 0
     }
 ]

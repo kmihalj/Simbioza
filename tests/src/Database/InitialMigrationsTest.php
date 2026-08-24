@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće sedamnaest aktualnih aplikacijskih migracija te provjerava aktualne
+     * HR: Pokreće dvadeset i dvije aktualne aplikacijske migracije te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, početnog administratora i izostanak sadržaja.
      *
-     * EN: Runs seventeen current application migrations and verifies the current Auth,
+     * EN: Runs twenty-two current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the bootstrap administrator, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(17, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(22, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -241,6 +241,20 @@ final class InitialMigrationsTest extends TestCase
             'updated_at',
         ]);
         $this->assertTrue($this->database->schema()->hasTable(ModuleEditorHtml::TABLE_DOCUMENT_ACL));
+        $this->assertColumns(ModuleEditorHtml::TABLE_DOCUMENT_INCLUDES, [
+            'id',
+            'uuid',
+            'source_document_id',
+            'target_document_id',
+            'target_label',
+            'external_provider',
+            'external_space_key',
+            'external_page_id',
+            'external_page_title',
+            'resolution_status',
+            'created_at',
+            'updated_at',
+        ]);
 
         $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACES, [
             'id',
@@ -289,6 +303,24 @@ final class InitialMigrationsTest extends TestCase
             'is_enabled',
             'created_by_user_id',
             'updated_by_user_id',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_NODE_LABELS, [
+            'id',
+            'node_id',
+            'label',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_NODE_PROPERTIES, [
+            'id',
+            'node_id',
+            'property_key',
+            'property_label',
+            'property_type',
+            'property_value',
+            'sort_order',
             'created_at',
             'updated_at',
         ]);
@@ -752,6 +784,14 @@ final class InitialMigrationsTest extends TestCase
                 'Missing table: ' . $confluenceImportTable,
             );
         }
+        $this->assertTrue(
+            $this->database->schema()->hasIndex(
+                ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS,
+                'simbioza_confluence_attachment_job_source_uq',
+                'unique',
+            ),
+            'Missing job-scoped Confluence attachment identity index.',
+        );
 
         $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
         $this->assertCount(1, $users);

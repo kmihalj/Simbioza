@@ -157,6 +157,54 @@ test.describe('module browser surfaces', () => {
       await expect(page.locator('body'), route).not.toContainText(/Internal Server Error|Fatal error/i);
     }
 
+    /*
+     * HR: Confluence import mora koristiti isti 3/9 raspored i karticu kao
+     *     ostale postavke; inače bočni izbornik ulazi u sadržaj, a tekst
+     *     naslova nasljeđuje boje hero elementa.
+     * EN: Confluence import must use the same 3/9 layout and card as the
+     *     remaining settings pages; otherwise the sidebar overlaps content
+     *     and heading copy inherits hero colours.
+     */
+    await page.goto('/settings/confluence-import');
+    const confluenceSettings = page.locator('.confluence-import-shell');
+    const confluenceSidebar = confluenceSettings.locator('xpath=preceding-sibling::aside[1]');
+    await expect(confluenceSettings).toHaveClass(/col-lg-9/);
+    await expect(confluenceSidebar).toHaveClass(/col-lg-3/);
+    await expect(confluenceSettings.locator(':scope > .card').first()).toBeVisible();
+    await expect(confluenceSettings.locator('.card h1').first()).toContainText(/Confluence/i);
+
+    const settingsGeometry = await page.locator('.confluence-import-shell').evaluate((main) => {
+      const aside = main.previousElementSibling;
+      const mainRect = main.getBoundingClientRect();
+      const asideRect = aside?.getBoundingClientRect();
+
+      return {
+        asideRight: asideRect?.right ?? 0,
+        mainLeft: mainRect.left,
+        mainWidth: mainRect.width,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(settingsGeometry.mainLeft).toBeGreaterThanOrEqual(settingsGeometry.asideRight);
+    expect(settingsGeometry.mainWidth).toBeLessThan(settingsGeometry.viewportWidth * 0.8);
+
+    const descriptionColours = await confluenceSettings
+      .locator('.card header .text-body-secondary')
+      .first()
+      .evaluate((description) => {
+        const muted = getComputedStyle(document.documentElement)
+          .getPropertyValue('--hph-muted-text')
+          .trim();
+        const probe = document.createElement('span');
+        probe.style.color = muted;
+        document.body.append(probe);
+        const expected = getComputedStyle(probe).color;
+        probe.remove();
+
+        return { actual: getComputedStyle(description).color, expected };
+      });
+    expect(descriptionColours.actual).toBe(descriptionColours.expected);
+
     const sessionRequests = [
       ['/settings/auth/users/data?page=1&limit=10', 'application/json'],
       ['/settings/auth/users/export.csv', 'text/csv'],

@@ -16,7 +16,7 @@
             "header": {
                 "enabled": true,
                 "sticky": true,
-                "container": "wide",
+                "container": "fluid",
                 "items": [
                     {
                         "id": "header-1",
@@ -76,7 +76,7 @@
             },
             "navigation": {
                 "placement": "hero",
-                "container": "wide",
+                "container": "fluid",
                 "breakpoint": "lg",
                 "tabs_style": "standard",
                 "tabs_accent_enabled": true,
@@ -114,7 +114,7 @@
                 "wave": true
             },
             "content": {
-                "container": "wide",
+                "container": "fluid",
                 "inner_title_placement": "hero",
                 "application_title_placement": "hero",
                 "surface": "plain",

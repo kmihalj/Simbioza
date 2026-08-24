@@ -5,13 +5,13 @@
             "hr": "Sportska redakcija",
             "en": "Sportska redakcija"
         },
+        "order": 10,
+        "enabled": true,
         "route_patterns": [],
         "path_patterns": [
             "/workspace/qa-sportska-redakcija",
             "/workspace/qa-sportska-redakcija/*"
         ],
-        "order": 10,
-        "enabled": true,
         "top": {
             "enabled": false,
             "root_items": [],
@@ -28,9 +28,13 @@
                     "label": {
                         "hr": "test1"
                     },
+                    "translation_key": null,
+                    "route": "home",
+                    "url": null,
+                    "query": [],
                     "order": 10,
                     "enabled": true,
-                    "route": "home"
+                    "children": []
                 }
             ]
         }

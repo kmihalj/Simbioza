@@ -130,27 +130,33 @@ return new class implements ReversibleMigrationInterface {
         }
 
         if (!$schema->hasTable(ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS)) {
-            $schema->create(ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS, static function (Blueprint $table): void {
-                $table->id();
-                $table->string('uuid', 36)->unique();
-                $table->bigInteger('job_id')->unsigned()->index();
-                $table->string('source_attachment_id', 190);
-                $table->string('logical_source_id', 190)->index();
-                $table->string('source_page_id', 190)->index();
-                $table->integer('source_version')->unsigned()->default(1);
-                $table->string('original_name', 1024);
-                $table->string('mime_type', 255)->default('application/octet-stream')->index();
-                $table->bigInteger('file_size')->unsigned()->default(0);
-                $table->string('storage_path', 1024)->nullable();
-                $table->bigInteger('target_workspace_id')->unsigned()->nullable()->index();
-                $table->bigInteger('target_node_id')->unsigned()->nullable()->index();
-                $table->string('target_document_key', 190)->nullable()->index();
-                $table->string('status', 32)->default('pending')->index();
-                $table->longText('error_message')->nullable();
-                $table->timestamps();
-                $table->index('source_attachment_id', 'simbioza_confluence_attachment_source_idx');
-                $table->unique(['source_attachment_id', 'source_version'], 'simbioza_confluence_attachment_source_uq');
-            });
+            $schema->create(
+                ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS,
+                static function (Blueprint $table): void {
+                    $table->id();
+                    $table->string('uuid', 36)->unique();
+                    $table->bigInteger('job_id')->unsigned()->index();
+                    $table->string('source_attachment_id', 190);
+                    $table->string('logical_source_id', 190)->index();
+                    $table->string('source_page_id', 190)->index();
+                    $table->integer('source_version')->unsigned()->default(1);
+                    $table->string('original_name', 1024);
+                    $table->string('mime_type', 255)->default('application/octet-stream')->index();
+                    $table->bigInteger('file_size')->unsigned()->default(0);
+                    $table->string('storage_path', 1024)->nullable();
+                    $table->bigInteger('target_workspace_id')->unsigned()->nullable()->index();
+                    $table->bigInteger('target_node_id')->unsigned()->nullable()->index();
+                    $table->string('target_document_key', 190)->nullable()->index();
+                    $table->string('status', 32)->default('pending')->index();
+                    $table->longText('error_message')->nullable();
+                    $table->timestamps();
+                    $table->index('source_attachment_id', 'simbioza_confluence_attachment_source_idx');
+                    $table->unique(
+                        ['job_id', 'source_attachment_id', 'source_version'],
+                        'simbioza_confluence_attachment_job_source_uq',
+                    );
+                },
+            );
         }
     }
 

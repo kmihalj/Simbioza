@@ -31,6 +31,7 @@ resolves the latest `main` heads, and then executes the complete
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 | `module-audit` | Framework, Auth, ORM | Menu for Settings, Backup for portable activity-audit archives, API for `audit:read`, and every installed business-event producer |
 | `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
+| `simbioza-module-confluence-import` | Framework, Auth, HTML Editor, Menu, ORM, Workspace, Simbioza User, `ext-dom`, `ext-fileinfo`, `ext-json`, `ext-mbstring`, `ext-zip` | API, Audit, Backup, Calendar, Comment, Task, Workspace Search |
 
 ## Loading rules
 
@@ -67,6 +68,10 @@ resolves the latest `main` heads, and then executes the complete
   provision a restricted personal Workspace. Auth therefore remains usable
   without Workspace or Simbioza User. Backup preserves user mappings,
   administrator policies, and Workspace-scoped mappings.
+- `simbioza-module-confluence-import` converts a Confluence XML archive into a
+  Workspace, documents, attachments, identities, and permissions. Simbioza User
+  provides stable imported-identity linkage, while additional integrations are
+  enabled only when the corresponding module is installed.
 
 ## Graph
 
@@ -88,6 +93,7 @@ Comment ------> Editor HTML + Notification + Auth + ORM + Framework
 Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
 Audit --------> Auth + ORM + Framework
 Simbioza User -> Workspace + Notification + Auth + ORM + Framework
+Confluence Import -> Simbioza User + Workspace + Menu + Editor HTML + Auth + ORM + Framework
 
 Notification - - > Email
 API          - - > Calendar, Workspace, Editor HTML, Notification, Task
@@ -102,4 +108,5 @@ Business modules - - > Backup provider registration
 Workspace Search - - > API, Backup index rebuild
 Audit        - - > Menu, Backup, API, all business-event producers
 Simbioza User- - > API, Audit, Backup, Calendar, Comment, Email, Task, Theme
+Confluence Import - - > API, Audit, Backup, Calendar, Comment, Task, Workspace Search
 ```
