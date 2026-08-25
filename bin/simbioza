@@ -1,0 +1,46 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use App\Installation\InstallationAccessToken;
+use App\Installation\InstallationPaths;
+use App\Installation\InstallationPrepareCommand;
+
+$applicationRoot = dirname(__DIR__);
+require $applicationRoot . '/vendor/autoload.php';
+
+$arguments = array_slice($argv, 1);
+$command = array_shift($arguments);
+if ($command !== 'install:prepare') {
+    fwrite(STDERR, "HR: Uporaba: bin/simbioza install:prepare --base-url=https://primjer.test/simbioza\n");
+    fwrite(STDERR, "EN: Usage: bin/simbioza install:prepare --base-url=https://example.test/simbioza\n");
+    exit(2);
+}
+
+$baseUrl = '';
+foreach ($arguments as $index => $argument) {
+    if (str_starts_with($argument, '--base-url=')) {
+        $baseUrl = substr($argument, strlen('--base-url='));
+        break;
+    }
+
+    if ($argument === '--base-url' && isset($arguments[$index + 1])) {
+        $baseUrl = $arguments[$index + 1];
+        break;
+    }
+}
+
+try {
+    $paths = new InstallationPaths($applicationRoot);
+    $commandHandler = new InstallationPrepareCommand(new InstallationAccessToken($paths));
+    $url = $commandHandler->prepare($baseUrl);
+
+    fwrite(STDOUT, "HR: Jednokratnu adresu otvorite samo u privatnom pregledniku i nemojte je dijeliti:\n");
+    fwrite(STDOUT, "EN: Open this one-time URL only in a private browser and do not share it:\n\n");
+    fwrite(STDOUT, $url . "\n");
+} catch (Throwable) {
+    fwrite(STDERR, "HR: Instalacijska adresa nije pripremljena. Provjerite je li aplikacija već instalirana i URL valjan.\n");
+    fwrite(STDERR, "EN: The installer URL was not prepared. Check whether the app is installed and the URL is valid.\n");
+    exit(1);
+}

@@ -14,11 +14,12 @@ ima zasebnu hrvatsku i englesku datoteku.
 Predloženi put za početnike:
 
 1. [Instalacija](installation_hr.md)
-2. [Ovisnosti modula](module-dependencies_hr.md)
-3. [Konfiguracija baze](database_hr.md)
-4. [Konfiguracija](configuration_hr.md)
-5. [Uobičajeni tijekovi rada](common-workflows_hr.md)
-6. [End-to-end testiranje](end-to-end-testing_hr.md)
+2. [Zapis šest čistih instalacija](installation-lab_hr.md)
+3. [Ovisnosti modula](module-dependencies_hr.md)
+4. [Konfiguracija baze](database_hr.md)
+5. [Konfiguracija](configuration_hr.md)
+6. [Uobičajeni tijekovi rada](common-workflows_hr.md)
+7. [End-to-end testiranje](end-to-end-testing_hr.md)
 
 Predloženi put za napredne korisnike:
 
@@ -31,6 +32,7 @@ Predloženi put za napredne korisnike:
 ## Početak
 
 - [Instalacija](installation_hr.md)
+- [Zapis šest čistih instalacija i screenshotovi](installation-lab_hr.md)
 - [Ovisnosti modula](module-dependencies_hr.md)
 - [Konfiguracija baze](database_hr.md)
 - [Konfiguracija](configuration_hr.md)

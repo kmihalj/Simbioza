@@ -57,12 +57,12 @@ final class InitialMigrationsTest extends TestCase
      * HR: Pokreće dvadeset i dvije aktualne aplikacijske migracije te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
-     * indeks, početnog administratora i izostanak sadržaja.
+     * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
      * EN: Runs twenty-two current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
-     * index, the bootstrap administrator, and no content data.
+     * index, the absence of pre-created users, and no content data.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
@@ -794,13 +794,7 @@ final class InitialMigrationsTest extends TestCase
             'Missing job-scoped Confluence attachment identity index.',
         );
 
-        $users = $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get();
-        $this->assertCount(1, $users);
-        $administrator = $users[0];
-        $this->assertSame('Administrator', $administrator['login_identifier']);
-        $this->assertTrue(password_verify('Admin123!', (string)$administrator['password_hash']));
-        $this->assertSame(1, (int)$administrator['is_admin']);
-        $this->assertSame(1, (int)$administrator['must_change_password']);
+        $this->assertSame([], $this->database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
 
         $this->assertSame([], $this->database->table(ModuleCalendar::TABLE_CALENDARS)->get());
         $this->assertSame([], $this->database->table(ModuleCalendar::TABLE_CALENDAR_EVENTS)->get());

@@ -63,6 +63,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Six clean installations and screenshots](docs/installation-lab_en.md)
 - [Module dependencies](docs/module-dependencies_en.md)
 - [Database configuration](docs/database_en.md)
 - [API v1 contract](docs/api-v1-contract_en.md)

@@ -2,16 +2,48 @@
 
 declare(strict_types=1);
 
+$installationFile = __DIR__ . '/installation.php';
+$installation = is_file($installationFile) ? require $installationFile : [];
+if (!is_array($installation)) {
+    $installation = [];
+}
+
+$applicationName = is_string($installation['name'] ?? null) && trim($installation['name']) !== ''
+? trim($installation['name'])
+: 'Simbioza';
+$primaryLocale = is_string($installation['primary_locale'] ?? null)
+? strtolower(trim($installation['primary_locale']))
+: 'hr';
+$supportedLocales = is_array($installation['supported_locales'] ?? null)
+? array_values(array_filter(
+    $installation['supported_locales'],
+    static fn(mixed $locale): bool => is_string($locale) && in_array($locale, ['hr', 'en'], true),
+))
+: ['hr', 'en'];
+if ($supportedLocales === [] || !in_array($primaryLocale, $supportedLocales, true)) {
+    $primaryLocale = 'hr';
+    $supportedLocales = ['hr', 'en'];
+}
+
+$timezone = is_string($installation['timezone'] ?? null)
+&& in_array($installation['timezone'], timezone_identifiers_list(), true)
+? $installation['timezone']
+: 'Europe/Zagreb';
+
 return [
     // Application name
-    'name' => 'Simbioza',
+    'name' => $applicationName,
 
     // Localization
     'localization' => [
-        'locale' => 'hr',
-        'fallback_locale' => 'hr',
-        'supported_locales' => ['hr', 'en'],
-        'detect_browser_locale' => true,
+        'locale' => $primaryLocale,
+        'fallback_locale' => $primaryLocale,
+        'supported_locales' => $supportedLocales,
+        // HR: Čista instalacija poštuje odabrani primarni jezik; korisnik ga
+        //     i dalje može ručno promijeniti među dostupnim jezicima.
+        // EN: A fresh installation honors its selected primary locale; users
+        //     can still switch manually among the enabled locales.
+        'detect_browser_locale' => $installation === [],
         'translations_dir' => __DIR__ . '/../lang',
     ],
 
@@ -35,7 +67,7 @@ return [
         'default_layout' => 'main',
     ],
 
-    'timezone' => 'Europe/Zagreb',
+    'timezone' => $timezone,
 
     // Session configuration
     'session' => [

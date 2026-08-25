@@ -302,6 +302,51 @@ function writeMatrixPhpConfig(string $path, array $configuration): void
 }
 
 /**
+ * HR: Označava izravno konfiguriranu testnu aplikaciju instaliranom prije HTTP provjere.
+ *     Matrica namjerno pokreće migracijske CLI naredbe umjesto web-čarobnjaka.
+ * EN: Marks the directly configured test application as installed before its HTTP check.
+ *     The matrix intentionally runs migration CLI commands instead of the web wizard.
+ */
+function writeMatrixInstallationLock(string $projectDirectory, string $database): void
+{
+    $dataDirectory = $projectDirectory . '/data';
+    if (!is_dir($dataDirectory) && !mkdir($dataDirectory, 0775, true) && !is_dir($dataDirectory)) {
+        throw new RuntimeException('Unable to create matrix data directory: ' . $dataDirectory);
+    }
+
+    $contents = json_encode([
+        'installed_at' => gmdate(DATE_ATOM),
+        'database_driver' => $database,
+        'primary_locale' => 'hr',
+        'supported_locales' => ['hr', 'en'],
+        'theme_id' => '',
+        'source' => 'clean-install-matrix',
+    ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . "\n";
+    $temporaryPath = tempnam($dataDirectory, '.matrix-installation-lock-');
+    if (!is_string($temporaryPath)) {
+        throw new RuntimeException('Unable to prepare matrix installation lock.');
+    }
+
+    try {
+        if (file_put_contents($temporaryPath, $contents, LOCK_EX) === false) {
+            throw new RuntimeException('Unable to write matrix installation lock.');
+        }
+
+        if (!chmod($temporaryPath, 0600)) {
+            throw new RuntimeException('Unable to secure matrix installation lock.');
+        }
+
+        if (!rename($temporaryPath, $dataDirectory . '/installation.lock')) {
+            throw new RuntimeException('Unable to activate matrix installation lock.');
+        }
+    } finally {
+        if (is_file($temporaryPath)) {
+            unlink($temporaryPath);
+        }
+    }
+}
+
+/**
  * HR: Provjerava da konfiguracijsko polje ima isključivo tekstualne ključeve.
  * EN: Verifies that a configuration array contains string keys only.
  *
@@ -642,6 +687,8 @@ function verifyMatrixCase(
                 throw new RuntimeException("Migration failed:\n" . $migrateResult->output);
             }
         }
+
+        writeMatrixInstallationLock($projectDirectory, $database);
 
         $requestEnvironment = [
             'HPH_APP_PATH' => $projectDirectory,

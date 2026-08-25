@@ -14,11 +14,12 @@ has a separate English and Croatian file.
 Suggested path for beginners:
 
 1. [Installation](installation_en.md)
-2. [Module dependencies](module-dependencies_en.md)
-3. [Database configuration](database_en.md)
-4. [Configuration](configuration_en.md)
-5. [Common workflows](common-workflows_en.md)
-6. [End-to-end testing](end-to-end-testing_en.md)
+2. [Six clean installations lab record](installation-lab_en.md)
+3. [Module dependencies](module-dependencies_en.md)
+4. [Database configuration](database_en.md)
+5. [Configuration](configuration_en.md)
+6. [Common workflows](common-workflows_en.md)
+7. [End-to-end testing](end-to-end-testing_en.md)
 
 Suggested path for advanced users:
 
@@ -31,6 +32,7 @@ Suggested path for advanced users:
 ## Getting started
 
 - [Installation](installation_en.md)
+- [Six clean installations and screenshots](installation-lab_en.md)
 - [Module dependencies](module-dependencies_en.md)
 - [Database configuration](database_en.md)
 - [Configuration](configuration_en.md)
