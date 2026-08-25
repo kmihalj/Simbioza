@@ -131,6 +131,8 @@ test.describe('module browser surfaces', () => {
       '/settings/auth?section=groups',
       '/settings/auth?section=users',
       '/settings/auth?section=local',
+      '/settings/auth?section=provider-oidc',
+      '/settings/auth?section=provider-oauth2',
       '/settings/auth/impersonation',
       '/settings/auth/api-keys',
       '/workspaces',
@@ -330,6 +332,14 @@ test.describe('module browser surfaces', () => {
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/menu?section=top');
     await expect(page.getByRole('heading', { name: 'Menu settings' })).toBeVisible();
+    const firstMenuRow = page.locator('#menu-settings-table tbody tr').first();
+    const menuColumnGeometry = await firstMenuRow.evaluate((row) => ({
+      labelWidth: row.querySelector('.menu-label-cell')?.getBoundingClientRect().width ?? 0,
+      targetWidth: row.querySelector('.menu-target-cell')?.getBoundingClientRect().width ?? 0,
+    }));
+    expect(menuColumnGeometry.labelWidth).toBeGreaterThan(menuColumnGeometry.targetWidth);
+    expect(menuColumnGeometry.targetWidth).toBeLessThanOrEqual(300);
+
     const labelsBefore = await page.getByRole('textbox', { name: 'Label' })
       .evaluateAll((inputs) => inputs.map((input) => input.value));
     await Promise.all([
@@ -339,6 +349,19 @@ test.describe('module browser surfaces', () => {
     await page.goto('/settings/menu?section=top');
     expect(await page.getByRole('textbox', { name: 'Label' })
       .evaluateAll((inputs) => inputs.map((input) => input.value))).toEqual(labelsBefore);
+
+    await page.goto('/settings/auth?section=overview');
+    await expect(page.getByRole('link', { name: 'OIDC', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'OAuth2', exact: true })).toHaveCount(0);
+    await page.locator('#oidc_enabled').check();
+    await page.locator('#oauth2_enabled').check();
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/settings/auth'
+        && url.searchParams.get('setup_status') === 'success'),
+      page.getByRole('button', { name: 'Save provider settings' }).click(),
+    ]);
+    await expect(page.getByRole('link', { name: 'OIDC', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'OAuth2', exact: true })).toBeVisible();
 
     await page.goto('/locale/hr');
     await expect(page.locator('html')).toHaveAttribute('lang', 'hr');
