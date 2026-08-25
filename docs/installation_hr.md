@@ -184,6 +184,21 @@ Iz korijena aplikacije pokrenite:
 bin/simbioza install:prepare --base-url=https://simbioza.example.org
 ```
 
+Vrijednost `--base-url` javna je osnovna URL adresa na kojoj će aplikacija biti
+dostupna u pregledniku. Ako je Simbioza postavljena u poddirektorij, u adresu
+obvezno uključite i taj poddirektorij:
+
+```bash
+# Aplikacija u korijenu domene
+bin/simbioza install:prepare --base-url=https://simbioza.example.org
+
+# Aplikacija u poddirektoriju /simbioza
+bin/simbioza install:prepare --base-url=https://simbioza.example.org/simbioza
+```
+
+Ne unosite putanju na datotečnom sustavu, završni `/public`, `/install`, token
+ni query parametre. CLI će na osnovnu adresu sam dodati `/install?token=...`.
+
 CLI ispisuje jednu adresu s 256-bitnim tokenom. Kopirajte je izravno u privatni
 prozor preglednika. Ne šaljite je e-poštom, chatom, ticketom ili screenshotom.
 Nakon prvog valjanog otvaranja token se troši, session ID rotira, a preglednik
@@ -242,17 +257,13 @@ Ponovno otvaranje instalacijske adrese nakon toga ne pokreće installer.
 
 ## 9. Tema Simbioza
 
-Aktualna tema izvozi se iz postojeće instalacije ovom reproducibilnom naredbom:
-
-```bash
-php scripts/export_installer_theme.php
-```
-
-Rezultat je `resources/installation/theme/simbioza.zip`. ZIP sadrži `theme.json`,
-checksummed `manifest.json`, light/dark grafiku i cijelu biblioteku teme. Novi
-installer paket stvarno uvozi kroz Theme servis; ne kopira samo naziv ili jednu
-CSS datoteku. Nakon prve prijave otvorite **Postavke → Tema**, provjerite da je
-uvezena tema aktivna i iskušajte svijetli, tamni i automatski prikaz.
+Instalacijski paket teme već se nalazi u repozitoriju Simbioza na putanji
+`resources/installation/theme/simbioza.zip`. Tijekom instalacije čarobnjak ga
+automatski provjerava, uvozi kroz Theme servis i postavlja kao zadanu temu u
+načinu `auto`; korisnik ne treba izvoziti ni ručno učitavati temu. Paket sadrži
+`theme.json`, checksummed `manifest.json`, svijetlu i tamnu grafiku te cijelu
+biblioteku teme. Nakon prve prijave otvorite **Postavke → Tema** i provjerite
+svijetli, tamni i automatski prikaz.
 
 ## 10. Prvi koraci nakon instalacije
 

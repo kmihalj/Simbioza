@@ -179,6 +179,21 @@ From the application root, run:
 bin/simbioza install:prepare --base-url=https://simbioza.example.org
 ```
 
+The `--base-url` value is the public base URL where the application will be
+available in a browser. If Simbioza is deployed in a subdirectory, include that
+subdirectory in the URL:
+
+```bash
+# Application at the domain root
+bin/simbioza install:prepare --base-url=https://simbioza.example.org
+
+# Application in the /simbioza subdirectory
+bin/simbioza install:prepare --base-url=https://simbioza.example.org/simbioza
+```
+
+Do not enter a filesystem path, a trailing `/public`, `/install`, a token, or
+query parameters. The CLI appends `/install?token=...` to the base URL itself.
+
 The CLI prints one URL containing a 256-bit token. Copy it directly into a
 private browser window. Do not send it through email, chat, tickets, or
 screenshots. The first valid request consumes the token, rotates the session ID,
@@ -237,19 +252,14 @@ The confirmation shows the application name, login identifier, and a link to
 
 ## 9. Simbioza theme
 
-Export the current theme from the existing installation with the reproducible
-command:
-
-```bash
-php scripts/export_installer_theme.php
-```
-
-The result is `resources/installation/theme/simbioza.zip`. It contains
-`theme.json`, a checksummed `manifest.json`, light/dark graphics, and the full
-theme library. A new installation genuinely imports it through the Theme
-service; it does not merely copy a name or one CSS file. After first sign-in,
-open **Settings → Theme**, confirm the imported theme is active, and exercise
-light, dark, and automatic display modes.
+The theme installation package is already included in the Simbioza repository
+at `resources/installation/theme/simbioza.zip`. During installation, the wizard
+automatically verifies it, imports it through the Theme service, and makes it
+the default theme in `auto` mode; users do not need to export or upload the
+theme manually. The package contains `theme.json`, a checksummed
+`manifest.json`, light and dark graphics, and the full theme library. After the
+first sign-in, open **Settings → Theme** and verify the light, dark, and
+automatic display modes.
 
 ## 10. First steps after installation
 
