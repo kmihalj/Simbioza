@@ -249,7 +249,7 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
           permissions: {
             can_view: true,
             can_add: false,
-            can_edit: false,
+            can_edit: true,
             can_publish: false,
             can_delete: false,
             can_manage: false,
@@ -450,7 +450,7 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
             permissions: {
               can_view: true,
               can_add: false,
-              can_edit: true,
+              can_edit: false,
               can_publish: false,
               can_delete: false,
               can_manage: false,
@@ -460,7 +460,7 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
       },
     );
     const nodeAclData = await expectData(nodeAcl);
-    expect(nodeAclData[0].permissions).toMatchObject({ can_view: true, can_edit: true });
+    expect(nodeAclData[0].permissions).toMatchObject({ can_view: true, can_edit: false });
 
     const clearedNodeAcl = await request.put(
       `/api/v1/workspaces/${workspaceSlug}/nodes/${firstNodeId}/acl`,

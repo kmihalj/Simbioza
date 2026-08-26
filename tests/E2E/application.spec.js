@@ -289,22 +289,44 @@ test.describe('browser flows', () => {
     await expect(page.getByRole('heading', { name: secondDraftBody, exact: true })).toBeVisible();
     await expect(page.getByText(firstPublishedBody, { exact: true })).toHaveCount(0);
 
+    const browserUsers = await expectData(await request.get('/api/v1/users?page[limit]=100', {
+      headers: apiHeaders(apiToken),
+    }));
+    const ordinaryWorkspaceUser = browserUsers.find(
+      (user) => user.login_identifier === userLogin,
+    );
+    expect(ordinaryWorkspaceUser?.id).toBeTruthy();
+
     await expectData(await request.put(`/api/v1/workspaces/${workspaceSlug}/acl`, {
       headers: apiHeaders(apiToken, {
         'Idempotency-Key': idempotencyKey('browser-workspace-public-acl'),
       }),
       data: {
-        subjects: [{
-          type: 'public',
-          permissions: {
-            can_view: true,
-            can_add: false,
-            can_edit: false,
-            can_publish: false,
-            can_delete: false,
-            can_manage: false,
+        subjects: [
+          {
+            type: 'public',
+            permissions: {
+              can_view: true,
+              can_add: false,
+              can_edit: false,
+              can_publish: false,
+              can_delete: false,
+              can_manage: false,
+            },
           },
-        }],
+          {
+            type: 'user',
+            id: ordinaryWorkspaceUser.id,
+            permissions: {
+              can_view: true,
+              can_add: false,
+              can_edit: true,
+              can_publish: false,
+              can_delete: false,
+              can_manage: false,
+            },
+          },
+        ],
       },
     }));
     const tree = await expectData(await request.get(
@@ -404,31 +426,71 @@ test.describe('browser flows', () => {
     await expect(nodeDialog).toBeVisible();
     await expectUsableModal(nodeDialog);
 
-    const publicAclRow = nodeDialog.getByRole('row').filter({ hasText: /Public|Javno/i });
-    const inheritedView = publicAclRow.locator('.workspace-acl-checkbox-inherited').first();
-    const directView = publicAclRow.locator('.workspace-acl-checkbox-direct').first();
-    await expect(inheritedView).toBeChecked();
-    await expect(inheritedView).toBeDisabled();
-    await expect(directView).toBeEnabled();
-    await expect(directView).not.toBeChecked();
-    await directView.check();
+    const restrictionSearch = nodeDialog.locator('#workspace-restriction-user-search');
+    await restrictionSearch.fill(userLogin);
+    const restrictionResult = nodeDialog.locator(
+      '#workspace-restriction-user-results [role="option"]',
+    ).first();
+    await expect(restrictionResult).toBeVisible();
+    await restrictionResult.click();
 
-    const aclColors = await publicAclRow.evaluate((row) => {
-      const inherited = row.querySelector('.workspace-acl-checkbox-inherited');
-      const direct = row.querySelector('.workspace-acl-checkbox-direct');
-      if (!(inherited instanceof HTMLElement) || !(direct instanceof HTMLElement)) {
-        throw new Error('ACL color controls are missing.');
+    const restrictionRow = nodeDialog.locator(
+      `[data-workspace-restriction-row="${ordinaryWorkspaceUser.id}"]`,
+    );
+    const inheritedView = restrictionRow.locator(
+      '[data-workspace-restriction-permission="can_view"]',
+    );
+    const inheritedEdit = restrictionRow.locator(
+      '[data-workspace-restriction-permission="can_edit"]',
+    );
+    await expect(inheritedView).toBeChecked();
+    await expect(inheritedEdit).toBeChecked();
+    await restrictionRow.locator(
+      '[data-workspace-restriction-permission="can_edit"] + span',
+    ).click();
+    await expect(inheritedEdit).not.toBeChecked();
+    await expect.poll(() => restrictionRow.evaluate((row) => {
+      const inherited = row.querySelector(
+        '[data-workspace-restriction-permission="can_view"] + span',
+      );
+      const denied = row.querySelector(
+        '[data-workspace-restriction-permission="can_edit"] + span',
+      );
+      if (!(inherited instanceof HTMLElement) || !(denied instanceof HTMLElement)) {
+        return false;
+      }
+
+      return getComputedStyle(inherited).backgroundColor
+        !== getComputedStyle(denied).backgroundColor;
+    })).toBe(true);
+
+    const aclColors = await restrictionRow.evaluate((row) => {
+      const inherited = row.querySelector(
+        '[data-workspace-restriction-permission="can_view"] + span',
+      );
+      const denied = row.querySelector(
+        '[data-workspace-restriction-permission="can_edit"] + span',
+      );
+      const unavailable = row.querySelector('.workspace-node-restriction-unavailable');
+      if (
+        !(inherited instanceof HTMLElement)
+        || !(denied instanceof HTMLElement)
+        || !(unavailable instanceof HTMLElement)
+      ) {
+        throw new Error('Restriction color controls are missing.');
       }
 
       return {
         inherited: getComputedStyle(inherited).backgroundColor,
-        direct: getComputedStyle(direct).backgroundColor,
+        denied: getComputedStyle(denied).backgroundColor,
+        unavailable: getComputedStyle(unavailable).backgroundColor,
         body: getComputedStyle(document.body).backgroundColor,
       };
     });
-    expect(aclColors.inherited).not.toBe(aclColors.direct);
+    expect(aclColors.inherited).not.toBe(aclColors.denied);
     expect(aclColors.inherited).not.toBe(aclColors.body);
-    expect(aclColors.direct).not.toBe(aclColors.body);
+    expect(aclColors.denied).not.toBe(aclColors.body);
+    expect(aclColors.unavailable).toBe(aclColors.body);
 
     await submitFormAndExpectPost(
       page,
@@ -440,10 +502,18 @@ test.describe('browser flows', () => {
     await expect(editTreeItem).toBeVisible();
     await editTreeItem.click();
     await expect(nodeDialog).toBeVisible();
-    await expect(
-      nodeDialog.getByRole('row').filter({ hasText: /Public|Javno/i })
-        .locator('.workspace-acl-checkbox-direct').first(),
-    ).toBeChecked();
+    const persistedRestrictionRow = nodeDialog.locator(
+      `[data-workspace-restriction-row="${ordinaryWorkspaceUser.id}"]`,
+    );
+    await expect(persistedRestrictionRow.locator(
+      '[data-workspace-restriction-permission="can_view"]',
+    )).toBeChecked();
+    await expect(persistedRestrictionRow.locator(
+      '[data-workspace-restriction-permission="can_edit"]',
+    )).not.toBeChecked();
+    await expect(nodeDialog.getByRole('heading', {
+      name: /Direct user permissions|Izravna dopuštenja korisnicima/i,
+    })).toBeVisible();
 
     const titleInput = nodeDialog.locator('input[name="title"]');
     await expect(titleInput).toBeEnabled();
