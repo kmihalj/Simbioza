@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće dvadeset i dvije aktualne aplikacijske migracije te provjerava aktualne
+     * HR: Pokreće dvadeset i tri aktualne aplikacijske migracije te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
-     * EN: Runs twenty-two current application migrations and verifies the current Auth,
+     * EN: Runs twenty-three current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(22, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(24, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -263,7 +263,6 @@ final class InitialMigrationsTest extends TestCase
             'name',
             'description',
             'visibility',
-            'owner_user_id',
             'is_archived',
             'is_deleted',
             'created_by_user_id',
@@ -335,6 +334,16 @@ final class InitialMigrationsTest extends TestCase
             'can_publish',
             'can_delete',
             'can_manage',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_NODE_DIRECT_PERMISSIONS, [
+            'id',
+            'node_id',
+            'user_id',
+            'can_view',
+            'can_edit',
+            'can_publish',
             'created_at',
             'updated_at',
         ]);

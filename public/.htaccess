@@ -2,6 +2,12 @@ Options -Indexes
 DirectoryIndex index.php
 
 RewriteEngine On
+
+# HR: Sačuvaj Bearer zaglavlje za PHP nakon Apacheova internog rewritea.
+# EN: Preserve the Bearer header for PHP after Apache's internal rewrite.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]

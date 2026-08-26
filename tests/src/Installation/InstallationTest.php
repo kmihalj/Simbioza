@@ -232,7 +232,7 @@ final class InstallationTest extends TestCase
             ],
         );
 
-        $this->assertSame(22, $result['migration_count']);
+        $this->assertSame(24, $result['migration_count']);
         $this->assertStringStartsWith('simbioza-imported', $result['theme_id']);
         $this->assertFileExists($paths->lockFile());
         $this->assertFileDoesNotExist($paths->tokenFile());
@@ -255,7 +255,7 @@ final class InstallationTest extends TestCase
         $this->assertTrue(password_verify('Secure#Install987', (string)$administrator['password_hash']));
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
-        $this->assertCount(22, $database->table('_hph_migrations')->get());
+        $this->assertCount(24, $database->table('_hph_migrations')->get());
 
         $settingsJson = file_get_contents($paths->themeConfigDirectory() . '/settings.json');
         $this->assertIsString($settingsJson);

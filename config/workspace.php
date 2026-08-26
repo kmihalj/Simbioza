@@ -12,7 +12,8 @@ return [
         'contents_visible' => true,
     ],
     'creation' => [
-        'authenticated_users' => false,
+        'users' => [],
+        'groups' => [],
     ],
     'shorts' => [
         'depth' => 2,

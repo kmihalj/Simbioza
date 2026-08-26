@@ -243,7 +243,31 @@
                                 },
                                 "order": 10,
                                 "enabled": true,
-                                "children": []
+                                "children": [],
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno"
+                            },
+                            {
+                                "id": "auth.setup.provider.saml.profile.saml-saml-proxy",
+                                "label": {
+                                    "hr": "saml-proxy",
+                                    "en": "saml-proxy"
+                                },
+                                "translation_key": null,
+                                "route": "auth.setup",
+                                "url": null,
+                                "query": {
+                                    "section": "provider-saml",
+                                    "mode": "edit",
+                                    "profile_key": "saml-saml-proxy"
+                                },
+                                "order": 20,
+                                "enabled": true,
+                                "children": [],
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno"
                             }
                         ]
                     },
@@ -278,7 +302,86 @@
                                 },
                                 "order": 10,
                                 "enabled": true,
-                                "children": []
+                                "children": [],
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "auth.setup.provider.oidc",
+                        "label": {
+                            "hr": "OIDC",
+                            "en": "OIDC"
+                        },
+                        "translation_key": null,
+                        "route": "auth.setup",
+                        "url": null,
+                        "query": {
+                            "section": "provider-oidc"
+                        },
+                        "order": 30,
+                        "enabled": true,
+                        "children": [
+                            {
+                                "id": "auth.setup.provider.oidc.profile.oidc-aai-eduhr-oidc",
+                                "label": {
+                                    "hr": "AAI@EduHR OIDC",
+                                    "en": "AAI@EduHR OIDC"
+                                },
+                                "translation_key": null,
+                                "route": "auth.setup",
+                                "url": null,
+                                "query": {
+                                    "section": "provider-oidc",
+                                    "mode": "edit",
+                                    "profile_key": "oidc-aai-eduhr-oidc"
+                                },
+                                "order": 10,
+                                "enabled": true,
+                                "children": [],
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "auth.setup.provider.oauth2",
+                        "label": {
+                            "hr": "OAuth2",
+                            "en": "OAuth2"
+                        },
+                        "translation_key": null,
+                        "route": "auth.setup",
+                        "url": null,
+                        "query": {
+                            "section": "provider-oauth2"
+                        },
+                        "order": 40,
+                        "enabled": true,
+                        "children": [
+                            {
+                                "id": "auth.setup.provider.oauth2.profile.oauth2-aai-eduhr-oauth2",
+                                "label": {
+                                    "hr": "AAI@EduHR OAuth2",
+                                    "en": "AAI@EduHR OAuth2"
+                                },
+                                "translation_key": null,
+                                "route": "auth.setup",
+                                "url": null,
+                                "query": {
+                                    "section": "provider-oauth2",
+                                    "mode": "edit",
+                                    "profile_key": "oauth2-aai-eduhr-oauth2"
+                                },
+                                "order": 10,
+                                "enabled": true,
+                                "children": [],
+                                "status_icon": "✓",
+                                "status_class": "text-success",
+                                "status_label": "Testirano i operativno"
                             }
                         ]
                     }
