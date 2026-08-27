@@ -23,7 +23,7 @@
                         "type": "logo",
                         "position": "start",
                         "text": [],
-                        "href": "/hfc/",
+                        "href": "@app",
                         "src_light": "@theme-assets/simbioza/icon-adriatic-light.png",
                         "src_dark": "@theme-assets/simbioza/icon-adriatic-dark.png",
                         "alt": {
@@ -749,7 +749,7 @@
                         "type": "logo",
                         "position": "start",
                         "text": [],
-                        "href": "/hfc/",
+                        "href": "@app",
                         "src_light": "@theme-assets/standard/icon-simbioza-natural-light.png",
                         "src_dark": "@theme-assets/standard/icon-simbioza-natural-light.png",
                         "alt": {
