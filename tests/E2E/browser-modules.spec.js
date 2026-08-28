@@ -781,7 +781,7 @@ test.describe('module browser surfaces', () => {
     await expect(page).toHaveURL(new RegExp(`${personalPath}$`));
     const englishTitle = page.getByRole('heading', { name: /^Workspace of:/i }).first();
     await expect(englishTitle).toBeVisible();
-    await expect(page.getByText(/Personal Workspace of user /i).first()).toBeVisible();
+    await expect(page.getByText(/Personal workspace of /i).first()).toBeVisible();
     await expect(page.getByText(/^Područje od:/i)).toHaveCount(0);
     await expect(page.getByText(/^Osobno područje korisnika /i)).toHaveCount(0);
 
@@ -801,7 +801,7 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByRole('heading', { name: /^Područje od:/i }).first()).toBeVisible();
     await expect(page.getByText(/Osobno područje korisnika /i).first()).toBeVisible();
     await expect(page.getByText(/^Workspace of:/i)).toHaveCount(0);
-    await expect(page.getByText(/^Personal Workspace of user /i)).toHaveCount(0);
+    await expect(page.getByText(/^Personal workspace of /i)).toHaveCount(0);
 
     await page.goto('/auth/logout');
     const guestResponse = await page.goto(personalPath);

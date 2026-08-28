@@ -174,8 +174,9 @@ test.describe('browser flows', () => {
       }
     });
     await expect(createPanel).toBeVisible();
-    await expect(page.locator('#workspace-page-title')).toBeVisible({ timeout: 5_000 });
-    await page.locator('#workspace-page-title').fill('E2E Published Page');
+    const localizedPageTitle = page.locator('[id^="workspace-page-title-"]:visible');
+    await expect(localizedPageTitle).toBeVisible({ timeout: 5_000 });
+    await localizedPageTitle.fill('E2E Published Page');
     await page.locator('#workspace-page-slug').fill(pageSlug);
     await submitFormAndExpectPost(
       page,
