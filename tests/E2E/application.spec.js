@@ -516,7 +516,7 @@ test.describe('browser flows', () => {
       name: /Direct user permissions|Izravna dopuštenja korisnicima/i,
     })).toBeVisible();
 
-    const titleInput = nodeDialog.locator('input[name="title"]');
+    const titleInput = nodeDialog.locator('input[name^="title_translations["]:visible');
     await expect(titleInput).toBeEnabled();
     await titleInput.fill('E2E Published Page Renamed');
     await submitFormAndExpectPost(
