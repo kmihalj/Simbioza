@@ -74,6 +74,11 @@ The E2E suite includes non-sensitive ORM and HTTP measurements plus durable
 budgets for SQL count, request duration, peak memory, and response size. The
 same complete suite runs on SQLite, PostgreSQL, and MySQL in CI.
 
+Workspace maintenance optimizes existing images as a persistent, resumable job
+with a visible progress bar. Images are processed in bounded batches so a large
+site never holds one HTTP request open for the entire collection; source files
+remain unchanged.
+
 ## Enabled modules
 
 Simbioza integrates API, Audit, Auth, Backup, Calendar, Comment, HTML Editor,

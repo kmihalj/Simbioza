@@ -72,6 +72,11 @@ E2E skup uključuje neosjetljiva ORM i HTTP mjerenja te trajne budžete za broj
 SQL upita, trajanje zahtjeva, vršnu memoriju i veličinu odgovora. Isti potpuni
 skup u CI-ju se pokreće na SQLiteu, PostgreSQL-u i MySQL-u.
 
+Održavanje područja optimizira postojeće slike kao trajni i nastavivi posao s
+vidljivim progress barom. Slike se obrađuju u ograničenim serijama, pa veliki
+site više ne drži jedan HTTP zahtjev otvorenim tijekom cijele obrade; izvorne
+datoteke ostaju nepromijenjene.
+
 ## Uključeni moduli
 
 Simbioza povezuje API, Audit, Auth, Backup, Calendar, Comment, HTML Editor,
