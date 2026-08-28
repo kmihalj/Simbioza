@@ -56,6 +56,10 @@ Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
 su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima
 zaseban [engleski indeks](docs/index_en.md).
 
+SMTP postavke lokalni su podaci instalacije. Kopirajte `config/email.php.dist`
+u `config/email.php`, unesite vrijednosti instalacije i zadržite tu izrađenu
+lokalnu datoteku izvan sustava za verzioniranje.
+
 ## Dokumentacija
 
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)

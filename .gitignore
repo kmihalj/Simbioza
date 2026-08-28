@@ -10,6 +10,7 @@
 /test-results/
 /output/
 /scripts/dev_seed_full_test.php
+/config/email.php
 /.idea/
 .DS_Store
 auth.json

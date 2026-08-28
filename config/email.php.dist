@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-// HR: Aplikacijske SMTP postavke koje je spremio E-mail modul.
-// EN: Application SMTP settings saved by the E-mail module.
+// HR: Primjer aplikacijskih SMTP postavki. Kopirajte datoteku u email.php i upišite lokalne vrijednosti.
+// EN: Example application SMTP settings. Copy this file to email.php and enter local values.
 return [
     'enabled' => false,
     'smtp' => [
