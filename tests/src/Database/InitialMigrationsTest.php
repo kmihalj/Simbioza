@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće dvadeset i tri aktualne aplikacijske migracije te provjerava aktualne
+     * HR: Pokreće dvadeset i pet aktualnih aplikacijskih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
-     * EN: Runs twenty-three current application migrations and verifies the current Auth,
+     * EN: Runs twenty-five current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(24, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(25, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -262,6 +262,8 @@ final class InitialMigrationsTest extends TestCase
             'slug',
             'name',
             'description',
+            'name_translations',
+            'description_translations',
             'visibility',
             'is_archived',
             'is_deleted',
@@ -294,6 +296,7 @@ final class InitialMigrationsTest extends TestCase
             'node_type',
             'slug',
             'title',
+            'title_translations',
             'document_key',
             'route_name',
             'target_url',
