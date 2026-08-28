@@ -58,10 +58,6 @@ Application configuration, migrations, module order, and API integration are
 described in the [English documentation](docs/index_en.md). The Croatian
 documentation has a separate [Croatian index](docs/index_hr.md).
 
-SMTP settings are local deployment data. Copy `config/email.php.dist` to
-`config/email.php`, enter the deployment values, and keep that generated local
-file outside version control.
-
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
