@@ -46,10 +46,10 @@ composer update --with-all-dependencies
 composer check-platform-reqs --no-dev
 ```
 
-Projekt namjerno prati aktualne `dev-main` verzije internih paketa i ne sprema
-`composer.lock`. Za ponovljivi produkcijski deployment organizacija može
-izraditi i zasebno pohraniti vlastiti provjereni lock, ali ga ne treba miješati
-s izvornim repozitorijem.
+Projekt koristi označeno izdanje Frameworka `^0.0.24` i kompatibilna izdanja
+internih modula iz linije `^0.1.0`; ne sprema `composer.lock`. Za ponovljivi
+produkcijski deployment organizacija može izraditi i zasebno pohraniti vlastiti
+provjereni lock, ali ga ne treba miješati s izvornim repozitorijem.
 
 ## 3. Direktoriji i prava
 

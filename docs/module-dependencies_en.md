@@ -5,10 +5,10 @@ install, from **optional integrations**, which only extend behavior when the
 corresponding module is present. An optional module must not become a hidden
 requirement for basic operation.
 
-All modules use the Framework and internal module dependencies from the moving
-`dev-main` branch. Module repositories and Simbioza do not commit
-`composer.lock`; CI runs `composer update --with-all-dependencies` on every run,
-resolves the latest `main` heads, and then executes the complete
+All modules use the tagged Framework `^0.0.24` release and compatible internal
+module releases from the `^0.1.0` line. Module repositories and Simbioza do not
+commit `composer.lock`; CI runs `composer update --with-all-dependencies` on
+every run, resolves the latest compatible tags, and then executes the complete
 `composer on-commit` suite.
 
 ## Quick reference

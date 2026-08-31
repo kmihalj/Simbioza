@@ -45,9 +45,10 @@ composer update --with-all-dependencies
 composer check-platform-reqs --no-dev
 ```
 
-The project intentionally tracks current internal `dev-main` packages and does
-not commit `composer.lock`. An organization may generate and retain its own
-verified deployment lock, but should not mix it into the source repository.
+The project uses the tagged Framework `^0.0.24` release and compatible internal
+module releases from the `^0.1.0` line. It does not commit `composer.lock`. An
+organization may generate and retain its own verified deployment lock, but
+should not mix it into the source repository.
 
 ## 3. Directories and permissions
 

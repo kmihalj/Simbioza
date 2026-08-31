@@ -7,4 +7,4 @@ declare(strict_types=1);
  * EN: Loads the official reversible migration for the derived backlink index.
  */
 return require dirname(__DIR__, 2)
-    . '/vendor/aaieduhr/heartphrame-module-workspace/resources/migrations/add_workspace_backlinks.php';
+    . '/vendor/aaieduhr/simbioza-module-workspace/resources/migrations/add_workspace_backlinks.php';

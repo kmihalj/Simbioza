@@ -28,8 +28,8 @@ const AUDITED_PROJECTS = [
     'heartphrame-module-orm',
     'heartphrame-module-task',
     'heartphrame-module-theme',
-    'heartphrame-module-workspace',
-    'heartphrame-module-workspace-search',
+    'simbioza-module-workspace',
+    'simbioza-module-workspace-search',
     'simbioza-module-confluence-import',
     'simbioza-module-user',
 ];

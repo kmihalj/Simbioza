@@ -35,8 +35,8 @@ const MATRIX_MODULE_ORDER = [
     'aaieduhr/heartphrame-module-editor-html',
     'aaieduhr/heartphrame-module-task',
     'aaieduhr/heartphrame-module-comment',
-    'aaieduhr/heartphrame-module-workspace',
-    'aaieduhr/heartphrame-module-workspace-search',
+    'aaieduhr/simbioza-module-workspace',
+    'aaieduhr/simbioza-module-workspace-search',
     'aaieduhr/heartphrame-module-calendar',
     'aaieduhr/heartphrame-module-api',
     'aaieduhr/simbioza-module-user',
@@ -59,8 +59,8 @@ const MATRIX_CASES = [
     'editor-html' => ['aaieduhr/heartphrame-module-editor-html'],
     'email' => ['aaieduhr/heartphrame-module-email'],
     'notification' => ['aaieduhr/heartphrame-module-notification'],
-    'workspace' => ['aaieduhr/heartphrame-module-workspace'],
-    'workspace-search' => ['aaieduhr/heartphrame-module-workspace-search'],
+    'workspace' => ['aaieduhr/simbioza-module-workspace'],
+    'workspace-search' => ['aaieduhr/simbioza-module-workspace-search'],
     'task' => ['aaieduhr/heartphrame-module-task'],
     'comment' => ['aaieduhr/heartphrame-module-comment'],
     'api' => ['aaieduhr/heartphrame-module-api'],
@@ -77,8 +77,8 @@ const MATRIX_MIGRATION_COMMANDS = [
     'aaieduhr/heartphrame-module-editor-html' => 'editor-html:install-migration',
     'aaieduhr/heartphrame-module-email' => 'email:install-migration',
     'aaieduhr/heartphrame-module-notification' => 'notification:install-migration',
-    'aaieduhr/heartphrame-module-workspace' => 'workspace:install-migration',
-    'aaieduhr/heartphrame-module-workspace-search' => 'workspace-search:install-migration',
+    'aaieduhr/simbioza-module-workspace' => 'workspace:install-migration',
+    'aaieduhr/simbioza-module-workspace-search' => 'workspace-search:install-migration',
     'aaieduhr/heartphrame-module-task' => 'task:install-migration',
     'aaieduhr/heartphrame-module-comment' => 'comment:install-migration',
     'aaieduhr/heartphrame-module-api' => 'api:install-migration',
@@ -100,8 +100,8 @@ const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
     'aaieduhr/heartphrame-module-orm' => 'heartphrame-module-orm',
     'aaieduhr/heartphrame-module-task' => 'heartphrame-module-task',
     'aaieduhr/heartphrame-module-theme' => 'heartphrame-module-theme',
-    'aaieduhr/heartphrame-module-workspace' => 'heartphrame-module-workspace',
-    'aaieduhr/heartphrame-module-workspace-search' => 'heartphrame-module-workspace-search',
+    'aaieduhr/simbioza-module-workspace' => 'simbioza-module-workspace',
+    'aaieduhr/simbioza-module-workspace-search' => 'simbioza-module-workspace-search',
     'aaieduhr/heartphrame-module-backup' => 'heartphrame-module-backup',
     'aaieduhr/simbioza-module-user' => 'simbioza-module-user',
     'aaieduhr/simbioza-module-confluence-import' => 'simbioza-module-confluence-import',
@@ -527,6 +527,7 @@ function verifyMatrixCase(
     string $temporaryRoot,
     string $database,
     bool $keep,
+    bool $local,
 ): array {
     $projectDirectory = $temporaryRoot . '/' . $caseName . '-' . bin2hex(random_bytes(4));
     if (!mkdir($projectDirectory, 0775, true) && !is_dir($projectDirectory)) {
@@ -569,10 +570,10 @@ function verifyMatrixCase(
         $composer['description'] = 'Ephemeral clean-room HeartPhrame matrix case.';
         $composer['require'] = [
             'php' => '>=8.2',
-            'aaieduhr/heartphrame-framework' => 'dev-main',
+            'aaieduhr/heartphrame-framework' => '^0.0.24',
         ];
         foreach ($requestedModules as $package) {
-            $composer['require'][$package] = 'dev-main';
+            $composer['require'][$package] = $local ? 'dev-main' : '^0.1.0';
         }
 
         unset($composer['require-dev'], $composer['autoload-dev'], $composer['scripts']);
@@ -825,6 +826,7 @@ function runCleanInstallMatrix(): int
             $temporaryRoot,
             $options['database'],
             $options['keep'],
+            $options['local'],
         );
         $results[] = $result;
         $status = $result['status'] ?? null;
@@ -847,7 +849,7 @@ function runCleanInstallMatrix(): int
         'generated_at' => gmdate(DATE_ATOM),
         'php_version' => PHP_VERSION,
         'database' => $options['database'],
-        'source' => $options['local'] ? 'local-candidate' : 'remote-dev-main',
+        'source' => $options['local'] ? 'local-candidate' : 'remote-release',
         'results' => $results,
     ];
     $reportDirectory = $sourceRoot . '/build';

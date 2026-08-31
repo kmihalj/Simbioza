@@ -6,12 +6,12 @@
 
 Simbioza is the collaborative knowledge application built on the HeartPhrame Framework and its
 independently maintained modules. Application work belongs here and in module
-repositories; the Framework is consumed from its upstream `main` branch and is
+repositories; the Framework is consumed from its tagged `v0.0.24` release and is
 not developed as part of this repository.
 
 ## Dependencies
 
-Every HeartPhrame module requires `aaieduhr/heartphrame-framework:dev-main`.
+Every HeartPhrame module requires `aaieduhr/heartphrame-framework:^0.0.24`.
 Simbioza currently integrates ORM, Menu, Theme, Auth, E-mail, Notification,
 HTML Editor, Task, Comment, Workspace, Workspace Search, Calendar, API, Backup,
 Audit, and Simbioza User. Required module order
@@ -32,11 +32,11 @@ dependencies automatically.
 
 ## Dependency policy
 
-The Framework and every internal HeartPhrame module are intentionally required
-from the moving `dev-main` branch. Fixed aliases and internal version ranges are
-not used. This application also does not commit `composer.lock`; each CI run and
-deployment resolves the latest development heads and executes the complete
-quality suite.
+The Framework is constrained to `^0.0.24`, while Simbioza modules use the
+compatible `^0.1.0` release line. This application does not commit
+`composer.lock`; each CI run resolves the latest compatible tagged releases and
+executes the complete quality suite. Production deployments may retain their
+own verified lock file outside the source repository.
 
 Committed Composer metadata uses VCS repositories so a clean CI checkout works
 without sibling directories. For local work with symlinked module checkouts,

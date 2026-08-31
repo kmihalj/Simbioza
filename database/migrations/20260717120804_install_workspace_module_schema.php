@@ -10,4 +10,4 @@ declare(strict_types=1);
  * Workspaces, tree, ACL, and publishing workflow are therefore not duplicated in the app.
  */
 return require dirname(__DIR__, 2)
-    . '/vendor/aaieduhr/heartphrame-module-workspace/resources/migrations/initial_workspace_schema.php';
+    . '/vendor/aaieduhr/simbioza-module-workspace/resources/migrations/initial_workspace_schema.php';

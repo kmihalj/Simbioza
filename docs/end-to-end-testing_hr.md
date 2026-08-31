@@ -1,8 +1,9 @@
 # End-to-end testiranje
 
 Simbioza ima end-to-end skup testova preglednika i HTTP API-ja za sastavljenu
-aplikaciju. Za razliku od jediničnog testa modula, ovaj test instalira najnovije
-`dev-main` stanje Frameworka i modula u novi privremeni projekt, pokreće sve
+aplikaciju. Za razliku od jediničnog testa modula, ovaj test instalira označeno
+izdanje Frameworka `^0.0.24` i kompatibilna izdanja modula iz `^0.1.0` u novi
+privremeni projekt, pokreće sve
 službene migracije zadano nad novom SQLite bazom, podiže stvarni HTTP
 poslužitelj i upravlja Chromiumom kroz Playwright. Isti runner prihvaća izričito
 pripremljenu praznu PostgreSQL, MySQL ili MariaDB bazu za potpuni cross-driver
@@ -107,12 +108,12 @@ prije svakog pokretanja. Ne koristite produkcijsku shemu ni produkcijski račun.
 Uz mrežni driver izbjegavajte `--keep`, osim kada svjesno želite zadržati
 privremenu konfiguraciju veze radi dijagnostike.
 
-Aplikacija i interni paketi namjerno prate pomična `dev-main` stanja. Zato se
-`package-lock.json` i `composer.lock` ne spremaju u Git.
+Aplikacija pri svakoj čistoj provjeri dohvaća kompatibilna označena izdanja
+internih paketa. Zato se `package-lock.json` i `composer.lock` ne spremaju u Git.
 
 ## Testiranje lokalnih izmjena modula
 
-Zadana naredba dohvaća udaljena `dev-main` stanja paketa, jednako kao CI. Prije
+Zadana naredba dohvaća udaljena označena izdanja paketa, jednako kao CI. Prije
 pusha dopuštene susjedne module provjerite ovako:
 
 ```bash
@@ -123,8 +124,8 @@ Lokalni način koristi path repozitorije samo za module koji pripadaju ovom
 projektu. Nikada ne zamjenjuje uzvodni Framework ni Demo modul.
 
 Lokalni prolaz obavezan je kada se zajedno mijenjaju dva ili više susjednih
-modula. Zadani prolaz zatim mora proći i nakon što su commitovi tih modula
-dostupni na udaljenim granama `dev-main`.
+modula. Zadani prolaz zatim mora proći i nakon što su odgovarajući release
+tagovi tih modula dostupni na udaljenim repozitorijima.
 
 ## Istraživanje greške
 

@@ -1,8 +1,9 @@
 # End-to-end testing
 
 Simbioza has a browser and HTTP API end-to-end suite for the assembled
-application. Unlike a module unit test, it installs the latest `dev-main`
-Framework and module heads into a new temporary project, runs all official
+application. Unlike a module unit test, it installs the tagged Framework
+`^0.0.24` release and compatible module releases from `^0.1.0` into a new
+temporary project, runs all official
 migrations against a new SQLite database by default, starts a real HTTP server,
 and drives Chromium through Playwright. The same runner accepts an explicitly
 prepared empty PostgreSQL, MySQL, or MariaDB database for a complete
@@ -107,13 +108,13 @@ empty before every run. Do not use a production schema or production account.
 Avoid `--keep` with a network driver unless retaining its temporary connection
 configuration for diagnostics is intentional.
 
-The application and internal packages intentionally follow moving `dev-main`
-heads. Therefore `package-lock.json` and `composer.lock` are not committed.
+The application resolves compatible tagged internal releases on every clean
+run. Therefore `package-lock.json` and `composer.lock` are not committed.
 
 ## Test local module edits
 
-The default command resolves remote `dev-main` package heads, matching CI. To
-test the allowed sibling module checkouts before pushing them:
+The default command resolves remote tagged releases, matching CI. To test the
+allowed sibling module checkouts before pushing them:
 
 ```bash
 composer e2e -- --local
@@ -123,8 +124,8 @@ The local mode uses path repositories only for the modules that belong to this
 project. It never substitutes the upstream Framework or Demo module.
 
 The local run is the required check whenever two or more sibling modules are
-changed together. The default run must then pass as well after those module
-commits are available on their remote `dev-main` branches.
+changed together. The default run must then pass as well after the corresponding
+module release tags are available remotely.
 
 ## Debug a failure
 

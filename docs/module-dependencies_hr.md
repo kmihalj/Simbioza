@@ -5,10 +5,11 @@ od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
 odgovarajući modul prisutan. Opcionalni modul ne smije postati skriveni uvjet
 za osnovni rad.
 
-Svi moduli koriste Framework i međusobne interne ovisnosti s pomične grane
-`dev-main`. Repozitoriji modula i Simbioza ne spremaju `composer.lock`; CI pri
-svakom pokretanju izvršava `composer update --with-all-dependencies`, dohvaća
-najnovija stanja grana `main` i zatim pokreće puni `composer on-commit`.
+Svi moduli koriste označeno izdanje Frameworka `^0.0.24` i kompatibilna izdanja
+internih modula iz linije `^0.1.0`. Repozitoriji modula i Simbioza ne spremaju
+`composer.lock`; CI pri svakom pokretanju izvršava
+`composer update --with-all-dependencies`, dohvaća najnovije kompatibilne tagove
+i zatim pokreće puni `composer on-commit`.
 
 ## Brzi pregled
 
