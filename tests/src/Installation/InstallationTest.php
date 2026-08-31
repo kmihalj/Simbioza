@@ -126,6 +126,27 @@ final class InstallationTest extends TestCase
         $command->prepare('https://user:password@example.test/?unsafe=1');
     }
 
+    /** HR: Uvoz početnih uputa zahtijeva zapisivu konfiguraciju izbornika. EN: Starter-guide import requires writable menu configuration. */
+    public function testRequirementsRejectReadOnlyMenuConfigurationStorage(): void
+    {
+        $root = $this->minimalRoot();
+        $paths = new InstallationPaths($root);
+        $menuDirectory = $paths->menuConfigDirectory();
+        $this->assertTrue(chmod($menuDirectory, 0500));
+
+        try {
+            $requirements = new InstallationRequirements($paths);
+            $checks = array_column($requirements->checks('sqlite'), null, 'id');
+
+            $this->assertArrayHasKey('menu_config_writable', $checks);
+            $this->assertFalse($checks['menu_config_writable']['passed']);
+            $this->assertTrue($checks['menu_config_writable']['required']);
+            $this->assertFalse($requirements->passes('sqlite'));
+        } finally {
+            chmod($menuDirectory, 0770);
+        }
+    }
+
     /** HR: Web pristup token zamjenjuje sesijom, uklanja URL tajnu i postavlja sigurnosna zaglavlja. EN: Web access exchanges the token for a session and security headers. */
     public function testWebApplicationConsumesTokenAndProtectsTheSession(): void
     {
@@ -234,6 +255,7 @@ final class InstallationTest extends TestCase
                 'password' => 'Secure#Install987',
                 'password_confirmation' => 'Secure#Install987',
             ],
+            '/test-simbioza',
         );
 
         $this->assertSame(25, $result['migration_count']);
@@ -273,6 +295,15 @@ final class InstallationTest extends TestCase
         $this->assertSame('User guides', $workspaceNames['en']);
         $this->assertSame($workspaceNames['en'], $workspaces[0]['name']);
         $this->assertCount(7, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $guideVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get();
+        $guideHtml = implode("\n", array_map(
+            static fn(array $version): string => is_string($version['content_html'] ?? null)
+                ? $version['content_html']
+                : '',
+            $guideVersions,
+        ));
+        $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $guideHtml);
+        $this->assertStringContainsString('/test-simbioza/workspace/korisnicke-upute/', $guideHtml);
         $this->assertCount(0, $database->table(ModuleCalendar::TABLE_CALENDARS)->get());
         $this->assertCount(0, $database->table(ModuleTask::TABLE_STATES)->get());
         $this->assertCount(0, $database->table(ModuleTask::TABLE_EVENTS)->get());

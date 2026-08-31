@@ -59,7 +59,7 @@ cijeli projekt, a pisati samo tamo gdje je potrebno:
 
 ```bash
 mkdir -p data data/logs data/cache data/themes
-chmod 750 config data resources/config/theme
+chmod 750 config data resources/config/theme resources/config/menu
 find data -type d -exec chmod 750 {} \;
 find data -type f -exec chmod 640 {} \;
 ```
@@ -67,6 +67,8 @@ find data -type f -exec chmod 640 {} \;
 Vlasnika i grupu prilagodite korisniku PHP-FPM poola ili Apache procesa. Nemojte
 koristiti `chmod 777`. Installer sam zapisuje `config/database.php`,
 `config/env.php` i `config/installation.php` s pravima `0600`.
+Direktorij `resources/config/menu` mora biti zapisiv jer uvoz početnog područja
+s korisničkim uputama istodobno obnavlja njegovu posebnu konfiguraciju izbornika.
 
 ## 4. Apache 2.4
 

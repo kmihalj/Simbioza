@@ -89,6 +89,13 @@ final readonly class InstallationRequirements
             true,
         );
         $checks[] = $this->directoryCheck(
+            'menu_config_writable',
+            $this->paths->menuConfigDirectory(),
+            'Spremište konfiguracije izbornika je zapisivo',
+            'Menu configuration storage is writable',
+            true,
+        );
+        $checks[] = $this->directoryCheck(
             'migrations_readable',
             $this->paths->migrationsDirectory(),
             'Direktorij migracija je čitljiv',

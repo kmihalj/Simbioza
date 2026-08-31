@@ -133,6 +133,15 @@ final readonly class InstallationPaths
         . DIRECTORY_SEPARATOR . 'theme';
     }
 
+    /** HR: Vraća JSON spremište konfiguracije izbornika. EN: Returns the menu configuration JSON storage directory. */
+    public function menuConfigDirectory(): string
+    {
+        return $this->appRoot
+        . DIRECTORY_SEPARATOR . 'resources'
+        . DIRECTORY_SEPARATOR . 'config'
+        . DIRECTORY_SEPARATOR . 'menu';
+    }
+
     /** HR: Provjerava je li instalacija dovršena. EN: Reports whether installation is complete. */
     public function isInstalled(): bool
     {

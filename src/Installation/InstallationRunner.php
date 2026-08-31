@@ -10,6 +10,7 @@ use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupManager;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupImportContext;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope;
+use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\MigrationInterface;
 use AaiEduHr\HeartPhrameModuleTheme\ModuleTheme;
@@ -63,8 +64,12 @@ final readonly class InstallationRunner
      * @param array<array-key, mixed> $administratorInput
      * @return array{migration_count:int,theme_id:string,administrator_login:string,workspace_slug:string}
      */
-    public function run(array $databaseInput, array $applicationInput, array $administratorInput): array
-    {
+    public function run(
+        array $databaseInput,
+        array $applicationInput,
+        array $administratorInput,
+        string $basePath = '',
+    ): array {
         if ($this->paths->isInstalled()) {
             throw new RuntimeException('The application is already installed.');
         }
@@ -95,7 +100,7 @@ final readonly class InstallationRunner
             $administrator,
             $application['timezone'],
         );
-        $workspaceSlug = $this->importUserGuides($administratorId);
+        $workspaceSlug = $this->importUserGuides($database, $administratorId, $basePath);
         $this->writeLock($driver, $application, $themeId);
 
         $this->logger->info(sprintf(
@@ -240,7 +245,7 @@ final readonly class InstallationRunner
      * EN: Imports the public bilingual guide workspace and maps all source authors
      * to the newly created administrator.
      */
-    private function importUserGuides(int $administratorId): string
+    private function importUserGuides(Database $database, int $administratorId, string $basePath): string
     {
         try {
             $runtimeConfig = $this->prepareImportConfig();
@@ -284,11 +289,72 @@ final readonly class InstallationRunner
             }
 
             $manager->restore($this->paths->userGuidesPackage(), $context);
+            $this->rewriteImportedUserGuidePaths($database, $basePath);
 
             return self::USER_GUIDES_WORKSPACE_SLUG;
         } finally {
             $this->removeImportConfig();
         }
+    }
+
+    /**
+     * HR: Početni paket sprema interne poveznice kao kanonske root-relative
+     *     putanje. Nova instalacija može biti u korijenu ili bilo kojem
+     *     poddirektoriju, pa nakon uvoza tim putanjama dodajemo stvarni base path.
+     *     Vanjske, relativne i sidrene poveznice ostaju nepromijenjene.
+     *
+     * EN: The starter package stores internal links as canonical root-relative
+     *     paths. A new installation may live at the domain root or in any
+     *     subdirectory, so the actual base path is added after import. External,
+     *     relative, and fragment links remain unchanged.
+     */
+    private function rewriteImportedUserGuidePaths(Database $database, string $basePath): void
+    {
+        $basePath = str_replace('\\', '/', trim($basePath));
+        if ($basePath === '/' || $basePath === '.') {
+            $basePath = '';
+        }
+
+        $basePath = rtrim($basePath, '/');
+        if ($basePath !== '' && preg_match('#^/(?:[A-Za-z0-9._~-]+/?)*$#D', $basePath) !== 1) {
+            throw new RuntimeException('The installation base path is invalid.');
+        }
+
+        if ($basePath === '') {
+            return;
+        }
+
+        $rows = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get();
+        $database->transaction(static function (Database $database) use ($rows, $basePath): void {
+            foreach ($rows as $row) {
+                $id = is_numeric($row['id'] ?? null) ? (int)$row['id'] : 0;
+                $html = is_string($row['content_html'] ?? null) ? $row['content_html'] : '';
+                if ($id <= 0 || $html === '') {
+                    continue;
+                }
+
+                $rewritten = preg_replace_callback(
+                    '~\b(href|src|poster|data-editor-html-web-(?:href|src|poster))='
+                    . '([' . "\"'" . '])(/(?!/)[^' . "\"'" . ']*)\2~i',
+                    static fn(array $matches): string => $matches[1]
+                    . '='
+                    . $matches[2]
+                    . $basePath
+                    . $matches[3]
+                    . $matches[2],
+                    $html,
+                );
+                if (!is_string($rewritten)) {
+                    throw new RuntimeException('The bundled user-guide paths could not be normalized.');
+                }
+
+                if ($rewritten !== $html) {
+                    $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+                        ->where('id', '=', $id)
+                        ->update(['content_html' => $rewritten]);
+                }
+            }
+        });
     }
 
     /**

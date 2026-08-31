@@ -225,7 +225,8 @@ final readonly class InstallationWebApplication
 
         try {
             $session['regenerate_id'] = true;
-            $result = $this->runner->run($database, $application, $administrator);
+            $basePath = substr($installerPath, 0, -strlen('/install'));
+            $result = $this->runner->run($database, $application, $administrator, $basePath);
             $body = $this->successPage(
                 $locale,
                 $installerPath,

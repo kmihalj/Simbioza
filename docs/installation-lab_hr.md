@@ -57,8 +57,15 @@ rsync -a \
   /Volumes/Ext/Development/CR/HFClean/ "$install_root/"
 cp -al /Volumes/Ext/Development/CR/HFClean/vendor "$install_root/vendor"
 mkdir -p "$install_root/data/logs" "$install_root/data/cache" "$install_root/data/themes"
-chmod 750 "$install_root/config" "$install_root/data" "$install_root/resources/config/theme"
+chmod 750 \
+  "$install_root/config" \
+  "$install_root/data" \
+  "$install_root/resources/config/theme" \
+  "$install_root/resources/config/menu"
 ```
+
+Zapisivost oba konfiguracijska spremišta je obvezna: installer uvozi temu, a
+početno područje s uputama obnavlja i svoju posebnu konfiguraciju izbornika.
 
 `cp -al` je samo lokalna ušteda prostora ovog laboratorija; normalna instalacija
 treba pokrenuti Composer kako opisuje glavna [instalacijska uputa](installation_hr.md).

@@ -58,7 +58,7 @@ and narrowly scoped write access:
 
 ```bash
 mkdir -p data data/logs data/cache data/themes
-chmod 750 config data resources/config/theme
+chmod 750 config data resources/config/theme resources/config/menu
 find data -type d -exec chmod 750 {} \;
 find data -type f -exec chmod 640 {} \;
 ```
@@ -66,6 +66,8 @@ find data -type f -exec chmod 640 {} \;
 Set ownership for the PHP-FPM pool or Apache process user. Do not use
 `chmod 777`. The installer writes `config/database.php`, `config/env.php`, and
 `config/installation.php` with mode `0600`.
+The `resources/config/menu` directory must be writable because importing the
+starter user-guide workspace also restores its special-menu configuration.
 
 ## 4. Apache 2.4
 

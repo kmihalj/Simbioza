@@ -55,8 +55,15 @@ rsync -a \
   /Volumes/Ext/Development/CR/HFClean/ "$install_root/"
 cp -al /Volumes/Ext/Development/CR/HFClean/vendor "$install_root/vendor"
 mkdir -p "$install_root/data/logs" "$install_root/data/cache" "$install_root/data/themes"
-chmod 750 "$install_root/config" "$install_root/data" "$install_root/resources/config/theme"
+chmod 750 \
+  "$install_root/config" \
+  "$install_root/data" \
+  "$install_root/resources/config/theme" \
+  "$install_root/resources/config/menu"
 ```
+
+Both configuration stores must be writable: the installer imports the theme,
+while the starter guide workspace also restores its special-menu configuration.
 
 `cp -al` is only a disk-saving optimization in this local lab. A normal
 installation must run Composer as described in the main
