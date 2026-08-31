@@ -304,6 +304,26 @@ final class InstallationTest extends TestCase
         ));
         $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $guideHtml);
         $this->assertStringContainsString('/test-simbioza/workspace/korisnicke-upute/', $guideHtml);
+        preg_match_all(
+            '~(?:^|/)test-simbioza/editor-html/asset/([0-9a-f-]{36})(?:[?&#"\'\s<]|$)~i',
+            $guideHtml,
+            $assetMatches,
+        );
+        $referencedAssetUuids = array_values(array_unique($assetMatches[1]));
+        $this->assertNotEmpty($referencedAssetUuids);
+        $assetRows = $database->table(ModuleEditorHtml::TABLE_ASSETS)->get();
+        $assetsByUuid = [];
+        foreach ($assetRows as $assetRow) {
+            $assetsByUuid[(string)$assetRow['uuid']] = $assetRow;
+        }
+
+        foreach ($referencedAssetUuids as $assetUuid) {
+            $this->assertArrayHasKey($assetUuid, $assetsByUuid, 'Imported guide asset reference must resolve.');
+            $contentPath = (string)$assetsByUuid[$assetUuid]['content_path'];
+            $this->assertNotSame('', $contentPath);
+            $this->assertFileExists($root . '/data/editor-html/uploads/' . $contentPath);
+        }
+
         $this->assertCount(0, $database->table(ModuleCalendar::TABLE_CALENDARS)->get());
         $this->assertCount(0, $database->table(ModuleTask::TABLE_STATES)->get());
         $this->assertCount(0, $database->table(ModuleTask::TABLE_EVENTS)->get());
