@@ -820,9 +820,10 @@ final readonly class InstallationWebApplication
             'step_review' => ['hr' => 'Pregled i instalacija', 'en' => 'Review and install'],
             'requirements_title' => ['hr' => 'Provjera sustava', 'en' => 'System check'],
             'requirements_intro' => [
-                'hr' => 'Prije nastavka provjeravaju se PHP, obvezne ekstenzije, migracije, tema i prava pisanja.',
-                'en' => 'PHP, required extensions, migrations, theme resources, and write permissions are checked '
-                . 'first.',
+                'hr' => 'Prije nastavka provjeravaju se PHP, obvezne ekstenzije, migracije, početna tema i javne '
+                . 'upute te prava pisanja.',
+                'en' => 'PHP, required extensions, migrations, starter theme and public guides, and write '
+                . 'permissions are checked first.',
             ],
             'database_title' => ['hr' => 'Odabir i provjera baze', 'en' => 'Choose and verify the database'],
             'database_intro' => [

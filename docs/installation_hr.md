@@ -4,7 +4,7 @@
 
 Simbioza ima jednokratni web-čarobnjak za potpuno novu instalaciju. Čarobnjak
 se može otvoriti samo sigurnom adresom koju generira lokalna CLI naredba. Nakon
-uspješnih migracija, izrade prvog administratora i uvoza teme nastaje trajni
+uspješnih migracija, izrade prvog administratora te uvoza teme i javnih uputa nastaje trajni
 `data/installation.lock`; token se uklanja, a `/install` više nije dostupan.
 
 ## 1. Preduvjeti
@@ -212,7 +212,7 @@ izgubi prije završetka, lokalno ponovno pokrenite istu CLI naredbu.
 ### Korak 1 — preduvjeti
 
 Čarobnjak provjerava PHP verziju, sve osnovne ekstenzije, tri PDO drivera,
-Composer autoloader, migracije, paket teme te čitanje i pisanje u potrebne
+Composer autoloader, migracije, paket teme, paket javnih uputa te čitanje i pisanje u potrebne
 direktorije. Crvena obvezna stavka mora se ispraviti prije nastavka. Driveri
 baza postaju obvezni tek nakon odabira baze.
 
@@ -242,9 +242,10 @@ nisu prepunjena pri povratku na korak.
 Pregled namjerno ne prikazuje ni lozinku baze ni administratorsku lozinku.
 Klikom na **Instaliraj Simbiozu** sustav ponovno provjerava preduvjete i vezu,
 atomski zapisuje privatnu konfiguraciju, izvršava sve aplikacijske migracije,
-uvozi `resources/installation/theme/simbioza.zip`, provjerava light i dark
+uvozi `resources/installation/theme/simbioza.zip`, provjerava svijetlu i tamnu
 paletu i grafičke datoteke, aktivira način `auto`, transakcijski stvara prvog
-administratora te tek tada zapisuje lock.
+administratora te iz `resources/installation/workspace/korisnicke-upute.zip`
+uvozi javno dvojezično područje **Korisničke upute**. Tek tada zapisuje lock.
 
 ![HR završni pregled](installation-screenshots/simbioza_hr_SQLite/04-review.png)
 
@@ -266,6 +267,13 @@ biblioteku teme. Nakon prve prijave otvorite **Postavke → Tema** i provjerite
 svijetli, tamni i automatski prikaz.
 
 ## 10. Prvi koraci nakon instalacije
+
+Čista instalacija namjerno sadrži samo jedan administratorski račun, jednu
+aktivnu temu **Simbioza** i jedno javno područje **Korisničke upute**. U području
+se nalazi sedam hrvatsko-engleskih stranica u redoslijedu Simbioza, Instalacija,
+Prijava i korisnici, Kalendari, Područja (s podstranicom Confluence import) i
+Uređivanje stranica. Nema oglednih kalendara, zadataka, dodatnih tema ni drugog
+sadržaja.
 
 1. Prijavite se novim administratorskim računom.
 2. Provjerite naziv aplikacije, jezike i vremensku zonu.

@@ -30,13 +30,21 @@ final readonly class InstallationPaths
         $this->appRoot = $normalizedRoot;
     }
 
-    /** HR: Vraća korijen aplikacije. EN: Returns the application root. */
+    /**
+     * HR: Vraća neprazan korijen aplikacije.
+     * EN: Returns the non-empty application root.
+     * @return non-empty-string
+     */
     public function appRoot(): string
     {
         return $this->appRoot;
     }
 
-    /** HR: Vraća konfiguracijski direktorij. EN: Returns the configuration directory. */
+    /**
+     * HR: Vraća neprazan konfiguracijski direktorij.
+     * EN: Returns the non-empty configuration directory.
+     * @return non-empty-string
+     */
     public function configDirectory(): string
     {
         return $this->appRoot . DIRECTORY_SEPARATOR . 'config';
@@ -98,6 +106,22 @@ final readonly class InstallationPaths
         . DIRECTORY_SEPARATOR . 'installation'
         . DIRECTORY_SEPARATOR . 'theme'
         . DIRECTORY_SEPARATOR . 'simbioza.zip';
+    }
+
+    /** HR: Vraća instalacijski backup javnih korisničkih uputa. EN: Returns the bundled public user-guide backup. */
+    public function userGuidesPackage(): string
+    {
+        return $this->appRoot
+        . DIRECTORY_SEPARATOR . 'resources'
+        . DIRECTORY_SEPARATOR . 'installation'
+        . DIRECTORY_SEPARATOR . 'workspace'
+        . DIRECTORY_SEPARATOR . 'korisnicke-upute.zip';
+    }
+
+    /** HR: Vraća privremeni config sloj za instalacijski import. EN: Returns the temporary install-import config layer. */
+    public function importConfigDirectory(): string
+    {
+        return $this->dataDirectory() . DIRECTORY_SEPARATOR . '.installation-import-config';
     }
 
     /** HR: Vraća JSON spremište tema. EN: Returns the theme JSON storage directory. */

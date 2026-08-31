@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Tests\Installation;
 
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
+use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
+use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
+use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
 use App\Installation\InstallationAccessToken;
 use App\Installation\InstallationConfigWriter;
 use App\Installation\InstallationDatabaseTester;
@@ -233,7 +237,8 @@ final class InstallationTest extends TestCase
         );
 
         $this->assertSame(25, $result['migration_count']);
-        $this->assertStringStartsWith('simbioza-imported', $result['theme_id']);
+        $this->assertSame('simbioza', $result['theme_id']);
+        $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
         $this->assertFileDoesNotExist($paths->tokenFile());
         $this->assertSame(0600, fileperms($paths->databaseConfig()) & 0777);
@@ -255,7 +260,58 @@ final class InstallationTest extends TestCase
         $this->assertTrue(password_verify('Secure#Install987', (string)$administrator['password_hash']));
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
+        $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
         $this->assertCount(25, $database->table('_hph_migrations')->get());
+
+        $workspaces = $database->table(ModuleWorkspace::TABLE_WORKSPACES)->get();
+        $this->assertCount(1, $workspaces);
+        $this->assertSame('korisnicke-upute', $workspaces[0]['slug']);
+        $this->assertSame('public', $workspaces[0]['visibility']);
+        $workspaceNames = json_decode((string)$workspaces[0]['name_translations'], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertIsArray($workspaceNames);
+        $this->assertSame('Korisničke upute', $workspaceNames['hr']);
+        $this->assertSame('User guides', $workspaceNames['en']);
+        $this->assertSame($workspaceNames['en'], $workspaces[0]['name']);
+        $this->assertCount(7, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $this->assertCount(0, $database->table(ModuleCalendar::TABLE_CALENDARS)->get());
+        $this->assertCount(0, $database->table(ModuleTask::TABLE_STATES)->get());
+        $this->assertCount(0, $database->table(ModuleTask::TABLE_EVENTS)->get());
+
+        $workspaceId = (int)$workspaces[0]['id'];
+        $rootNodes = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('workspace_id', '=', $workspaceId)
+            ->whereRaw('parent_id IS NULL')
+            ->orderBy('sort_order')
+            ->get();
+        $this->assertSame([
+            'simbioza',
+            'instalacija',
+            'prijava-i-korisnici',
+            'kalendari',
+            'podrucja',
+            'uredivanje-stranica',
+        ], array_column($rootNodes, 'slug'));
+        $translatedTitles = [];
+        foreach ($rootNodes as $node) {
+            $translations = json_decode((string)$node['title_translations'], true, 512, JSON_THROW_ON_ERROR);
+            $this->assertIsArray($translations);
+            $this->assertArrayHasKey('hr', $translations);
+            $this->assertArrayHasKey('en', $translations);
+            $translatedTitles[(string)$node['slug']] = $translations;
+            $this->assertSame((int)$administrator['id'], (int)$node['created_by_user_id']);
+        }
+
+        $this->assertSame('Installation', $translatedTitles['instalacija']['en']);
+        $this->assertSame('Calendars', $translatedTitles['kalendari']['en']);
+        $this->assertSame('Workspaces', $translatedTitles['podrucja']['en']);
+        $this->assertSame('Editing pages', $translatedTitles['uredivanje-stranica']['en']);
+
+        $workspaceAcl = $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)
+            ->where('workspace_id', '=', $workspaceId)
+            ->get();
+        $this->assertCount(1, $workspaceAcl);
+        $this->assertSame('public', $workspaceAcl[0]['subject_type']);
+        $this->assertSame(1, (int)$workspaceAcl[0]['can_view']);
 
         $settingsJson = file_get_contents($paths->themeConfigDirectory() . '/settings.json');
         $this->assertIsString($settingsJson);
@@ -264,6 +320,17 @@ final class InstallationTest extends TestCase
         $this->assertSame($result['theme_id'], $settings['active_theme']);
         $this->assertSame('auto', $settings['mode_policy']);
         $this->assertFileExists($root . '/data/themes/' . $result['theme_id'] . '/theme-assets.json');
+        $themesJson = file_get_contents($paths->themeConfigDirectory() . '/themes.json');
+        $this->assertIsString($themesJson);
+        $themes = json_decode($themesJson, true, 512, JSON_THROW_ON_ERROR);
+        $this->assertIsArray($themes);
+        $this->assertCount(1, $themes);
+        $this->assertSame('simbioza', $themes[0]['id']);
+        $themeDirectories = array_values(array_filter(
+            scandir($root . '/data/themes') ?: [],
+            static fn(string $entry): bool => !str_starts_with($entry, '.'),
+        ));
+        $this->assertSame(['simbioza'], $themeDirectories);
     }
 
     /** HR: Pokreće cijeli web-tijek do locka bez druge kopije lozinke u sessionu. EN: Runs the full web flow to the lock with one session password copy. */
@@ -371,7 +438,9 @@ final class InstallationTest extends TestCase
             'data',
             'database/migrations',
             'resources/config/theme',
+            'resources/config/menu',
             'resources/installation/theme',
+            'resources/installation/workspace',
             'vendor',
         ];
         foreach ($directories as $directory) {
@@ -400,11 +469,34 @@ final class InstallationTest extends TestCase
             throw new RuntimeException('Unable to link installation test dependencies.');
         }
 
+        foreach (['lang', 'views'] as $applicationDirectory) {
+            if (!symlink($projectRoot . '/' . $applicationDirectory, $root . '/' . $applicationDirectory)) {
+                throw new RuntimeException('Unable to link installation test application resources.');
+            }
+        }
+
         foreach (glob($projectRoot . '/database/migrations/*.php') ?: [] as $migrationFile) {
             copy($migrationFile, $root . '/database/migrations/' . basename($migrationFile));
         }
 
-        foreach (['app.php', 'theme.php'] as $configFile) {
+        foreach (
+            [
+                'api.php',
+                'app.php',
+                'backup-providers.php',
+                'backup.php',
+                'bootstrap.php',
+                'commands.php',
+                'editor-html.php',
+                'listeners.php',
+                'menu.php',
+                'middleware.php',
+                'routes.php',
+                'services.php',
+                'theme.php',
+                'workspace.php',
+            ] as $configFile
+        ) {
             copy($projectRoot . '/config/' . $configFile, $root . '/config/' . $configFile);
         }
 
@@ -415,9 +507,20 @@ final class InstallationTest extends TestCase
             );
         }
 
+        foreach (['contexts.json', 'settings.json', 'top.json'] as $menuFile) {
+            copy(
+                $projectRoot . '/resources/config/menu/' . $menuFile,
+                $root . '/resources/config/menu/' . $menuFile,
+            );
+        }
+
         copy(
             $projectRoot . '/resources/installation/theme/simbioza.zip',
             $root . '/resources/installation/theme/simbioza.zip',
+        );
+        copy(
+            $projectRoot . '/resources/installation/workspace/korisnicke-upute.zip',
+            $root . '/resources/installation/workspace/korisnicke-upute.zip',
         );
 
         return $root;

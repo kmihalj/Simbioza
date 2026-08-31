@@ -107,6 +107,12 @@ final readonly class InstallationRequirements
             'Instalacijski paket teme Simbioza je dostupan',
             'Bundled Simbioza theme package is available',
         );
+        $checks[] = $this->fileCheck(
+            'user_guides_package_readable',
+            $this->paths->userGuidesPackage(),
+            'Instalacijski paket javnih korisničkih uputa je dostupan',
+            'Bundled public user-guide package is available',
+        );
 
         return $checks;
     }
