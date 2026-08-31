@@ -128,6 +128,7 @@
             "https"
         ],
         "use-github-api": false,
+        "process-timeout": 0,
         "sort-packages": true,
         "cache-dir": "build/composer",
         "allow-plugins": {
