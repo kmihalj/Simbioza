@@ -504,6 +504,7 @@ function runEndToEndSuite(): int
             $temporaryRoot,
             $options['database'],
             true,
+            $options['local'],
         );
         $candidate = $result['project_directory'] ?? null;
         if (!is_string($candidate)) {
