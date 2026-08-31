@@ -28,6 +28,7 @@ use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use ZipArchive;
 
 #[CoversNothing]
 final class InstallationTest extends TestCase
@@ -43,6 +44,25 @@ final class InstallationTest extends TestCase
         }
 
         $this->temporaryDirectories = [];
+    }
+
+    /**
+     * HR: Izvorne teme i instalacijski paket ne smiju sadržavati razvojnu web-putanju.
+     * EN: Source themes and the installation package must not contain the development web path.
+     */
+    public function testBundledThemesDoNotHardCodeDevelopmentBasePath(): void
+    {
+        $projectRoot = dirname(__DIR__, 3);
+        $themesJson = file_get_contents($projectRoot . '/resources/config/theme/themes.json');
+        $this->assertIsString($themesJson);
+        $this->assertStringNotContainsString('/hfc', strtolower($themesJson));
+
+        $archive = new ZipArchive();
+        $this->assertTrue($archive->open($projectRoot . '/resources/installation/theme/simbioza.zip'));
+        $packagedTheme = $archive->getFromName('theme.json');
+        $archive->close();
+        $this->assertIsString($packagedTheme);
+        $this->assertStringNotContainsString('/hfc', strtolower($packagedTheme));
     }
 
     /** HR: Provjerava normalizaciju svakog podržanog tipa baze. EN: Verifies every supported database type. */
@@ -302,6 +322,7 @@ final class InstallationTest extends TestCase
                 : '',
             $guideVersions,
         ));
+        $this->assertStringNotContainsString('/hfc', strtolower($guideHtml));
         $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $guideHtml);
         $this->assertStringContainsString('/test-simbioza/workspace/korisnicke-upute/', $guideHtml);
         preg_match_all(

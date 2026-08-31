@@ -405,7 +405,7 @@
                         "type": "logo",
                         "position": "start",
                         "text": [],
-                        "href": "/HFC/",
+                        "href": "@app",
                         "src_light": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
                         "src_dark": "@theme-assets/srce-sup/icon-simbioza-natural-light.png",
                         "alt": {
