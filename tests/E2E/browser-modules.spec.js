@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   apiHeaders,
+  createEditorSurface,
   e2eEnvironment,
   expectData,
   expectUsableModal,
@@ -72,8 +73,9 @@ async function openProfileSection(page, selector) {
 }
 
 test.describe('module browser surfaces', () => {
-  test('every rendered Bootstrap modal remains interactive after repeated opening', async ({ page }) => {
+  test('every rendered Bootstrap modal remains interactive after repeated opening', async ({ page, request }) => {
     test.setTimeout(90_000);
+    const editorPath = await createEditorSurface(request, adminApiToken, 'modal-editor');
     await login(page, adminLogin, adminPassword);
 
     /*
@@ -87,7 +89,7 @@ test.describe('module browser surfaces', () => {
     for (const route of [
       '/calendars',
       '/settings/auth?section=users',
-      '/editor-html',
+      editorPath,
       '/settings/editor-html',
     ]) {
       const response = await page.goto(route);
@@ -115,8 +117,9 @@ test.describe('module browser surfaces', () => {
     }
   });
 
-  test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page }) => {
+  test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page, request }) => {
     test.setTimeout(90_000);
+    const editorPath = await createEditorSurface(request, adminApiToken, 'surface-editor');
     await login(page, adminLogin, adminPassword);
 
     const htmlRoutes = [
@@ -143,7 +146,7 @@ test.describe('module browser surfaces', () => {
       '/settings/workspaces/deleted',
       '/settings/personal-workspaces',
       '/settings/confluence-import',
-      '/editor-html',
+      editorPath,
       '/settings/editor-html',
       '/settings/editor-html/documents/deleted',
       '/notifications',

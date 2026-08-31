@@ -143,6 +143,47 @@ export async function getDataWithEtag(request, path, headers) {
 }
 
 /**
+ * HR: Stvara vlastito privremeno područje i dokument za pregled integriranog
+ *     HTML editora. Testovi tako ne ovise o instalacijskom seed sadržaju, ali
+ *     i dalje potvrđuju da samostalna ruta bez dokumenta nije dostupna.
+ * EN: Creates a dedicated temporary workspace and document for an integrated
+ *     HTML editor view. Tests therefore remain independent from installer seed
+ *     content while still allowing the standalone document-less route to stay disabled.
+ */
+export async function createEditorSurface(request, token, prefix) {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const workspaceSlug = `${prefix}-workspace-${suffix}`;
+  const documentId = `${prefix}-page-${suffix}`;
+
+  await expectData(await request.post('/api/v1/workspaces', {
+    headers: apiHeaders(token, {
+      'Idempotency-Key': idempotencyKey(`${prefix}-workspace`),
+    }),
+    data: {
+      name: 'E2E Editor Surface',
+      slug: workspaceSlug,
+      description: 'Ephemeral integrated editor browser surface.',
+      visibility: 'restricted',
+    },
+  }), 201);
+
+  const document = await expectData(await request.post('/api/v1/pages', {
+    headers: apiHeaders(token, {
+      'Idempotency-Key': idempotencyKey(`${prefix}-page`),
+    }),
+    data: {
+      title: 'E2E Editor Surface',
+      slug: documentId,
+      workspace_slug: workspaceSlug,
+      language: 'en',
+      html: '<h1>E2E Editor Surface</h1><p>Temporary browser test document.</p>',
+    },
+  }), 201);
+
+  return `/editor-html?document=${encodeURIComponent(document.id)}&lang=en`;
+}
+
+/**
  * HR: Stvara jedinstven idempotency ključ dovoljne duljine za jedan logički zapis.
  * EN: Creates a unique sufficiently long idempotency key for one logical write.
  */

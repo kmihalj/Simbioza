@@ -187,14 +187,17 @@ test.describe('browser flows', () => {
       && url.searchParams.get('document') === pageSlug);
 
     /*
-     * HR: Editorovi glavni gumbi moraju koristiti pune tematske stilove, a
-     *     modal za otvaranje dokumenta mora biti iznad Bootstrap backdroppa.
-     * EN: The editor's main actions must use filled theme styles, and the
-     *     open-document modal must remain above the Bootstrap backdrop.
+     * HR: Kada je Workspace modul instaliran, dokument se otvara i stvara
+     *     isključivo kroz stablo područja. Samostalne akcije Otvori i Kreiraj
+     *     zato ne smiju biti prikazane, dok preostale akcije koriste pune
+     *     tematske stilove.
+     * EN: With the Workspace module installed, documents are opened and
+     *     created exclusively through the workspace tree. The standalone Open
+     *     and Create actions must therefore be absent, while the remaining
+     *     actions keep their filled theme styles.
     */
-    const openDocumentButton = page.getByRole('button', { name: 'Open', exact: true }).first();
-    await expect(openDocumentButton).toHaveClass(/btn-secondary/);
-    await expect(openDocumentButton).not.toHaveClass(/btn-outline-secondary/);
+    await expect(page.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Create', exact: true })).toHaveCount(0);
     for (const actionName of ['Translations', 'History']) {
       const action = page.getByRole('button', { name: actionName, exact: true });
       if (await action.count() > 0) {
@@ -206,12 +209,6 @@ test.describe('browser flows', () => {
     await expect(viewAction).toHaveClass(/btn-secondary/);
     await expect(viewAction).not.toHaveClass(/btn-outline-secondary/);
 
-    await openDocumentButton.click();
-    const openDocumentDialog = page.getByRole('dialog', { name: 'Open document' });
-    await expect(openDocumentDialog).toBeVisible();
-    await expectUsableModal(openDocumentDialog);
-    await closeModal(openDocumentDialog);
-
     /*
      * HR: Provjerava svaki modal dostupan u zaglavlju uređivača, ne samo
      *     prijavljeni dijalog za povijest verzija.
@@ -219,7 +216,6 @@ test.describe('browser flows', () => {
      *     reported version-history dialog.
      */
     for (const modalAction of [
-      { button: 'Create', dialog: 'Create document' },
       { button: 'Translations', dialog: 'Copy translation' },
       { button: 'History', dialog: 'Version history' },
     ]) {

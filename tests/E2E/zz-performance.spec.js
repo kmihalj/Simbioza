@@ -288,11 +288,13 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     peakMemoryBytes: 32 * 1024 * 1024,
     /*
      * HR: Prikaz sada uključuje tematski oblikovane povratne poveznice i
-     *     reference uključenih stranica; 80 KiB ostaje čvrsta granica koja
-     *     otkriva nenamjerno ugrađivanje velikog sadržaja.
+     *     reference uključenih stranica i runtime za neovisno ljepljivo
+     *     zaglavlje i navigaciju; 88 KiB ostaje čvrsta granica koja otkriva
+     *     nenamjerno ugrađivanje velikog sadržaja.
      * EN: The view now includes themed backlinks and included-page references;
-     *     80 KiB remains a firm guard against accidentally embedding large content.
+     *     plus the runtime for independently sticky header and navigation;
+     *     88 KiB remains a firm guard against accidentally embedding large content.
      */
-    responseBytes: 80 * 1024,
+    responseBytes: 88 * 1024,
   });
 });

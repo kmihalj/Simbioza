@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   apiHeaders,
+  createEditorSurface,
   e2eEnvironment,
   expectData,
   login,
@@ -15,7 +16,7 @@ const {
 } = e2eEnvironment();
 
 test.describe('separated activity and technical logs', () => {
-  test('administrator filters and exports the business audit without exposing the technical log', async ({ page }) => {
+  test('administrator filters and exports the business audit without exposing the technical log', async ({ page, request }) => {
     /*
      * HR: Najprije stvaramo stvarni gostujući pregled, a zatim isti pregled
      *     prijavljenog administratora. Time regresijski pokrivamo razliku koja
@@ -28,6 +29,9 @@ test.describe('separated activity and technical logs', () => {
     expect(guestView?.status()).toBe(200);
 
     await login(page, adminLogin, adminPassword);
+    const editorPath = await createEditorSurface(request, adminApiToken, 'audit-editor');
+    const editorDocument = new URL(editorPath, 'http://e2e.invalid').searchParams.get('document');
+    expect(editorDocument).toBeTruthy();
 
     /*
      * HR: Običan HTML pregled stvara neutralni poslovni audit događaj kroz
@@ -36,7 +40,15 @@ test.describe('separated activity and technical logs', () => {
      *     the global middleware. Bodies, query parameters, and secrets are
      *     never submitted.
      */
-    for (const path of ['/about', '/settings', '/calendars', '/notifications', '/editor-html', '/workspaces', '/search']) {
+    for (const path of [
+      '/about',
+      '/settings',
+      '/calendars',
+      '/notifications',
+      editorPath,
+      '/workspaces',
+      '/search',
+    ]) {
       const viewed = await page.goto(path);
       expect(viewed?.status(), `${path} did not render`).toBe(200);
     }
@@ -52,18 +64,20 @@ test.describe('separated activity and technical logs', () => {
       ['application.view', 'settings'],
       ['calendar.view', 'calendars'],
       ['notification.view', 'notifications'],
-      ['editor-html.view', 'editor-html'],
+      ['editor-html.view', editorDocument],
       ['workspace.view', 'workspaces'],
       ['workspace-search.view', 'search'],
     ];
+    const recentWebEvents = await expectData(await page.request.get(
+      '/api/v1/audit?page[limit]=100&channel=web',
+      { headers: apiHeaders(adminApiToken) },
+    ));
     for (const [eventKey, target] of expectedAccess) {
-      const events = await expectData(await page.request.get(
-        `/api/v1/audit?page[limit]=100&event_key=${encodeURIComponent(eventKey)}&channel=web&target=${encodeURIComponent(target)}`,
-        { headers: apiHeaders(adminApiToken) },
-      ));
-      expect(events.length, `${eventKey} for ${target} was not audited`).toBeGreaterThan(0);
-      expect(events[0].actor_label).toBe('E2E Administrator');
-      expect(Number(events[0].actor_user_id)).toBeGreaterThan(0);
+      const event = recentWebEvents.find((candidate) => candidate.event_key === eventKey
+        && (candidate.target_id === target || candidate.target_label === target));
+      expect(event, `${eventKey} for ${target} was not audited`).toBeTruthy();
+      expect(event.actor_label).toBe('E2E Administrator');
+      expect(Number(event.actor_user_id)).toBeGreaterThan(0);
     }
 
     const audit = await page.goto('/settings/logs/audit');
