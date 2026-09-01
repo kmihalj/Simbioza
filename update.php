@@ -49,11 +49,11 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{hr:string,en:string}> */
     private const MESSAGES = [
         'usage' => [
-            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.10] [--lang=hr|en]\n"
+            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.11] [--lang=hr|en]\n"
                 . "  bez opcija    ažurira Simbiozu i module na zadnja kompatibilna izdanja\n"
                 . "  --check      samo prikazuje trenutačni i zadnji dostupni tag\n"
                 . "  --tag=TAG    ažurira na određeni stabilni Simbioza tag\n",
-            'en' => "Usage: php update.php [--check] [--tag=0.1.10] [--lang=hr|en]\n"
+            'en' => "Usage: php update.php [--check] [--tag=0.1.11] [--lang=hr|en]\n"
                 . "  no options   updates Simbioza and modules to latest compatible releases\n"
                 . "  --check      only shows the current and latest available tag\n"
                 . "  --tag=TAG    updates to a specific stable Simbioza tag\n",
@@ -105,6 +105,10 @@ final class ApplicationUpdateCommand
         'platform' => [
             'hr' => 'Provjeravam PHP i platformske preduvjete...',
             'en' => 'Checking PHP and platform requirements...',
+        ],
+        'preflight' => [
+            'hr' => 'Provjeravam pokretanje aplikacije i pristup bazi prije migracija...',
+            'en' => 'Checking application bootstrap and database access before migrations...',
         ],
         'migrate' => [
             'hr' => 'Primjenjujem migracije baze...',
@@ -231,8 +235,22 @@ final class ApplicationUpdateCommand
             $this->updateComposerDependencies($composer);
 
             $this->write($this->message('platform'));
-            $this->mustRun([$composer, 'check-platform-reqs', '--no-dev'], $this->appRoot);
-            $this->mustRun([$composer, 'audit', '--locked', '--no-dev'], $this->appRoot);
+            $this->mustRunComposer([$composer, 'check-platform-reqs', '--no-dev'], $this->appRoot);
+            $this->mustRunComposer([$composer, 'audit', '--locked', '--no-dev'], $this->appRoot);
+
+            // HR: Read-only status prisiljava potpuni bootstrap aplikacije prije
+            //     nego označimo da su migracije započele. Pad tijekom bootstrapa
+            //     tada još uvijek može sigurno vratiti kod i Composer pakete.
+            // EN: The read-only status command forces a complete application
+            //     bootstrap before migrations are marked as started. A bootstrap
+            //     failure can therefore still safely restore code and packages.
+            $this->write($this->message('preflight'));
+            $this->mustRun([
+                $this->appRoot . '/vendor/bin/hph',
+                'orm-migrate:status',
+                '--connection=default',
+                '--path=database/migrations',
+            ], $this->appRoot);
 
             $this->migrationStarted = true;
             $this->write($this->message('migrate'));

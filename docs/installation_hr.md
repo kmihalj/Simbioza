@@ -324,7 +324,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.10`.
+`sudo php update.php --tag=0.1.11`.
 
 Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
 traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
@@ -340,6 +340,9 @@ Composer prvo izračuna novi lock bez izmjene postojećih paketa, a zatim ih
 instalira u čisti privremeno zamijenjeni `vendor`. Zato release instalacija i
 moduli ne trebaju sadržavati vlastite `.git` direktorije. Neuspjela instalacija
 paketa automatski vraća prethodni `vendor` prije općeg rollbacka aplikacije.
+Prije prve migracije updater read-only naredbom provjerava puni bootstrap
+aplikacije i pristup bazi; pad u toj provjeri još uvijek sigurno vraća prethodni
+kod i pakete, umjesto da instalaciju pogrešno ostavi u stanju započetih migracija.
 
 - baza, uploadovi, cache i ostali podaci u `data/`;
 - `composer.lock` kao zapis konkretne instalacije;

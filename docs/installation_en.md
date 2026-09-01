@@ -322,7 +322,7 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.10`.
+`sudo php update.php --tag=0.1.11`.
 
 Simbioza and every module fetched by the updater are publicly available. The
 updater therefore neither requests nor accepts tokens, passwords, or other
@@ -339,6 +339,10 @@ then installs them into a clean, temporarily replaced `vendor` directory.
 Release installations and modules therefore do not need their own `.git`
 directories. A failed package installation restores the previous `vendor`
 before the application-level rollback runs.
+Before the first migration, the updater uses a read-only command to verify the
+complete application bootstrap and database access. A failure in that check can
+still safely restore the previous code and packages instead of incorrectly
+leaving the installation in a migrations-started state.
 
 - the database, uploads, cache, and other runtime data in `data/`;
 - `composer.lock` as the record of this concrete installation;
