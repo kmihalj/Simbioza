@@ -806,6 +806,9 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByText(/^Workspace of:/i)).toHaveCount(0);
     await expect(page.getByText(/^Personal workspace of /i)).toHaveCount(0);
 
+    await page.goto('/workspaces');
+    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
+
     await page.goto('/auth/logout');
     const guestResponse = await page.goto(personalPath);
     expect(guestResponse?.status()).toBe(403);
@@ -819,6 +822,14 @@ test.describe('module browser surfaces', () => {
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/personal-workspaces');
     await expect(page.locator('#personal-workspaces-auto-create')).toBeChecked();
+    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
+
+    await page.goto('/workspaces');
+    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(0);
+    const personalWorkspaceIndex = page.getByRole('link', { name: /Personal Workspaces|Osobna područja/i });
+    await expect(personalWorkspaceIndex).toBeVisible();
+    await personalWorkspaceIndex.click();
+    await expect(page).toHaveURL(/\/workspaces\?personal=1$/);
     await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
   });
 

@@ -40,7 +40,7 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
         workspace_slug: workspaceSlug,
         language: 'hr',
         contents_visibility: 'inherit',
-        content: [{ type: 'html', html: `<h1>${title}</h1><p>${body}</p>` }],
+        content: [{ type: 'html', html: `<p>${body}</p>` }],
       },
     }), 201);
     const draft = await getDataWithEtag(request, `/api/v1/pages/${documentId}/draft?lang=hr`, adminHeaders);
@@ -144,6 +144,37 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     expect(html).not.toContain('Ograničeni rezultat pretrage');
     expect(html).not.toContain('samo ovlaštenim korisnicima');
     expect(html).toMatch(/Pronađeno rezultata:\s*1|Results found:\s*1/);
+  });
+
+  test('page title and visible Workspace name are independently searchable', async ({ request }) => {
+    const titleResponse = await request.get(
+      `/api/v1/workspace-search?q=${encodeURIComponent('Javni rezultat pretrage')}&lang=hr`,
+      { headers: userHeaders },
+    );
+    const titleResults = await expectData(titleResponse);
+    expect(titleResults).toHaveLength(1);
+    expect(titleResults[0]).toMatchObject({
+      result_type: 'page',
+      title: 'Javni rezultat pretrage',
+    });
+
+    const workspaceResponse = await request.get(
+      `/api/v1/workspace-search?q=${encodeURIComponent('E2E Search Restricted')}&lang=hr`,
+      { headers: userHeaders },
+    );
+    const workspaceResults = await expectData(workspaceResponse);
+    expect(workspaceResults).toHaveLength(1);
+    expect(workspaceResults[0]).toMatchObject({
+      result_type: 'workspace',
+      title: 'E2E Search Restricted',
+      workspace_slug: restrictedWorkspace,
+    });
+
+    const concealed = await request.get(
+      `/search?q=${encodeURIComponent('E2E Search Restricted')}&lang=hr`,
+    );
+    expect(concealed.status()).toBe(200);
+    expect(await concealed.text()).toMatch(/Pronađeno rezultata:\s*0|Results found:\s*0/);
   });
 
   test('draft keeps the published index while publishing immediately replaces it', async ({ request }) => {

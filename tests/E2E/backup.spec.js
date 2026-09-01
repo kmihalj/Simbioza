@@ -259,6 +259,8 @@ test.describe('complete Backup workflow', () => {
       `/api/v1/workspace-search?q=${encodeURIComponent(searchTerm)}&workspace=${targetWorkspace}&lang=hr`,
       { headers: adminHeaders },
     );
-    expect((await expectData(search)).map((item) => item.workspace_slug)).toEqual([targetWorkspace]);
+    const copiedResults = await expectData(search);
+    expect([...new Set(copiedResults.map((item) => item.workspace_slug))]).toEqual([targetWorkspace]);
+    expect(copiedResults.map((item) => item.result_type).sort()).toEqual(['page', 'workspace']);
   });
 });

@@ -336,7 +336,7 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.16`.
+`sudo php update.php --tag=0.1.17`.
 
 Every release carries the same stable semantic version in `VERSION` as in its
 Git tag. CI rejects a tag whose name and `VERSION` do not match, so the updater
