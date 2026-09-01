@@ -311,6 +311,11 @@ sadržaja.
 
 ## 11. Nadogradnja release instalacije
 
+Početna stranica **Postavke** prikazuje lokalno instalirane verzije Simbioze i
+svih modula. Gumb **Provjeri ažuriranja** uspoređuje ih sa stabilnim tagovima u
+javnim repozitorijima i ne traži token. Ta je provjera informativna i ne mijenja
+instalaciju; stvarnu nadogradnju i dalje izvodi provjereni CLI updater.
+
 U korijenu aplikacije pokrenite provjeru dostupnog izdanja, a zatim nadogradnju:
 
 ```bash
@@ -324,7 +329,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.11`.
+`sudo php update.php --tag=0.1.12`.
 
 Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
 traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
@@ -336,6 +341,13 @@ dvojezičnu stranicu održavanja i status 503. Zatim se ažuriraju kod i Compose
 lock, provjeravaju PHP preduvjeti i sigurnosna upozorenja, izvršavaju migracije
 te čisti cache. Ostaju sačuvani:
 
+- baza, uploadovi, cache i ostali podaci u `data/`;
+- `composer.lock` kao zapis konkretne instalacije;
+- privatne datoteke `config/database.php`, `config/env.php`,
+  `config/installation.php` i `config/email.php`;
+- postavke aktivnog izbornika i teme u `resources/config/menu/` i
+  `resources/config/theme/`.
+
 Composer prvo izračuna novi lock bez izmjene postojećih paketa, a zatim ih
 instalira u čisti privremeno zamijenjeni `vendor`. Zato release instalacija i
 moduli ne trebaju sadržavati vlastite `.git` direktorije. Neuspjela instalacija
@@ -343,13 +355,6 @@ paketa automatski vraća prethodni `vendor` prije općeg rollbacka aplikacije.
 Prije prve migracije updater read-only naredbom provjerava puni bootstrap
 aplikacije i pristup bazi; pad u toj provjeri još uvijek sigurno vraća prethodni
 kod i pakete, umjesto da instalaciju pogrešno ostavi u stanju započetih migracija.
-
-- baza, uploadovi, cache i ostali podaci u `data/`;
-- `composer.lock` kao zapis konkretne instalacije;
-- privatne datoteke `config/database.php`, `config/env.php`,
-  `config/installation.php` i `config/email.php`;
-- postavke aktivnog izbornika i teme u `resources/config/menu/` i
-  `resources/config/theme/`.
 
 Ako postupak stane prije migracija, updater automatski vraća prethodni kod i
 Composer pakete. Nakon početka migracija namjerno ostavlja način održavanja

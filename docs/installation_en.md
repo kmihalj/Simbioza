@@ -309,6 +309,12 @@ themes, or other content.
 
 ## 11. Updating a release installation
 
+The **Settings** landing page lists the locally installed versions of Simbioza
+and every module. **Check for updates** compares them with stable tags in public
+repositories and does not require a token. This check is informational and does
+not change the installation; the verified CLI updater still performs the actual
+upgrade.
+
 Run the release check and then the update from the application root:
 
 ```bash
@@ -322,7 +328,7 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.11`.
+`sudo php update.php --tag=0.1.12`.
 
 Simbioza and every module fetched by the updater are publicly available. The
 updater therefore neither requests nor accepts tokens, passwords, or other
@@ -334,6 +340,13 @@ bilingual maintenance page with status 503 during the update. It then updates
 the code and Composer lock, verifies PHP platform requirements and security
 advisories, applies migrations, and clears the cache. It preserves:
 
+- the database, uploads, cache, and other runtime data in `data/`;
+- `composer.lock` as the record of this concrete installation;
+- private `config/database.php`, `config/env.php`, `config/installation.php`,
+  and `config/email.php` files;
+- the active menu and theme settings in `resources/config/menu/` and
+  `resources/config/theme/`.
+
 Composer first resolves the new lock without changing installed packages and
 then installs them into a clean, temporarily replaced `vendor` directory.
 Release installations and modules therefore do not need their own `.git`
@@ -343,13 +356,6 @@ Before the first migration, the updater uses a read-only command to verify the
 complete application bootstrap and database access. A failure in that check can
 still safely restore the previous code and packages instead of incorrectly
 leaving the installation in a migrations-started state.
-
-- the database, uploads, cache, and other runtime data in `data/`;
-- `composer.lock` as the record of this concrete installation;
-- private `config/database.php`, `config/env.php`, `config/installation.php`,
-  and `config/email.php` files;
-- the active menu and theme settings in `resources/config/menu/` and
-  `resources/config/theme/`.
 
 If the operation fails before migrations, the updater automatically restores
 the previous code and Composer packages. Once migrations have started, it
