@@ -49,11 +49,11 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{hr:string,en:string}> */
     private const MESSAGES = [
         'usage' => [
-            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.7] [--lang=hr|en]\n"
+            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.8] [--lang=hr|en]\n"
                 . "  bez opcija    ažurira Simbiozu i module na zadnja kompatibilna izdanja\n"
                 . "  --check      samo prikazuje trenutačni i zadnji dostupni tag\n"
                 . "  --tag=TAG    ažurira na određeni stabilni Simbioza tag\n",
-            'en' => "Usage: php update.php [--check] [--tag=0.1.7] [--lang=hr|en]\n"
+            'en' => "Usage: php update.php [--check] [--tag=0.1.8] [--lang=hr|en]\n"
                 . "  no options   updates Simbioza and modules to latest compatible releases\n"
                 . "  --check      only shows the current and latest available tag\n"
                 . "  --tag=TAG    updates to a specific stable Simbioza tag\n",
@@ -137,6 +137,14 @@ final class ApplicationUpdateCommand
         'failure' => [
             'hr' => 'Ažuriranje nije uspjelo: %s',
             'en' => 'Update failed: %s',
+        ],
+        'github_token_prompt' => [
+            'hr' => 'Privatni GitHub repozitorij traži read-only token (unos se ne prikazuje niti sprema): ',
+            'en' => 'The private GitHub repository requires a read-only token (input is hidden and not stored): ',
+        ],
+        'github_token_required' => [
+            'hr' => 'GitHub token je potreban. Pokrenite interaktivno ili postavite SIMBIOZA_GITHUB_TOKEN.',
+            'en' => 'A GitHub token is required. Run interactively or set SIMBIOZA_GITHUB_TOKEN.',
         ],
     ];
 
@@ -328,6 +336,16 @@ final class ApplicationUpdateCommand
             '--refs',
             self::REPOSITORY,
         ], $this->appRoot, true);
+        if ($exitCode !== 0 && $this->requiresGitHubCredentials($stderr)) {
+            $this->configureGitHubCredentials();
+            [$exitCode, $stdout, $stderr] = $this->runProcess([
+                $git,
+                'ls-remote',
+                '--tags',
+                '--refs',
+                self::REPOSITORY,
+            ], $this->appRoot, true);
+        }
         if ($exitCode !== 0) {
             throw new RuntimeException(trim($stderr) !== '' ? trim($stderr) : 'Unable to read release tags.');
         }
@@ -338,6 +356,85 @@ final class ApplicationUpdateCommand
         }
 
         return $tag;
+    }
+
+    private function requiresGitHubCredentials(string $stderr): bool
+    {
+        $message = strtolower($stderr);
+        return str_contains($message, 'could not read username')
+            || str_contains($message, 'authentication failed')
+            || str_contains($message, 'repository not found');
+    }
+
+    private function configureGitHubCredentials(): void
+    {
+        $token = trim((string)(getenv('SIMBIOZA_GITHUB_TOKEN') ?: getenv('GITHUB_TOKEN')));
+        if ($token === '') {
+            $token = $this->promptGitHubToken();
+        }
+        if ($token === '' || preg_match('/[\x00-\x1F\x7F]/', $token) === 1) {
+            throw new RuntimeException($this->message('github_token_required'));
+        }
+
+        $gitConfigCount = getenv('GIT_CONFIG_COUNT');
+        $configIndex = is_string($gitConfigCount) && ctype_digit($gitConfigCount)
+        ? (int)$gitConfigCount
+        : 0;
+        putenv('GIT_CONFIG_COUNT=' . ($configIndex + 1));
+        putenv('GIT_CONFIG_KEY_' . $configIndex . '=http.https://github.com/.extraHeader');
+        putenv('GIT_CONFIG_VALUE_' . $configIndex . '=Authorization: Bearer ' . $token);
+
+        $composerAuth = getenv('COMPOSER_AUTH');
+        $composerCredentials = is_string($composerAuth) && trim($composerAuth) !== ''
+        ? json_decode($composerAuth, true)
+        : [];
+        if (!is_array($composerCredentials)) {
+            $composerCredentials = [];
+        }
+        $githubOauth = $composerCredentials['github-oauth'] ?? [];
+        if (!is_array($githubOauth)) {
+            $githubOauth = [];
+        }
+        $githubOauth['github.com'] = $token;
+        $composerCredentials['github-oauth'] = $githubOauth;
+        putenv('COMPOSER_AUTH=' . json_encode(
+            $composerCredentials,
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
+        ));
+    }
+
+    private function promptGitHubToken(): string
+    {
+        if (!function_exists('stream_isatty') || !stream_isatty(STDIN)) {
+            return '';
+        }
+
+        $stty = $this->requireExecutable('stty');
+        fwrite(STDERR, $this->message('github_token_prompt'));
+        $this->setTerminalEcho($stty, false);
+        try {
+            $value = fgets(STDIN);
+        } finally {
+            $this->setTerminalEcho($stty, true);
+            fwrite(STDERR, PHP_EOL);
+        }
+
+        return is_string($value) ? trim($value) : '';
+    }
+
+    private function setTerminalEcho(string $stty, bool $enabled): void
+    {
+        $process = proc_open(
+            [$stty, $enabled ? 'echo' : '-echo'],
+            [0 => STDIN, 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            $pipes,
+            $this->appRoot,
+            null,
+            ['bypass_shell' => true],
+        );
+        if (!is_resource($process) || proc_close($process) !== 0) {
+            throw new RuntimeException('Unable to control terminal echo securely.');
+        }
     }
 
     private function assertInstallationRoot(): void
@@ -429,7 +526,8 @@ final class ApplicationUpdateCommand
 
     private function rollback(): void
     {
-        if ($this->backupPath === null || !is_file($this->backupPath)) {
+        $backupPath = $this->backupPath;
+        if ($backupPath === null || !is_file($backupPath)) {
             throw new RuntimeException('The rollback backup is unavailable.');
         }
 
@@ -441,7 +539,7 @@ final class ApplicationUpdateCommand
         if (!mkdir($rollbackDirectory, 0700, true) && !is_dir($rollbackDirectory)) {
             throw new RuntimeException('Unable to prepare the rollback directory.');
         }
-        $this->mustRun([$tar, '-xzf', $this->backupPath, '-C', $rollbackDirectory]);
+        $this->mustRun([$tar, '-xzf', $backupPath, '-C', $rollbackDirectory]);
 
         foreach (['composer.json', 'composer.lock'] as $composerFile) {
             $source = $rollbackDirectory . '/' . $composerFile;
@@ -507,6 +605,9 @@ final class ApplicationUpdateCommand
             \RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($iterator as $item) {
+            if (!$item instanceof \SplFileInfo) {
+                continue;
+            }
             $path = $item->getPathname();
             if ($item->getFilename() === '.gitignore') {
                 continue;
@@ -539,6 +640,9 @@ final class ApplicationUpdateCommand
             \RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($iterator as $item) {
+            if (!$item instanceof \SplFileInfo) {
+                continue;
+            }
             $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
         }
         rmdir($this->temporaryDirectory);
@@ -677,7 +781,13 @@ final class ApplicationUpdateCommand
     }
 }
 
-if (realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
-    $arguments = array_values(array_slice(is_array($_SERVER['argv'] ?? null) ? $_SERVER['argv'] : [], 1));
+if (is_string($_SERVER['SCRIPT_FILENAME'] ?? null) && realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+    $rawArguments = is_array($_SERVER['argv'] ?? null) ? array_slice($_SERVER['argv'], 1) : [];
+    $arguments = [];
+    foreach ($rawArguments as $argument) {
+        if (is_string($argument)) {
+            $arguments[] = $argument;
+        }
+    }
     exit((new ApplicationUpdateCommand(__DIR__, $arguments))->run());
 }

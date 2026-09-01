@@ -5,6 +5,7 @@ parameters:
 		- src
 		- config
 		- views
+		- update.php
 	ignoreErrors:
 		-
 			identifier: property.protected

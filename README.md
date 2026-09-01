@@ -55,7 +55,7 @@ composer e2e
 ```
 
 A deployed release may intentionally omit `.git` and retain its own verified
-`composer.lock`. From release `0.1.7` onward, check and install the newest stable
+`composer.lock`. From release `0.1.8` onward, check and install the newest stable
 application and compatible module tags from the installation root with:
 
 ```bash
