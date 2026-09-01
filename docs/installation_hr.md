@@ -337,7 +337,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.18`.
+`sudo php update.php --tag=0.1.19`.
 
 Svako izdanje u datoteci `VERSION` nosi istu stabilnu semantičku verziju kao
 njegov Git tag. CI odbija tag čiji se naziv i `VERSION` ne podudaraju, pa updater
