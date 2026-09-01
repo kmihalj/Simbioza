@@ -96,7 +96,9 @@ datoteke ostaju nepromijenjene.
 Simbioza povezuje API, Audit, Auth, Backup, Calendar, Comment, HTML Editor,
 E-mail, Menu, Notification, ORM, Simbioza User, Task, Theme, Workspace i Workspace Search. Simbioza User dodaje
 praćenja, pravila dostave obavijesti i ograničena osobna područja koja se mogu
-izraditi pri prvoj prijavi prema administratorskom pravilu. Moduli zadržavaju vlasništvo nad
+izraditi pri prvoj prijavi prema administratorskom pravilu. Dodaje i osobni
+svijetli/tamni/automatski/sistemski odabir samo dok je globalni Theme način
+automatski. Moduli zadržavaju vlasništvo nad
 svojim domenskim pravilima, a aplikacija ih povezuje i daje postavke deploymenta.
 
 ## Licencija

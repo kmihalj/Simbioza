@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće dvadeset i pet aktualnih aplikacijskih migracija te provjerava aktualne
+     * HR: Pokreće dvadeset i šest aktualnih aplikacijskih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
-     * EN: Runs twenty-five current application migrations and verifies the current Auth,
+     * EN: Runs twenty-six current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(25, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(26, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -697,6 +697,7 @@ final class InitialMigrationsTest extends TestCase
             'user_id',
             'email_mode',
             'notify_own_changes',
+            'theme_mode',
             'created_at',
             'updated_at',
         ]);

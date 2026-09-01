@@ -70,6 +70,7 @@ composer e2e
 - [End-to-end testing](end-to-end-testing_en.md)
 - [Activity audit and technical logging](audit-logging_en.md)
 - [Personal spaces](personal-workspaces_en.md)
+- [Personal appearance](personal-appearance_en.md)
 
 The application enables `aaieduhr/heartphrame-module-api` immediately after
 Auth. Routes under `/api/v1` use Bearer keys and intentionally skip PHP session
@@ -83,6 +84,7 @@ conditional API-key screen.
 - [Troubleshooting](troubleshooting_en.md)
 - [Activity audit and technical logging](audit-logging_en.md)
 - [Personal spaces](personal-workspaces_en.md)
+- [Personal appearance](personal-appearance_en.md)
 
 ## Croatian version
 

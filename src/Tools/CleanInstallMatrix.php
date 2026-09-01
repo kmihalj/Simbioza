@@ -691,7 +691,7 @@ function verifyMatrixCase(
         ];
         if (
             $httpResult->exitCode !== 0
-            || !str_contains($httpResult->output, '<html lang="hr">')
+            || !str_contains($httpResult->output, '<html lang="hr"')
             || !str_contains(
                 $httpResult->output,
                 'Zajednički prostor za znanje, suradnju i sadržaj koji raste s vašom zajednicom.',

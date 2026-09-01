@@ -96,7 +96,9 @@ remain unchanged.
 Simbioza integrates API, Audit, Auth, Backup, Calendar, Comment, HTML Editor,
 E-mail, Menu, Notification, ORM, Simbioza User, Task, Theme, Workspace, and Workspace Search. Simbioza User adds
 following, notification delivery rules, and restricted personal Workspaces created
-at first sign-in under an administrator-controlled policy. Modules keep ownership of their
+at first sign-in under an administrator-controlled policy. It also provides a
+personal light/dark/automatic/system choice only while the global Theme policy
+is automatic. Modules keep ownership of their
 domain rules; the application composes them and supplies deployment settings.
 
 ## Licence

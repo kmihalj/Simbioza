@@ -10,9 +10,14 @@ declare(strict_types=1);
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeRenderer $themeRenderer
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeLayoutRenderer $themeLayoutRenderer
  * @var array<string, mixed>|false|null $themeHero
+ * @var string|null $userThemeMode
  */
 
 $appName = $this->config->getAsNonEmptyString('app.name') ?? 'HeartPhrame';
+$userThemeMode = is_scalar($userThemeMode ?? null) ? strtolower(trim((string)$userThemeMode)) : 'auto';
+if (!in_array($userThemeMode, ['auto', 'light', 'dark', 'system'], true)) {
+    $userThemeMode = 'auto';
+}
 $homePath = $this->urlGenerator->getPathFor('home');
 $authFallbackPath = function (string $routeName, string $nextPath = ''): string {
     if (!$this->urlGenerator->namedRouteExists($routeName)) {
@@ -406,7 +411,10 @@ if (
 ?>
 
 <!DOCTYPE html>
-<html lang="<?= $this->translator->getLocale() ?>">
+<html lang="<?= $this->translator->getLocale() ?>"
+    <?= $userThemeMode !== 'auto'
+    ? ' data-hph-theme="' . $this->escape($userThemeMode) . '"'
+    : '' ?>>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
