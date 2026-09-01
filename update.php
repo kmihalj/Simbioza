@@ -63,11 +63,11 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{hr:string,en:string}> */
     private const MESSAGES = [
         'usage' => [
-            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.14] [--lang=hr|en]\n"
+            'hr' => "Upotreba: php update.php [--check] [--tag=X.Y.Z] [--lang=hr|en]\n"
                 . "  bez opcija    ažurira Simbiozu i module na zadnja kompatibilna izdanja\n"
                 . "  --check      samo prikazuje trenutačni i zadnji dostupni tag\n"
                 . "  --tag=TAG    ažurira na određeni stabilni Simbioza tag\n",
-            'en' => "Usage: php update.php [--check] [--tag=0.1.14] [--lang=hr|en]\n"
+            'en' => "Usage: php update.php [--check] [--tag=X.Y.Z] [--lang=hr|en]\n"
                 . "  no options   updates Simbioza and modules to latest compatible releases\n"
                 . "  --check      only shows the current and latest available tag\n"
                 . "  --tag=TAG    updates to a specific stable Simbioza tag\n",

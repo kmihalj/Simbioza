@@ -8,6 +8,34 @@ permissions:
   contents: read
 
 jobs:
+  release-metadata:
+    name: Release metadata / Metapodaci izdanja
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out application / Dohvati aplikaciju
+        uses: actions/checkout@v5
+
+      - name: Verify VERSION and release tag / Provjeri VERSION i tag izdanja
+        shell: bash
+        env:
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must contain one stable semantic version / VERSION mora sadržavati jednu stabilnu semantičku verziju: $version" >&2
+            exit 1
+          fi
+
+          if [[ "$RELEASE_REF_TYPE" == "tag" ]]; then
+            tag_version="${RELEASE_REF_NAME#v}"
+            if [[ "$tag_version" != "$version" ]]; then
+              echo "Release tag and VERSION differ / Tag izdanja i VERSION se razlikuju: $RELEASE_REF_NAME != $version" >&2
+              exit 1
+            fi
+          fi
+
   quality:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest

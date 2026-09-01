@@ -110,6 +110,47 @@ test.describe('browser flows', () => {
     expect(mobileContentGeometry.contentClearance).toBeGreaterThanOrEqual(16);
   });
 
+  test('sticky language selector stays above overlapping hero content', async ({ page }) => {
+    // HR: Vidljivost nije dovoljna: hit-test potvrđuje da ni navigacija ni hero
+    //     ne presreću klik na jezičnu stavku otvorenu iz ljepljivog zaglavlja.
+    // EN: Visibility is insufficient: hit testing proves navigation and hero
+    //     do not intercept a click on a language item opened from the sticky header.
+    await page.setViewportSize({ width: 990, height: 506 });
+    const response = await page.goto('/');
+
+    expect(response?.status()).toBe(200);
+    const stickyHeader = page.locator('.hph-site-header--sticky');
+    const languageControl = stickyHeader.locator('.hph-site-header__control--language');
+    const languageToggle = languageControl.locator('[data-bs-toggle="dropdown"]');
+    const languageMenu = languageControl.locator('.dropdown-menu');
+    const alternateLanguage = languageMenu.locator('.dropdown-item').last();
+
+    await expect(stickyHeader).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, 300));
+    await expect.poll(() => stickyHeader.evaluate(
+      (element) => Math.round(element.getBoundingClientRect().top),
+    )).toBe(0);
+
+    await languageToggle.click();
+    await expect(languageMenu).toBeVisible();
+    await expect(alternateLanguage).toBeVisible();
+
+    const stacking = await alternateLanguage.evaluate((element) => {
+      const rectangle = element.getBoundingClientRect();
+      const target = document.elementFromPoint(
+        rectangle.left + (rectangle.width / 2),
+        rectangle.top + (rectangle.height / 2),
+      );
+
+      return {
+        insideViewport: rectangle.top >= 0 && rectangle.bottom <= window.innerHeight,
+        receivesPointer: target instanceof Element && element.contains(target),
+      };
+    });
+    expect(stacking.insideViewport).toBe(true);
+    expect(stacking.receivesPointer).toBe(true);
+  });
+
   test('guest is redirected, administrator is authorized, and logout clears the session', async ({ page }) => {
     await page.goto('/settings/auth');
     await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsettings%2Fauth/);
@@ -260,6 +301,24 @@ test.describe('browser flows', () => {
 
     await page.getByRole('link', { name: 'Edit', exact: true }).click();
     await expect(editorSurface).toBeVisible();
+
+    // HR: Odustajanje mora ukloniti samo lokalni nacrt i ponovno otvoriti
+    //     objavljeni dokument bez promjene zajedničkog nacrta na poslužitelju.
+    // EN: Cancel must remove only the local draft and reopen the published
+    //     document without changing the shared server-side draft.
+    const localOnlyBody = 'Local browser draft that must be discarded by Cancel.';
+    await editorSurface.fill(localOnlyBody);
+    await expect.poll(() => page.evaluate(() => Object.keys(window.localStorage)
+      .filter((key) => key.startsWith('hfc-editor-html-draft-v1:')).length)).toBe(1);
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`);
+    await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
+    expect(await page.evaluate(() => Object.keys(window.localStorage)
+      .filter((key) => key.startsWith('hfc-editor-html-draft-v1:')).length)).toBe(0);
+
+    await page.getByRole('link', { name: 'Edit', exact: true }).click();
+    await expect(editorSurface).toBeVisible();
+    await expect(editorSurface).not.toContainText(localOnlyBody);
     await editorSurface.fill(secondDraftBody);
     await submitFormAndExpectPost(
       page,
