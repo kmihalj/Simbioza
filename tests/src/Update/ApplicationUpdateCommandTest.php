@@ -58,13 +58,17 @@ TAGS;
     public function testReleaseMetadataAndMaintenanceGuardArePresent(): void
     {
         $root = dirname(__DIR__, 3);
-        $this->assertSame('0.1.9', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.1.10', trim((string)file_get_contents($root . '/VERSION')));
 
         $updater = file_get_contents($root . '/update.php');
         $this->assertIsString($updater);
         foreach (['SIMBIOZA_GITHUB_TOKEN', 'GITHUB_TOKEN', 'COMPOSER_AUTH', 'Authorization: Bearer'] as $secret) {
             $this->assertStringNotContainsString($secret, $updater);
         }
+
+        $this->assertStringContainsString("'--no-install'", $updater);
+        $this->assertStringContainsString("'COMPOSER_ALLOW_SUPERUSER=1'", $updater);
+        $this->assertStringContainsString("'/data/update-vendor-'", $updater);
 
         $frontController = file_get_contents($root . '/public/index.php');
         $this->assertIsString($frontController);

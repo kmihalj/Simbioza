@@ -51,10 +51,10 @@ composer check-platform-reqs --no-dev
 Na poslužitelju se preporučuje **release instalacija bez trajnog `.git`
 direktorija**. Označeno izdanje dohvatite u privremeni direktorij, a u
 aplikacijski direktorij kopirajte samo njegove datoteke. Primjer za izdanje
-`0.1.9`:
+`0.1.10`:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.9 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.10 --single-branch \
   https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -324,7 +324,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.9`.
+`sudo php update.php --tag=0.1.10`.
 
 Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
 traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
@@ -335,6 +335,11 @@ Prije izmjene updater zaključava postupak i sprema komprimiranu kopiju koda u
 dvojezičnu stranicu održavanja i status 503. Zatim se ažuriraju kod i Composerov
 lock, provjeravaju PHP preduvjeti i sigurnosna upozorenja, izvršavaju migracije
 te čisti cache. Ostaju sačuvani:
+
+Composer prvo izračuna novi lock bez izmjene postojećih paketa, a zatim ih
+instalira u čisti privremeno zamijenjeni `vendor`. Zato release instalacija i
+moduli ne trebaju sadržavati vlastite `.git` direktorije. Neuspjela instalacija
+paketa automatski vraća prethodni `vendor` prije općeg rollbacka aplikacije.
 
 - baza, uploadovi, cache i ostali podaci u `data/`;
 - `composer.lock` kao zapis konkretne instalacije;

@@ -49,11 +49,11 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{hr:string,en:string}> */
     private const MESSAGES = [
         'usage' => [
-            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.9] [--lang=hr|en]\n"
+            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.10] [--lang=hr|en]\n"
                 . "  bez opcija    ažurira Simbiozu i module na zadnja kompatibilna izdanja\n"
                 . "  --check      samo prikazuje trenutačni i zadnji dostupni tag\n"
                 . "  --tag=TAG    ažurira na određeni stabilni Simbioza tag\n",
-            'en' => "Usage: php update.php [--check] [--tag=0.1.9] [--lang=hr|en]\n"
+            'en' => "Usage: php update.php [--check] [--tag=0.1.10] [--lang=hr|en]\n"
                 . "  no options   updates Simbioza and modules to latest compatible releases\n"
                 . "  --check      only shows the current and latest available tag\n"
                 . "  --tag=TAG    updates to a specific stable Simbioza tag\n",
@@ -228,16 +228,7 @@ final class ApplicationUpdateCommand
             $this->syncSource($rsync, $sourceDirectory);
 
             $this->write($this->message('composer'));
-            $this->mustRun([
-                $composer,
-                'update',
-                '--with-all-dependencies',
-                '--no-dev',
-                '--no-interaction',
-                '--no-progress',
-                '--prefer-dist',
-                '--optimize-autoloader',
-            ], $this->appRoot);
+            $this->updateComposerDependencies($composer);
 
             $this->write($this->message('platform'));
             $this->mustRun([$composer, 'check-platform-reqs', '--no-dev'], $this->appRoot);
@@ -427,6 +418,65 @@ final class ApplicationUpdateCommand
         $this->mustRun($command);
     }
 
+    /**
+     * HR: Izračunava novi lock bez izmjene postojećeg vendora pa pakete instalira u čisti vendor.
+     *     Time release instalacija ne ovisi o `.git` direktorijima unutar postojećih VCS paketa.
+     *
+     * EN: Resolves the new lock without changing the existing vendor, then installs into a clean vendor.
+     *     This keeps release updates independent of `.git` directories inside existing VCS packages.
+     */
+    private function updateComposerDependencies(string $composer): void
+    {
+        $this->mustRunComposer([
+            $composer,
+            'update',
+            '--with-all-dependencies',
+            '--no-dev',
+            '--no-install',
+            '--no-interaction',
+            '--no-progress',
+            '--prefer-dist',
+        ], $this->appRoot);
+
+        $vendorDirectory = $this->appRoot . '/vendor';
+        $vendorBackupDirectory = $this->appRoot . '/data/update-vendor-' . bin2hex(random_bytes(8));
+        $vendorMoved = false;
+
+        if (is_dir($vendorDirectory)) {
+            if (!rename($vendorDirectory, $vendorBackupDirectory)) {
+                throw new RuntimeException('Unable to move the existing Composer vendor directory.');
+            }
+            $vendorMoved = true;
+        }
+
+        try {
+            $this->mustRunComposer([
+                $composer,
+                'install',
+                '--no-dev',
+                '--no-interaction',
+                '--no-progress',
+                '--prefer-dist',
+                '--optimize-autoloader',
+            ], $this->appRoot);
+        } catch (Throwable $throwable) {
+            $this->removeDirectory($vendorDirectory);
+            if ($vendorMoved && !rename($vendorBackupDirectory, $vendorDirectory)) {
+                throw new RuntimeException(
+                    'Composer installation failed and the previous vendor directory could not be restored: '
+                    . $throwable->getMessage(),
+                    0,
+                    $throwable,
+                );
+            }
+            throw $throwable;
+        }
+
+        if ($vendorMoved) {
+            $this->removeDirectory($vendorBackupDirectory);
+        }
+    }
+
     private function rollback(): void
     {
         $backupPath = $this->backupPath;
@@ -450,7 +500,7 @@ final class ApplicationUpdateCommand
                 throw new RuntimeException('Unable to restore ' . $composerFile . '.');
             }
         }
-        $this->mustRun([
+        $this->mustRunComposer([
             $composer,
             'install',
             '--no-dev',
@@ -466,6 +516,34 @@ final class ApplicationUpdateCommand
         $this->mustRun($command);
         $this->disableMaintenance();
         $this->write($this->message('rollback_success'));
+    }
+
+    private function removeDirectory(string $directory): void
+    {
+        if (is_link($directory) || is_file($directory)) {
+            unlink($directory);
+            return;
+        }
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        foreach ($iterator as $item) {
+            if (!$item instanceof \SplFileInfo) {
+                continue;
+            }
+            $path = $item->getPathname();
+            if ($item->isLink() || $item->isFile()) {
+                unlink($path);
+                continue;
+            }
+            rmdir($path);
+        }
+        rmdir($directory);
     }
 
     private function enableMaintenance(string $targetTag): void
@@ -624,8 +702,29 @@ final class ApplicationUpdateCommand
         if ($exitCode !== 0) {
             $detail = trim($stderr);
             throw new RuntimeException(
-                sprintf('Command failed (%d): %s%s', $exitCode, implode(' ', $command), $detail !== '' ? "\n" . $detail : ''),
+                sprintf(
+                    'Command failed (%d): %s%s',
+                    $exitCode,
+                    implode(' ', $command),
+                    $detail !== '' ? "\n" . $detail : '',
+                ),
             );
+        }
+    }
+
+    /** @param list<string> $command */
+    private function mustRunComposer(array $command, ?string $workingDirectory = null): void
+    {
+        $previousValue = getenv('COMPOSER_ALLOW_SUPERUSER');
+        putenv('COMPOSER_ALLOW_SUPERUSER=1');
+        try {
+            $this->mustRun($command, $workingDirectory);
+        } finally {
+            if ($previousValue === false) {
+                putenv('COMPOSER_ALLOW_SUPERUSER');
+            } else {
+                putenv('COMPOSER_ALLOW_SUPERUSER=' . $previousValue);
+            }
         }
     }
 
@@ -636,12 +735,12 @@ final class ApplicationUpdateCommand
     private function runProcess(array $command, ?string $workingDirectory, bool $capture): array
     {
         $descriptors = $capture
-            ? [
+        ? [
                 0 => ['file', '/dev/null', 'r'],
                 1 => ['pipe', 'w'],
                 2 => ['pipe', 'w'],
             ]
-            : [
+        : [
                 0 => ['file', '/dev/null', 'r'],
                 1 => STDOUT,
                 2 => STDERR,
