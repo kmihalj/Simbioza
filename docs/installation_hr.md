@@ -51,10 +51,10 @@ composer check-platform-reqs --no-dev
 Na poslužitelju se preporučuje **release instalacija bez trajnog `.git`
 direktorija**. Označeno izdanje dohvatite u privremeni direktorij, a u
 aplikacijski direktorij kopirajte samo njegove datoteke. Primjer za izdanje
-`0.1.8`:
+`0.1.9`:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.8 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.9 --single-branch \
   https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -324,13 +324,11 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.8`.
+`sudo php update.php --tag=0.1.9`.
 
-Ako je repozitorij Simbioze privatan, a server nema GitHub vjerodajnice, ista
-interaktivna naredba sigurno traži read-only GitHub token. Unos nije vidljiv i
-updater ga koristi samo u pokrenutom procesu; ne zapisuje ga na disk. Za
-neinteraktivnu automatizaciju token se može predati kroz varijablu okruženja
-`SIMBIOZA_GITHUB_TOKEN`, uz ograničen pristup poslu i spremištu tajni.
+Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
+traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
+izdanja.
 
 Prije izmjene updater zaključava postupak i sprema komprimiranu kopiju koda u
 `data/backups/application-updates/`. Tijekom nadogradnje HTTP zahtjevi dobivaju

@@ -49,10 +49,10 @@ composer check-platform-reqs --no-dev
 
 For a server, prefer a **release installation without a persistent `.git`
 directory**. Fetch a tagged release into a temporary directory and copy only
-its files into the application directory. Example for release `0.1.8`:
+its files into the application directory. Example for release `0.1.9`:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.8 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.9 --single-branch \
   https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -322,14 +322,11 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.8`.
+`sudo php update.php --tag=0.1.9`.
 
-When the Simbioza repository is private and the server has no GitHub
-credentials, the same interactive command securely asks for a read-only GitHub
-token. The input is hidden and is used only by the running updater; it is not
-written to disk. For non-interactive automation, provide the token through the
-`SIMBIOZA_GITHUB_TOKEN` environment variable and restrict access to the job and
-its secret store.
+Simbioza and every module fetched by the updater are publicly available. The
+updater therefore neither requests nor accepts tokens, passwords, or other
+credentials for downloading releases.
 
 Before changing files, the updater locks the operation and creates a compressed
 code backup in `data/backups/application-updates/`. HTTP requests receive a

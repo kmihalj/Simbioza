@@ -54,7 +54,7 @@ composer e2e
 ```
 
 Poslužiteljska release instalacija smije namjerno biti bez `.git` direktorija i
-čuvati vlastiti provjereni `composer.lock`. Od izdanja `0.1.8` nadalje iz
+čuvati vlastiti provjereni `composer.lock`. Od izdanja `0.1.9` nadalje iz
 korijena instalacije provjerite i instalirajte najnovije stabilne tagove
 aplikacije i kompatibilnih modula ovako:
 
