@@ -336,7 +336,7 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.13`.
+`sudo php update.php --tag=0.1.14`.
 
 Simbioza and every module fetched by the updater are publicly available. The
 updater therefore neither requests nor accepts tokens, passwords, or other

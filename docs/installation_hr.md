@@ -337,7 +337,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.13`.
+`sudo php update.php --tag=0.1.14`.
 
 Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
 traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
