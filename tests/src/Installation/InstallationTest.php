@@ -336,6 +336,13 @@ final class InstallationTest extends TestCase
         $assetsByUuid = [];
         foreach ($assetRows as $assetRow) {
             $assetsByUuid[(string)$assetRow['uuid']] = $assetRow;
+            $assetPath = $root . '/data/editor-html/uploads/' . $assetRow['content_path'];
+            $this->assertFileExists($assetPath);
+            $this->assertSame(
+                (int)$assetRow['file_size'],
+                filesize($assetPath),
+                'Imported guide asset metadata must match the stored file size.',
+            );
         }
 
         foreach ($referencedAssetUuids as $assetUuid) {
