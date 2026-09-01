@@ -38,12 +38,35 @@ lists the extensions; `mbstring` is not enabled by every PHP build.
 
 ## 2. Fetch the application
 
+For a development checkout whose changes are tracked by Git, use:
+
 ```bash
 git clone https://github.com/kmihalj/Simbioza.git simbioza
 cd simbioza
 composer update --with-all-dependencies
 composer check-platform-reqs --no-dev
 ```
+
+For a server, prefer a **release installation without a persistent `.git`
+directory**. Fetch a tagged release into a temporary directory and copy only
+its files into the application directory. Example for release `0.1.7`:
+
+```bash
+git clone --quiet --depth 1 --branch 0.1.7 --single-branch \
+  https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
+mkdir -p /srv/simbioza
+rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
+cd /srv/simbioza
+composer update --with-all-dependencies --no-dev --optimize-autoloader
+composer check-platform-reqs --no-dev
+```
+
+You may remove the temporary checkout after verification. This is why `.git`
+does not exist in the installed application: it is neither lost nor required at
+runtime. The installation keeps its own `composer.lock`, through which Composer
+records the exact installed module releases. Future upgrades use the standalone
+`update.php` described in section 11 without turning the server into a
+development Git checkout.
 
 The project uses the tagged Framework `^0.0.24` release and compatible internal
 module releases from the `^0.1.0` line. It does not commit `composer.lock`. An
@@ -284,7 +307,44 @@ themes, or other content.
 7. Run required outbox/webhook workers under a process supervisor.
 8. Monitor application logs and `data/logs/installer.log` outside web access.
 
-## 11. Security recommendations
+## 11. Updating a release installation
+
+Run the release check and then the update from the application root:
+
+```bash
+cd /srv/simbioza
+sudo php update.php --check
+sudo php update.php
+```
+
+Use `sudo` only when the invoking user cannot write to the application
+directory. You do not need to know the newest tag: the updater discovers the
+latest stable Simbioza release, fetches it into a temporary directory, and asks
+Composer to select the newest compatible tags for all modules. To deliberately
+use a particular release, pass, for example,
+`sudo php update.php --tag=0.1.7`.
+
+Before changing files, the updater locks the operation and creates a compressed
+code backup in `data/backups/application-updates/`. HTTP requests receive a
+bilingual maintenance page with status 503 during the update. It then updates
+the code and Composer lock, verifies PHP platform requirements and security
+advisories, applies migrations, and clears the cache. It preserves:
+
+- the database, uploads, cache, and other runtime data in `data/`;
+- `composer.lock` as the record of this concrete installation;
+- private `config/database.php`, `config/env.php`, `config/installation.php`,
+  and `config/email.php` files;
+- the active menu and theme settings in `resources/config/menu/` and
+  `resources/config/theme/`.
+
+If the operation fails before migrations, the updater automatically restores
+the previous code and Composer packages. Once migrations have started, it
+intentionally leaves maintenance mode enabled because blindly rolling back only
+the code is no longer safe. Preserve the output and backup path, correct the
+cause, and rerun the updater. A separate, regularly tested backup of the
+database and user files remains mandatory.
+
+## 12. Security recommendations
 
 - always use HTTPS and renewable certificates;
 - restrict server, database, `config/`, and `data/` access;
@@ -302,7 +362,7 @@ rotation, an `HttpOnly`/`SameSite=Strict` cookie, a 30-minute idle timeout,
 escaping of all dynamic output, CSP, `X-Frame-Options: DENY`, HSTS, no-sniff,
 no-referrer, and no-store caching.
 
-## 12. Optional macOS external-drive example
+## 13. Optional macOS external-drive example
 
 This is a local example only, not a general requirement. The real installation
 stays on the external drive, while Homebrew Apache's web root contains only a
@@ -320,7 +380,7 @@ Before linking, verify the target does not exist and Apache permits
 The [macOS installation lab record](installation-lab_en.md) contains the six
 verified installations.
 
-## 13. Diagnostics and verification
+## 14. Diagnostics and verification
 
 ```bash
 composer on-commit

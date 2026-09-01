@@ -53,6 +53,19 @@ npx playwright install chromium
 composer e2e
 ```
 
+Poslužiteljska release instalacija smije namjerno biti bez `.git` direktorija i
+čuvati vlastiti provjereni `composer.lock`. Od izdanja `0.1.7` nadalje iz
+korijena instalacije provjerite i instalirajte najnovije stabilne tagove
+aplikacije i kompatibilnih modula ovako:
+
+```bash
+sudo php update.php --check
+sudo php update.php
+```
+
+Cijeli postupak release instalacije i nadogradnje opisan je u
+[uputama za instalaciju](docs/installation_hr.md#11-nadogradnja-release-instalacije).
+
 Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
 su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima
 zaseban [engleski indeks](docs/index_en.md).

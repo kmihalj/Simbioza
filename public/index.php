@@ -6,6 +6,29 @@
 
 declare(strict_types=1);
 
+// HR: Samostalni updater uključuje ovu statičnu zaštitu prije autoloadera kako HTTP zahtjev
+//     nikada ne bi pokrenuo djelomično ažuriran kod ili vendor direktorij.
+// EN: The standalone updater enables this static guard before the autoloader so an HTTP request
+//     never executes partially updated application code or a partially updated vendor directory.
+$updateMaintenanceFile = dirname(__DIR__) . '/data/update-maintenance.json';
+if (is_file($updateMaintenanceFile)) {
+    http_response_code(503);
+    header('Content-Type: text/html; charset=UTF-8');
+    header('Cache-Control: no-store, max-age=0');
+    header('Retry-After: 60');
+    echo '<!doctype html><html lang="hr"><meta charset="utf-8">'
+        . '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        . '<title>Simbioza se ažurira / Simbioza is being updated</title>'
+        . '<style>body{font-family:system-ui,sans-serif;max-width:48rem;margin:12vh auto;padding:2rem;'
+        . 'color:#123f4b;background:#fffaf2}main{background:#fff;border:1px solid #c9d8d7;'
+        . 'border-radius:.75rem;padding:2rem}h1{margin-top:0}</style><main>'
+        . '<h1>Simbioza se ažurira</h1><p>Aplikacija će ponovno biti dostupna nakon sigurnog dovršetka ažuriranja.</p>'
+        . '<hr><h1 lang="en">Simbioza is being updated</h1>'
+        . '<p lang="en">The application will be available again after the update completes safely.</p>'
+        . '</main></html>';
+    exit;
+}
+
 use App\Installation\InstallationAccessToken;
 use App\Installation\InstallationConfigWriter;
 use App\Installation\InstallationDatabaseTester;

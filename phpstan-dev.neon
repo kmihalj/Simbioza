@@ -3,4 +3,6 @@ parameters:
 	level: 4
 	paths:
 		- tests
+	scanFiles:
+		- update.php
 	tmpDir: build/phpstan/dev

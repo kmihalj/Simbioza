@@ -39,12 +39,35 @@ Službeni popis PHP ekstenzija nalazi se u
 
 ## 2. Dohvat aplikacije
 
+Za razvojnu kopiju, u kojoj se promjene prate Gitom, koristite:
+
 ```bash
 git clone https://github.com/kmihalj/Simbioza.git simbioza
 cd simbioza
 composer update --with-all-dependencies
 composer check-platform-reqs --no-dev
 ```
+
+Na poslužitelju se preporučuje **release instalacija bez trajnog `.git`
+direktorija**. Označeno izdanje dohvatite u privremeni direktorij, a u
+aplikacijski direktorij kopirajte samo njegove datoteke. Primjer za izdanje
+`0.1.7`:
+
+```bash
+git clone --quiet --depth 1 --branch 0.1.7 --single-branch \
+  https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
+mkdir -p /srv/simbioza
+rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
+cd /srv/simbioza
+composer update --with-all-dependencies --no-dev --optimize-autoloader
+composer check-platform-reqs --no-dev
+```
+
+Privremenu kopiju nakon provjere možete ukloniti. `.git` zato ne postoji u
+instaliranoj aplikaciji: nije izgubljen niti potreban za njezin rad. Instalacija
+čuva vlastiti `composer.lock`, kojim Composer pamti točno instalirana izdanja
+modula. Sljedeće nadogradnje obavlja samostalni `update.php`, opisan u 11.
+poglavlju, bez pretvaranja poslužitelja u razvojnu Git kopiju.
 
 Projekt koristi označeno izdanje Frameworka `^0.0.24` i kompatibilna izdanja
 internih modula iz linije `^0.1.0`; ne sprema `composer.lock`. Za ponovljivi
@@ -286,7 +309,44 @@ sadržaja.
 7. Pokrenite potrebne outbox/webhook workere kroz upravitelj procesa.
 8. Nadzirite aplikacijski i `data/logs/installer.log` bez izlaganja webom.
 
-## 11. Sigurnosne preporuke
+## 11. Nadogradnja release instalacije
+
+U korijenu aplikacije pokrenite provjeru dostupnog izdanja, a zatim nadogradnju:
+
+```bash
+cd /srv/simbioza
+sudo php update.php --check
+sudo php update.php
+```
+
+`sudo` je potreban samo kada korisnik koji pokreće naredbu nema pravo pisanja u
+aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
+najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
+Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
+zadržavanje na određenom izdanju može se zadati, primjerice,
+`sudo php update.php --tag=0.1.7`.
+
+Prije izmjene updater zaključava postupak i sprema komprimiranu kopiju koda u
+`data/backups/application-updates/`. Tijekom nadogradnje HTTP zahtjevi dobivaju
+dvojezičnu stranicu održavanja i status 503. Zatim se ažuriraju kod i Composerov
+lock, provjeravaju PHP preduvjeti i sigurnosna upozorenja, izvršavaju migracije
+te čisti cache. Ostaju sačuvani:
+
+- baza, uploadovi, cache i ostali podaci u `data/`;
+- `composer.lock` kao zapis konkretne instalacije;
+- privatne datoteke `config/database.php`, `config/env.php`,
+  `config/installation.php` i `config/email.php`;
+- postavke aktivnog izbornika i teme u `resources/config/menu/` i
+  `resources/config/theme/`.
+
+Ako postupak stane prije migracija, updater automatski vraća prethodni kod i
+Composer pakete. Nakon početka migracija namjerno ostavlja način održavanja
+uključen jer slijepi povrat samo koda više nije siguran; tada sačuvajte ispis i
+putanju backupa te otklonite uzrok prije ponovnog pokretanja. Uz aplikacijsku
+kopiju i dalje je obvezan neovisan, redovito provjeren backup baze i korisničkih
+datoteka.
+
+## 12. Sigurnosne preporuke
 
 - uvijek koristite HTTPS i obnovljive certifikate;
 - ograničite pristup serveru, bazi, `config/` i `data/` direktoriju;
@@ -304,7 +364,7 @@ session ID-a, `HttpOnly`/`SameSite=Strict` cookie, 30-minutni timeout, escaping
 svakog dinamičkog izlaza, CSP, `X-Frame-Options: DENY`, HSTS, no-sniff,
 no-referrer i zabranu cacheiranja.
 
-## 12. Neobvezni macOS primjer s vanjskim diskom
+## 13. Neobvezni macOS primjer s vanjskim diskom
 
 Ovo je samo lokalni primjer, nije opći ni obvezni postupak. Izvorna instalacija
 ostaje na vanjskom disku, a u Homebrew Apache web-rootu postoji samo simbolička
@@ -322,7 +382,7 @@ Apachea dopušta `SymLinksIfOwnerMatch` ili kontrolirani `FollowSymLinks` samo z
 taj web-root. Detaljni laboratorijski zapis šest provjerenih instalacija nalazi
 se u [macOS instalacijskom zapisu](installation-lab_hr.md).
 
-## 13. Dijagnostika i provjera
+## 14. Dijagnostika i provjera
 
 ```bash
 composer on-commit

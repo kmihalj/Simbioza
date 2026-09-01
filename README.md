@@ -54,6 +54,18 @@ npx playwright install chromium
 composer e2e
 ```
 
+A deployed release may intentionally omit `.git` and retain its own verified
+`composer.lock`. From release `0.1.7` onward, check and install the newest stable
+application and compatible module tags from the installation root with:
+
+```bash
+sudo php update.php --check
+sudo php update.php
+```
+
+The complete release-install and update procedure is documented in
+[Installing Simbioza](docs/installation_en.md#11-updating-a-release-installation).
+
 Application configuration, migrations, module order, and API integration are
 described in the [English documentation](docs/index_en.md). The Croatian
 documentation has a separate [Croatian index](docs/index_hr.md).
