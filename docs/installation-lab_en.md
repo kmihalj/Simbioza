@@ -51,7 +51,7 @@ rsync -a \
   --exclude='output/' --exclude='composer.local.json' \
   --exclude='composer.local.lock' --exclude='config/database.php' \
   --exclude='config/env.php' --exclude='config/installation.php' \
-  --exclude='config/email.php' \
+  --exclude='config/email.php' --exclude='config/workspace.php' \
   /Volumes/Ext/Development/CR/HFClean/ "$install_root/"
 cp -al /Volumes/Ext/Development/CR/HFClean/vendor "$install_root/vendor"
 mkdir -p "$install_root/data/logs" "$install_root/data/cache" "$install_root/data/themes"

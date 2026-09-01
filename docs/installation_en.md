@@ -92,6 +92,14 @@ Set ownership for the PHP-FPM pool or Apache process user. Do not use
 The `resources/config/menu` directory must be writable because importing the
 starter user-guide workspace also restores its special-menu configuration.
 
+The process-user name is not part of Simbioza. It is commonly `www-data` on
+Debian/Ubuntu, may be `apache` on Fedora, and can be `_www` or the local PHP
+process user on macOS. Grant access to the actual account used by the selected
+PHP-FPM pool or web server. On Windows, use NTFS ACLs instead of `chown`/`chmod`
+and grant **Modify** only to the PHP/IIS service identity and only on the
+writable directories listed above. The installer does not guess or change the
+process identity or Windows ACLs.
+
 ## 4. Apache 2.4
 
 Use `public/` as the root and allow only the project's rewrite directives:
@@ -309,8 +317,8 @@ themes, or other content.
 
 ## 11. Updating a release installation
 
-The **Settings** landing page lists the locally installed versions of Simbioza
-and every module. **Check for updates** compares them with stable tags in public
+The **Settings** landing page lists the locally installed versions of Simbioza,
+the framework, and every module. **Check for updates** compares them with stable tags in public
 repositories and does not require a token. This check is informational and does
 not change the installation; the verified CLI updater still performs the actual
 upgrade.
@@ -328,7 +336,7 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.12`.
+`sudo php update.php --tag=0.1.13`.
 
 Simbioza and every module fetched by the updater are publicly available. The
 updater therefore neither requests nor accepts tokens, passwords, or other
@@ -343,9 +351,17 @@ advisories, applies migrations, and clears the cache. It preserves:
 - the database, uploads, cache, and other runtime data in `data/`;
 - `composer.lock` as the record of this concrete installation;
 - private `config/database.php`, `config/env.php`, `config/installation.php`,
-  and `config/email.php` files;
+  `config/email.php`, and `config/workspace.php` files;
 - the active menu and theme settings in `resources/config/menu/` and
   `resources/config/theme/`.
+
+The updater never assigns ownership to `www-data` or another predefined
+account. On Unix it records the current UID, GID, and mode of writable paths
+before synchronization and restores them after synchronization and rollback.
+On Windows it performs no POSIX ownership or mode changes, leaving the existing
+NTFS ACL authoritative. New code files receive the normal permissions of the
+process running the updater, while existing private configuration and writable
+directories are not replaced.
 
 Composer first resolves the new lock without changing installed packages and
 then installs them into a clean, temporarily replaced `vendor` directory.

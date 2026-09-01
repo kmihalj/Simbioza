@@ -29,8 +29,22 @@ final class ApplicationUpdateCommand
         'config/env.php',
         'config/installation.php',
         'config/email.php',
+        'config/workspace.php',
         'resources/config/menu/',
         'resources/config/theme/',
+    ];
+
+    /** @var list<string> */
+    private const PRESERVED_WRITABLE_PATHS = [
+        'config',
+        'config/database.php',
+        'config/env.php',
+        'config/installation.php',
+        'config/email.php',
+        'config/workspace.php',
+        'data',
+        'resources/config/menu',
+        'resources/config/theme',
     ];
 
     /** @var list<string> */
@@ -49,11 +63,11 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{hr:string,en:string}> */
     private const MESSAGES = [
         'usage' => [
-            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.12] [--lang=hr|en]\n"
+            'hr' => "Upotreba: php update.php [--check] [--tag=0.1.13] [--lang=hr|en]\n"
                 . "  bez opcija    ažurira Simbiozu i module na zadnja kompatibilna izdanja\n"
                 . "  --check      samo prikazuje trenutačni i zadnji dostupni tag\n"
                 . "  --tag=TAG    ažurira na određeni stabilni Simbioza tag\n",
-            'en' => "Usage: php update.php [--check] [--tag=0.1.12] [--lang=hr|en]\n"
+            'en' => "Usage: php update.php [--check] [--tag=0.1.13] [--lang=hr|en]\n"
                 . "  no options   updates Simbioza and modules to latest compatible releases\n"
                 . "  --check      only shows the current and latest available tag\n"
                 . "  --tag=TAG    updates to a specific stable Simbioza tag\n",
@@ -142,6 +156,10 @@ final class ApplicationUpdateCommand
             'hr' => 'Ažuriranje nije uspjelo: %s',
             'en' => 'Update failed: %s',
         ],
+        'metadata_restore_failure' => [
+            'hr' => 'Nije moguće vratiti vlasništvo ili prava putanje: %s',
+            'en' => 'Unable to restore ownership or permissions for path: %s',
+        ],
     ];
 
     private string $locale;
@@ -156,6 +174,9 @@ final class ApplicationUpdateCommand
     private ?string $backupPath = null;
 
     private ?string $temporaryDirectory = null;
+
+    /** @var array<string, array{mode:int,uid:int,gid:int}> */
+    private array $preservedPathMetadata = [];
 
     /** @param list<string> $arguments */
     public function __construct(
@@ -202,6 +223,7 @@ final class ApplicationUpdateCommand
             }
 
             $this->acquireLock();
+            $this->capturePreservedPathMetadata();
             $rsync = $this->requireExecutable('rsync');
             $tar = $this->requireExecutable('tar');
             $composer = $this->requireExecutable('composer');
@@ -230,6 +252,7 @@ final class ApplicationUpdateCommand
 
             $this->write($this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
+            $this->restorePreservedPathMetadata();
 
             $this->write($this->message('composer'));
             $this->updateComposerDependencies($composer);
@@ -270,6 +293,7 @@ final class ApplicationUpdateCommand
 
             $this->write($this->message('cache'));
             $this->clearCache($this->appRoot . '/data/cache');
+            $this->restorePreservedPathMetadata();
             $this->disableMaintenance();
             $this->write(sprintf($this->message('success'), $targetTag));
             return 0;
@@ -296,6 +320,7 @@ final class ApplicationUpdateCommand
             $this->disableMaintenance();
             return 1;
         } finally {
+            $this->restorePreservedPathMetadata(false);
             $this->removeTemporaryDirectory();
             $this->releaseLock();
         }
@@ -427,13 +452,93 @@ final class ApplicationUpdateCommand
 
     private function syncSource(string $rsync, string $sourceDirectory): void
     {
-        $command = [$rsync, '--archive', '--delete'];
+        $command = [
+            $rsync,
+            '--archive',
+            '--delete',
+            '--no-owner',
+            '--no-group',
+            '--no-perms',
+        ];
         foreach (self::SOURCE_SYNC_EXCLUDES as $exclude) {
             $command[] = '--exclude=' . $exclude;
         }
         $command[] = rtrim($sourceDirectory, '/') . '/';
         $command[] = rtrim($this->appRoot, '/') . '/';
         $this->mustRun($command);
+    }
+
+    /** HR: Pamti Unix vlasništvo i prava zapisivih putanja. EN: Captures Unix ownership and modes of writable paths. */
+    private function capturePreservedPathMetadata(): void
+    {
+        $this->preservedPathMetadata = [];
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        foreach (self::PRESERVED_WRITABLE_PATHS as $relativePath) {
+            $path = $this->appRoot . '/' . $relativePath;
+            $metadata = @stat($path);
+            if (!is_array($metadata)) {
+                continue;
+            }
+
+            $this->preservedPathMetadata[$relativePath] = [
+                'mode' => ((int)($metadata['mode'] ?? 0)) & 07777,
+                'uid' => (int)($metadata['uid'] ?? -1),
+                'gid' => (int)($metadata['gid'] ?? -1),
+            ];
+        }
+    }
+
+    /**
+     * HR: Vraća zatečeni Unix UID, GID i mode; ne pretpostavlja ime web-korisnika.
+     * EN: Restores the captured Unix UID, GID, and mode without assuming a web-user name.
+     */
+    private function restorePreservedPathMetadata(bool $strict = true): void
+    {
+        if (PHP_OS_FAMILY === 'Windows' || $this->preservedPathMetadata === []) {
+            return;
+        }
+
+        foreach ($this->preservedPathMetadata as $relativePath => $metadata) {
+            $path = $this->appRoot . '/' . $relativePath;
+            if (!file_exists($path)) {
+                continue;
+            }
+
+            clearstatcache(true, $path);
+            $restored = true;
+            $currentOwner = @fileowner($path);
+            if (!is_int($currentOwner)) {
+                $restored = false;
+            } elseif ($metadata['uid'] >= 0 && $currentOwner !== $metadata['uid']) {
+                $restored = @chown($path, $metadata['uid']);
+            }
+
+            clearstatcache(true, $path);
+            $currentGroup = @filegroup($path);
+            if (!is_int($currentGroup)) {
+                $restored = false;
+            } elseif ($metadata['gid'] >= 0 && $currentGroup !== $metadata['gid']) {
+                $restored = @chgrp($path, $metadata['gid']) && $restored;
+            }
+
+            clearstatcache(true, $path);
+            $currentMode = @fileperms($path);
+            if (!is_int($currentMode)) {
+                $restored = false;
+            } elseif (($currentMode & 07777) !== $metadata['mode']) {
+                $restored = @chmod($path, $metadata['mode']) && $restored;
+            }
+
+            if (!$restored && $strict) {
+                throw new RuntimeException(sprintf(
+                    $this->message('metadata_restore_failure'),
+                    $relativePath,
+                ));
+            }
+        }
     }
 
     /**
@@ -528,10 +633,21 @@ final class ApplicationUpdateCommand
             '--optimize-autoloader',
         ], $this->appRoot);
 
-        $command = [$rsync, '--archive', '--delete', '--exclude=.git/', '--exclude=vendor/', '--exclude=data/'];
+        $command = [
+            $rsync,
+            '--archive',
+            '--delete',
+            '--no-owner',
+            '--no-group',
+            '--no-perms',
+        ];
+        foreach (self::SOURCE_SYNC_EXCLUDES as $exclude) {
+            $command[] = '--exclude=' . $exclude;
+        }
         $command[] = rtrim($rollbackDirectory, '/') . '/';
         $command[] = rtrim($this->appRoot, '/') . '/';
         $this->mustRun($command);
+        $this->restorePreservedPathMetadata();
         $this->disableMaintenance();
         $this->write($this->message('rollback_success'));
     }

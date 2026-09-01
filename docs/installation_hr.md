@@ -93,6 +93,14 @@ koristiti `chmod 777`. Installer sam zapisuje `config/database.php`,
 Direktorij `resources/config/menu` mora biti zapisiv jer uvoz početnog područja
 s korisničkim uputama istodobno obnavlja njegovu posebnu konfiguraciju izbornika.
 
+Naziv procesnog korisnika nije dio Simbioze: na Debian/Ubuntu sustavu često je
+`www-data`, na Fedori može biti `apache`, a na macOS-u `_www` ili korisnik
+lokalnog PHP procesa. Dodijelite prava stvarnom korisniku odabranog PHP-FPM
+poola ili web-poslužitelja. Na Windowsu se umjesto `chown`/`chmod` naredbi kroz
+NTFS ACL dodjeljuje pravo **Modify** samo servisnom računu PHP/IIS procesa i samo
+nad navedenim zapisivim direktorijima. Installer ne pokušava pogađati niti
+mijenjati procesnog korisnika ili Windows ACL.
+
 ## 4. Apache 2.4
 
 Najjednostavniji VirtualHost koristi `public/` kao korijen i dopušta samo
@@ -311,8 +319,8 @@ sadržaja.
 
 ## 11. Nadogradnja release instalacije
 
-Početna stranica **Postavke** prikazuje lokalno instalirane verzije Simbioze i
-svih modula. Gumb **Provjeri ažuriranja** uspoređuje ih sa stabilnim tagovima u
+Početna stranica **Postavke** prikazuje lokalno instalirane verzije Simbioze,
+frameworka i svih modula. Gumb **Provjeri ažuriranja** uspoređuje ih sa stabilnim tagovima u
 javnim repozitorijima i ne traži token. Ta je provjera informativna i ne mijenja
 instalaciju; stvarnu nadogradnju i dalje izvodi provjereni CLI updater.
 
@@ -329,7 +337,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.12`.
+`sudo php update.php --tag=0.1.13`.
 
 Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
 traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
@@ -344,9 +352,16 @@ te čisti cache. Ostaju sačuvani:
 - baza, uploadovi, cache i ostali podaci u `data/`;
 - `composer.lock` kao zapis konkretne instalacije;
 - privatne datoteke `config/database.php`, `config/env.php`,
-  `config/installation.php` i `config/email.php`;
+  `config/installation.php`, `config/email.php` i `config/workspace.php`;
 - postavke aktivnog izbornika i teme u `resources/config/menu/` i
   `resources/config/theme/`.
+
+Updater ne postavlja vlasnika na `www-data` niti na bilo koji drugi unaprijed
+zadani račun. Na Unix sustavima prije izmjene pamti postojeći UID, GID i mode
+zapisivih putanja te ih vraća nakon sinkronizacije i rollbacka. Na Windowsu ne
+izvodi POSIX promjene prava, pa postojeći NTFS ACL ostaje mjerodavan. Nove
+datoteke koda dobivaju uobičajena prava procesa koji je pokrenuo updater, dok se
+postojeća privatna konfiguracija i zapisivi direktoriji ne zamjenjuju.
 
 Composer prvo izračuna novi lock bez izmjene postojećih paketa, a zatim ih
 instalira u čisti privremeno zamijenjeni `vendor`. Zato release instalacija i
