@@ -2,7 +2,7 @@
 
 Simbioza has a browser and HTTP API end-to-end suite for the assembled
 application. Unlike a module unit test, it installs the tagged Framework
-`^0.0.24` release and compatible module releases from `^0.1.0` into a new
+`^0.0.25` release and compatible module releases from `^0.1.0` into a new
 temporary project, runs all official
 migrations against a new SQLite database by default, starts a real HTTP server,
 and drives Chromium through Playwright. The same runner accepts an explicitly

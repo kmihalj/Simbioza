@@ -69,7 +69,7 @@ instaliranoj aplikaciji: nije izgubljen niti potreban za njezin rad. Instalacija
 modula. Sljedeće nadogradnje obavlja samostalni `update.php`, opisan u 11.
 poglavlju, bez pretvaranja poslužitelja u razvojnu Git kopiju.
 
-Projekt koristi označeno izdanje Frameworka `^0.0.24` i kompatibilna izdanja
+Projekt koristi označeno izdanje Frameworka `^0.0.25` i kompatibilna izdanja
 internih modula iz linije `^0.1.0`; ne sprema `composer.lock`. Za ponovljivi
 produkcijski deployment organizacija može izraditi i zasebno pohraniti vlastiti
 provjereni lock, ali ga ne treba miješati s izvornim repozitorijem.
@@ -337,7 +337,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.23`.
+`sudo php update.php --tag=0.1.24`.
 
 Svako izdanje u datoteci `VERSION` nosi istu stabilnu semantičku verziju kao
 njegov Git tag. CI odbija tag čiji se naziv i `VERSION` ne podudaraju, pa updater

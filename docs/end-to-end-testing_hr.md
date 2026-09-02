@@ -2,7 +2,7 @@
 
 Simbioza ima end-to-end skup testova preglednika i HTTP API-ja za sastavljenu
 aplikaciju. Za razliku od jediničnog testa modula, ovaj test instalira označeno
-izdanje Frameworka `^0.0.24` i kompatibilna izdanja modula iz `^0.1.0` u novi
+izdanje Frameworka `^0.0.25` i kompatibilna izdanja modula iz `^0.1.0` u novi
 privremeni projekt, pokreće sve
 službene migracije zadano nad novom SQLite bazom, podiže stvarni HTTP
 poslužitelj i upravlja Chromiumom kroz Playwright. Isti runner prihvaća izričito

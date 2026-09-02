@@ -553,7 +553,7 @@ function verifyMatrixCase(
         $composer['description'] = 'Ephemeral clean-room HeartPhrame matrix case.';
         $composer['require'] = [
             'php' => '>=8.2',
-            'aaieduhr/heartphrame-framework' => '^0.0.24',
+            'aaieduhr/heartphrame-framework' => '^0.0.25',
         ];
         foreach ($requestedModules as $package) {
             $composer['require'][$package] = $local ? 'dev-main' : '^0.1.0';

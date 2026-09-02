@@ -68,7 +68,7 @@ records the exact installed module releases. Future upgrades use the standalone
 `update.php` described in section 11 without turning the server into a
 development Git checkout.
 
-The project uses the tagged Framework `^0.0.24` release and compatible internal
+The project uses the tagged Framework `^0.0.25` release and compatible internal
 module releases from the `^0.1.0` line. It does not commit `composer.lock`. An
 organization may generate and retain its own verified deployment lock, but
 should not mix it into the source repository.
@@ -336,7 +336,7 @@ directory. You do not need to know the newest tag: the updater discovers the
 latest stable Simbioza release, fetches it into a temporary directory, and asks
 Composer to select the newest compatible tags for all modules. To deliberately
 use a particular release, pass, for example,
-`sudo php update.php --tag=0.1.23`.
+`sudo php update.php --tag=0.1.24`.
 
 Every release carries the same stable semantic version in `VERSION` as in its
 Git tag. CI rejects a tag whose name and `VERSION` do not match, so the updater

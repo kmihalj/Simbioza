@@ -6,13 +6,13 @@
 
 Simbioza je aplikacija za zajedničko znanje izgrađena na HeartPhrame Frameworku i njegovim
 samostalno održavanim modulima. Aplikacijski razvoj pripada ovdje i u repozitorije
-modula; Framework se koristi iz označenog izdanja `v0.0.24` i ne razvija se u ovom
+modula; Framework se koristi iz označenog izdanja `v0.0.25` i ne razvija se u ovom
 repozitoriju.
 
 ## Ovisnosti
 
 Svaki HeartPhrame modul zahtijeva
-`aaieduhr/heartphrame-framework:^0.0.24`. Simbioza trenutačno povezuje ORM,
+`aaieduhr/heartphrame-framework:^0.0.25`. Simbioza trenutačno povezuje ORM,
 Menu, Theme, Auth, E-mail, Notification, HTML Editor, Task, Comment, Workspace,
 Workspace Search, Calendar, API, Backup, Audit i Simbioza User. Obavezni redoslijed modula i opcionalne mogućnosti navedeni su
 u [matrici ovisnosti](docs/module-dependencies_hr.md).
@@ -31,7 +31,7 @@ ovisnosti.
 
 ## Politika ovisnosti
 
-Framework je ograničen na `^0.0.24`, a Simbioza moduli koriste kompatibilnu
+Framework je ograničen na `^0.0.25`, a Simbioza moduli koriste kompatibilnu
 liniju izdanja `^0.1.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
 najnovija kompatibilna označena izdanja i pokreće cijeli skup provjera kvalitete.
 Produkcijski deployment može izvan izvornog repozitorija čuvati vlastiti
