@@ -43,8 +43,8 @@ async function confluenceArchive() {
   <object class="ConfluenceUserImpl" package="com.atlassian.confluence.user"><id name="id">u1</id><property name="username">e2e-admin</property><property name="displayName">E2E Administrator</property><property name="emailAddress">e2e-admin@example.invalid</property></object>
   <object class="Page" package="com.atlassian.confluence.pages"><id name="id">100</id><property name="space"><id>1</id></property><property name="title">Imported Home</property><property name="version">1</property><property name="contentStatus">current</property><property name="creator"><id>u1</id></property><property name="lastModifier"><id>u1</id></property></object>
   <object class="Page" package="com.atlassian.confluence.pages"><id name="id">101</id><property name="space"><id>1</id></property><property name="parent"><id>100</id></property><property name="title">${longChildTitle}</property><property name="version">1</property><property name="contentStatus">current</property><property name="creator"><id>u1</id></property><property name="lastModifier"><id>u1</id></property></object>
-  <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b100</id><property name="content"><id>100</id></property><property name="body">&lt;p&gt;Imported home body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:page ri:content-id="101" ri:content-title="${longChildTitle}"/&gt;&lt;ac:plain-text-link-body&gt;Open child&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;</property></object>
-  <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b101</id><property name="content"><id>101</id></property><property name="body">&lt;p&gt;Imported child body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:attachment ri:filename="sample.bin"/&gt;&lt;ac:plain-text-link-body&gt;Download sample&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;</property></object>
+  <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b100</id><property name="content"><id>100</id></property><property name="body">&lt;p&gt;Imported home body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:page ri:content-id="101" ri:content-title="${longChildTitle}"/&gt;&lt;ac:plain-text-link-body&gt;Open child&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;&lt;ac:structured-macro ac:name="tasks-report-macro"&gt;&lt;ac:parameter ac:name="status"&gt;incomplete&lt;/ac:parameter&gt;&lt;/ac:structured-macro&gt;</property></object>
+  <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b101</id><property name="content"><id>101</id></property><property name="body">&lt;p&gt;Imported child body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:attachment ri:filename="sample.bin"/&gt;&lt;ac:plain-text-link-body&gt;Download sample&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;&lt;ac:task-list&gt;&lt;ac:task&gt;&lt;ac:task-id&gt;14&lt;/ac:task-id&gt;&lt;ac:task-status&gt;incomplete&lt;/ac:task-status&gt;&lt;ac:task-body&gt;Review https://example.test/task&lt;/ac:task-body&gt;&lt;/ac:task&gt;&lt;/ac:task-list&gt;</property></object>
   <object class="Attachment" package="com.atlassian.confluence.pages"><id name="id">201</id><property name="containerContent"><id>101</id></property><property name="space"><id>1</id></property><property name="title">sample.bin</property><property name="version">1</property><property name="contentStatus">current</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201a</id><property name="content"><id>201</id></property><property name="name">MEDIA_TYPE</property><property name="stringValue">application/octet-stream</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201b</id><property name="content"><id>201</id></property><property name="name">FILESIZE</property><property name="longValue">23</property></object>
@@ -98,11 +98,24 @@ test('administrator imports a Confluence space while ACL and private files remai
 
     await page.goto(`/workspace/${workspaceSlug}/imported-home?lang=en`);
     await expect(page.locator('body')).toContainText('Imported home body.');
+    const reportTask = page.locator('.editor-task-report .editor-task-checkbox');
+    await expect(reportTask).toHaveCount(1);
+    await expect(reportTask).toBeEnabled();
+    await expect(reportTask).not.toBeChecked();
+    await reportTask.check();
+    await expect(page.locator('.editor-task-report')).toContainText(/No tasks to display|Nema zadataka za prikaz/);
     const childLink = page.locator(`a[href*="/workspace/${workspaceSlug}/${shortenedChildSlug}"]`).first();
     await expect(childLink).toBeVisible();
     await childLink.click();
     await expect(page.locator('body')).toContainText('Imported child body.');
     await expect(page.locator('body')).toContainText(longChildTitle);
+    const sourceTask = page.locator('.editor-task-list .editor-task-checkbox');
+    await expect(sourceTask).toHaveCount(1);
+    await expect(sourceTask).toBeChecked();
+    await expect(page.getByRole('link', { name: 'https://example.test/task' })).toHaveAttribute(
+      'href',
+      'https://example.test/task',
+    );
 
     // HR: Importirani privitak koristi javni ugovor nativnog HTML Editor privitka;
     //     test ne smije ovisiti o internoj ruti Confluence importera.
