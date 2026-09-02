@@ -84,7 +84,7 @@
         "aaieduhr/heartphrame-framework": "^0.0.24",
         "aaieduhr/heartphrame-module-api": "^0.1.0",
         "aaieduhr/heartphrame-module-audit": "^0.1.0",
-        "aaieduhr/heartphrame-module-auth": "^0.1.2",
+        "aaieduhr/heartphrame-module-auth": "^0.1.3",
         "aaieduhr/heartphrame-module-calendar": "^0.1.1",
         "aaieduhr/heartphrame-module-comment": "^0.1.0",
         "aaieduhr/heartphrame-module-editor-html": "^0.1.3",
