@@ -14,6 +14,7 @@ const {
   adminPassword,
   userApiToken,
   userLogin,
+  userPassword,
 } = e2eEnvironment();
 const adminHeaders = apiHeaders(adminApiToken);
 const userHeaders = apiHeaders(userApiToken);
@@ -23,7 +24,10 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
   const restrictedWorkspace = 'e2e-search-restricted';
   const publicPage = 'e2e-search-public-page';
   const restrictedPage = 'e2e-search-restricted-page';
+  const exactPhrasePage = 'e2e-search-exact-phrase-page';
+  const splitPhrasePage = 'e2e-search-split-phrase-page';
   const sharedTerm = `simbioza-search-boundary-${Date.now()}`;
+  const phraseStem = `simbioza-search-phrase-${Date.now()}`;
   const replacementTerm = `simbioza-search-republished-${Date.now()}`;
   let ordinaryUserId;
 
@@ -110,6 +114,20 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
       'Ograničeni rezultat pretrage',
       `${sharedTerm} sadržaj dostupan samo ovlaštenim korisnicima.`,
     );
+    await createAndPublish(
+      request,
+      publicWorkspace,
+      exactPhrasePage,
+      'Točna fraza pretrage',
+      `${phraseStem} Dio 1 i Dio 2 nalaze se zajedno.`,
+    );
+    await createAndPublish(
+      request,
+      publicWorkspace,
+      splitPhrasePage,
+      'Razdvojeni pojmovi pretrage',
+      `${phraseStem} Dio je odvojen od 1, ali Dio 2 ostaje fraza.`,
+    );
   });
 
   test('API key owner sees exactly the pages allowed by the owner ACL', async ({ request }) => {
@@ -175,6 +193,45 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     );
     expect(concealed.status()).toBe(200);
     expect(await concealed.text()).toMatch(/Pronađeno rezultata:\s*0|Results found:\s*0/);
+  });
+
+  test('plain input is an exact phrase while plus and quotes require advanced terms', async ({ request }) => {
+    const exactResponse = await request.get(
+      `/api/v1/workspace-search?q=${encodeURIComponent(`${phraseStem} Dio 1`)}&lang=hr`,
+      { headers: userHeaders },
+    );
+    expect((await expectData(exactResponse)).map((item) => item.title)).toEqual([
+      'Točna fraza pretrage',
+    ]);
+
+    const advancedQuery = `+${phraseStem} +Dio +1 +"Dio 2"`;
+    const advancedResponse = await request.get(
+      `/api/v1/workspace-search?q=${encodeURIComponent(advancedQuery)}&lang=hr`,
+      { headers: userHeaders },
+    );
+    expect((await expectData(advancedResponse)).map((item) => item.title).sort()).toEqual([
+      'Razdvojeni pojmovi pretrage',
+      'Točna fraza pretrage',
+    ]);
+  });
+
+  test('embedded result page keeps one visible fixed Workspace scope', async ({ page }) => {
+    await login(page, userLogin, userPassword);
+    await page.goto(
+      `/search?q=${encodeURIComponent(sharedTerm)}`
+      + `&workspace=${encodeURIComponent(restrictedWorkspace)}&embedded=1&lang=hr`,
+    );
+
+    const scope = page.locator('#workspace-search-workspace');
+    await expect(scope).toHaveJSProperty('tagName', 'DIV');
+    await expect(scope).toHaveText('E2E Search Restricted');
+    await expect(page.locator('input[name="workspace"]')).toHaveValue(restrictedWorkspace);
+    await expect(page.locator('input[name="embedded"]')).toHaveValue('1');
+    await expect(page.locator('select[name="workspace"]')).toHaveCount(0);
+    await expect(page.getByText(/Pretraga je ograničena na ovo područje|Search is limited/)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toHaveCount(0);
+    await expect(page.getByText(/Bez operatora više riječi|Without operators, multiple words/)).toBeVisible();
   });
 
   test('draft keeps the published index while publishing immediately replaces it', async ({ request }) => {
