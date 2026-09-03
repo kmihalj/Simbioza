@@ -98,12 +98,17 @@ test('administrator imports a Confluence space while ACL and private files remai
 
     await page.goto(`/workspace/${workspaceSlug}/imported-home?lang=en`);
     await expect(page.locator('body')).toContainText('Imported home body.');
-    const reportTask = page.locator('.editor-task-report .editor-task-checkbox');
+    const reportTask = page.locator('.editor-task-list[data-task-list-view="table"] .editor-task-checkbox');
     await expect(reportTask).toHaveCount(1);
     await expect(reportTask).toBeEnabled();
     await expect(reportTask).not.toBeChecked();
-    await reportTask.check();
-    await expect(page.locator('.editor-task-report')).toContainText(/No tasks to display|Nema zadataka za prikaz/);
+    const stateResponse = page.waitForResponse((response) => response.request().method() === 'POST'
+      && new URL(response.url()).pathname === '/tasks/state');
+    const [stateSaved] = await Promise.all([stateResponse, reportTask.check()]);
+    expect(stateSaved.status()).toBe(200);
+    await expect(reportTask).toBeChecked();
+    await page.reload();
+    await expect(reportTask).toBeChecked();
     const childLink = page.locator(`a[href*="/workspace/${workspaceSlug}/${shortenedChildSlug}"]`).first();
     await expect(childLink).toBeVisible();
     await childLink.click();
@@ -111,7 +116,7 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.locator('body')).toContainText(longChildTitle);
     const sourceTask = page.locator('.editor-task-list .editor-task-checkbox');
     await expect(sourceTask).toHaveCount(1);
-    await expect(sourceTask).toBeChecked();
+    await expect(sourceTask).not.toBeChecked();
     await expect(page.getByRole('link', { name: 'https://example.test/task' })).toHaveAttribute(
       'href',
       'https://example.test/task',

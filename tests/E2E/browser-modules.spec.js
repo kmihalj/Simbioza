@@ -809,6 +809,19 @@ test.describe('module browser surfaces', () => {
     await page.goto('/workspaces');
     await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
 
+    // HR: Opća pretraga odmah nudi obična vidljiva područja, ali sva osobna
+    //     područja sažima u jednu mogućnost umjesto popisa svakog vlasnika.
+    // EN: Global search immediately offers ordinary visible Workspaces while
+    //     aggregating every personal Workspace into one option.
+    await page.goto('/search');
+    const workspaceFilter = page.locator('#workspace-search-workspace');
+    await expect(workspaceFilter).toBeVisible();
+    await expect(workspaceFilter.locator('option', { hasText: /Osobna područja|Personal Workspaces/i }))
+      .toHaveCount(1);
+    await expect(workspaceFilter.locator(`option[value="${personalPath.split('/').at(-1)}"]`))
+      .toHaveCount(0);
+    await expect.poll(async () => workspaceFilter.locator('option').count()).toBeGreaterThan(2);
+
     await page.goto('/auth/logout');
     const guestResponse = await page.goto(personalPath);
     expect(guestResponse?.status()).toBe(403);
