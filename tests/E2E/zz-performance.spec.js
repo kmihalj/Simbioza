@@ -6,9 +6,10 @@ import {
   expectData,
   getDataWithEtag,
   idempotencyKey,
+  login,
 } from './helpers.js';
 
-const { adminApiToken } = e2eEnvironment();
+const { adminApiToken, adminLogin, adminPassword } = e2eEnvironment();
 const queryLogPath = process.env.HPH_E2E_QUERY_LOG;
 const requestLogPath = process.env.HPH_E2E_REQUEST_LOG;
 
@@ -144,6 +145,83 @@ test('representative read paths remain inside measured SQL budgets', async ({ re
   await expectQueryBudget(request, 'workspaces', '/api/v1/workspaces?page[limit]=20', 16, apiReadBudget);
   await expectQueryBudget(request, 'calendars', '/api/v1/calendars?page[limit]=20', 16, apiReadBudget);
   await expectQueryBudget(request, 'notifications', '/api/v1/notifications?page[limit]=20', 24, apiReadBudget);
+});
+
+test('large tree organizer uses batched permissions and lazy add form', async ({ page, request }) => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const workspaceSlug = `performance-tree-${suffix}`;
+  const pageSlug = `performance-tree-page-${suffix}`;
+  await expectData(await request.post('/api/v1/workspaces', {
+    headers: apiHeaders(adminApiToken, {
+      'Idempotency-Key': idempotencyKey('performance-tree-workspace'),
+    }),
+    data: {
+      name: 'Performance Tree Workspace',
+      slug: workspaceSlug,
+      visibility: 'restricted',
+    },
+  }), 201);
+  await expectData(await request.post('/api/v1/pages', {
+    headers: apiHeaders(adminApiToken, {
+      'Idempotency-Key': idempotencyKey('performance-tree-page'),
+    }),
+    data: {
+      title: 'Performance Tree Page',
+      slug: pageSlug,
+      workspace_slug: workspaceSlug,
+      language: 'en',
+      html: '<h1>Performance Tree Page</h1>',
+    },
+  }), 201);
+
+  for (let index = 1; index <= 60; index += 1) {
+    await expectData(await request.post(`/api/v1/workspaces/${workspaceSlug}/nodes`, {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey(`performance-tree-link-${index}`),
+      }),
+      data: {
+        node_type: 'external_link',
+        title: `Performance link ${index}`,
+        slug: `performance-link-${index}`,
+        target_url: `https://example.com/${index}`,
+        sort_order: index * 10,
+      },
+    }), 201);
+  }
+
+  await login(page, adminLogin, adminPassword);
+  await page.goto(`/workspace/${workspaceSlug}/${pageSlug}?lang=en`);
+  const marker = `budget-tree-organizer-${suffix}`;
+  const organizerRoute = '**/workspaces/tree/organizer**';
+  await page.route(organizerRoute, async (route) => {
+    await route.continue({
+      headers: {
+        ...route.request().headers(),
+        'X-HPH-Performance-Run': marker,
+      },
+    });
+  });
+  const responsePromise = page.waitForResponse((response) => (
+    new URL(response.url()).pathname === '/workspaces/tree/organizer'
+  ));
+  await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+  const response = await responsePromise;
+  await page.unroute(organizerRoute);
+
+  expect(response.status()).toBe(200);
+  await expect(page.locator('[data-workspace-tree-order-row]')).toHaveCount(61);
+  expectRecordedBudget('tree-organizer', marker, 42);
+  expect(
+    queryEvents(marker)
+      .map((event) => event.sql.toLowerCase())
+      .filter((statement) => statement.includes('from "editor_documents"')),
+    'tree-organizer eagerly loaded the complete Editor document catalog',
+  ).toHaveLength(0);
+  expectRequestBudget('tree-organizer', marker, {
+    durationMs: 1_000,
+    peakMemoryBytes: 32 * 1024 * 1024,
+    responseBytes: 256 * 1024,
+  });
 });
 
 test('Auth create and update mutations remain inside measured SQL budgets', async ({ request }) => {

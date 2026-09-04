@@ -467,10 +467,33 @@ test.describe('browser flows', () => {
       exact: true,
     });
     await expect(addTreeItemButton).toBeVisible();
+    const nodeDialog = page.locator('#workspace-node-editor-modal');
     await addTreeItemButton.click();
-    const addTreeItemDialog = page.locator('#workspace-add-tree-item-modal');
-    await expectUsableModal(addTreeItemDialog);
-    await closeModal(addTreeItemDialog);
+    await expectUsableModal(nodeDialog);
+    await nodeDialog.locator('select[name="node_type"]').selectOption('separator');
+    await expect(nodeDialog).toContainText(/system separator|sistemski separator/i);
+    await submitFormAndExpectPost(
+      page,
+      nodeDialog.getByRole('button', { name: /Add item|Dodaj stavku/i, exact: true }),
+      '/workspaces/node/save',
+    );
+    await expect(page.getByRole('heading', { name: /^(Links|Linkovi)$/ })).toBeVisible();
+
+    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    await addTreeItemButton.click();
+    await expectUsableModal(nodeDialog);
+    await nodeDialog.locator('select[name="node_type"]').selectOption('external_link');
+    await nodeDialog.locator('input[name^="title_translations["]:visible').fill('SRCE');
+    await nodeDialog.locator('select[name="parent_id"]').selectOption({ label: 'Links' });
+    await nodeDialog.locator('input[name="target_url"]').fill('https://www.srce.unizg.hr/');
+    await submitFormAndExpectPost(
+      page,
+      nodeDialog.getByRole('button', { name: /Add item|Dodaj stavku/i, exact: true }),
+      '/workspaces/node/save',
+    );
+    await expect(page.getByRole('link', { name: 'SRCE', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
 
     const editTreeItem = page.getByRole('button', {
       name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
@@ -478,7 +501,6 @@ test.describe('browser flows', () => {
     await expect(editTreeItem).toBeVisible();
     await editTreeItem.click();
 
-    const nodeDialog = page.locator('#workspace-node-editor-modal');
     await expect(nodeDialog).toBeVisible();
     await expectUsableModal(nodeDialog);
 
