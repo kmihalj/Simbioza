@@ -51,10 +51,10 @@ composer check-platform-reqs --no-dev
 Na poslužitelju se preporučuje **release instalacija bez trajnog `.git`
 direktorija**. Označeno izdanje dohvatite u privremeni direktorij, a u
 aplikacijski direktorij kopirajte samo njegove datoteke. Primjer za izdanje
-`0.1.30`:
+`0.1.31`:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.30 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.31 --single-branch \
   https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -337,7 +337,7 @@ aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
 najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
 Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
 zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.30`.
+`sudo php update.php --tag=0.1.31`.
 
 Svako izdanje u datoteci `VERSION` nosi istu stabilnu semantičku verziju kao
 njegov Git tag. CI odbija tag čiji se naziv i `VERSION` ne podudaraju, pa updater
