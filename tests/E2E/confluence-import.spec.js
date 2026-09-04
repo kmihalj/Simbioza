@@ -15,6 +15,7 @@ const {
 const longChildTitle = '2024-09-19 Sastanak urednika repozitorija koji pohranjuju multimedijalne objekte na temu revidiranja metapodatkovnih opisa multimedijskih objekata';
 const shortenedChildSlug = '2024-09-19-sastanak-urednika-repozitorija-koji-pohranjuju-multimedijalne-objekte-na-temu-revidiranja-metapodatkovnih-opisa';
 const sourceCalendarUuid = '3c1a6576-55e6-4776-9296-b95a00f980b7';
+const sourceCalendarName = 'E2E Source Calendar';
 
 /**
  * HR: Izrađuje mali stvarni Confluence XML ZIP s hijerarhijom, internom
@@ -43,7 +44,7 @@ async function confluenceArchive() {
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Simbioza E2E//Confluence Calendar//EN',
-    'X-WR-CALNAME:E2E Source Calendar',
+    `X-WR-CALNAME:${sourceCalendarName}`,
     'BEGIN:VEVENT',
     'UID:confluence-calendar-e2e-event@example.invalid',
     'DTSTAMP:20260904T060000Z',
@@ -62,7 +63,7 @@ async function confluenceArchive() {
   <object class="Page" package="com.atlassian.confluence.pages"><id name="id">101</id><property name="space"><id>1</id></property><property name="parent"><id>100</id></property><property name="title">${longChildTitle}</property><property name="version">1</property><property name="contentStatus">current</property><property name="creator"><id>u1</id></property><property name="lastModifier"><id>u1</id></property></object>
   <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b100</id><property name="content"><id>100</id></property><property name="body">&lt;p&gt;Imported home body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:page ri:content-id="101" ri:content-title="${longChildTitle}"/&gt;&lt;ac:plain-text-link-body&gt;Open child&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;&lt;ac:structured-macro ac:name="tasks-report-macro"&gt;&lt;ac:parameter ac:name="status"&gt;incomplete&lt;/ac:parameter&gt;&lt;/ac:structured-macro&gt;&lt;ac:structured-macro ac:name="calendar" ac:macro-id="calendar-home"&gt;&lt;ac:parameter ac:name="id"&gt;${sourceCalendarUuid}&lt;/ac:parameter&gt;&lt;/ac:structured-macro&gt;&lt;ac:structured-macro ac:name="livesearch"&gt;&lt;ac:parameter ac:name="spaceKey"&gt;&lt;ri:space ri:space-key="TINY" /&gt;&lt;/ac:parameter&gt;&lt;/ac:structured-macro&gt;</property></object>
   <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b101</id><property name="content"><id>101</id></property><property name="body">&lt;p&gt;Imported child body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:attachment ri:filename="sample.bin"/&gt;&lt;ac:plain-text-link-body&gt;Download sample&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;&lt;ac:task-list&gt;&lt;ac:task&gt;&lt;ac:task-id&gt;14&lt;/ac:task-id&gt;&lt;ac:task-status&gt;incomplete&lt;/ac:task-status&gt;&lt;ac:task-body&gt;Review https://example.test/task&lt;/ac:task-body&gt;&lt;/ac:task&gt;&lt;/ac:task-list&gt;&lt;ac:structured-macro ac:name="calendar" ac:macro-id="calendar-child"&gt;&lt;ac:parameter ac:name="id"&gt;${sourceCalendarUuid}&lt;/ac:parameter&gt;&lt;/ac:structured-macro&gt;</property></object>
-  <object class="CustomContentEntityObject" package="com.atlassian.confluence.content"><id name="id">301</id><property name="title">Confluence source calendar</property><property name="pluginModuleKey">com.atlassian.confluence.extra.team-calendars:calendar-content-type</property></object>
+  <object class="CustomContentEntityObject" package="com.atlassian.confluence.content"><id name="id">301</id><property name="title">${sourceCalendarName}</property><property name="pluginModuleKey">com.atlassian.confluence.extra.team-calendars:calendar-content-type</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p301</id><property name="content"><id>301</id></property><property name="name">subCalendarId</property><property name="stringValue">${sourceCalendarUuid}</property></object>
   <object class="Attachment" package="com.atlassian.confluence.pages"><id name="id">201</id><property name="containerContent"><id>101</id></property><property name="space"><id>1</id></property><property name="title">sample.bin</property><property name="version">1</property><property name="contentStatus">current</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201a</id><property name="content"><id>201</id></property><property name="name">MEDIA_TYPE</property><property name="stringValue">application/octet-stream</property></object>
@@ -117,7 +118,6 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.locator('#confluence-import-result')).toContainText('"pages_imported": 2');
     await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 1');
 
-    const importedCalendarName = `E2E imported calendar ${suffix}`;
     await page.goto(`/settings/confluence-import/report/${jobUuid}`);
     const homeReport = page.locator('article').filter({ hasText: 'Imported Home' });
     const homeCalendarIssue = homeReport.locator('[data-confluence-calendar-issue]');
@@ -125,13 +125,16 @@ test('administrator imports a Confluence space while ACL and private files remai
     const calendarImportForm = homeCalendarIssue.locator('form').filter({
       has: page.locator('input[name="resolution_mode"][value="import"]'),
     });
+    await expect(calendarImportForm.locator('input[name="calendar_name"]')).toHaveCount(0);
+    await expect(calendarImportForm).toContainText(
+      'The calendar name is read from the ICS file; if it is missing, the Confluence name is used.',
+    );
     await calendarImportForm.locator('input[name="ics_file"]').setInputFiles(fixture.calendar);
-    await calendarImportForm.locator('input[name="calendar_name"]').fill(importedCalendarName);
     await calendarImportForm.locator('select[name="calendar_type"]').selectOption('team');
     await calendarImportForm.locator('input[name="is_authenticated_read"][type="checkbox"]').check();
     await calendarImportForm.getByRole('button', { name: 'Import and display on the page' }).click();
     await expect(page.getByRole('status').filter({
-      hasText: `The page now displays the calendar “${importedCalendarName}”.`,
+      hasText: `The page now displays the calendar “${sourceCalendarName}”.`,
     })).toBeVisible();
     await expect(homeCalendarIssue.getByText('Resolved')).toBeVisible();
 
@@ -181,15 +184,18 @@ test('administrator imports a Confluence space while ACL and private files remai
     const existingCalendarForm = childCalendarIssue.locator('form').filter({
       has: page.locator('input[name="resolution_mode"][value="existing"]'),
     });
-    const calendarOption = existingCalendarForm.locator('option').filter({ hasText: importedCalendarName });
+    const calendarOption = existingCalendarForm.locator('option').filter({ hasText: sourceCalendarName });
     await expect(calendarOption).toContainText('Team calendar');
     await expect(calendarOption).toContainText('authenticated read');
-    await existingCalendarForm.locator('select[name="calendar_uuid"]').selectOption(
+    await expect(existingCalendarForm).toContainText(
+      'An existing calendar with the same name was found and selected. Verify it before linking.',
+    );
+    await expect(existingCalendarForm.locator('select[name="calendar_uuid"]')).toHaveValue(
       await calendarOption.getAttribute('value'),
     );
     await existingCalendarForm.getByRole('button', { name: 'Link selected calendar' }).click();
     await expect(page.getByRole('status').filter({
-      hasText: `The page now displays the calendar “${importedCalendarName}”.`,
+      hasText: `The page now displays the calendar “${sourceCalendarName}”.`,
     })).toBeVisible();
 
     await page.goto(`/workspace/${workspaceSlug}/${shortenedChildSlug}?lang=en`);
@@ -242,9 +248,12 @@ test('administrator imports a Confluence space while ACL and private files remai
       has: page.locator('input[name="resolution_mode"][value="existing"]'),
     });
     const replacementCalendarOption = replacementCalendarForm.locator('option').filter({
-      hasText: importedCalendarName,
+      hasText: sourceCalendarName,
     });
-    await replacementCalendarForm.locator('select[name="calendar_uuid"]').selectOption(
+    await expect(replacementCalendarForm).toContainText(
+      'An existing calendar with the same name was found and selected. Verify it before linking.',
+    );
+    await expect(replacementCalendarForm.locator('select[name="calendar_uuid"]')).toHaveValue(
       await replacementCalendarOption.getAttribute('value'),
     );
     await replacementCalendarForm.getByRole('button', { name: 'Link selected calendar' }).click();
