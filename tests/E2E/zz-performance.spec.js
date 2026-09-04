@@ -227,6 +227,8 @@ test('large tree organizer uses batched permissions and lazy add form', async ({
 test('Auth create and update mutations remain inside measured SQL budgets', async ({ request }) => {
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const loginIdentifier = `performance-${suffix}@example.invalid`;
+  const warmup = await request.get('/api/v1/me', { headers: apiHeaders(adminApiToken) });
+  expect(warmup.status()).toBe(200);
   const createMarker = `budget-auth-create-${suffix}`;
   const createdResponse = await request.post('/api/v1/users', {
     headers: apiHeaders(adminApiToken, {

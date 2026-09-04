@@ -39,6 +39,7 @@ async function submitFormAndExpectPost(page, button, expectedPath) {
     button.click(),
   ]);
   expect([200, 302, 303]).toContain(response.status());
+  await page.waitForLoadState('load');
 }
 
 /**
@@ -460,13 +461,20 @@ test.describe('browser flows', () => {
     await page.getByRole('link', { name: /Read more|Pročitaj više/i }).click();
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.reload();
-    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    const treeEditor = page.locator('[data-workspace-tree-editor]');
+    const openTreeOrganizer = async () => {
+      await page.waitForLoadState('load');
+      await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+      await expect(treeEditor).toBeVisible();
+      const addButton = treeEditor.getByRole('button', {
+        name: /Add item|Dodaj stavku/i,
+        exact: true,
+      });
+      await expect(addButton).toBeVisible();
+      return addButton;
+    };
 
-    const addTreeItemButton = page.getByRole('button', {
-      name: /Add item|Dodaj stavku/i,
-      exact: true,
-    });
-    await expect(addTreeItemButton).toBeVisible();
+    let addTreeItemButton = await openTreeOrganizer();
     const nodeDialog = page.locator('#workspace-node-editor-modal');
     await addTreeItemButton.click();
     await expectUsableModal(nodeDialog);
@@ -479,7 +487,7 @@ test.describe('browser flows', () => {
     );
     await expect(page.getByRole('heading', { name: /^(Links|Linkovi)$/ })).toBeVisible();
 
-    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    addTreeItemButton = await openTreeOrganizer();
     await addTreeItemButton.click();
     await expectUsableModal(nodeDialog);
     await nodeDialog.locator('select[name="node_type"]').selectOption('external_link');
@@ -493,7 +501,7 @@ test.describe('browser flows', () => {
     );
     await expect(page.getByRole('link', { name: 'SRCE', exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    await openTreeOrganizer();
 
     const editTreeItem = page.getByRole('button', {
       name: /Edit item: E2E Published Page|Uredi stavku: E2E Published Page/i,
