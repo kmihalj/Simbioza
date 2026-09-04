@@ -20,9 +20,11 @@ use function str_starts_with;
 final class SimbiozaBrandingTest extends TestCase
 {
     /**
-     * HR: Dokazuje da je tema aktivna i da branding sadrži 24 cjelovita upravljana asseta.
+     * HR: Dokazuje da aktivna administratorska tema postoji i da tvornički
+     *     Simbioza branding sadrži 24 cjelovita upravljana asseta.
      *
-     * EN: Proves the theme is active and branding contains 24 complete managed assets.
+     * EN: Proves the administrator-selected active theme exists and that the
+     *     bundled Simbioza branding contains 24 complete managed assets.
      */
     public function testSimbiozaThemeAndApprovedArtworkAreInstalled(): void
     {
@@ -34,15 +36,23 @@ final class SimbiozaBrandingTest extends TestCase
         $this->assertSame('Simbioza', $app['name']);
         $localization = $this->arrayValue($app, 'localization');
         $this->assertSame('hr', $localization['locale']);
-        $this->assertSame('simbioza', $settings['active_theme']);
+        $activeThemeId = $settings['active_theme'] ?? null;
+        $this->assertIsString($activeThemeId);
+        $this->assertNotSame('', trim($activeThemeId));
 
         $simbioza = null;
+        $activeThemeExists = false;
         foreach ($themes as $theme) {
+            if (is_array($theme) && ($theme['id'] ?? null) === $activeThemeId) {
+                $activeThemeExists = true;
+            }
+
             if (is_array($theme) && ($theme['id'] ?? null) === 'simbioza') {
                 $simbioza = $theme;
-                break;
             }
         }
+
+        $this->assertTrue($activeThemeExists, 'The selected active theme must exist in the theme library.');
 
         if (!is_array($simbioza)) {
             throw new RuntimeException('The Simbioza theme is missing.');
@@ -119,6 +129,118 @@ final class SimbiozaBrandingTest extends TestCase
 
         $this->assertFileExists($themeRoot . '/source/simbioza-master-natural-dark.png');
         $this->assertFileDoesNotExist($root . '/public/theme-assets/simbioza');
+    }
+
+    /**
+     * HR: Dokazuje da partnerske teme koriste potpune lokalne pakete i dva logotipa.
+     *
+     * EN: Proves that partner themes use complete local packages and two logos.
+     */
+    public function testDabarAndAaiThemesUseManagedAssetsAndDualHeaderLogos(): void
+    {
+        $root = $this->projectRoot();
+        $themes = $this->decodeJsonFile($root . '/resources/config/theme/themes.json');
+        $themesById = [];
+        foreach ($themes as $theme) {
+            if (is_array($theme) && is_string($theme['id'] ?? null)) {
+                $themesById[$theme['id']] = $theme;
+            }
+        }
+
+        $simbiozaTheme = $themesById['simbioza'] ?? null;
+        $this->assertIsArray($simbiozaTheme);
+        $simbiozaComponents = $this->arrayValue($simbiozaTheme, 'components');
+
+        $expectations = [
+            'dabar' => [
+                'hero' => 'hero-dabar-povecalo.svg',
+                'logos' => ['logo-dabar-light.svg', 'logo-srce-55-light.svg'],
+                'visual' => [650, 320, -64, 24],
+                'light_gradient' => ['#D71635', '#A01F23'],
+                'dark_gradient' => ['#A80F27', '#53131A'],
+            ],
+            'aai' => [
+                'hero' => 'hero-aai-banner.svg',
+                'logos' => ['logo-aaieduhr-light.svg', 'logo-srce-light.svg'],
+                'visual' => [650, 320, -48, 24],
+                'light_gradient' => ['#003567', '#1F8CA0'],
+                'dark_gradient' => ['#001D38', '#155F70'],
+            ],
+        ];
+
+        foreach ($expectations as $themeId => $expected) {
+            $theme = $themesById[$themeId] ?? null;
+            $this->assertIsArray($theme, 'Missing theme: ' . $themeId);
+            $this->assertTrue($theme['system'] ?? false);
+
+            $components = $this->arrayValue($theme, 'components');
+            $header = $this->arrayValue($components, 'header');
+            $simbiozaHeader = $this->arrayValue($simbiozaComponents, 'header');
+            foreach (['sticky', 'container'] as $key) {
+                $this->assertSame($simbiozaHeader[$key] ?? null, $header[$key] ?? null);
+            }
+
+            $headerItems = $this->arrayValue($header, 'items');
+            $logoItems = array_values(array_filter(
+                $headerItems,
+                static fn (mixed $item): bool => is_array($item) && ($item['type'] ?? null) === 'logo',
+            ));
+            $this->assertCount(2, $logoItems);
+            $this->assertSame('start', $logoItems[0]['position'] ?? null);
+            $this->assertSame('end', $logoItems[1]['position'] ?? null);
+            $startLogoSource = $logoItems[0]['src_light'] ?? null;
+            $endLogoSource = $logoItems[1]['src_light'] ?? null;
+            $this->assertIsString($startLogoSource);
+            $this->assertIsString($endLogoSource);
+            $this->assertSame($expected['logos'][0], basename($startLogoSource));
+            $this->assertSame($expected['logos'][1], basename($endLogoSource));
+
+            $hero = $this->arrayValue($components, 'hero');
+            $simbiozaHero = $this->arrayValue($simbiozaComponents, 'hero');
+            foreach (['container', 'home_size', 'inner_size', 'wave'] as $key) {
+                $this->assertSame($simbiozaHero[$key] ?? null, $hero[$key] ?? null);
+            }
+
+            $this->assertSame(
+                '@theme-assets/' . $themeId . '/' . $expected['hero'],
+                $hero['visual_src_light'] ?? null,
+            );
+            $this->assertSame($hero['visual_src_light'], $hero['visual_src_dark'] ?? null);
+            $this->assertTrue($hero['wave'] ?? false);
+            $this->assertTrue($hero['visual_allow_overflow'] ?? false);
+            $this->assertSame($expected['visual'][0], $hero['visual_width_px'] ?? null);
+            $this->assertSame($expected['visual'][1], $hero['visual_max_height_px'] ?? null);
+            $this->assertSame($expected['visual'][2], $hero['visual_top_px'] ?? null);
+            $this->assertSame($expected['visual'][3], $hero['visual_right_px'] ?? null);
+
+            foreach (['navigation', 'content', 'cards'] as $componentName) {
+                $this->assertSame(
+                    $this->arrayValue($simbiozaComponents, $componentName),
+                    $this->arrayValue($components, $componentName),
+                );
+            }
+
+            foreach (['light', 'dark'] as $variant) {
+                $variantConfig = $this->arrayValue($theme, $variant);
+                $colors = $this->arrayValue($variantConfig, 'colors');
+                $this->assertSame($expected[$variant . '_gradient'][0], $colors['hero_gradient_1'] ?? null);
+                $this->assertSame($expected[$variant . '_gradient'][1], $colors['hero_gradient_5'] ?? null);
+            }
+
+            $themeRoot = $root . '/data/themes/' . $themeId;
+            $manifest = $this->decodeJsonFile($themeRoot . '/theme-assets.json');
+            $assets = $this->arrayValue($manifest, 'assets');
+            $this->assertCount(5, $assets);
+            foreach ($assets as $asset) {
+                $this->assertIsArray($asset);
+                $file = $asset['file'] ?? null;
+                $this->assertIsString($file);
+                $path = $themeRoot . '/assets/' . $file;
+                $this->assertFileExists($path);
+                $this->assertSame(filesize($path), $asset['bytes'] ?? null);
+                $this->assertSame(hash_file('sha256', $path), $asset['sha256'] ?? null);
+            }
+        }
     }
 
     /**

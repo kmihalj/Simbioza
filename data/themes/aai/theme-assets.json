@@ -1,0 +1,70 @@
+{
+    "version": 1,
+    "assets": [
+        {
+            "file": "hero-aai-banner.svg",
+            "role": "hero",
+            "label": {
+                "hr": "AAI@EduHr - hero ilustracija",
+                "en": "AAI@EduHr - hero artwork"
+            },
+            "width": 415,
+            "height": 275,
+            "sha256": "b105e905afc65ef6b3be515f19763b7e2e1e3fb4223e5124f528b7bac7b11fcf",
+            "bytes": 27898,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-aaieduhr-light.svg",
+            "role": "logo",
+            "label": {
+                "hr": "AAI@EduHr logotip - svijetla tema",
+                "en": "AAI@EduHr logo - light theme"
+            },
+            "width": 486,
+            "height": 116,
+            "sha256": "001b091d6efbdce0bb8d2361ed7d72c1463bde85e402ac176e8e465f0c41501c",
+            "bytes": 5781,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-aaieduhr-dark.svg",
+            "role": "logo",
+            "label": {
+                "hr": "AAI@EduHr logotip - tamna tema",
+                "en": "AAI@EduHr logo - dark theme"
+            },
+            "width": 486,
+            "height": 116,
+            "sha256": "ff7e1248cca5c632088fc86f3759bc1b0f664c0d55a2dfa229984ce3cc138917",
+            "bytes": 5799,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-srce-light.svg",
+            "role": "logo",
+            "label": {
+                "hr": "Srce logotip - svijetla tema",
+                "en": "Srce logo - light theme"
+            },
+            "width": 168,
+            "height": 45,
+            "sha256": "f788312beeb2d0a26d8b43334929ed9800cf2ebc159153255fb87bc60542bfc1",
+            "bytes": 10305,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-srce-dark.svg",
+            "role": "logo",
+            "label": {
+                "hr": "Srce logotip - tamna tema",
+                "en": "Srce logo - dark theme"
+            },
+            "width": 168,
+            "height": 45,
+            "sha256": "a784eda7775feae8c68cbf1f73cc9b2c7ac42f1b84ed58ecf39249b3a86e418e",
+            "bytes": 10320,
+            "mime": "image/svg+xml"
+        }
+    ]
+}

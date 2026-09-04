@@ -1,0 +1,70 @@
+{
+    "version": 1,
+    "assets": [
+        {
+            "file": "hero-dabar-povecalo.svg",
+            "role": "hero",
+            "label": {
+                "hr": "Dabar - hero ilustracija",
+                "en": "Dabar - hero artwork"
+            },
+            "width": 677,
+            "height": 462,
+            "sha256": "bd01881e02a839b1e7c14b8159f5d2ff894810258eafb12107e832c6d4383b10",
+            "bytes": 20142,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-dabar-light.svg",
+            "role": "logo",
+            "label": {
+                "hr": "Dabar logotip - svijetla tema",
+                "en": "Dabar logo - light theme"
+            },
+            "width": 291,
+            "height": 142,
+            "sha256": "f4a1420b5c363796f7269fc6a22994a6fe618bd70cb1149cbe47f94244afdf56",
+            "bytes": 4847,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-dabar-dark.svg",
+            "role": "logo",
+            "label": {
+                "hr": "Dabar logotip - tamna tema",
+                "en": "Dabar logo - dark theme"
+            },
+            "width": 291,
+            "height": 142,
+            "sha256": "1f88f120ffdf90d4b907e1d0e1df06c2a8c90fee7b2b42269bd56db365cb3ea5",
+            "bytes": 4862,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-srce-55-light.svg",
+            "role": "logo",
+            "label": {
+                "hr": "Srce 55 logotip - svijetla tema",
+                "en": "Srce 55 logo - light theme"
+            },
+            "width": 161,
+            "height": 43,
+            "sha256": "1a65ffb941a9d117785a73f0211b6351a586e273e4cdc7254b9cba91df964571",
+            "bytes": 10422,
+            "mime": "image/svg+xml"
+        },
+        {
+            "file": "logo-srce-55-dark.svg",
+            "role": "logo",
+            "label": {
+                "hr": "Srce 55 logotip - tamna tema",
+                "en": "Srce 55 logo - dark theme"
+            },
+            "width": 161,
+            "height": 43,
+            "sha256": "b53f636a8dae428fdc7dddc2144483c943d1ee6822ff8b761df602fd3b182ff4",
+            "bytes": 10437,
+            "mime": "image/svg+xml"
+        }
+    ]
+}

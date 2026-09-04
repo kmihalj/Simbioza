@@ -39,3 +39,35 @@ ne duplicira biblioteku teme u `public` ili `vendor`.
 cijelu temu` uključuje cijeli direktorij `data/themes/simbioza`, zajedno s
 nekorištenim varijantama i izvornim materijalom, pa kasniji uvoz vraća cijelu
 biblioteku dostupnu za uređivanje.
+
+## Ugrađene partnerske teme
+
+Uz teme Simbioza, Srce SUP i Standard, aplikacija sadrži i teme `dabar` i
+`aai`. Obje koriste mogućnosti Theme modula: dva logotipa u zaglavlju,
+dekorativni hero SVG, zasebnu navigaciju te svijetle i tamne palete. Theme modul
+podržava zasebnu širinu i najveću visinu ukrasa, njegove pomake te kontrolirano
+prelaženje preko donjeg ruba hero područja.
+
+Tema Dabar nalazi se u `data/themes/dabar/`. Koristi službeni Dabar logotip
+lijevo, logotip Srce 55 desno i ilustraciju povećala u hero području. Svijetli
+hero slijedi izvorni crveni gradijent `#D71635` - `#A01F23`, a tamna varijanta
+koristi dublju crvenu paletu uz posebno prilagođene logotipe. Izvorne SVG
+datoteke preuzete su s `https://dabar.srce.hr/`.
+
+Tema AAI nalazi se u `data/themes/aai/`. Koristi službeni AAI@EduHr logotip
+lijevo, logotip Srca desno i AAI banner u hero području. Svijetli hero slijedi
+izvorni gradijent `#003567` - `#1F5EA0` - `#1F8CA0`, a tamna varijanta koristi
+dublju plavu paletu uz posebno prilagođene logotipe. Izvorne SVG datoteke
+preuzete su s `https://www.aaiedu.hr/` i `https://www.srce.unizg.hr/`.
+
+Obje partnerske teme preuzimaju širine, oblik vala i preklapanje sadržaja iz
+teme Simbioza. Njihovi hero ukrasi imaju zasebno zadanu najveću visinu i
+vertikalni pomak kako bi veći dio ilustracije ostao vidljiv iznad donjeg dijela
+vala, bez promjene širine sadržaja.
+
+Svaki direktorij sadrži `theme-assets.json` s dimenzijama, veličinama i SHA-256
+kontrolnim zbrojevima. `Izvezi paket teme` u samostalni paket uključuje spremljene
+dimenzije, pomake i pravilo prelaženja ukrasa. `Izvezi cijelu temu` i njegov uvoz
+prenose iste postavke i sve hero i logotip assete za obje varijante. Potpuni
+backup site-a dodatno sprema cijele direktorije `resources/config/theme` i
+`data/themes`, pa se iste vrijednosti i datoteke vraćaju kroz restore.

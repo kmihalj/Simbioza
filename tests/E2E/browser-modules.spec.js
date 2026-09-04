@@ -402,6 +402,58 @@ test.describe('module browser surfaces', () => {
     }
   });
 
+  test('AAI hero artwork remains complete below sticky navigation', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.goto('/settings/theme?theme=aai');
+
+    const activeTheme = page.locator('#active_theme');
+    const originalTheme = await activeTheme.inputValue();
+    if (originalTheme !== 'aai') {
+      await activeTheme.selectOption('aai');
+      await Promise.all([
+        page.waitForLoadState('networkidle'),
+        page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
+      ]);
+    }
+
+    await page.goto('/about');
+    const geometry = await page.evaluate(() => {
+      const navigation = document.querySelector('.hph-primary-navigation');
+      const image = document.querySelector('.hph-hero__visual img');
+      if (!(navigation instanceof HTMLElement) || !(image instanceof HTMLImageElement)) {
+        return null;
+      }
+
+      const navigationRect = navigation.getBoundingClientRect();
+      const imageRect = image.getBoundingClientRect();
+
+      return {
+        navigationBottom: navigationRect.bottom,
+        navigationPosition: getComputedStyle(navigation).position,
+        imageTop: imageRect.top,
+        imageNaturalWidth: image.naturalWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry.navigationPosition).toBe('sticky');
+    expect(geometry.imageNaturalWidth).toBeGreaterThan(0);
+    expect(geometry.imageTop).toBeGreaterThanOrEqual(geometry.navigationBottom - 1);
+    expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+
+    if (originalTheme !== 'aai') {
+      await page.goto('/settings/theme?theme=aai');
+      await page.locator('#active_theme').selectOption(originalTheme);
+      await Promise.all([
+        page.waitForLoadState('networkidle'),
+        page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
+      ]);
+    }
+  });
+
   test('Supporting copy beneath automatic hero titles uses the hero subtitle color', async ({ page }) => {
     await login(page, adminLogin, adminPassword);
 
@@ -564,6 +616,18 @@ test.describe('module browser surfaces', () => {
     ]);
     await expect(page.getByRole('heading', { name: new RegExp(`Edit theme: ${cloneName}`) })).toBeVisible();
 
+    const clonedEditor = page.locator('#theme-editor-form');
+    await clonedEditor.locator('[data-theme-section-id="hero"] > summary').click();
+    await clonedEditor.locator('[data-theme-hero-visual-width]').fill('677');
+    await clonedEditor.locator('[data-theme-hero-visual-max-height]').fill('333');
+    await clonedEditor.locator('[data-theme-hero-visual-top]').fill('-77');
+    await clonedEditor.locator('[data-theme-hero-visual-right]').fill('-33');
+    await clonedEditor.locator('[data-theme-hero-visual-allow-overflow]').check();
+    await Promise.all([
+      page.waitForLoadState('networkidle'),
+      page.getByRole('button', { name: 'Save theme' }).click(),
+    ]);
+
     const packageDownloadPromise = page.waitForEvent('download');
     await page.getByRole('link', { name: 'Export theme package' }).click();
     const packageDownload = await packageDownloadPromise;
@@ -590,6 +654,13 @@ test.describe('module browser surfaces', () => {
       page.getByRole('button', { name: 'Import theme', exact: true }).click(),
     ]);
     await expect(page.getByRole('heading', { name: new RegExp(`Edit theme: ${cloneName}`) })).toBeVisible();
+    const importedEditor = page.locator('#theme-editor-form');
+    await importedEditor.locator('[data-theme-section-id="hero"] > summary').click();
+    await expect(importedEditor.locator('[data-theme-hero-visual-width]')).toHaveValue('677');
+    await expect(importedEditor.locator('[data-theme-hero-visual-max-height]')).toHaveValue('333');
+    await expect(importedEditor.locator('[data-theme-hero-visual-top]')).toHaveValue('-77');
+    await expect(importedEditor.locator('[data-theme-hero-visual-right]')).toHaveValue('-33');
+    await expect(importedEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
 
     page.once('dialog', (dialog) => dialog.accept());
     await Promise.all([

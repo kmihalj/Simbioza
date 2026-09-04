@@ -63,6 +63,16 @@ final class InstallationTest extends TestCase
         $archive->close();
         $this->assertIsString($packagedTheme);
         $this->assertStringNotContainsString('/hfc', strtolower($packagedTheme));
+
+        $theme = json_decode($packagedTheme, true, 512, JSON_THROW_ON_ERROR);
+        $this->assertIsArray($theme);
+        $hero = $theme['components']['hero'] ?? null;
+        $this->assertIsArray($hero);
+        $this->assertFalse($hero['visual_allow_overflow'] ?? null);
+        $this->assertSame(0, $hero['visual_max_height_px'] ?? null);
+        $this->assertSame(560, $hero['visual_width_px'] ?? null);
+        $this->assertSame(-48, $hero['visual_top_px'] ?? null);
+        $this->assertSame(24, $hero['visual_right_px'] ?? null);
     }
 
     /** HR: Provjerava normalizaciju svakog podržanog tipa baze. EN: Verifies every supported database type. */

@@ -142,6 +142,22 @@ test.describe('complete Backup workflow', () => {
     await expect(page.locator('#backup-toast')).toContainText(
       /Vraćanje je dovršeno|Restore completed/i,
     );
+
+    /*
+     * HR: Tema je datotečna backup cjelina. Nakon stvarnog vraćanja provjeravamo
+     *     i nova svojstva hero ukrasa, a ne samo prisutnost teme.
+     * EN: Themes are a filesystem-backed backup component. After a real restore,
+     *     verify the new hero-artwork properties as well as the theme itself.
+     */
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/theme?theme=dabar');
+    const themeEditor = page.locator('#theme-editor-form');
+    await themeEditor.locator('[data-theme-section-id="hero"] > summary').click();
+    await expect(themeEditor.locator('[data-theme-hero-visual-width]')).toHaveValue('650');
+    await expect(themeEditor.locator('[data-theme-hero-visual-max-height]')).toHaveValue('320');
+    await expect(themeEditor.locator('[data-theme-hero-visual-top]')).toHaveValue('-64');
+    await expect(themeEditor.locator('[data-theme-hero-visual-right]')).toHaveValue('24');
+    await expect(themeEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
   });
 
   test('administrator copies one complete Workspace and rebuilds its search index', async ({ page }, testInfo) => {

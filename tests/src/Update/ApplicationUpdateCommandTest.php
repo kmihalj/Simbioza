@@ -82,7 +82,7 @@ TAGS;
     public function testReleaseMetadataAndMaintenanceGuardArePresent(): void
     {
         $root = dirname(__DIR__, 3);
-        $this->assertSame('0.1.29', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.1.30', trim((string)file_get_contents($root . '/VERSION')));
 
         $updater = file_get_contents($root . '/update.php');
         $this->assertIsString($updater);
@@ -97,6 +97,8 @@ TAGS;
         $this->assertStringContainsString("'--no-owner'", $updater);
         $this->assertStringContainsString("'--no-group'", $updater);
         $this->assertStringContainsString("'--no-perms'", $updater);
+        $this->assertStringContainsString("'resources/config/theme/'", $updater);
+        $this->assertFileExists($root . '/resources/installation/theme/simbioza.zip');
         $preflightPosition = strpos($updater, '$this->write($this->message(\'preflight\'));');
         $migrationPosition = strpos($updater, '$this->migrationStarted = true;');
         $this->assertIsInt($preflightPosition);
