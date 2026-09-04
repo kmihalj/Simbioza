@@ -814,13 +814,13 @@ test.describe('module browser surfaces', () => {
     // EN: Global search immediately offers ordinary visible Workspaces while
     //     aggregating every personal Workspace into one option.
     await page.goto('/search');
-    const workspaceFilter = page.locator('#workspace-search-workspace');
+    const workspaceFilter = page.locator('#workspace-search-workspace-button');
     await expect(workspaceFilter).toBeVisible();
-    await expect(workspaceFilter.locator('option', { hasText: /Osobna područja|Personal Workspaces/i }))
-      .toHaveCount(1);
-    await expect(workspaceFilter.locator(`option[value="${personalPath.split('/').at(-1)}"]`))
+    await workspaceFilter.click();
+    await expect(page.locator('#workspace-search-scope-personal')).toHaveCount(1);
+    await expect(page.locator(`input[name="workspaces[]"][value="${personalPath.split('/').at(-1)}"]`))
       .toHaveCount(0);
-    await expect.poll(async () => workspaceFilter.locator('option').count()).toBeGreaterThan(2);
+    await expect.poll(async () => page.locator('input[name="workspaces[]"]').count()).toBeGreaterThan(2);
 
     await page.goto('/auth/logout');
     const guestResponse = await page.goto(personalPath);

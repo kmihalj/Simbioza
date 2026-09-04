@@ -215,23 +215,46 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     ]);
   });
 
-  test('embedded result page keeps one visible fixed Workspace scope', async ({ page }) => {
+  test('global picker searches any selected combination of visible Workspaces', async ({ page }) => {
+    await login(page, userLogin, userPassword);
+    await page.goto('/search?lang=hr');
+
+    await page.locator('#workspace-search-workspace-button').click();
+    await page.locator(`[data-workspace-search-scope][value="${restrictedWorkspace}"]`).check();
+    await page.locator('#workspace-search-q').fill(sharedTerm);
+    await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
+    await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toHaveCount(0);
+
+    await page.locator('#workspace-search-workspace-button').click();
+    await page.locator(`[data-workspace-search-scope][value="${publicWorkspace}"]`).check();
+    await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
+    await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toBeVisible();
+  });
+
+  test('embedded result page keeps multiple visible fixed Workspace scopes', async ({ page }) => {
     await login(page, userLogin, userPassword);
     await page.goto(
       `/search?q=${encodeURIComponent(sharedTerm)}`
-      + `&workspace=${encodeURIComponent(restrictedWorkspace)}&embedded=1&lang=hr`,
+      + `&workspaces%5B%5D=${encodeURIComponent(publicWorkspace)}`
+      + `&workspaces%5B%5D=${encodeURIComponent(restrictedWorkspace)}&embedded=1&lang=hr`,
     );
 
-    const scope = page.locator('#workspace-search-workspace');
+    const scope = page.locator('#workspace-search-workspace-button');
     await expect(scope).toHaveJSProperty('tagName', 'DIV');
-    await expect(scope).toHaveText('E2E Search Restricted');
-    await expect(page.locator('input[name="workspace"]')).toHaveValue(restrictedWorkspace);
+    await expect(scope).toContainText('E2E Search Public');
+    await expect(scope).toContainText('E2E Search Restricted');
+    const embeddedScopes = page.locator('input[name="workspaces[]"]');
+    await expect(embeddedScopes).toHaveCount(2);
+    await expect(embeddedScopes.nth(0)).toHaveValue(publicWorkspace);
+    await expect(embeddedScopes.nth(1)).toHaveValue(restrictedWorkspace);
     await expect(page.locator('input[name="embedded"]')).toHaveValue('1');
-    await expect(page.locator('select[name="workspace"]')).toHaveCount(0);
-    await expect(page.getByText(/Pretraga je ograničena na ovo područje|Search is limited/)).toBeVisible();
+    await expect(page.locator('select[name="workspaces[]"]')).toHaveCount(0);
+    await expect(page.getByText(/Pretraga je ograničena na odabrana područja|Search is limited/)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toHaveCount(0);
-    await expect(page.getByText(/Bez operatora više riječi|Without operators, multiple words/)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toBeVisible();
+    await expect(page.getByText(/Ako samo upišete jednu ili više riječi|If you simply enter one or more words/)).toBeVisible();
   });
 
   test('draft keeps the published index while publishing immediately replaces it', async ({ request }) => {
