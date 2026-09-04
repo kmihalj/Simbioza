@@ -82,7 +82,7 @@ TAGS;
     public function testReleaseMetadataAndMaintenanceGuardArePresent(): void
     {
         $root = dirname(__DIR__, 3);
-        $this->assertSame('0.1.31', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.1.32', trim((string)file_get_contents($root . '/VERSION')));
 
         $updater = file_get_contents($root . '/update.php');
         $this->assertIsString($updater);
