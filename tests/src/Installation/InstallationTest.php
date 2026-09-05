@@ -288,7 +288,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(27, $result['migration_count']);
+        $this->assertSame(28, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -313,7 +313,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(27, $database->table('_hph_migrations')->get());
+        $this->assertCount(28, $database->table('_hph_migrations')->get());
 
         $workspaces = $database->table(ModuleWorkspace::TABLE_WORKSPACES)->get();
         $this->assertCount(1, $workspaces);
