@@ -253,6 +253,66 @@ test.describe('module browser surfaces', () => {
     expect((await taskCsrf.json()).csrf.token).toBeTruthy();
   });
 
+  test('single calendar settings and direct subscription use the displayed calendar', async ({ page, request }) => {
+    test.setTimeout(60_000);
+    const calendarName = `E2E single calendar ${Date.now()}`;
+    const created = await expectData(await request.post('/api/v1/calendars', {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('single-calendar-create'),
+      }),
+      data: {
+        name: calendarName,
+        description: 'Single-calendar settings and subscription coverage.',
+        type: 'team',
+        color: '#1677ff',
+        is_enabled: true,
+        is_public_read: false,
+        is_authenticated_read: true,
+      },
+    }), 201);
+    const calendarPath = `/calendars/view/${created.uuid}`;
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto(calendarPath);
+    await page.getByRole('button', { name: /Settings for this calendar|Postavke ovog kalendara/i }).click();
+
+    const settingsModal = page.locator('#calendarCalendarModal');
+    await expectUsableModal(settingsModal);
+    const protectedManagerAcl = settingsModal.locator('tr[data-calendar-acl-protected]');
+    await expect(protectedManagerAcl).toHaveCount(1);
+    await expect(protectedManagerAcl.locator('select')).toBeDisabled();
+    await expect(protectedManagerAcl.locator('select option:checked')).toHaveText('Kalendari');
+    await expect(protectedManagerAcl.locator('input[type="checkbox"]')).toHaveCount(2);
+    await expect(protectedManagerAcl.locator('input[type="checkbox"]').first()).toBeChecked();
+    await expect(protectedManagerAcl.locator('input[type="checkbox"]').last()).toBeChecked();
+    await expect(protectedManagerAcl.locator('[data-calendar-remove-acl-row]')).toBeHidden();
+    await settingsModal.locator('[data-bs-dismiss="modal"]').last().click();
+    await expect(settingsModal).toBeHidden();
+
+    await page.goto('/auth/logout');
+    await login(page, userLogin, userPassword);
+    await page.goto(calendarPath);
+    await page.getByRole('button', {
+      name: /Subscribe me to this calendar|Pretplati me na ovaj kalendar/i,
+    }).click();
+    await expect(page.locator('.calendar-sidebar .badge').filter({
+      hasText: /^(Subscribed|Pretplaćeni ste)$/i,
+    })).toBeVisible();
+
+    const current = await getDataWithEtag(
+      request,
+      `/api/v1/calendars/${created.uuid}`,
+      apiHeaders(adminApiToken),
+    );
+    const deleted = await request.delete(`/api/v1/calendars/${created.uuid}`, {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('single-calendar-delete'),
+        'If-Match': current.etag,
+      }),
+    });
+    expect(deleted.status()).toBe(204);
+  });
+
   test('Workspace display defaults, page override, and login lifetime are configurable', async ({ page }) => {
     test.setTimeout(60_000);
     const suffix = Date.now();
