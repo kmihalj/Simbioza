@@ -274,7 +274,50 @@ test.describe('module browser surfaces', () => {
 
     await login(page, adminLogin, adminPassword);
     await page.goto(calendarPath);
-    await page.getByRole('button', { name: /Settings for this calendar|Postavke ovog kalendara/i }).click();
+    const verifyCalendarActionIcons = async () => {
+      const iconActions = page.locator('.calendar-actions .calendar-action-icon-button');
+      await expect(iconActions).toHaveCount(6);
+      const geometry = await iconActions.evaluateAll((actions) => actions.map((action, index) => {
+        const box = action.getBoundingClientRect();
+        const icon = action.querySelector('svg.calendar-action-icon');
+        const overlapsAnotherAction = actions.some((other, otherIndex) => {
+          if (otherIndex === index) {
+            return false;
+          }
+          const otherBox = other.getBoundingClientRect();
+          return box.left < otherBox.right - 0.5
+            && box.right > otherBox.left + 0.5
+            && box.top < otherBox.bottom - 0.5
+            && box.bottom > otherBox.top + 0.5;
+        });
+
+        return {
+          ariaLabel: action.getAttribute('aria-label') ?? '',
+          buttonColor: getComputedStyle(action).color,
+          height: box.height,
+          iconStroke: icon instanceof SVGElement ? getComputedStyle(icon).stroke : '',
+          overlapsAnotherAction,
+          title: action.getAttribute('title') ?? '',
+          width: box.width,
+        };
+      }));
+
+      for (const action of geometry) {
+        expect(action.title).not.toBe('');
+        expect(action.ariaLabel).toBe(action.title);
+        expect(action.width).toBeLessThanOrEqual(48);
+        expect(action.height).toBeLessThanOrEqual(48);
+        expect(action.iconStroke).toBe(action.buttonColor);
+        expect(action.overlapsAnotherAction).toBe(false);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
+    };
+    await verifyCalendarActionIcons();
+
+    await page.getByRole('button', {
+      name: /Edit this calendar's settings and access rights|Uredi postavke i prava pristupa ovog kalendara/i,
+    }).click();
 
     const settingsModal = page.locator('#calendarCalendarModal');
     await expectUsableModal(settingsModal);
@@ -288,6 +331,36 @@ test.describe('module browser surfaces', () => {
     await expect(protectedManagerAcl.locator('[data-calendar-remove-acl-row]')).toBeHidden();
     await settingsModal.locator('[data-bs-dismiss="modal"]').last().click();
     await expect(settingsModal).toBeHidden();
+
+    await page.goto('/settings/theme');
+    const originalTheme = await page.locator('#active_theme').inputValue();
+    const originalModePolicy = await page.locator('#mode_policy').inputValue();
+    const themeIds = await page.locator('#active_theme option').evaluateAll(
+      (options) => options.map((option) => option.value).filter((value) => value !== ''),
+    );
+    expect(themeIds).toEqual(expect.arrayContaining(['aai', 'dabar', 'simbioza', 'srce-sup', 'standard']));
+    try {
+      for (const themeId of themeIds) {
+        for (const modePolicy of ['light', 'dark']) {
+          await page.locator('#active_theme').selectOption(themeId);
+          await page.locator('#mode_policy').selectOption(modePolicy);
+          await Promise.all([
+            page.waitForLoadState('networkidle'),
+            page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
+          ]);
+          await page.goto(calendarPath);
+          await verifyCalendarActionIcons();
+          await page.goto('/settings/theme');
+        }
+      }
+    } finally {
+      await page.locator('#active_theme').selectOption(originalTheme);
+      await page.locator('#mode_policy').selectOption(originalModePolicy);
+      await Promise.all([
+        page.waitForLoadState('networkidle'),
+        page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
+      ]);
+    }
 
     await page.goto('/auth/logout');
     await login(page, userLogin, userPassword);
