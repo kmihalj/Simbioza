@@ -393,6 +393,87 @@ test.describe('browser flows', () => {
     const publishedNode = tree.find((node) => node.slug === pageSlug);
     expect(publishedNode?.id).toBeTruthy();
 
+    /*
+     * HR: Aktivna stranica na bilo kojoj dubini automatski pokazuje svoju
+     *     prvu razinu podstranica, čak i kada spremljeno stanje nema tu granu.
+     * EN: An active page at any depth automatically shows its first child
+     *     level, even when the stored state does not contain that branch.
+     */
+    const activeBranchParentSlug = `e2e-active-branch-parent-${Date.now()}`;
+    await expectData(await request.post('/api/v1/pages', {
+      headers: apiHeaders(apiToken, {
+        'Idempotency-Key': idempotencyKey('browser-active-branch-parent'),
+      }),
+      data: {
+        title: 'E2E Active Branch Parent',
+        slug: activeBranchParentSlug,
+        workspace_slug: workspaceSlug,
+        language: 'en',
+        html: '<p>Temporary parent page for the active branch test.</p>',
+      },
+    }), 201);
+    const branchTree = await expectData(await request.get(
+      `/api/v1/workspaces/${workspaceSlug}/tree?lang=en`,
+      { headers: apiHeaders(apiToken) },
+    ));
+    const activeBranchParent = branchTree.find(
+      (node) => node.slug === activeBranchParentSlug,
+    );
+    expect(activeBranchParent?.id).toBeTruthy();
+    const activeBranchChild = await expectData(await request.post(
+      `/api/v1/workspaces/${workspaceSlug}/nodes`,
+      {
+        headers: apiHeaders(apiToken, {
+          'Idempotency-Key': idempotencyKey('browser-active-branch-child'),
+        }),
+        data: {
+          node_type: 'internal_link',
+          title: 'E2E Active Branch Child',
+          slug: 'e2e-active-branch-child',
+          target_url: '/about',
+          parent_id: publishedNode.id,
+          sort_order: 10,
+        },
+      },
+    ), 201);
+    await expectData(await request.put(`/api/v1/workspaces/${workspaceSlug}/tree/order`, {
+      headers: apiHeaders(apiToken, {
+        'Idempotency-Key': idempotencyKey('browser-active-branch-order'),
+      }),
+      data: {
+        placements: [
+          { id: activeBranchParent.id, parent_id: null, sort_order: 10 },
+          { id: publishedNode.id, parent_id: activeBranchParent.id, sort_order: 10 },
+          { id: activeBranchChild.id, parent_id: publishedNode.id, sort_order: 10 },
+        ],
+      },
+    }));
+
+    await page.goto(`/workspace/${workspaceSlug}/${pageSlug}?lang=en`);
+    const readableTree = page.locator('[data-workspace-tree-view]');
+    const readableTreeKey = await readableTree.getAttribute('data-workspace-tree-key');
+    expect(readableTreeKey).toBeTruthy();
+    await page.evaluate((treeKey) => {
+      window.sessionStorage.setItem(`heartphrame.workspace.tree.v1.${treeKey}`, '[]');
+    }, readableTreeKey);
+    await page.reload();
+
+    const activeTreeNode = readableTree.locator(
+      `[data-workspace-tree-node="${publishedNode.id}"]`,
+    );
+    await expect(activeTreeNode.locator(
+      ':scope > .workspace-tree-row > [aria-current="page"]',
+    )).toBeVisible();
+    await expect(activeTreeNode.locator(
+      ':scope > .workspace-tree-row [data-workspace-tree-branch-toggle]',
+    )).toHaveAttribute('aria-expanded', 'true');
+    const activePageChildren = activeTreeNode.locator(':scope > .workspace-tree-branch');
+    await expect(activePageChildren).toBeVisible();
+    await expect(activePageChildren.getByRole('link', {
+      name: 'E2E Active Branch Child',
+      exact: true,
+    })).toBeVisible();
+
     await page.getByRole('link', { name: /Shorts|Summaries|Sažetci/i }).click();
     await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`);
     await expect(page.getByRole('heading', {
