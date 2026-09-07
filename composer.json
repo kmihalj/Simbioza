@@ -98,7 +98,7 @@
         "aaieduhr/simbioza-module-workspace-search": "^0.1.7",
         "aaieduhr/heartphrame-module-backup": "^0.1.0",
         "aaieduhr/simbioza-module-user": "^0.1.0",
-        "aaieduhr/simbioza-module-confluence-import": "^0.1.18"
+        "aaieduhr/simbioza-module-confluence-import": "^0.1.19"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
