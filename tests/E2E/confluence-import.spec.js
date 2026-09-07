@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { e2eEnvironment, login } from './helpers.js';
@@ -82,6 +82,17 @@ async function confluenceArchive() {
   return { archive, calendar, directory };
 }
 
+/** HR: Potvrđuje da dovršeni import nije ostavio privatni ZIP ni staging kopije. EN: Confirms a completed import retained no private ZIP or staging copies. */
+async function expectImportStagingEmpty() {
+  const project = process.env.HPH_E2E_PROJECT;
+  expect(project).toBeTruthy();
+  for (const directory of ['uploads', 'staging', 'attachments']) {
+    await expect.poll(async () => (
+      await readdir(join(project, 'data', 'confluence-import', directory))
+    ).length).toBe(0);
+  }
+}
+
 test('administrator imports a Confluence space while ACL and private files remain enforced', async ({ browser, page }) => {
   test.setTimeout(120_000);
   const fixture = await confluenceArchive();
@@ -117,6 +128,7 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('#confluence-import-result')).toContainText('"pages_imported": 2');
     await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 1');
+    await expectImportStagingEmpty();
 
     await page.goto(`/settings/confluence-import/report/${jobUuid}`);
     const homeReport = page.locator('article').filter({ hasText: 'Imported Home' });
@@ -233,6 +245,7 @@ test('administrator imports a Confluence space while ACL and private files remai
     await page.locator('#confluence-import-run').click();
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 1');
+    await expectImportStagingEmpty();
 
     await page.goto(`/workspace/${workspaceSlug}/${shortenedChildSlug}?lang=en`);
     const replacementAttachmentLink = page.getByRole('link', { name: 'Download sample' });

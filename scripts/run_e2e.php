@@ -569,6 +569,7 @@ function runEndToEndSuite(): int
                 'HPH_E2E_USER_PASSWORD' => E2E_USER_PASSWORD,
                 'HPH_E2E_API_TOKEN' => $fixtures['admin_api_token'],
                 'HPH_E2E_USER_API_TOKEN' => $fixtures['user_api_token'],
+                'HPH_E2E_PROJECT' => $projectDirectory,
                 'HPH_E2E_QUERY_LOG' => $queryLogPath,
                 'HPH_E2E_REQUEST_LOG' => $requestLogPath,
             ],
