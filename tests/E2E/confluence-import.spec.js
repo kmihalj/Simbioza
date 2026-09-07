@@ -120,8 +120,15 @@ test('administrator imports a Confluence space while ACL and private files remai
 
     await page.locator('details.confluence-import-mapping').first().locator('summary').click();
     const identity = page.locator('[data-identity-map="u1"]');
-    const adminOption = identity.locator('option').filter({ hasText: 'E2E Administrator' });
-    await identity.selectOption(await adminOption.getAttribute('value'));
+    const identityPicker = identity.locator('xpath=..');
+    await identityPicker.locator('[data-identity-picker-toggle]').click();
+    await identityPicker.locator('[data-identity-picker-search]').fill('E2E Administrator');
+    const adminResult = identityPicker.locator('[data-identity-picker-results] button').filter({
+      hasText: 'E2E Administrator',
+    });
+    await expect(adminResult).toBeVisible();
+    await adminResult.click();
+    await expect(identity).not.toHaveValue('');
 
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#confluence-import-run').click();
