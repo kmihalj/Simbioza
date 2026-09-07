@@ -115,6 +115,7 @@ test('administrator imports a Confluence space while ACL and private files remai
 
     await expect(page.locator('#confluence-import-workspace-name')).toHaveValue('Tiny Confluence Space');
     await expect(page.locator('#confluence-import-workspace-slug')).toHaveValue('TINY');
+    await page.locator('#confluence-import-source-base-url').fill('https://wiki.example.org');
     await page.locator('#confluence-import-workspace-name').fill(`E2E Confluence ${suffix}`);
     await page.locator('#confluence-import-workspace-slug').fill(workspaceSlug);
 
@@ -248,6 +249,7 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.locator('#confluence-import-workspace-name')).toHaveValue(`E2E Confluence ${suffix}`);
     await expect(page.locator('#confluence-import-workspace-slug')).toHaveValue(workspaceSlug);
     await expect(page.locator('input[name="reimport_strategy"][value="replace"]')).toBeChecked();
+    await page.locator('#confluence-import-source-base-url').fill('https://wiki.example.org');
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#confluence-import-run').click();
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
