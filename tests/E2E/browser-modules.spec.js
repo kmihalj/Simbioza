@@ -1102,21 +1102,33 @@ test.describe('module browser surfaces', () => {
 
     const publicPage = await publishPage(publicTitle, publicSlug);
     const signedInPage = await publishPage(signedInTitle, signedInSlug);
+    const homepagePagePicker = (audience) => page
+      .locator(`[data-workspace-homepage-target="${audience}"]`)
+      .locator('xpath=..');
+    const homepageWorkspacePicker = (audience) => page.locator(
+      audience === 'personal'
+        ? '#workspace-personal-homepage-workspace [data-workspace-lookup-picker]'
+        : `#workspace-${audience}-workspace [data-workspace-lookup-picker]`,
+    );
 
     const chooseHomepageWorkspace = async (audience, label, query = label) => {
-      await page.locator(`#workspace-${audience}-workspace`).click();
-      await page.locator(`#workspace-${audience}-workspace-search`).fill(query);
-      await page
-        .locator(`#workspace-${audience}-workspace-options`)
-        .getByRole('option', { name: label, exact: true })
+      const picker = homepageWorkspacePicker(audience);
+      await expect(picker).toHaveAttribute('data-workspace-lookup-ready', '1');
+      await picker.locator('[data-workspace-lookup-toggle]').click();
+      await picker.locator('[data-workspace-lookup-search]').fill(query);
+      await picker
+        .locator('[data-workspace-lookup-list]')
+        .getByRole('button', { name: label, exact: true })
         .click();
     };
     const chooseHomepagePage = async (audience, label, query) => {
-      await page.locator(`#workspace-${audience}-page`).click();
-      await page.locator(`#workspace-${audience}-page-search`).fill(query);
-      await page
-        .locator(`#workspace-${audience}-page-options`)
-        .getByRole('option', { name: label, exact: true })
+      const picker = homepagePagePicker(audience);
+      await expect(picker).toHaveAttribute('data-workspace-lookup-ready', '1');
+      await picker.locator('[data-workspace-lookup-toggle]').click();
+      await picker.locator('[data-workspace-lookup-search]').fill(query);
+      await picker
+        .locator('[data-workspace-lookup-list]')
+        .getByRole('button', { name: label, exact: true })
         .click();
     };
 
@@ -1124,9 +1136,10 @@ test.describe('module browser surfaces', () => {
     await page.goto('/settings/workspaces/homepage');
     await expect(page.getByRole('heading', { name: 'Application homepage' })).toBeVisible();
     await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
-    await expect(page.locator('#workspace-public-page')).toHaveText('Select a page');
+    await expect(homepagePagePicker('public').locator('[data-workspace-lookup-toggle]'))
+      .toHaveText('Select a page');
     await chooseHomepagePage('public', publicTitle, 'Public Homepage');
-    await expect(page.locator('#workspace-public-homepage'))
+    await expect(page.locator('[data-workspace-homepage-target="public"]'))
       .toHaveValue(`page:${publicPage.workspace_node.id}`);
 
     await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
@@ -1135,7 +1148,7 @@ test.describe('module browser surfaces', () => {
       `${homepageWorkspace.name} / ${signedInTitle}`,
       signedInTitle,
     );
-    await expect(page.locator('#workspace-authenticated-homepage'))
+    await expect(page.locator('[data-workspace-homepage-target="authenticated"]'))
       .toHaveValue(`page:${signedInPage.workspace_node.id}`);
     await page.locator('#workspace-allow-user-homepage').check();
     await Promise.all([
@@ -1154,9 +1167,11 @@ test.describe('module browser surfaces', () => {
 
     await page.goto('/auth/account/profile');
     await openProfileSection(page, '#auth-account-personal');
-    await expect(page.locator('#workspace-personal-homepage')).toBeVisible();
-    await expect(page.locator('#workspace-personal-homepage')).toBeVisible();
-    await page.locator('#workspace-personal-homepage').selectOption({ label: publicTitle });
+    await expect(homepagePagePicker('personal')).toBeVisible();
+    await chooseHomepageWorkspace('personal', homepageWorkspace.name, String(suffix));
+    await chooseHomepagePage('personal', publicTitle, 'Public Homepage');
+    await expect(page.locator('[data-workspace-homepage-target="personal"]'))
+      .toHaveValue(`page:${publicPage.workspace_node.id}`);
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
       page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
@@ -1166,7 +1181,8 @@ test.describe('module browser surfaces', () => {
 
     await page.goto('/auth/account/profile');
     await openProfileSection(page, '#auth-account-personal');
-    await page.locator('#workspace-personal-homepage').selectOption('default');
+    await chooseHomepageWorkspace('personal', 'All workspaces', 'All');
+    await expect(page.locator('[data-workspace-homepage-target="personal"]')).toHaveValue('default');
     await Promise.all([
       page.waitForURL('/auth/account/profile'),
       page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
@@ -1177,9 +1193,9 @@ test.describe('module browser surfaces', () => {
     await page.goto('/settings/workspaces/homepage');
     await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
     await chooseHomepagePage('public', 'Summaries', 'Summ');
-    await chooseHomepageWorkspace('authenticated', 'Use the public homepage', 'public');
-    await expect(page.locator('#workspace-authenticated-page')).toBeDisabled();
-    await expect(page.locator('#workspace-authenticated-page')).toHaveText('Use the public homepage');
+    await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
+    await expect(homepagePagePicker('authenticated').locator('[data-workspace-lookup-toggle]'))
+      .toHaveText('Use the public homepage');
     await page.locator('#workspace-public-show-tree').uncheck();
     await page.locator('#workspace-public-show-options').uncheck();
     await Promise.all([
@@ -1197,10 +1213,10 @@ test.describe('module browser surfaces', () => {
 
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/workspaces/homepage');
-    await chooseHomepageWorkspace('public', 'Built-in application homepage', 'Built-in');
-    await expect(page.locator('#workspace-public-page')).toBeDisabled();
-    await expect(page.locator('#workspace-public-page')).toHaveText('Built-in application page');
-    await chooseHomepageWorkspace('authenticated', 'Use the public homepage', 'public');
+    await chooseHomepageWorkspace('public', 'All workspaces', 'All');
+    await expect(homepagePagePicker('public').locator('[data-workspace-lookup-toggle]'))
+      .toHaveText('Built-in application page');
+    await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
     await Promise.all([
       page.waitForURL('/settings/workspaces/homepage'),
       page.getByRole('button', { name: 'Save homepage settings' }).click(),

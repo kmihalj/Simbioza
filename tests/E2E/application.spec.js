@@ -573,7 +573,13 @@ test.describe('browser flows', () => {
     await expectUsableModal(nodeDialog);
     await nodeDialog.locator('select[name="node_type"]').selectOption('external_link');
     await nodeDialog.locator('input[name^="title_translations["]:visible').fill('SRCE');
-    await nodeDialog.locator('select[name="parent_id"]').selectOption({ label: 'Links' });
+    const parentPicker = nodeDialog.locator('input[name="parent_id"]').locator('xpath=..');
+    await parentPicker.locator('[data-workspace-lookup-toggle]').click();
+    await parentPicker.locator('[data-workspace-lookup-search]').fill('Links');
+    await parentPicker
+      .locator('[data-workspace-lookup-list]')
+      .getByRole('button', { name: 'Links', exact: true })
+      .click();
     await nodeDialog.locator('input[name="target_url"]').fill('https://www.srce.unizg.hr/');
     await submitFormAndExpectPost(
       page,

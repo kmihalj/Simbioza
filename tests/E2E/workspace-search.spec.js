@@ -372,10 +372,16 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
   test('administrator can rebuild one workspace or the whole site from settings', async ({ page }) => {
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/workspace-search');
-    await expect(page.locator('#workspace-search-reindex-scope')).toBeVisible();
-    await page.locator('#workspace-search-reindex-scope').selectOption({
-      label: 'E2E Search Restricted',
-    });
+    const workspacePicker = page.locator('[data-workspace-lookup-picker="workspace"]');
+    const workspaceValue = workspacePicker.locator('[data-workspace-lookup-value]');
+    await expect(workspacePicker).toHaveAttribute('data-workspace-lookup-ready', '1');
+    await workspacePicker.locator('[data-workspace-lookup-toggle]').click();
+    await workspacePicker.locator('[data-workspace-lookup-search]').fill(restrictedWorkspace);
+    await workspacePicker
+      .locator('[data-workspace-lookup-list]')
+      .getByRole('button', { name: 'E2E Search Restricted', exact: true })
+      .click();
+    await expect(workspaceValue).not.toHaveValue('0');
     await Promise.all([
       page.waitForResponse((response) => (
         response.request().method() === 'POST'
@@ -385,7 +391,13 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     ]);
     await expect(page.getByRole('alert')).toContainText(/Indeks je obnovljen|Index rebuilt/);
 
-    await page.locator('#workspace-search-reindex-scope').selectOption('0');
+    await expect(workspacePicker).toHaveAttribute('data-workspace-lookup-ready', '1');
+    await workspacePicker.locator('[data-workspace-lookup-toggle]').click();
+    await workspacePicker
+      .locator('[data-workspace-lookup-list]')
+      .getByRole('button', { name: /All workspaces|Sva područja/i, exact: true })
+      .click();
+    await expect(workspaceValue).toHaveValue('0');
     await Promise.all([
       page.waitForResponse((response) => (
         response.request().method() === 'POST'
