@@ -1358,6 +1358,10 @@ test.describe('module browser surfaces', () => {
       page.getByRole('button', { name: 'Save settings' }).click(),
     ]);
     await expect(page.getByRole('checkbox', { name: 'E-mail delivery is enabled' })).toBeChecked();
+    await expect(page.getByRole('textbox', { name: 'SMTP host' })).toHaveValue('127.0.0.1');
+    await expect(page.getByRole('spinbutton', { name: 'Port' })).toHaveValue('9');
+    await expect(page.getByRole('combobox', { name: 'Encryption' })).toHaveValue('none');
+    await expect(page.getByRole('textbox', { name: 'Username' })).toHaveValue('');
 
     await page.getByRole('textbox', { name: 'Recipient address' }).fill('recipient@example.invalid');
     await Promise.all([
