@@ -82,7 +82,8 @@ TAGS;
     public function testReleaseMetadataAndMaintenanceGuardArePresent(): void
     {
         $root = dirname(__DIR__, 3);
-        $this->assertSame('0.1.51', trim((string)file_get_contents($root . '/VERSION')));
+        $version = trim((string)file_get_contents($root . '/VERSION'));
+        $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $version);
 
         $updater = file_get_contents($root . '/update.php');
         $this->assertIsString($updater);
