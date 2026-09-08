@@ -86,6 +86,48 @@ test.describe('separated activity and technical logs', () => {
     await expect(page.locator('.audit-table')).toContainText('application.view');
     await expect(page.locator('main').getByRole('link', { name: /Tehnički log|Technical log/i }).first()).toBeVisible();
 
+    /*
+     * HR: Veliki popisi korisnika, područja i stranica učitavaju se udaljeno u
+     *     stranicama od najviše 25 opcija. Globalna stranica uključuje područje
+     *     u oznaci, dok ga odabrano područje više ne ponavlja.
+     * EN: Large user, workspace, and page lists are loaded remotely in pages
+     *     of no more than 25 options. Global page labels include the workspace,
+     *     while a selected workspace is not repeated in its page labels.
+     */
+    for (const kind of ['users', 'workspaces', 'pages']) {
+      const response = await page.request.get(`/settings/logs/audit/lookups/${kind}?page=1&per_page=25`);
+      expect(response.status()).toBe(200);
+      const payload = await response.json();
+      expect(payload.ok).toBe(true);
+      expect(payload.items.length).toBeLessThanOrEqual(25);
+      expect(payload.perPage).toBe(25);
+    }
+
+    const globalPages = await page.request.get('/settings/logs/audit/lookups/pages?page=1&per_page=25');
+    const globalPagePayload = await globalPages.json();
+    expect(globalPagePayload.items.every((item) => item.label.includes(' / '))).toBe(true);
+
+    const workspacePicker = page.locator('[data-audit-picker="workspace"]');
+    const workspaceRequest = page.waitForResponse((response) => (
+      response.url().includes('/settings/logs/audit/lookups/workspaces') && response.status() === 200
+    ));
+    await workspacePicker.locator('[data-audit-picker-toggle]').click();
+    await workspaceRequest;
+    const scopedPageRequest = page.waitForResponse((response) => (
+      response.url().includes('/settings/logs/audit/lookups/pages') && response.status() === 200
+    ));
+    await workspacePicker.locator('[data-audit-picker-choice]').nth(1).click();
+    await scopedPageRequest;
+
+    const pagePicker = page.locator('[data-audit-picker="page"]');
+    await pagePicker.locator('[data-audit-picker-toggle]').click();
+    await expect(pagePicker.locator('[data-audit-picker-choice]').nth(1)).toBeVisible();
+    const scopedPageLabels = await pagePicker.locator('[data-audit-picker-choice]').evaluateAll((options) => (
+      options.slice(1).map((option) => option.textContent.trim())
+    ));
+    expect(scopedPageLabels.length).toBeGreaterThan(0);
+    expect(scopedPageLabels.every((label) => !label.includes(' / '))).toBe(true);
+
     const applicationViews = page.locator('.audit-record').filter({ hasText: 'application.view' });
     await expect(applicationViews.nth(0)).toContainText('E2E Administrator');
     await expect(applicationViews.filter({ hasText: /Gost|Guest/i }).first()).toBeVisible();

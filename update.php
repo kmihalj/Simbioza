@@ -178,6 +178,9 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{mode:int,uid:int,gid:int}> */
     private array $preservedPathMetadata = [];
 
+    /** @var array<string,true> */
+    private array $preExistingConfigFiles = [];
+
     /** @param list<string> $arguments */
     public function __construct(
         private readonly string $appRoot,
@@ -253,6 +256,7 @@ final class ApplicationUpdateCommand
             $this->write($this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
             $this->restorePreservedPathMetadata();
+            $this->normalizeNewConfigFileMetadata();
 
             $this->write($this->message('composer'));
             $this->updateComposerDependencies($composer);
@@ -472,8 +476,15 @@ final class ApplicationUpdateCommand
     private function capturePreservedPathMetadata(): void
     {
         $this->preservedPathMetadata = [];
+        $this->preExistingConfigFiles = [];
         if (PHP_OS_FAMILY === 'Windows') {
             return;
+        }
+
+        foreach (glob($this->appRoot . '/config/*.php') ?: [] as $path) {
+            if (is_file($path)) {
+                $this->preExistingConfigFiles['config/' . basename($path)] = true;
+            }
         }
 
         foreach (self::PRESERVED_WRITABLE_PATHS as $relativePath) {
@@ -487,6 +498,64 @@ final class ApplicationUpdateCommand
                 'mode' => ((int)($metadata['mode'] ?? 0)) & 07777,
                 'uid' => (int)($metadata['uid'] ?? -1),
                 'gid' => (int)($metadata['gid'] ?? -1),
+            ];
+        }
+    }
+
+    /**
+     * HR: Nova konfiguracijska datoteka iz izdanja mora naslijediti vlasnika i
+     *     grupu konfiguracijskog direktorija. To je posebno važno kada se
+     *     updater pokrene kroz sudo uz restriktivni umask.
+     * EN: A configuration file introduced by a release must inherit the config
+     *     directory owner and group. This is especially important when the
+     *     updater runs through sudo with a restrictive umask.
+     */
+    private function normalizeNewConfigFileMetadata(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $directoryMetadata = $this->preservedPathMetadata['config'] ?? null;
+        if (!is_array($directoryMetadata)) {
+            return;
+        }
+
+        foreach (glob($this->appRoot . '/config/*.php') ?: [] as $path) {
+            $relativePath = 'config/' . basename($path);
+            if (!is_file($path) || isset($this->preExistingConfigFiles[$relativePath])) {
+                continue;
+            }
+
+            $restored = true;
+            clearstatcache(true, $path);
+            $owner = @fileowner($path);
+            if (!is_int($owner)) {
+                $restored = false;
+            } elseif ($owner !== $directoryMetadata['uid']) {
+                $restored = @chown($path, $directoryMetadata['uid']);
+            }
+
+            clearstatcache(true, $path);
+            $group = @filegroup($path);
+            if (!is_int($group)) {
+                $restored = false;
+            } elseif ($group !== $directoryMetadata['gid']) {
+                $restored = @chgrp($path, $directoryMetadata['gid']) && $restored;
+            }
+
+            $restored = @chmod($path, 0640) && $restored;
+            if (!$restored) {
+                throw new RuntimeException(sprintf(
+                    $this->message('metadata_restore_failure'),
+                    $relativePath,
+                ));
+            }
+
+            $this->preservedPathMetadata[$relativePath] = [
+                'mode' => 0640,
+                'uid' => $directoryMetadata['uid'],
+                'gid' => $directoryMetadata['gid'],
             ];
         }
     }

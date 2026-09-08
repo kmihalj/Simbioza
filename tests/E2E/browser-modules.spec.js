@@ -1124,7 +1124,7 @@ test.describe('module browser surfaces', () => {
     await page.goto('/settings/workspaces/homepage');
     await expect(page.getByRole('heading', { name: 'Application homepage' })).toBeVisible();
     await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
-    await expect(page.locator('#workspace-public-page')).toHaveText('Choose a page');
+    await expect(page.locator('#workspace-public-page')).toHaveText('Select a page');
     await chooseHomepagePage('public', publicTitle, 'Public Homepage');
     await expect(page.locator('#workspace-public-homepage'))
       .toHaveValue(`page:${publicPage.workspace_node.id}`);
