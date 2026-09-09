@@ -150,10 +150,10 @@ TAGS;
     }
 
     /**
-     * HR: Nova config datoteka nasljeđuje vlasnika direktorija i ostaje čitljiva web-procesu.
-     * EN: A newly introduced config file inherits the directory owner and remains web-readable.
+     * HR: Release config datoteka nasljeđuje vlasnika direktorija i ostaje čitljiva web-procesu.
+     * EN: A release-managed config file inherits the directory owner and remains web-readable.
      */
-    public function testNewConfigurationFileInheritsSafeMetadata(): void
+    public function testReleaseConfigurationFileInheritsSafeMetadata(): void
     {
         if (PHP_OS_FAMILY === 'Windows') {
             $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
@@ -169,7 +169,7 @@ TAGS;
 
         $command = new ApplicationUpdateCommand($root, ['--lang=en']);
         $capture = new \ReflectionMethod($command, 'capturePreservedPathMetadata');
-        $normalize = new \ReflectionMethod($command, 'normalizeNewConfigFileMetadata');
+        $normalize = new \ReflectionMethod($command, 'normalizeReleaseConfigFileMetadata');
         $capture->invoke($command);
 
         file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
@@ -179,5 +179,38 @@ TAGS;
         $this->assertSame(0640, fileperms($root . '/config/editor-html.php') & 07777);
         $this->assertSame(fileowner($root . '/config'), fileowner($root . '/config/editor-html.php'));
         $this->assertSame(filegroup($root . '/config'), filegroup($root . '/config/editor-html.php'));
+    }
+
+    /**
+     * HR: Updater popravlja i postojeći release config s restriktivnim sudo pravima bez diranja lokalnog configa.
+     * EN: The updater repairs an existing release config with restrictive sudo modes without touching local config.
+     */
+    public function testExistingReleaseConfigurationFileIsRepaired(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
+        }
+
+        $root = sys_get_temp_dir() . '/simbioza-update-existing-config-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root . '/config', 0710, true));
+        $this->assertTrue(mkdir($root . '/data', 0770, true));
+        $this->assertTrue(mkdir($root . '/resources/config/menu', 0770, true));
+        $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
+        file_put_contents($root . '/config/workspace.php', "<?php return [];\n");
+        file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
+        chmod($root . '/config/workspace.php', 0600);
+        chmod($root . '/config/editor-html.php', 0600);
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $capture = new \ReflectionMethod($command, 'capturePreservedPathMetadata');
+        $normalize = new \ReflectionMethod($command, 'normalizeReleaseConfigFileMetadata');
+        $capture->invoke($command);
+        $normalize->invoke($command);
+
+        $this->assertSame(0640, fileperms($root . '/config/editor-html.php') & 07777);
+        $this->assertSame(fileowner($root . '/config'), fileowner($root . '/config/editor-html.php'));
+        $this->assertSame(filegroup($root . '/config'), filegroup($root . '/config/editor-html.php'));
+        $this->assertSame(0600, fileperms($root . '/config/workspace.php') & 07777);
     }
 }

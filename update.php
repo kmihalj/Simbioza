@@ -178,9 +178,6 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{mode:int,uid:int,gid:int}> */
     private array $preservedPathMetadata = [];
 
-    /** @var array<string,true> */
-    private array $preExistingConfigFiles = [];
-
     /** @param list<string> $arguments */
     public function __construct(
         private readonly string $appRoot,
@@ -256,7 +253,7 @@ final class ApplicationUpdateCommand
             $this->write($this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
             $this->restorePreservedPathMetadata();
-            $this->normalizeNewConfigFileMetadata();
+            $this->normalizeReleaseConfigFileMetadata();
 
             $this->write($this->message('composer'));
             $this->updateComposerDependencies($composer);
@@ -476,15 +473,8 @@ final class ApplicationUpdateCommand
     private function capturePreservedPathMetadata(): void
     {
         $this->preservedPathMetadata = [];
-        $this->preExistingConfigFiles = [];
         if (PHP_OS_FAMILY === 'Windows') {
             return;
-        }
-
-        foreach (glob($this->appRoot . '/config/*.php') ?: [] as $path) {
-            if (is_file($path)) {
-                $this->preExistingConfigFiles['config/' . basename($path)] = true;
-            }
         }
 
         foreach (self::PRESERVED_WRITABLE_PATHS as $relativePath) {
@@ -503,14 +493,14 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Nova konfiguracijska datoteka iz izdanja mora naslijediti vlasnika i
-     *     grupu konfiguracijskog direktorija. To je posebno važno kada se
-     *     updater pokrene kroz sudo uz restriktivni umask.
-     * EN: A configuration file introduced by a release must inherit the config
-     *     directory owner and group. This is especially important when the
-     *     updater runs through sudo with a restrictive umask.
+     * HR: Konfiguracijske datoteke kojima upravlja izdanje moraju naslijediti
+     *     vlasnika i grupu konfiguracijskog direktorija. To popravlja i ranije
+     *     uvedenu datoteku koja je ostala nečitljiva nakon sudo nadogradnje.
+     * EN: Release-managed configuration files must inherit the configuration
+     *     directory owner and group. This also repairs a previously introduced
+     *     file left unreadable after an update run through sudo.
      */
-    private function normalizeNewConfigFileMetadata(): void
+    private function normalizeReleaseConfigFileMetadata(): void
     {
         if (PHP_OS_FAMILY === 'Windows') {
             return;
@@ -523,7 +513,7 @@ final class ApplicationUpdateCommand
 
         foreach (glob($this->appRoot . '/config/*.php') ?: [] as $path) {
             $relativePath = 'config/' . basename($path);
-            if (!is_file($path) || isset($this->preExistingConfigFiles[$relativePath])) {
+            if (!is_file($path) || in_array($relativePath, self::PRESERVED_WRITABLE_PATHS, true)) {
                 continue;
             }
 
