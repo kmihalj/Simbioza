@@ -15,6 +15,7 @@ final readonly class InstallationRequirements
         'ctype',
         'dom',
         'fileinfo',
+        'intl',
         'json',
         'libxml',
         'mbstring',

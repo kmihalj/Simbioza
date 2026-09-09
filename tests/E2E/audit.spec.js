@@ -28,6 +28,17 @@ test.describe('separated activity and technical logs', () => {
     const guestView = await page.goto('/about');
     expect(guestView?.status()).toBe(200);
 
+    /*
+     * HR: Otvaranje osobnog profila osigurava da izolirana instalacija ima
+     *     stvarno osobno područje prije provjere njegove zbirne stavke.
+     * EN: Opening the personal profile ensures that the isolated installation
+     *     has a real personal Workspace before its aggregate option is tested.
+     */
+    await login(page, userLogin, userPassword);
+    await page.goto('/auth/account/profile');
+    await expect(page.locator('a[href*="/workspace/osobno-"]')).toHaveCount(1);
+    await page.goto('/auth/logout');
+
     await login(page, adminLogin, adminPassword);
     const editorPath = await createEditorSurface(request, adminApiToken, 'audit-editor');
     const editorDocument = new URL(editorPath, 'http://e2e.invalid').searchParams.get('document');
@@ -113,13 +124,30 @@ test.describe('separated activity and technical logs', () => {
     ));
     await workspacePicker.locator('[data-audit-picker-toggle]').click();
     await workspaceRequest;
+    const personalChoice = workspacePicker.locator(
+      '[data-audit-picker-choice="__personal__"]',
+    );
+    await expect(personalChoice).toHaveCount(1);
+    await expect(personalChoice).toContainText(/Osobna područja|Personal Workspaces/i);
+    await personalChoice.click();
+
+    const pagePicker = page.locator('[data-audit-picker="page"]');
+    await expect(pagePicker.locator('[data-audit-picker-toggle]')).toContainText(
+      /Sve dostupne stranice osobnih područja|All available pages in personal Workspaces/i,
+    );
+    await pagePicker.locator('[data-audit-picker-toggle]').click();
+    await expect(pagePicker.locator('[data-audit-picker-choice]')).toHaveCount(1);
+    await expect(pagePicker.locator('[data-audit-picker-search]')).toBeDisabled();
+
+    await workspacePicker.locator('[data-audit-picker-toggle]').click();
     const scopedPageRequest = page.waitForResponse((response) => (
       response.url().includes('/settings/logs/audit/lookups/pages') && response.status() === 200
     ));
-    await workspacePicker.locator('[data-audit-picker-choice]').nth(1).click();
+    await workspacePicker.locator(
+      '[data-audit-picker-choice]:not([data-audit-picker-choice=""]):not([data-audit-picker-choice="__personal__"])',
+    ).first().click();
     await scopedPageRequest;
 
-    const pagePicker = page.locator('[data-audit-picker="page"]');
     await pagePicker.locator('[data-audit-picker-toggle]').click();
     await expect(pagePicker.locator('[data-audit-picker-choice]').nth(1)).toBeVisible();
     const scopedPageLabels = await pagePicker.locator('[data-audit-picker-choice]').evaluateAll((options) => (

@@ -479,11 +479,22 @@ test.describe('browser flows', () => {
     await expect(page.getByRole('heading', {
       name: /^(Shorts|Summaries|Sažetci) · /i,
     })).toBeVisible();
+    await page.getByRole('link', { name: /Close summaries|Zatvori sažetke/i }).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}`);
+    await page.getByRole('link', { name: /Shorts|Summaries|Sažetci/i }).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`);
     await expect(page.locator('.workspace-short-card')).toContainText(secondDraftBody);
     await expect(page.getByRole('link', { name: /Read more|Pročitaj više/i })).toBeVisible();
     await expect(page.locator('#workspace-shorts-depth')).toHaveValue('2');
     await expect(page.locator('#workspace-shorts-limit')).toHaveValue('10');
     await expect(page.locator('#workspace-shorts-order')).toHaveValue('newest');
+    await expect(page.locator('#workspace-shorts-depth option[value="all"]')).toHaveText(/All levels|Sve razine/i);
+    await expect(page.locator('#workspace-shorts-order option[value="title_asc"]')).toHaveText(
+      /By title, ascending|Po naslovu uzlazno/i,
+    );
+    await expect(page.locator('#workspace-shorts-order option[value="title_desc"]')).toHaveText(
+      /By title, descending|Po naslovu silazno/i,
+    );
     await expect(page.locator('#workspace-shorts-limit option[value="all"]')).toBeEnabled();
     const excerptGeometry = await page.locator('.workspace-short-excerpt').evaluate((excerpt) => {
       const style = getComputedStyle(excerpt);
@@ -524,6 +535,16 @@ test.describe('browser flows', () => {
     await expect(page.getByLabel(/Displayed levels|Prikazane razine/i)).toHaveValue('2');
     await expect(page.getByLabel(/Number of articles|Broj članaka/i)).toHaveValue('10');
     await expect(page.getByLabel(/Order|Redoslijed/i)).toHaveValue('newest');
+    await page.getByLabel(/Displayed levels|Prikazane razine/i).selectOption('all');
+    await page.getByLabel(/Number of articles|Broj članaka/i).selectOption('5');
+    await page.getByLabel(/Order|Redoslijed/i).selectOption('title_asc');
+    await page.getByRole('button', { name: /Apply|Show|Prikaži/i }).click();
+    await expect(page).toHaveURL((url) => url.searchParams.get('depth') === 'all'
+      && url.searchParams.get('limit') === '5'
+      && url.searchParams.get('order') === 'title_asc');
+    await expect(page.getByLabel(/Displayed levels|Prikazane razine/i)).toHaveValue('all');
+    await expect(page.getByLabel(/Number of articles|Broj članaka/i)).toHaveValue('5');
+    await expect(page.getByLabel(/Order|Redoslijed/i)).toHaveValue('title_asc');
 
     const croatianShorts = `/workspace/${workspaceSlug}/shorts?lang=en&tree=0&options=0`;
     await page.goto(`/locale/hr?next=${encodeURIComponent(croatianShorts)}`);

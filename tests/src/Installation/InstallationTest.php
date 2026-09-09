@@ -177,6 +177,17 @@ final class InstallationTest extends TestCase
         }
     }
 
+    /** HR: Installer izričito provjerava ICU podršku potrebnu za jezično sortiranje. EN: Installer explicitly checks ICU support required for locale-aware sorting. */
+    public function testRequirementsIncludeIntlExtension(): void
+    {
+        $requirements = new InstallationRequirements(new InstallationPaths($this->minimalRoot()));
+        $checks = array_column($requirements->checks('sqlite'), null, 'id');
+
+        $this->assertArrayHasKey('extension_intl', $checks);
+        $this->assertTrue($checks['extension_intl']['required']);
+        $this->assertSame(extension_loaded('intl'), $checks['extension_intl']['passed']);
+    }
+
     /** HR: Web pristup token zamjenjuje sesijom, uklanja URL tajnu i postavlja sigurnosna zaglavlja. EN: Web access exchanges the token for a session and security headers. */
     public function testWebApplicationConsumesTokenAndProtectsTheSession(): void
     {
@@ -288,7 +299,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(28, $result['migration_count']);
+        $this->assertSame(29, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -313,7 +324,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(28, $database->table('_hph_migrations')->get());
+        $this->assertCount(29, $database->table('_hph_migrations')->get());
 
         $workspaces = $database->table(ModuleWorkspace::TABLE_WORKSPACES)->get();
         $this->assertCount(1, $workspaces);

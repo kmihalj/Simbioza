@@ -231,6 +231,70 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
     await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toBeVisible();
+
+    const searchUrl = page.url();
+    const query = page.locator('#workspace-search-q');
+    await query.fill('');
+    await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
+    await expect(page).toHaveURL(searchUrl);
+    expect(await query.evaluate((input) => input.validationMessage)).toMatch(
+      /dva ili više područja|two or more Workspaces/i,
+    );
+  });
+
+  test('empty term browses a selected Workspace and author picker stays bounded', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.goto(
+      `/search?workspaces%5B%5D=${encodeURIComponent(publicWorkspace)}&per_page=1&lang=hr`,
+    );
+
+    await expect(page.locator('[data-workspace-search-scope][value="__personal__"]')).toHaveCount(1);
+    await expect(page.locator('.hph-workspace-search__help')).toContainText(
+      /kriterij.*kombinirati|combine.*criter/i,
+    );
+    const table = page.locator('.hph-workspace-search__table');
+    await expect(table).toBeVisible();
+    for (const heading of [
+      /Ime stranice|Page name/i,
+      /Autor|Author/i,
+      /Objavljeno|Published/i,
+      /Zadnja izmjena|Last modified/i,
+      /Izmijenio|Modified by/i,
+    ]) {
+      await expect(table.getByRole('columnheader', { name: heading })).toBeVisible();
+    }
+    await expect(table.locator('tbody tr')).toHaveCount(1);
+    await expect(page.locator('.pagination')).toBeVisible();
+
+    const authorPicker = page.locator('[data-workspace-search-author-picker]');
+    const initialAuthors = page.waitForResponse((response) => (
+      response.url().includes('/search/lookups/authors') && response.status() === 200
+    ));
+    await authorPicker.locator('[data-author-toggle]').click();
+    const initialPayload = await (await initialAuthors).json();
+    expect(initialPayload.ok).toBe(true);
+    expect(initialPayload.items.length).toBeLessThanOrEqual(25);
+
+    const searchedAuthors = page.waitForResponse((response) => (
+      response.url().includes('/search/lookups/authors')
+      && response.url().includes(encodeURIComponent(adminLogin))
+      && response.status() === 200
+    ));
+    await authorPicker.locator('[data-author-search]').fill(adminLogin);
+    await searchedAuthors;
+    const authorChoice = authorPicker.locator('[data-author-choice]:not([data-author-choice=""])').first();
+    await expect(authorChoice).toBeVisible();
+    await authorChoice.click();
+    await expect(authorPicker.locator('[data-author-value]')).not.toHaveValue('');
+
+    await page.locator('input[name="from"]').fill('2020-01-01');
+    await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
+    await expect(page.locator('input[name="to"]')).not.toHaveValue('');
+    await expect(table).toBeVisible();
+
+    await table.getByRole('columnheader', { name: /Ime stranice|Page name/i }).getByRole('link').click();
+    await expect(page).toHaveURL(/(?:\?|&)sort=title(?:&|$)/);
+    await expect(page).toHaveURL(/(?:\?|&)direction=desc(?:&|$)/);
   });
 
   test('embedded result page preselects multiple visible editable Workspace scopes', async ({ page }) => {
@@ -253,7 +317,7 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     await expect(page.locator('input[name="embedded"]')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toBeVisible();
-    await expect(page.getByText(/Ako samo upišete jednu ili više riječi|If you simply enter one or more words/)).toBeVisible();
+    await expect(page.getByText(/Bez operatora unesene se riječi|Without operators, the entered words/)).toBeVisible();
 
     await publicScope.uncheck();
     await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
