@@ -73,6 +73,89 @@ async function openProfileSection(page, selector) {
 }
 
 test.describe('module browser surfaces', () => {
+  test('Editor settings normalize and deduplicate allowed MIME rows when saved', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    const settingsResponse = await page.goto('/settings/editor-html');
+    expect(settingsResponse?.status()).toBe(200);
+
+    const mimeTypes = page.locator('#editor-html-uploads-mime-types');
+    const originalRows = (await mimeTypes.inputValue())
+      .split(/\r?\n/)
+      .map((row) => row.trim())
+      .filter((row) => row !== '');
+    expect(originalRows.length).toBeGreaterThan(0);
+    const expectedRows = [...new Set(originalRows.map((row) => row.toLowerCase()))];
+    await mimeTypes.fill([
+      ...originalRows,
+      '',
+      originalRows[0].toUpperCase(),
+      `  ${originalRows[0]}  `,
+    ].join('\n'));
+
+    const saveResponse = page.waitForResponse((candidate) => (
+      candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname === '/settings/editor-html'
+    ));
+    await mimeTypes.locator('xpath=ancestor::form').getByRole('button', {
+      name: /Save settings|Spremi postavke/i,
+    }).click();
+    expect((await saveResponse).status()).toBeLessThan(400);
+    await expect(mimeTypes).toHaveValue(expectedRows.join('\n'));
+  });
+
+  test('image optimization resumes after a temporary step connection failure', async ({ page }) => {
+    const optimization = (status, processed, percent) => ({
+      status,
+      total: 1,
+      processed,
+      percent,
+      generated: processed,
+      skipped: 0,
+      documents_total: 1,
+      documents_processed: processed,
+      worker_busy: false,
+      message: '',
+    });
+    let statusCalls = 0;
+    let stepCalls = 0;
+
+    await page.route(/\/settings\/workspaces\/maintenance\/images$/, async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, optimization: optimization('queued', 0, 0) }),
+      });
+    });
+    await page.route(/\/settings\/workspaces\/maintenance\/images\/status$/, async (route) => {
+      statusCalls += 1;
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, optimization: optimization('running', 0, 0) }),
+      });
+    });
+    await page.route(/\/settings\/workspaces\/maintenance\/images\/step$/, async (route) => {
+      stepCalls += 1;
+      if (stepCalls === 1) {
+        await route.abort('connectionfailed');
+        return;
+      }
+
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, optimization: optimization('done', 1, 100) }),
+      });
+    });
+
+    await login(page, adminLogin, adminPassword);
+    const response = await page.goto('/settings/workspaces/maintenance');
+    expect(response?.status()).toBe(200);
+    await page.locator('[data-image-optimization-start]').click();
+
+    await expect.poll(() => statusCalls).toBeGreaterThan(0);
+    await expect.poll(() => stepCalls).toBeGreaterThan(1);
+    await expect(page.locator('[data-image-optimization-progress]')).toHaveAttribute('aria-valuenow', '100');
+    await expect(page.locator('[data-image-optimization-start]')).toBeEnabled();
+  });
+
   test('every rendered Bootstrap modal remains interactive after repeated opening', async ({ page, request }) => {
     test.setTimeout(90_000);
     const editorPath = await createEditorSurface(request, adminApiToken, 'modal-editor');
@@ -979,7 +1062,9 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByRole('heading', {
       name: /My personal Workspace|Moje osobno područje/i,
     })).toBeVisible();
-    const personalLink = page.locator('a[href*="/workspace/osobno-"]').first();
+    const personalLink = page.locator(
+      '[data-simbioza-personal-workspace-card] a[href*="/workspace/osobno-"]',
+    );
     await expect(personalLink).toBeVisible();
     const personalPath = await personalLink.getAttribute('href');
     expect(personalPath).toMatch(/^\/workspace\/osobno-/);
@@ -1011,7 +1096,7 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByText(/^Personal workspace of /i)).toHaveCount(0);
 
     await page.goto('/workspaces');
-    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
+    await expect(page.locator('main').locator(`a[href="${personalPath}"]`)).toHaveCount(1);
 
     // HR: Opća pretraga odmah nudi obična vidljiva područja, ali sva osobna
     //     područja sažima u jednu mogućnost umjesto popisa svakog vlasnika.
@@ -1033,7 +1118,9 @@ test.describe('module browser surfaces', () => {
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
     await openProfileSection(page, '#auth-account-personal');
-    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
+    await expect(page.locator(
+      `[data-simbioza-personal-workspace-card] a[href="${personalPath}"]`,
+    )).toHaveCount(1);
 
     await page.goto('/auth/logout');
     await login(page, adminLogin, adminPassword);
@@ -1048,6 +1135,160 @@ test.describe('module browser surfaces', () => {
     await personalWorkspaceIndex.click();
     await expect(page).toHaveURL(/\/workspaces\?personal=1$/);
     await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(1);
+  });
+
+  test('users can create their personal Workspace only when enabled and keep it afterwards', async ({ page, request }) => {
+    test.setTimeout(90_000);
+    const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const password = 'E2ePersonalWorkspace!2026';
+    const creator = {
+      login: `personal-creator-${suffix}@example.invalid`,
+      name: `E2E Personal Creator ${suffix}`,
+    };
+    const disabled = {
+      login: `personal-disabled-${suffix}@example.invalid`,
+      name: `E2E Personal Disabled ${suffix}`,
+    };
+    const createUser = async ({ login: loginIdentifier, name }) => expectData(
+      await request.post('/api/v1/users', {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey('personal-workspace-user'),
+        }),
+        data: {
+          login_identifier: loginIdentifier,
+          password,
+          is_active: true,
+          is_admin: false,
+          provider_access: { local: true },
+          attributes: {
+            display_name: name,
+            email: loginIdentifier,
+          },
+        },
+      }),
+      201,
+    );
+    const settingsForm = () => page.locator('[data-personal-workspace-settings]');
+    const saveSettings = async () => {
+      const response = page.waitForResponse((candidate) => (
+        candidate.request().method() === 'POST'
+        && new URL(candidate.url()).pathname === '/settings/personal-workspaces'
+      ));
+      await settingsForm().getByRole('button', { name: /Save|Spremi/i }).click();
+      expect((await response).status()).toBeLessThan(400);
+      await expect(page).toHaveURL(/\/settings\/personal-workspaces$/);
+    };
+
+    await createUser(creator);
+    await createUser(disabled);
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/personal-workspaces');
+    const automaticCreation = page.locator('#personal-workspaces-auto-create');
+    const selfCreation = page.locator('#personal-workspaces-self-create');
+    await expect(automaticCreation).toBeChecked();
+    await expect(selfCreation).toBeDisabled();
+    await automaticCreation.uncheck();
+    await expect(selfCreation).toBeEnabled();
+    await selfCreation.check();
+    await saveSettings();
+    await expect(automaticCreation).not.toBeChecked();
+    await expect(selfCreation).toBeChecked();
+    await expect(selfCreation).toBeEnabled();
+
+    await page.goto('/auth/logout');
+    await login(page, creator.login, password);
+    await page.goto('/auth/account/profile');
+    await openProfileSection(page, '#auth-account-personal');
+
+    const personalCard = page.locator('[data-simbioza-personal-workspace-card]');
+    const appearanceCard = page.locator('[data-simbioza-appearance-card]');
+    const followingCard = page.locator('[data-simbioza-following-card]');
+    await expect(personalCard.getByRole('heading', {
+      name: /Create my personal Workspace|Izradi moje osobno područje/i,
+    })).toBeVisible();
+    await expect(followingCard.locator('[data-simbioza-personal-workspace-card]')).toHaveCount(0);
+    await expect(followingCard.locator('[data-simbioza-appearance-card]')).toHaveCount(0);
+    if (await appearanceCard.count() > 0) {
+      await expect(appearanceCard).toBeVisible();
+    }
+    await expect(page.locator('a.dropdown-item').filter({
+      hasText: /My Workspace|Moje područje/i,
+    })).toHaveCount(0);
+
+    await Promise.all([
+      page.waitForURL((url) => (
+        url.pathname === '/auth/account/profile'
+        && url.hash === '#simbioza-user-personal-workspace'
+      )),
+      personalCard.getByRole('button', {
+        name: /Create my personal Workspace|Izradi moje osobno područje/i,
+      }).click(),
+    ]);
+    await expect(personalCard.getByRole('heading', {
+      name: /My personal Workspace|Moje osobno područje/i,
+    })).toBeVisible();
+    const personalLink = personalCard.locator('a[href*="/workspace/osobno-"]');
+    await expect(personalLink).toBeVisible();
+    const personalPath = await personalLink.getAttribute('href');
+    expect(personalPath).toMatch(/^\/workspace\/osobno-/);
+
+    const userDropdown = page.locator('li.nav-item.dropdown').filter({ hasText: creator.name });
+    await userDropdown.locator(':scope > [data-bs-toggle="dropdown"]').click();
+    const profileMenuItem = userDropdown.getByRole('link', { name: /My profile|Moj profil/i });
+    const workspaceMenuItem = userDropdown.getByRole('link', { name: /My Workspace|Moje područje/i });
+    await expect(profileMenuItem).toBeVisible();
+    await expect(workspaceMenuItem).toBeVisible();
+    await expect(workspaceMenuItem).toHaveAttribute('href', personalPath);
+    const personalMenuOrder = await userDropdown.locator('a.dropdown-item').allTextContents();
+    expect(personalMenuOrder.indexOf((await profileMenuItem.textContent()).trim()) + 1)
+      .toBe(personalMenuOrder.indexOf((await workspaceMenuItem.textContent()).trim()));
+
+    await page.goto('/auth/logout');
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/workspaces/all');
+    await expect(page.locator(`a[href="${personalPath}"]`)).toHaveCount(0);
+    await expect(page.getByText(creator.name, { exact: false })).toHaveCount(0);
+    await page.goto('/settings/workspaces/maintenance');
+    await expect(page.getByRole('row', { name: /Personal Workspaces|Osobna područja/i })).toBeVisible();
+    await expect(page.getByText(creator.name, { exact: false })).toHaveCount(0);
+
+    await page.goto('/settings/personal-workspaces');
+    await expect(selfCreation).toBeChecked();
+    await selfCreation.uncheck();
+    await saveSettings();
+    await expect(automaticCreation).not.toBeChecked();
+    await expect(selfCreation).not.toBeChecked();
+
+    await page.goto('/auth/logout');
+    await login(page, creator.login, password);
+    await page.goto('/auth/account/profile');
+    await expect(page.locator(
+      `[data-simbioza-personal-workspace-card] a[href="${personalPath}"]`,
+    )).toHaveCount(1);
+    const existingUserDropdown = page.locator('li.nav-item.dropdown').filter({ hasText: creator.name });
+    await existingUserDropdown.locator(':scope > [data-bs-toggle="dropdown"]').click();
+    await expect(existingUserDropdown.getByRole('link', { name: /My Workspace|Moje područje/i }))
+      .toHaveAttribute('href', personalPath);
+
+    await page.goto('/auth/logout');
+    await login(page, disabled.login, password);
+    await page.goto('/auth/account/profile');
+    await expect(page.locator('[data-simbioza-personal-workspace-card]')).toHaveCount(0);
+    await expect(page.locator('a.dropdown-item').filter({
+      hasText: /My Workspace|Moje područje/i,
+    })).toHaveCount(0);
+
+    // HR: Vraća početnu politiku zbog sljedećih testova u istoj razvojnoj bazi.
+    // EN: Restores the default policy for subsequent tests in the same development database.
+    await page.goto('/auth/logout');
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/personal-workspaces');
+    await automaticCreation.check();
+    await expect(selfCreation).toBeDisabled();
+    await saveSettings();
+    await expect(automaticCreation).toBeChecked();
+    await expect(selfCreation).toBeDisabled();
   });
 
   test('Workspace application homepage follows public, signed-in, and personal precedence', async ({ page }) => {

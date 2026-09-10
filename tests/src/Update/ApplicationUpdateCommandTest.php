@@ -133,8 +133,10 @@ TAGS;
         $this->assertTrue(mkdir($root . '/resources/config/menu', 0770, true));
         $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
         file_put_contents($root . '/config/workspace.php', "<?php return [];\n");
+        file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
         chmod($root . '/config', 0710);
         chmod($root . '/config/workspace.php', 0640);
+        chmod($root . '/config/editor-html.php', 0660);
 
         $command = new ApplicationUpdateCommand($root, ['--lang=en']);
         $capture = new \ReflectionMethod($command, 'capturePreservedPathMetadata');
@@ -143,10 +145,74 @@ TAGS;
 
         chmod($root . '/config', 0755);
         chmod($root . '/config/workspace.php', 0600);
+        chmod($root . '/config/editor-html.php', 0600);
         $restore->invoke($command);
 
         $this->assertSame(0710, fileperms($root . '/config') & 07777);
         $this->assertSame(0640, fileperms($root . '/config/workspace.php') & 07777);
+        $this->assertSame(0660, fileperms($root . '/config/editor-html.php') & 07777);
+    }
+
+    /**
+     * HR: Sinkronizacija izdanja čuva sve postavke koje administratori mogu mijenjati kroz aplikaciju.
+     * EN: Release synchronization preserves every setting administrators can change through the application.
+     */
+    public function testSourceSyncPreservesRuntimeSettingsAndUpdatesReleaseFiles(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('The standalone updater requires rsync on Unix-like release hosts.');
+        }
+
+        $rsync = '/usr/bin/rsync';
+        if (!is_executable($rsync)) {
+            $this->markTestSkipped('rsync is not available at /usr/bin/rsync.');
+        }
+
+        $root = sys_get_temp_dir() . '/simbioza-update-settings-' . bin2hex(random_bytes(6));
+        $source = sys_get_temp_dir() . '/simbioza-update-source-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->temporaryDirectories[] = $source;
+
+        foreach ([$root, $source] as $directory) {
+            $this->assertTrue(mkdir($directory . '/config', 0770, true));
+            $this->assertTrue(mkdir($directory . '/resources/config/menu', 0770, true));
+            $this->assertTrue(mkdir($directory . '/resources/config/theme', 0770, true));
+        }
+
+        $preservedFiles = [
+            'config/database.php',
+            'config/env.php',
+            'config/installation.php',
+            'config/email.php',
+            'config/workspace.php',
+            'config/editor-html.php',
+            'resources/config/menu/top.json',
+            'resources/config/menu/settings.json',
+            'resources/config/menu/contexts.json',
+            'resources/config/theme/settings.json',
+            'resources/config/theme/themes.json',
+        ];
+        foreach ($preservedFiles as $relativePath) {
+            file_put_contents($root . '/' . $relativePath, 'site:' . $relativePath);
+            file_put_contents($source . '/' . $relativePath, 'release:' . $relativePath);
+        }
+
+        file_put_contents($root . '/config/routes.php', 'old routes');
+        file_put_contents($source . '/config/routes.php', 'new release routes');
+        file_put_contents($root . '/obsolete.php', 'remove me');
+        file_put_contents($source . '/new-release-file.php', 'install me');
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $sync = new \ReflectionMethod($command, 'syncSource');
+        $sync->invoke($command, $rsync, $source);
+
+        foreach ($preservedFiles as $relativePath) {
+            $this->assertSame('site:' . $relativePath, file_get_contents($root . '/' . $relativePath));
+        }
+
+        $this->assertSame('new release routes', file_get_contents($root . '/config/routes.php'));
+        $this->assertSame('install me', file_get_contents($root . '/new-release-file.php'));
+        $this->assertFileDoesNotExist($root . '/obsolete.php');
     }
 
     /**
@@ -199,8 +265,10 @@ TAGS;
         $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
         file_put_contents($root . '/config/workspace.php', "<?php return [];\n");
         file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
+        file_put_contents($root . '/config/api.php', "<?php return [];\n");
         chmod($root . '/config/workspace.php', 0600);
         chmod($root . '/config/editor-html.php', 0600);
+        chmod($root . '/config/api.php', 0600);
 
         $command = new ApplicationUpdateCommand($root, ['--lang=en']);
         $capture = new \ReflectionMethod($command, 'capturePreservedPathMetadata');
@@ -208,9 +276,10 @@ TAGS;
         $capture->invoke($command);
         $normalize->invoke($command);
 
-        $this->assertSame(0640, fileperms($root . '/config/editor-html.php') & 07777);
-        $this->assertSame(fileowner($root . '/config'), fileowner($root . '/config/editor-html.php'));
-        $this->assertSame(filegroup($root . '/config'), filegroup($root . '/config/editor-html.php'));
+        $this->assertSame(0640, fileperms($root . '/config/api.php') & 07777);
+        $this->assertSame(fileowner($root . '/config'), fileowner($root . '/config/api.php'));
+        $this->assertSame(filegroup($root . '/config'), filegroup($root . '/config/api.php'));
         $this->assertSame(0600, fileperms($root . '/config/workspace.php') & 07777);
+        $this->assertSame(0600, fileperms($root . '/config/editor-html.php') & 07777);
     }
 }

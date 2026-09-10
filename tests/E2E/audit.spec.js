@@ -36,7 +36,9 @@ test.describe('separated activity and technical logs', () => {
      */
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
-    await expect(page.locator('a[href*="/workspace/osobno-"]')).toHaveCount(1);
+    await expect(page.locator(
+      '[data-simbioza-personal-workspace-card] a[href*="/workspace/osobno-"]',
+    )).toHaveCount(1);
     await page.goto('/auth/logout');
 
     await login(page, adminLogin, adminPassword);

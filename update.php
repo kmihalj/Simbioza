@@ -30,6 +30,7 @@ final class ApplicationUpdateCommand
         'config/installation.php',
         'config/email.php',
         'config/workspace.php',
+        'config/editor-html.php',
         'resources/config/menu/',
         'resources/config/theme/',
     ];
@@ -42,6 +43,7 @@ final class ApplicationUpdateCommand
         'config/installation.php',
         'config/email.php',
         'config/workspace.php',
+        'config/editor-html.php',
         'data',
         'resources/config/menu',
         'resources/config/theme',
@@ -493,12 +495,12 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Konfiguracijske datoteke kojima upravlja izdanje moraju naslijediti
-     *     vlasnika i grupu konfiguracijskog direktorija. To popravlja i ranije
-     *     uvedenu datoteku koja je ostala nečitljiva nakon sudo nadogradnje.
-     * EN: Release-managed configuration files must inherit the configuration
-     *     directory owner and group. This also repairs a previously introduced
-     *     file left unreadable after an update run through sudo.
+     * HR: Nova ili izdanjem upravljana konfiguracijska datoteka bez zapamćenih
+     *     metapodataka mora naslijediti vlasnika i grupu konfiguracijskog direktorija.
+     *     Postojeće trajne postavke zadržavaju vlastite zatečene metapodatke.
+     * EN: A new or release-managed configuration file without captured metadata
+     *     must inherit the configuration directory owner and group. Existing
+     *     persistent settings keep their original metadata.
      */
     private function normalizeReleaseConfigFileMetadata(): void
     {
@@ -513,7 +515,7 @@ final class ApplicationUpdateCommand
 
         foreach (glob($this->appRoot . '/config/*.php') ?: [] as $path) {
             $relativePath = 'config/' . basename($path);
-            if (!is_file($path) || in_array($relativePath, self::PRESERVED_WRITABLE_PATHS, true)) {
+            if (!is_file($path) || isset($this->preservedPathMetadata[$relativePath])) {
                 continue;
             }
 
