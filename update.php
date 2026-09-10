@@ -19,20 +19,20 @@ final class ApplicationUpdateCommand
 
     /** @var list<string> */
     private const SOURCE_SYNC_EXCLUDES = [
-        '.git/',
-        'vendor/',
-        'data/',
-        'composer.lock',
-        'composer.local.json',
-        'composer.local.lock',
-        'config/database.php',
-        'config/env.php',
-        'config/installation.php',
-        'config/email.php',
-        'config/workspace.php',
-        'config/editor-html.php',
-        'resources/config/menu/',
-        'resources/config/theme/',
+        '/.git/',
+        '/vendor/',
+        '/data/',
+        '/composer.lock',
+        '/composer.local.json',
+        '/composer.local.lock',
+        '/config/database.php',
+        '/config/env.php',
+        '/config/installation.php',
+        '/config/email.php',
+        '/config/workspace.php',
+        '/config/editor-html.php',
+        '/resources/config/menu/',
+        '/resources/config/theme/',
     ];
 
     /** @var list<string> */
@@ -45,8 +45,19 @@ final class ApplicationUpdateCommand
         'config/workspace.php',
         'config/editor-html.php',
         'data',
+        'resources/config',
         'resources/config/menu',
         'resources/config/theme',
+    ];
+
+    /** @var list<string> */
+    private const RELEASE_MANAGED_CONFIG_FILES = [
+        'config/bootstrap.php',
+        'config/commands.php',
+        'config/listeners.php',
+        'config/middleware.php',
+        'config/routes.php',
+        'config/services.php',
     ];
 
     /** @var list<string> */
@@ -177,6 +188,8 @@ final class ApplicationUpdateCommand
 
     private ?string $temporaryDirectory = null;
 
+    private ?string $runtimeSettingsSnapshotDirectory = null;
+
     /** @var array<string, array{mode:int,uid:int,gid:int}> */
     private array $preservedPathMetadata = [];
 
@@ -251,9 +264,11 @@ final class ApplicationUpdateCommand
             $this->backupPath = $this->createBackup($tar, $currentTag, $targetTag);
             $this->write(sprintf($this->message('backup'), $this->backupPath));
             $this->enableMaintenance($targetTag);
+            $this->captureRuntimeSettings();
 
             $this->write($this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
+            $this->restoreRuntimeSettings();
             $this->restorePreservedPathMetadata();
             $this->normalizeReleaseConfigFileMetadata();
 
@@ -471,6 +486,132 @@ final class ApplicationUpdateCommand
         $this->mustRun($command);
     }
 
+    /**
+     * HR: Sprema sve postojeće aplikacijske override postavke prije sinkronizacije izdanja.
+     *     Datoteke koje grade bootstrap, rute i servisni spremnik ostaju pod upravljanjem izdanja.
+     * EN: Snapshots every existing application override setting before release synchronization.
+     *     Files that build the bootstrap, routes, and service container remain release-managed.
+     */
+    private function captureRuntimeSettings(): void
+    {
+        if ($this->temporaryDirectory === null) {
+            throw new RuntimeException('The temporary update directory is unavailable.');
+        }
+
+        $snapshotDirectory = $this->temporaryDirectory . '/runtime-settings';
+        if (!mkdir($snapshotDirectory, 0700, true) && !is_dir($snapshotDirectory)) {
+            throw new RuntimeException('Unable to create the runtime-settings snapshot directory.');
+        }
+
+        foreach ($this->runtimeSettingsFiles() as $relativePath) {
+            $source = $this->appRoot . '/' . $relativePath;
+            $target = $snapshotDirectory . '/' . $relativePath;
+            $targetDirectory = dirname($target);
+            if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0700, true) && !is_dir($targetDirectory)) {
+                throw new RuntimeException('Unable to prepare a runtime-settings snapshot path.');
+            }
+            if (!copy($source, $target)) {
+                throw new RuntimeException('Unable to snapshot runtime setting: ' . $relativePath);
+            }
+            chmod($target, 0600);
+        }
+
+        $this->runtimeSettingsSnapshotDirectory = $snapshotDirectory;
+    }
+
+    /**
+     * HR: Nakon sinkronizacije vraća zatečene postavke preko novih release defaulta.
+     *     Nova konfiguracijska datoteka koju prethodna instalacija nije imala ostaje iz izdanja.
+     * EN: Restores captured settings over new release defaults after synchronization.
+     *     A new configuration file absent from the previous installation remains from the release.
+     */
+    private function restoreRuntimeSettings(): void
+    {
+        $snapshotDirectory = $this->runtimeSettingsSnapshotDirectory;
+        if ($snapshotDirectory === null || !is_dir($snapshotDirectory)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($snapshotDirectory, \FilesystemIterator::SKIP_DOTS),
+        );
+        foreach ($iterator as $item) {
+            if (!$item instanceof \SplFileInfo || !$item->isFile() || $item->isLink()) {
+                continue;
+            }
+
+            $source = $item->getPathname();
+            $relativePath = substr($source, strlen($snapshotDirectory) + 1);
+            if ($relativePath === '') {
+                continue;
+            }
+
+            $target = $this->appRoot . '/' . $relativePath;
+            $targetDirectory = dirname($target);
+            if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0770, true) && !is_dir($targetDirectory)) {
+                throw new RuntimeException('Unable to recreate runtime-settings directory: ' . $relativePath);
+            }
+
+            $temporaryTarget = $targetDirectory . '/.simbioza-update-setting-' . bin2hex(random_bytes(8));
+            if (!copy($source, $temporaryTarget) || !rename($temporaryTarget, $target)) {
+                @unlink($temporaryTarget);
+                throw new RuntimeException('Unable to restore runtime setting: ' . $relativePath);
+            }
+        }
+    }
+
+    /**
+     * HR: Otkriva trajne PHP override datoteke i sve administratorski upravljane resource postavke.
+     * EN: Discovers persistent PHP overrides and all administrator-managed resource settings.
+     *
+     * @return list<string>
+     */
+    private function runtimeSettingsFiles(): array
+    {
+        $files = [];
+        $configDirectory = $this->appRoot . '/config';
+        if (is_dir($configDirectory)) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($configDirectory, \FilesystemIterator::SKIP_DOTS),
+            );
+            foreach ($iterator as $item) {
+                if (!$item instanceof \SplFileInfo || !$item->isFile() || $item->isLink()) {
+                    continue;
+                }
+
+                $path = $item->getPathname();
+                $relativePath = 'config/' . substr($path, strlen($configDirectory) + 1);
+                if (
+                    !str_ends_with($relativePath, '.php')
+                    || str_ends_with($relativePath, '.php.dist')
+                    || in_array($relativePath, self::RELEASE_MANAGED_CONFIG_FILES, true)
+                ) {
+                    continue;
+                }
+                $files[$relativePath] = true;
+            }
+        }
+
+        $resourceDirectory = $this->appRoot . '/resources/config';
+        if (is_dir($resourceDirectory)) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($resourceDirectory, \FilesystemIterator::SKIP_DOTS),
+            );
+            foreach ($iterator as $item) {
+                if (!$item instanceof \SplFileInfo || !$item->isFile() || $item->isLink()) {
+                    continue;
+                }
+                $path = $item->getPathname();
+                $relativePath = 'resources/config/' . substr($path, strlen($resourceDirectory) + 1);
+                $files[$relativePath] = true;
+            }
+        }
+
+        $paths = array_keys($files);
+        sort($paths, SORT_STRING);
+        return $paths;
+    }
+
     /** HR: Pamti Unix vlasništvo i prava zapisivih putanja. EN: Captures Unix ownership and modes of writable paths. */
     private function capturePreservedPathMetadata(): void
     {
@@ -479,7 +620,17 @@ final class ApplicationUpdateCommand
             return;
         }
 
-        foreach (self::PRESERVED_WRITABLE_PATHS as $relativePath) {
+        $paths = array_fill_keys(self::PRESERVED_WRITABLE_PATHS, true);
+        foreach ($this->runtimeSettingsFiles() as $relativePath) {
+            $paths[$relativePath] = true;
+            $directory = dirname($relativePath);
+            while ($directory !== '.' && $directory !== '') {
+                $paths[$directory] = true;
+                $directory = dirname($directory);
+            }
+        }
+
+        foreach (array_keys($paths) as $relativePath) {
             $path = $this->appRoot . '/' . $relativePath;
             $metadata = @stat($path);
             if (!is_array($metadata)) {

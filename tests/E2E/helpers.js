@@ -26,17 +26,36 @@ export function e2eEnvironment() {
 }
 
 /**
- * HR: Prijavljuje korisnika kroz stvarni lokalni Auth obrazac.
- * EN: Signs a user in through the real local Auth form.
+ * HR: Prijavljuje korisnika kroz stvarni lokalni Auth obrazac. Administratorski
+ *     račun zadano potvrđuje i privremene Simbioza ovlasti kako postojeći testovi
+ *     zadržavaju svoje značenje; ciljani test može zatražiti običan način rada.
+ * EN: Signs a user in through the real local Auth form. The administrator account
+ *     also confirms temporary Simbioza rights by default so existing tests retain
+ *     their meaning; a targeted test can request ordinary mode.
  */
-export async function login(page, loginIdentifier, password) {
-  await page.goto('/auth/login');
+export async function login(page, loginIdentifier, password, { elevateAdmin = true } = {}) {
+  if (!new URL(page.url()).pathname.includes('/auth/login')) {
+    await page.goto('/auth/login');
+  }
   await page.locator('#auth_login').fill(loginIdentifier);
   await page.locator('#auth_password').fill(password);
   await Promise.all([
     page.waitForURL((url) => !url.pathname.startsWith('/auth/login')),
     page.locator('#local_override_login button[type="submit"]').click(),
   ]);
+
+  if (elevateAdmin && loginIdentifier === e2eEnvironment().adminLogin) {
+    if (!new URL(page.url()).pathname.endsWith('/account/administrator')) {
+      await page.goto('/account/administrator');
+    }
+    await page.locator('#simbioza-admin-password').fill(password);
+    await Promise.all([
+      page.waitForURL((url) => !url.pathname.endsWith('/account/administrator')),
+      page.getByRole('button', {
+        name: /Enable administrator rights|Uključi administratorske ovlasti/i,
+      }).click(),
+    ]);
+  }
 }
 
 /**

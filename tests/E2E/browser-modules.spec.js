@@ -1186,6 +1186,11 @@ test.describe('module browser surfaces', () => {
     await page.goto('/settings/personal-workspaces');
     const automaticCreation = page.locator('#personal-workspaces-auto-create');
     const selfCreation = page.locator('#personal-workspaces-self-create');
+    const personalWorkspaceTable = page.locator('table');
+    await expect(personalWorkspaceTable.getByRole('row', { name: new RegExp(creator.name) }))
+      .toHaveCount(0);
+    await expect(personalWorkspaceTable.getByRole('row', { name: new RegExp(disabled.name) }))
+      .toHaveCount(0);
     await expect(automaticCreation).toBeChecked();
     await expect(selfCreation).toBeDisabled();
     await automaticCreation.uncheck();
@@ -1254,6 +1259,13 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByText(creator.name, { exact: false })).toHaveCount(0);
 
     await page.goto('/settings/personal-workspaces');
+    const createdWorkspaceRow = personalWorkspaceTable.getByRole('row', {
+      name: new RegExp(creator.name),
+    });
+    await expect(createdWorkspaceRow).toHaveCount(1);
+    await expect(createdWorkspaceRow.locator('input, button')).toHaveCount(0);
+    await expect(personalWorkspaceTable.getByRole('row', { name: new RegExp(disabled.name) }))
+      .toHaveCount(0);
     await expect(selfCreation).toBeChecked();
     await selfCreation.uncheck();
     await saveSettings();

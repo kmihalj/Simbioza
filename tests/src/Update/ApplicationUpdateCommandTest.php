@@ -94,11 +94,13 @@ TAGS;
         $this->assertStringContainsString("'--no-install'", $updater);
         $this->assertStringContainsString("'COMPOSER_ALLOW_SUPERUSER=1'", $updater);
         $this->assertStringContainsString("'/data/update-vendor-'", $updater);
-        $this->assertStringContainsString("'config/workspace.php'", $updater);
+        $this->assertStringContainsString("'/config/workspace.php'", $updater);
         $this->assertStringContainsString("'--no-owner'", $updater);
         $this->assertStringContainsString("'--no-group'", $updater);
         $this->assertStringContainsString("'--no-perms'", $updater);
-        $this->assertStringContainsString("'resources/config/theme/'", $updater);
+        $this->assertStringContainsString("'/resources/config/theme/'", $updater);
+        $this->assertStringContainsString('captureRuntimeSettings', $updater);
+        $this->assertStringContainsString('restoreRuntimeSettings', $updater);
         $this->assertFileExists($root . '/resources/installation/theme/simbioza.zip');
         $preflightPosition = strpos($updater, '$this->write($this->message(\'preflight\'));');
         $migrationPosition = strpos($updater, '$this->migrationStarted = true;');
@@ -177,40 +179,69 @@ TAGS;
             $this->assertTrue(mkdir($directory . '/config', 0770, true));
             $this->assertTrue(mkdir($directory . '/resources/config/menu', 0770, true));
             $this->assertTrue(mkdir($directory . '/resources/config/theme', 0770, true));
+            $this->assertTrue(mkdir($directory . '/resources/config/extensions', 0770, true));
         }
 
         $preservedFiles = [
+            'config/app.php',
+            'config/api.php',
+            'config/backup.php',
+            'config/calendar.php',
             'config/database.php',
             'config/env.php',
             'config/installation.php',
             'config/email.php',
             'config/workspace.php',
+            'config/workspace-search.php',
             'config/editor-html.php',
+            'config/site-only.php',
             'resources/config/menu/top.json',
             'resources/config/menu/settings.json',
             'resources/config/menu/contexts.json',
             'resources/config/theme/settings.json',
             'resources/config/theme/themes.json',
+            'resources/config/extensions/site.json',
         ];
         foreach ($preservedFiles as $relativePath) {
             file_put_contents($root . '/' . $relativePath, 'site:' . $relativePath);
-            file_put_contents($source . '/' . $relativePath, 'release:' . $relativePath);
+            if (!str_contains($relativePath, 'site-only')) {
+                file_put_contents($source . '/' . $relativePath, 'release:' . $relativePath);
+            }
         }
 
         file_put_contents($root . '/config/routes.php', 'old routes');
         file_put_contents($source . '/config/routes.php', 'new release routes');
+        file_put_contents($root . '/config/services.php', 'old services');
+        file_put_contents($source . '/config/services.php', 'new release services');
+        file_put_contents($root . '/config/database.php.dist', 'old database example');
+        file_put_contents($source . '/config/database.php.dist', 'new release database example');
+        file_put_contents($source . '/config/new-policy.php', 'new release policy');
         file_put_contents($root . '/obsolete.php', 'remove me');
         file_put_contents($source . '/new-release-file.php', 'install me');
 
         $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $createTemporaryDirectory = new \ReflectionMethod($command, 'createTemporaryDirectory');
+        $temporaryDirectory = $createTemporaryDirectory->invoke($command);
+        $this->assertIsString($temporaryDirectory);
+        $this->temporaryDirectories[] = $temporaryDirectory;
+        $temporaryDirectoryProperty = new \ReflectionProperty($command, 'temporaryDirectory');
+        $temporaryDirectoryProperty->setValue($command, $temporaryDirectory);
+
+        $capture = new \ReflectionMethod($command, 'captureRuntimeSettings');
         $sync = new \ReflectionMethod($command, 'syncSource');
+        $restore = new \ReflectionMethod($command, 'restoreRuntimeSettings');
+        $capture->invoke($command);
         $sync->invoke($command, $rsync, $source);
+        $restore->invoke($command);
 
         foreach ($preservedFiles as $relativePath) {
             $this->assertSame('site:' . $relativePath, file_get_contents($root . '/' . $relativePath));
         }
 
         $this->assertSame('new release routes', file_get_contents($root . '/config/routes.php'));
+        $this->assertSame('new release services', file_get_contents($root . '/config/services.php'));
+        $this->assertSame('new release database example', file_get_contents($root . '/config/database.php.dist'));
+        $this->assertSame('new release policy', file_get_contents($root . '/config/new-policy.php'));
         $this->assertSame('install me', file_get_contents($root . '/new-release-file.php'));
         $this->assertFileDoesNotExist($root . '/obsolete.php');
     }
@@ -248,10 +279,10 @@ TAGS;
     }
 
     /**
-     * HR: Updater popravlja i postojeći release config s restriktivnim sudo pravima bez diranja lokalnog configa.
-     * EN: The updater repairs an existing release config with restrictive sudo modes without touching local config.
+     * HR: Updater zadržava prava postojećih trajnih konfiguracija i normalizira samo nove release datoteke.
+     * EN: The updater keeps existing persistent-config modes and normalizes only new release files.
      */
-    public function testExistingReleaseConfigurationFileIsRepaired(): void
+    public function testExistingRuntimeConfigurationMetadataIsPreserved(): void
     {
         if (PHP_OS_FAMILY === 'Windows') {
             $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
@@ -276,9 +307,7 @@ TAGS;
         $capture->invoke($command);
         $normalize->invoke($command);
 
-        $this->assertSame(0640, fileperms($root . '/config/api.php') & 07777);
-        $this->assertSame(fileowner($root . '/config'), fileowner($root . '/config/api.php'));
-        $this->assertSame(filegroup($root . '/config'), filegroup($root . '/config/api.php'));
+        $this->assertSame(0600, fileperms($root . '/config/api.php') & 07777);
         $this->assertSame(0600, fileperms($root . '/config/workspace.php') & 07777);
         $this->assertSame(0600, fileperms($root . '/config/editor-html.php') & 07777);
     }

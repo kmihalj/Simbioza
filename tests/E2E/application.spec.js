@@ -152,15 +152,41 @@ test.describe('browser flows', () => {
     expect(stacking.receivesPointer).toBe(true);
   });
 
-  test('guest is redirected, administrator is authorized, and logout clears the session', async ({ page }) => {
+  test('administrator rights require local-password elevation and can be disabled', async ({ page }) => {
     await page.goto('/settings/auth');
     await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsettings%2Fauth/);
 
-    await login(page, adminLogin, adminPassword);
-    const settingsResponse = await page.goto('/settings/auth');
-    expect(settingsResponse?.status()).toBe(200);
+    await login(page, adminLogin, adminPassword, { elevateAdmin: false });
+    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings%2Fauth/);
+    await expect(page.getByRole('heading', {
+      name: /Administrator rights|Administratorske ovlasti/i,
+    })).toBeVisible();
+
+    await page.locator('#simbioza-admin-password').fill(adminPassword);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/settings/auth'),
+      page.getByRole('button', {
+        name: /Enable administrator rights|Uključi administratorske ovlasti/i,
+      }).click(),
+    ]);
     await expect(page.locator('body')).not.toContainText(/Access denied|Pristup nije dozvoljen/i);
 
+    const accountDropdown = page.locator('.hph-site-header__control--account li.nav-item.dropdown');
+    await accountDropdown.locator(':scope > [data-bs-toggle="dropdown"]').click();
+    const activeSwitch = accountDropdown.getByRole('switch', { name: /Administrator/i });
+    await expect(activeSwitch).toHaveAttribute('aria-checked', 'true');
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/'),
+      activeSwitch.click(),
+    ]);
+
+    await accountDropdown.locator(':scope > [data-bs-toggle="dropdown"]').click();
+    await expect(accountDropdown.getByRole('switch', { name: /Administrator/i }))
+      .toHaveAttribute('aria-checked', 'false');
+    await expect(accountDropdown.getByText(/Administration|Administracija/i)).toHaveCount(0);
+
+    await page.goto('/settings/auth');
+    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings%2Fauth/);
     await page.goto('/auth/logout');
     await expect(page).toHaveURL(/\/auth\/login$/);
     await expect(page.locator('#local_override_login')).toBeVisible();
