@@ -101,11 +101,15 @@ TAGS;
         $this->assertStringContainsString("'/resources/config/theme/'", $updater);
         $this->assertStringContainsString('captureRuntimeSettings', $updater);
         $this->assertStringContainsString('restoreRuntimeSettings', $updater);
+        $this->assertStringContainsString('normalizeStoredThemeComponentHeights', $updater);
         $this->assertFileExists($root . '/resources/installation/theme/simbioza.zip');
         $preflightPosition = strpos($updater, '$this->write($this->message(\'preflight\'));');
+        $themeUpgradePosition = strpos($updater, '$this->normalizeStoredThemeComponentHeights();');
         $migrationPosition = strpos($updater, '$this->migrationStarted = true;');
         $this->assertIsInt($preflightPosition);
+        $this->assertIsInt($themeUpgradePosition);
         $this->assertIsInt($migrationPosition);
+        $this->assertLessThan($migrationPosition, $themeUpgradePosition);
         $this->assertLessThan($migrationPosition, $preflightPosition);
 
         $frontController = file_get_contents($root . '/public/index.php');
@@ -244,6 +248,52 @@ TAGS;
         $this->assertSame('new release policy', file_get_contents($root . '/config/new-policy.php'));
         $this->assertSame('install me', file_get_contents($root . '/new-release-file.php'));
         $this->assertFileDoesNotExist($root . '/obsolete.php');
+    }
+
+    /**
+     * HR: Nadogradnja tema dodaje samo nedostajuće visine i čuva svaku postojeću postavku.
+     * EN: Theme upgrading adds only missing heights and preserves every existing setting.
+     */
+    public function testThemeHeightUpgradePreservesExistingConfiguration(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-theme-heights-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
+        $path = $root . '/resources/config/theme/themes.json';
+        $themes = [
+            [
+                'id' => 'legacy',
+                'components' => [
+                    'header' => ['sticky' => true],
+                    'navigation' => ['height_px' => 61],
+                    'content' => ['surface' => 'title-card'],
+                ],
+                'light' => ['colors' => ['primary' => '#123456']],
+            ],
+            [
+                'id' => 'configured',
+                'components' => [
+                    'header' => ['height_px' => 94],
+                    'navigation' => ['height_px' => 65],
+                ],
+            ],
+        ];
+        file_put_contents($path, json_encode($themes, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $normalize = new \ReflectionMethod($command, 'normalizeStoredThemeComponentHeights');
+        $this->assertSame(1, $normalize->invoke($command));
+
+        $stored = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertIsArray($stored);
+        $this->assertSame(72, $stored[0]['components']['header']['height_px']);
+        $this->assertSame(61, $stored[0]['components']['navigation']['height_px']);
+        $this->assertTrue($stored[0]['components']['header']['sticky']);
+        $this->assertSame('title-card', $stored[0]['components']['content']['surface']);
+        $this->assertSame('#123456', $stored[0]['light']['colors']['primary']);
+        $this->assertSame(94, $stored[1]['components']['header']['height_px']);
+        $this->assertSame(65, $stored[1]['components']['navigation']['height_px']);
+        $this->assertSame(0, $normalize->invoke($command));
     }
 
     /**

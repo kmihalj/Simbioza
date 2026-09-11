@@ -360,6 +360,12 @@ te čisti cache. Ostaju sačuvani:
 - postavke aktivnog izbornika i teme u `resources/config/menu/` i
   `resources/config/theme/`.
 
+Kada izdanje uvede novu strukturnu postavku teme, updater je može nenasilno
+dodati samo zapisima kojima ključ nedostaje. Za podesive visine zaglavlja i
+glavnog menija upisuje dosadašnje vrijednosti od 72 i 56 piksela u sve postojeće
+sistemske i privatne teme područja; postojeće vrijednosti i druge postavke ne
+mijenja.
+
 Updater ne postavlja vlasnika na `www-data` niti na bilo koji drugi unaprijed
 zadani račun. Na Unix sustavima prije izmjene pamti postojeći UID, GID i mode
 zapisivih putanja te ih vraća nakon sinkronizacije i rollbacka. Na Windowsu ne

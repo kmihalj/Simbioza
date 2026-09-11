@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće trideset aktualnih aplikacijskih migracija te provjerava aktualne
+     * HR: Pokreće trideset i jednu aktualnu aplikacijsku migraciju te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
-     * EN: Runs thirty current application migrations and verifies the current Auth,
+     * EN: Runs thirty-one current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(30, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(31, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -868,6 +868,48 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_GROUPS)->get());
         $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_LINKS)->get());
         $this->assertSame([], $this->database->table(ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS)->get());
+    }
+
+    /**
+     * HR: Aplikacijska migracija nadograđuje postojeću privatnu temu bez pregazivanja postavki.
+     * EN: The application migration upgrades an existing private theme without overwriting settings.
+     */
+    public function testThemeHeightMigrationUpgradesExistingPrivateWorkspaceTheme(): void
+    {
+        $workspaceMigration = require dirname(__DIR__, 3)
+        . '/database/migrations/20260717120804_install_workspace_module_schema.php';
+        $workspaceMigration->up($this->database);
+
+        $now = date('Y-m-d H:i:s');
+        $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->insert([
+            'workspace_id' => 42,
+            'selection_type' => 'custom',
+            'source_theme_id' => 'simbioza',
+            'mode_policy' => 'auto',
+            'theme_json' => json_encode([
+                'id' => 'workspace-42',
+                'components' => [
+                    'header' => ['height_px' => 93, 'sticky' => true],
+                    'navigation' => [],
+                    'content' => ['surface' => 'title-card'],
+                ],
+            ], JSON_THROW_ON_ERROR),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $migration = require dirname(__DIR__, 3)
+        . '/database/migrations/20260911160000_add_theme_component_heights.php';
+        $migration->up($this->database);
+
+        $row = $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->first();
+        $this->assertIsArray($row);
+        $theme = json_decode((string)$row['theme_json'], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertIsArray($theme);
+        $this->assertSame(93, $theme['components']['header']['height_px']);
+        $this->assertTrue($theme['components']['header']['sticky']);
+        $this->assertSame(56, $theme['components']['navigation']['height_px']);
+        $this->assertSame('title-card', $theme['components']['content']['surface']);
     }
 
     /**

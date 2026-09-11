@@ -125,6 +125,10 @@ final class ApplicationUpdateCommand
             'hr' => 'Ažuriram aplikacijske datoteke uz očuvanje privatne konfiguracije i podataka...',
             'en' => 'Updating application files while preserving private configuration and data...',
         ],
+        'theme_config' => [
+            'hr' => 'Dopunjujem nedostajuće strukturne vrijednosti postojećih tema...',
+            'en' => 'Adding missing structural values to existing themes...',
+        ],
         'composer' => [
             'hr' => 'Ažuriram Composer module na zadnje kompatibilne tagove...',
             'en' => 'Updating Composer modules to their latest compatible tags...',
@@ -269,6 +273,8 @@ final class ApplicationUpdateCommand
             $this->write($this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
             $this->restoreRuntimeSettings();
+            $this->write($this->message('theme_config'));
+            $this->normalizeStoredThemeComponentHeights();
             $this->restorePreservedPathMetadata();
             $this->normalizeReleaseConfigFileMetadata();
 
@@ -558,6 +564,88 @@ final class ApplicationUpdateCommand
                 throw new RuntimeException('Unable to restore runtime setting: ' . $relativePath);
             }
         }
+    }
+
+    /**
+     * HR: U sačuvane instalacijske teme dodaje samo nove ključeve visine koji nedostaju.
+     *     Vrijednosti odgovaraju izgledu prije uvođenja podesivih visina.
+     * EN: Adds only missing height keys to preserved installation themes. Values
+     *     match the appearance before configurable heights were introduced.
+     */
+    private function normalizeStoredThemeComponentHeights(): int
+    {
+        $path = $this->appRoot . '/resources/config/theme/themes.json';
+        if (!is_file($path)) {
+            return 0;
+        }
+
+        $json = file_get_contents($path);
+        if (!is_string($json)) {
+            throw new RuntimeException('Unable to read preserved theme configuration.');
+        }
+
+        try {
+            $themes = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw new RuntimeException('Preserved theme configuration contains invalid JSON.', 0, $exception);
+        }
+
+        if (!is_array($themes)) {
+            throw new RuntimeException('Preserved theme configuration must contain a JSON array.');
+        }
+
+        $changedThemes = 0;
+        foreach ($themes as $index => $theme) {
+            if (!is_array($theme)) {
+                continue;
+            }
+
+            $components = is_array($theme['components'] ?? null) ? $theme['components'] : [];
+            $header = is_array($components['header'] ?? null) ? $components['header'] : [];
+            $navigation = is_array($components['navigation'] ?? null) ? $components['navigation'] : [];
+            $changed = false;
+
+            if (!array_key_exists('height_px', $header)) {
+                $header['height_px'] = 72;
+                $changed = true;
+            }
+
+            if (!array_key_exists('height_px', $navigation)) {
+                $navigation['height_px'] = 56;
+                $changed = true;
+            }
+
+            if (!$changed) {
+                continue;
+            }
+
+            $components['header'] = $header;
+            $components['navigation'] = $navigation;
+            $theme['components'] = $components;
+            $themes[$index] = $theme;
+            ++$changedThemes;
+        }
+
+        if ($changedThemes === 0) {
+            return 0;
+        }
+
+        try {
+            $encoded = json_encode(
+                $themes,
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+            ) . "\n";
+        } catch (\JsonException $exception) {
+            throw new RuntimeException('Unable to encode upgraded theme configuration.', 0, $exception);
+        }
+
+        $temporaryPath = dirname($path) . '/.simbioza-update-themes-' . bin2hex(random_bytes(8));
+        if (file_put_contents($temporaryPath, $encoded, LOCK_EX) === false || !rename($temporaryPath, $path)) {
+            @unlink($temporaryPath);
+            throw new RuntimeException('Unable to upgrade preserved theme configuration.');
+        }
+
+        return $changedThemes;
     }
 
     /**

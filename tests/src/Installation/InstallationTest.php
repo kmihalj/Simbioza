@@ -68,6 +68,8 @@ final class InstallationTest extends TestCase
         $this->assertIsArray($theme);
         $hero = $theme['components']['hero'] ?? null;
         $this->assertIsArray($hero);
+        $this->assertSame(72, $theme['components']['header']['height_px'] ?? null);
+        $this->assertSame(56, $theme['components']['navigation']['height_px'] ?? null);
         $this->assertFalse($hero['visual_allow_overflow'] ?? null);
         $this->assertSame(0, $hero['visual_max_height_px'] ?? null);
         $this->assertSame(560, $hero['visual_width_px'] ?? null);
@@ -299,7 +301,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(30, $result['migration_count']);
+        $this->assertSame(31, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -324,7 +326,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(30, $database->table('_hph_migrations')->get());
+        $this->assertCount(31, $database->table('_hph_migrations')->get());
         $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)
             ->where('group_key', '=', ModuleCalendar::GROUP_KEY_CALENDAR_MANAGERS)
             ->first();
@@ -433,6 +435,8 @@ final class InstallationTest extends TestCase
         $this->assertIsArray($themes);
         $this->assertCount(1, $themes);
         $this->assertSame('simbioza', $themes[0]['id']);
+        $this->assertSame(72, $themes[0]['components']['header']['height_px'] ?? null);
+        $this->assertSame(56, $themes[0]['components']['navigation']['height_px'] ?? null);
         $themeDirectories = array_values(array_filter(
             scandir($root . '/data/themes') ?: [],
             static fn(string $entry): bool => !str_starts_with($entry, '.'),

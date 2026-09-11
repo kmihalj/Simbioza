@@ -359,6 +359,12 @@ advisories, applies migrations, and clears the cache. It preserves:
 - the active menu and theme settings in `resources/config/menu/` and
   `resources/config/theme/`.
 
+When a release introduces a new structural theme setting, the updater may add it
+non-destructively only to records where the key is missing. For configurable
+header and primary-navigation heights it writes the previous 72- and 56-pixel
+values to every existing system and private Workspace theme; existing values and
+other settings are not changed.
+
 The updater never assigns ownership to `www-data` or another predefined
 account. On Unix it records the current UID, GID, and mode of writable paths
 before synchronization and restores them after synchronization and rollback.
