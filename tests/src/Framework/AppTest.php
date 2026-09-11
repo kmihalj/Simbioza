@@ -33,4 +33,21 @@ final class AppTest extends TestCase
         $this->assertIsInt($settingsIndex);
         $this->assertGreaterThan($deferredIndex, $settingsIndex);
     }
+
+    /**
+     * HR: Integrirani testovi ne smiju ovisiti o brzini baze i pogoditi
+     *     produkcijski API limit dok dijele jedan administratorski ključ.
+     * EN: Integrated tests must not depend on database speed and hit the
+     *     production API limit while sharing one administrator key.
+     */
+    public function testEndToEndSuiteUsesDedicatedApiRateLimit(): void
+    {
+        $runner = file_get_contents(dirname(__DIR__, 3) . '/scripts/run_e2e.php');
+
+        $this->assertIsString($runner);
+        $this->assertStringContainsString(
+            "\$apiConfig['rate_limit_per_minute'] = 10_000;",
+            $runner,
+        );
+    }
 }

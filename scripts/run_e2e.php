@@ -195,6 +195,11 @@ function configureE2eApplication(string $projectDirectory): void
     }
 
     $apiConfig = matrixStringKeyedArray($apiConfigValue, 'E2E API configuration');
+    // HR: Cijeli E2E paket dijeli administratorski ključ. Visoki testni limit
+    //     sprječava da brzina pojedine baze odlučuje hoće li test pogoditi 429.
+    // EN: The complete E2E suite shares one administrator key. A high test-only
+    //     limit prevents database speed from deciding whether the suite hits 429.
+    $apiConfig['rate_limit_per_minute'] = 10_000;
     $cors = is_array($apiConfig['cors'] ?? null) ? $apiConfig['cors'] : [];
     $cors['enabled'] = true;
     $cors['allowed_origins'] = ['https://client.example'];
