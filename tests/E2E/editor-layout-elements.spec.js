@@ -123,7 +123,24 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   await chartModal.locator('[data-editor-html-chart-legend-position]').selectOption('right');
   await chartModal.locator('[data-editor-html-chart-theme-background]').uncheck();
   await chartModal.locator('[data-editor-html-chart-background-color]').fill('#f0f4f8');
+  await expect(chartModal.locator('[data-editor-html-chart-background-color-hex]'))
+    .toHaveValue('#F0F4F8');
+  await expect(chartModal.locator('.editor-html-chart-series-label')).toHaveText('Series');
+  await chartModal.locator('[data-editor-html-chart-series-color-hex]').fill('#765432');
+  await expect(chartModal.locator('[data-editor-html-chart-series-color]')).toHaveValue('#765432');
   await chartModal.locator('[data-editor-html-chart-category-color]').first().fill('#336699');
+  await expect(chartModal.locator('[data-editor-html-chart-category-color-hex]').first())
+    .toHaveValue('#336699');
+  await chartModal.locator('[data-editor-html-chart-add-series]').click();
+  await expect(chartModal.locator('[data-editor-html-chart-category-color]')).toHaveCount(0);
+  await chartModal.getByRole('button', { name: 'Remove series' }).last().click();
+  await expect(chartModal.locator('[data-editor-html-chart-category-color]')).toHaveCount(2);
+  await chartModal.locator('[data-editor-html-chart-type]').selectOption('line');
+  await expect(chartModal.locator('[data-editor-html-chart-category-color]')).toHaveCount(0);
+  await chartModal.locator('[data-editor-html-chart-type]').selectOption('area');
+  await expect(chartModal.locator('[data-editor-html-chart-category-color]')).toHaveCount(0);
+  await chartModal.locator('[data-editor-html-chart-type]').selectOption('bar');
+  await expect(chartModal.locator('[data-editor-html-chart-category-color]')).toHaveCount(2);
   await expect(chartModal.locator('[data-editor-html-chart-preview]')).toContainText('');
   await expect.poll(async () => chartModal.locator('[data-editor-html-chart-preview]').innerHTML())
     .toContain('editor-html-chart-depth-top');
