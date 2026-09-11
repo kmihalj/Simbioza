@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće dvadeset i devet aktualnih aplikacijskih migracija te provjerava aktualne
+     * HR: Pokreće trideset aktualnih aplikacijskih migracija te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
-     * EN: Runs twenty-nine current application migrations and verifies the current Auth,
+     * EN: Runs thirty current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(29, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(30, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -108,6 +108,13 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
+        $calendarManagerGroup = $this->database->table(ModuleAuth::TABLE_AUTH_GROUPS)
+            ->where('group_key', '=', ModuleCalendar::GROUP_KEY_CALENDAR_MANAGERS)
+            ->first();
+        $this->assertIsArray($calendarManagerGroup);
+        $this->assertSame('Kalendari', $calendarManagerGroup['group_name']);
+        $this->assertSame(1, (int)$calendarManagerGroup['is_system']);
+        $this->assertSame(1, (int)$calendarManagerGroup['is_enabled']);
         $this->assertColumns(ModuleAuth::TABLE_AUTH_USER_GROUPS, [
             'id',
             'user_id',

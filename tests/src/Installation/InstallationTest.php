@@ -299,7 +299,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(29, $result['migration_count']);
+        $this->assertSame(30, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -324,7 +324,14 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(29, $database->table('_hph_migrations')->get());
+        $this->assertCount(30, $database->table('_hph_migrations')->get());
+        $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)
+            ->where('group_key', '=', ModuleCalendar::GROUP_KEY_CALENDAR_MANAGERS)
+            ->first();
+        $this->assertIsArray($calendarManagerGroup);
+        $this->assertSame('Kalendari', $calendarManagerGroup['group_name']);
+        $this->assertSame(1, (int)$calendarManagerGroup['is_system']);
+        $this->assertSame(1, (int)$calendarManagerGroup['is_enabled']);
 
         $workspaces = $database->table(ModuleWorkspace::TABLE_WORKSPACES)->get();
         $this->assertCount(1, $workspaces);

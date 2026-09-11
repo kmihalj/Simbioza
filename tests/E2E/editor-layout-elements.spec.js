@@ -120,9 +120,13 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   const chartModal = page.locator('#editor-html-chart-modal');
   await expect(chartModal).toBeVisible();
   await chartModal.locator('[data-editor-html-chart-3d]').check();
+  await chartModal.locator('[data-editor-html-chart-legend-position]').selectOption('right');
+  await chartModal.locator('[data-editor-html-chart-theme-background]').uncheck();
+  await chartModal.locator('[data-editor-html-chart-background-color]').fill('#f0f4f8');
+  await chartModal.locator('[data-editor-html-chart-category-color]').first().fill('#336699');
   await expect(chartModal.locator('[data-editor-html-chart-preview]')).toContainText('');
   await expect.poll(async () => chartModal.locator('[data-editor-html-chart-preview]').innerHTML())
-    .toContain('feDropShadow');
+    .toContain('editor-html-chart-depth-top');
   await chartModal.locator('[data-editor-html-chart-save]').click();
   await expect(chartModal).toBeHidden();
 
@@ -155,5 +159,8 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
     'Accordion body',
   );
   await expect(page.locator('.editor-html-chart-svg')).toHaveCount(1);
-  await expect(page.locator('.editor-html-chart-svg filter')).toHaveCount(1);
+  await expect(page.locator('.editor-html-chart-svg .editor-html-chart-depth-top')).toHaveCount(2);
+  await expect(page.locator('.editor-html-chart-svg .editor-html-chart-legend')).toHaveCount(1);
+  await expect(page.locator('.editor-html-chart-svg .editor-html-chart-background'))
+    .toHaveAttribute('fill', '#f0f4f8');
 });

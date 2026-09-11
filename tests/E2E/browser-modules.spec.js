@@ -270,6 +270,100 @@ test.describe('module browser surfaces', () => {
     await expect(includeModal).toBeHidden();
   });
 
+  test('Editor forwards exhausted wheel scrolling and removes selected images from the keyboard', async ({ page, request }) => {
+    await page.setViewportSize({ width: 1440, height: 700 });
+    const editorPath = await createEditorSurface(request, adminApiToken, 'editor-media-keyboard');
+    await login(page, adminLogin, adminPassword);
+    const response = await page.goto(editorPath);
+    expect(response?.status()).toBe(200);
+
+    const surface = page.locator('[data-editor-html-surface]');
+    await expect(surface).toBeVisible();
+    await expect.poll(() => surface.evaluate((element) => (
+      getComputedStyle(element).overscrollBehaviorY
+    ))).toBe('auto');
+
+    await page.evaluate(() => {
+      const spacer = document.createElement('div');
+      spacer.dataset.e2eEditorScrollSpacer = '1';
+      spacer.style.height = '1200px';
+      document.body.append(spacer);
+      window.scrollTo(0, 0);
+    });
+    await surface.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await surface.hover();
+    await page.mouse.wheel(0, 700);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+    const insertSelectedImage = async (marker) => {
+      await surface.evaluate((element, value) => {
+        const paragraph = document.createElement('p');
+        paragraph.dataset.e2eMediaMarker = value;
+        paragraph.innerHTML = '<span class="figure editor-html-media-figure" contenteditable="false">'
+          + '<img alt="Keyboard deletion fixture" '
+          + 'src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">'
+          + '</span>';
+        element.append(paragraph);
+        element.dispatchEvent(new InputEvent('input', {
+          bubbles: true,
+          inputType: 'insertHTML',
+        }));
+      }, marker);
+      const figure = surface.locator(`[data-e2e-media-marker="${marker}"] .figure`);
+      await figure.click();
+      await expect(figure).toHaveClass(/editor-html-media-selected/);
+      return figure;
+    };
+
+    const deleteFigure = await insertSelectedImage('delete');
+    await page.keyboard.press('Delete');
+    await expect(deleteFigure).toHaveCount(0);
+
+    const backspaceFigure = await insertSelectedImage('backspace');
+    await page.keyboard.press('Backspace');
+    await expect(backspaceFigure).toHaveCount(0);
+  });
+
+  test('shared calendar managers get a standalone list of every shared calendar', async ({ page, request }) => {
+    const calendarName = `E2E shared calendar manager ${Date.now()}`;
+    const created = await expectData(await request.post('/api/v1/calendars', {
+      headers: apiHeaders(adminApiToken, {
+        'Idempotency-Key': idempotencyKey('shared-calendar-manager-create'),
+      }),
+      data: {
+        name: calendarName,
+        description: 'Standalone shared-calendar management coverage.',
+        type: 'resource',
+        color: '#1677ff',
+        is_enabled: true,
+        is_public_read: false,
+        is_authenticated_read: true,
+      },
+    }), 201);
+
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/calendars');
+    const manageAction = page.getByRole('link', {
+      name: /Manage shared calendars|Administriraj zajedničke kalendare/i,
+    });
+    await expect(manageAction).toBeVisible();
+    await manageAction.click();
+    await expect(page).toHaveURL((url) => url.pathname === '/calendars/manage');
+    await expect(page.getByRole('heading', {
+      name: /Calendar administration|Administracija kalendara/i,
+    })).toBeVisible();
+    await expect(page.locator('aside').filter({ hasText: /Settings|Postavke/i })).toHaveCount(0);
+
+    const sharedRow = page.locator('tr').filter({ hasText: calendarName });
+    await expect(sharedRow).toBeVisible();
+    await sharedRow.getByRole('link', {
+      name: /Open calendar|Otvori kalendar/i,
+    }).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/calendars/view/${created.uuid}`);
+  });
+
   test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page, request }) => {
     test.setTimeout(90_000);
     const editorPath = await createEditorSurface(request, adminApiToken, 'surface-editor');
@@ -429,7 +523,7 @@ test.describe('module browser surfaces', () => {
     await page.goto(calendarPath);
     const verifyCalendarActionIcons = async () => {
       const iconActions = page.locator('.calendar-actions .calendar-action-icon-button');
-      await expect(iconActions).toHaveCount(6);
+      await expect(iconActions).toHaveCount(7);
       const geometry = await iconActions.evaluateAll((actions) => actions.map((action, index) => {
         const box = action.getBoundingClientRect();
         const icon = action.querySelector('svg.calendar-action-icon');
@@ -622,12 +716,37 @@ test.describe('module browser surfaces', () => {
     await page.goto('/settings/menu?section=top');
     await expect(page.getByRole('heading', { name: 'Menu settings' })).toBeVisible();
     const firstMenuRow = page.locator('#menu-settings-table tbody tr').first();
-    const menuColumnGeometry = await firstMenuRow.evaluate((row) => ({
-      labelWidth: row.querySelector('.menu-label-cell')?.getBoundingClientRect().width ?? 0,
-      targetWidth: row.querySelector('.menu-target-cell')?.getBoundingClientRect().width ?? 0,
-    }));
-    expect(menuColumnGeometry.labelWidth).toBeGreaterThan(menuColumnGeometry.targetWidth);
-    expect(menuColumnGeometry.targetWidth).toBeLessThanOrEqual(300);
+    const menuColumnGeometry = await firstMenuRow.evaluate((row) => {
+      const label = row.querySelector('.menu-label-cell');
+      const labelInput = row.querySelector('.menu-label-visible');
+      const target = row.querySelector('.menu-target-cell');
+      const route = row.querySelector('.menu-target-select');
+      const workspace = row.querySelector('[data-menu-target-workspace-button]');
+      const page = row.querySelector('[data-menu-target-page-button]');
+      const labelBox = label?.getBoundingClientRect();
+      const targetBox = target?.getBoundingClientRect();
+      const routeBox = route?.getBoundingClientRect();
+      const workspaceBox = workspace?.getBoundingClientRect();
+      const pageBox = page?.getBoundingClientRect();
+
+      return {
+        rowHeight: row.getBoundingClientRect().height,
+        labelWidth: labelBox?.width ?? 0,
+        labelInputWidth: labelInput?.getBoundingClientRect().width ?? 0,
+        targetWidth: targetBox?.width ?? 0,
+        routeInsideTarget: Boolean(targetBox && routeBox
+          && routeBox.left >= targetBox.left
+          && routeBox.right <= targetBox.right),
+        pickersShareRow: Boolean(workspaceBox && pageBox
+          && Math.abs(workspaceBox.top - pageBox.top) < 1
+          && workspaceBox.right <= pageBox.left),
+      };
+    });
+    expect(menuColumnGeometry.rowHeight).toBeLessThanOrEqual(120);
+    expect(menuColumnGeometry.labelWidth).toBeLessThan(menuColumnGeometry.targetWidth);
+    expect(menuColumnGeometry.labelInputWidth).toBeGreaterThanOrEqual(160);
+    expect(menuColumnGeometry.routeInsideTarget).toBe(true);
+    expect(menuColumnGeometry.pickersShareRow).toBe(true);
 
     const labelsBefore = await page.getByRole('textbox', { name: 'Label' })
       .evaluateAll((inputs) => inputs.map((input) => input.value));
@@ -1007,9 +1126,11 @@ test.describe('module browser surfaces', () => {
         }),
         data: {},
       }));
+
+      return created;
     };
 
-    await createWorkspacePage(alpha, `Alpha Theme Page ${suffix}`);
+    const alphaDocument = await createWorkspacePage(alpha, `Alpha Theme Page ${suffix}`);
     await createWorkspacePage(beta, `Beta Theme Page ${suffix}`);
     await login(page, adminLogin, adminPassword);
 
@@ -1042,6 +1163,10 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByRole('link', { name: 'Export complete theme' })).toBeVisible();
 
     await page.goto(`/workspace/${alpha.slug}/${alpha.page}?lang=en`);
+    await expect(page.locator('style[data-hph-runtime-theme]')).toHaveCount(1);
+
+    await page.goto(`/editor-html?document=${encodeURIComponent(alphaDocument.id)}&lang=en`);
+    await expect(page.locator('[data-editor-html-surface]')).toBeVisible();
     await expect(page.locator('style[data-hph-runtime-theme]')).toHaveCount(1);
 
     await page.goto(`/workspace/${beta.slug}/${beta.page}?lang=en`);
