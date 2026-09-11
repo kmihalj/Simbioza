@@ -152,23 +152,12 @@ test.describe('browser flows', () => {
     expect(stacking.receivesPointer).toBe(true);
   });
 
-  test('administrator rights require local-password elevation and can be disabled', async ({ page }) => {
+  test('local administrator login immediately activates rights and they can be disabled', async ({ page }) => {
     await page.goto('/settings');
     await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsettings/);
 
-    await login(page, adminLogin, adminPassword, { elevateAdmin: false });
-    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings/);
-    await expect(page.getByRole('heading', {
-      name: /Administrator rights|Administratorske ovlasti/i,
-    })).toBeVisible();
-
-    await page.locator('#simbioza-admin-password').fill(adminPassword);
-    await Promise.all([
-      page.waitForURL((url) => url.pathname === '/settings'),
-      page.getByRole('button', {
-        name: /Enable administrator rights|Uključi administratorske ovlasti/i,
-      }).click(),
-    ]);
+    await login(page, adminLogin, adminPassword);
+    await expect(page).toHaveURL(/\/settings$/);
     await expect(page.locator('body')).not.toContainText(/Access denied|Pristup nije dozvoljen/i);
 
     const accountDropdown = page.locator('.hph-site-header__control--account li.nav-item.dropdown');

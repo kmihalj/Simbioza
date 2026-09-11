@@ -97,7 +97,7 @@
         "aaieduhr/simbioza-module-workspace": "^0.1.27",
         "aaieduhr/simbioza-module-workspace-search": "^0.1.8",
         "aaieduhr/heartphrame-module-backup": "^0.1.2",
-        "aaieduhr/simbioza-module-user": "^0.1.8",
+        "aaieduhr/simbioza-module-user": "^0.1.9",
         "aaieduhr/simbioza-module-confluence-import": "^0.1.30"
     },
     "require-dev": {
