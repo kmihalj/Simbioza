@@ -8,6 +8,9 @@ $middleware = [
     \HeartPhrame\Middleware\StartSessionMiddleware::class,
     \HeartPhrame\Middleware\CheckCsrfMiddleware::class,
     \HeartPhrame\Middleware\DeferredModuleLoaderMiddleware::class,
+    // HR: Ponovna settings provjera nakon odgođenih modula primjenjuje Simbioza admin elevaciju.
+    // EN: Rechecking settings after deferred modules applies the Simbioza administrator elevation policy.
+    \AaiEduHr\HeartPhrameModuleMenu\Middleware\RequireSettingsAdminWhenAuthEnabledMiddleware::class,
 ];
 
 // HR: Performance middleware u produkciji nije ni registriran; E2E runner ga

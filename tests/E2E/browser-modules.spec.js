@@ -18,6 +18,41 @@ const {
   adminApiToken,
 } = e2eEnvironment();
 
+/**
+ * HR: Otvara dropdown u pomičnom modalu i provjerava da su mu gornji i
+ *     donji dio stvarno iznad tijela/podnožja modala, a ne samo CSS-om vidljivi.
+ * EN: Opens a dropdown in a scrollable modal and verifies its top and bottom
+ *     are actually above the modal body/footer, rather than merely CSS-visible.
+ */
+async function expectUnclippedModalDropdown(toggle) {
+  const menu = toggle.locator('xpath=following-sibling::*[contains(concat(" ", normalize-space(@class), " "), " dropdown-menu ")][1]');
+  const dialog = toggle.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " modal-dialog-scrollable ")][1]');
+
+  await toggle.click();
+  await expect(menu).toBeVisible();
+  await expect(dialog).toHaveClass(/hph-modal-dropdown-open/);
+  await expect.poll(() => menu.evaluate((element) => {
+    const rectangle = element.getBoundingClientRect();
+    const inset = Math.max(4, Math.min(12, rectangle.height / 4));
+    const x = rectangle.left + (rectangle.width / 2);
+    const topTarget = document.elementFromPoint(x, rectangle.top + inset);
+    const bottomTarget = document.elementFromPoint(x, rectangle.bottom - inset);
+
+    return rectangle.width > 0
+      && rectangle.height > 0
+      && topTarget instanceof Element
+      && bottomTarget instanceof Element
+      && element.contains(topTarget)
+      && element.contains(bottomTarget);
+  })).toBe(true);
+
+  await toggle.click();
+  await expect(menu).toBeHidden();
+  await expect.poll(() => dialog.evaluate((element) => (
+    element.classList.contains('hph-modal-dropdown-open')
+  ))).toBe(false);
+}
+
 async function openProfileSection(page, selector) {
   const section = page.locator(selector);
   if ((await section.count()) === 0) {
@@ -152,7 +187,7 @@ test.describe('module browser surfaces', () => {
 
     await expect.poll(() => statusCalls).toBeGreaterThan(0);
     await expect.poll(() => stepCalls).toBeGreaterThan(1);
-    await expect(page.locator('[data-image-optimization-progress]')).toHaveAttribute('aria-valuenow', '100');
+    await expect(page.locator('[data-image-optimization-panel]')).toBeHidden();
     await expect(page.locator('[data-image-optimization-start]')).toBeEnabled();
   });
 
@@ -198,6 +233,41 @@ test.describe('module browser surfaces', () => {
         }
       }
     }
+  });
+
+  test('Editor lookup dropdowns remain fully usable inside scrollable modals', async ({ page, request }) => {
+    await page.setViewportSize({ width: 1800, height: 1000 });
+    await createEditorSurface(request, adminApiToken, 'modal-dropdown-target');
+    const editorPath = await createEditorSurface(request, adminApiToken, 'modal-dropdown-editor');
+    await login(page, adminLogin, adminPassword);
+    const response = await page.goto(editorPath);
+    expect(response?.status()).toBe(200);
+
+    await page.getByRole('button', { name: /^(Link|Poveznica)$/i }).click();
+    const linkModal = page.locator('#editor-html-link-modal');
+    await expectUsableModal(linkModal);
+    await expectUnclippedModalDropdown(
+      linkModal.locator('[data-editor-html-link-page-button]'),
+    );
+    await linkModal.locator('[data-bs-dismiss="modal"]').last().click();
+    await expect(linkModal).toBeHidden();
+
+    await page.getByRole('button', {
+      name: /Dynamic elements|Dinamički elementi/i,
+    }).click();
+    await page.getByRole('button', {
+      name: /Include page content|Uključi sadržaj stranice/i,
+      exact: true,
+    }).click();
+    const includeModal = page.locator('#editor-html-document-include-modal');
+    await expectUsableModal(includeModal);
+    const includePageList = includeModal.locator('[data-editor-html-document-include-page-list]');
+    await expect.poll(() => includePageList.locator('button').count()).toBeGreaterThan(0);
+    await expectUnclippedModalDropdown(
+      includeModal.locator('[data-editor-html-document-include-page-button]'),
+    );
+    await includeModal.locator('[data-bs-dismiss="modal"]').last().click();
+    await expect(includeModal).toBeHidden();
   });
 
   test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page, request }) => {

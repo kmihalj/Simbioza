@@ -153,18 +153,18 @@ test.describe('browser flows', () => {
   });
 
   test('administrator rights require local-password elevation and can be disabled', async ({ page }) => {
-    await page.goto('/settings/auth');
-    await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsettings%2Fauth/);
+    await page.goto('/settings');
+    await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsettings/);
 
     await login(page, adminLogin, adminPassword, { elevateAdmin: false });
-    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings%2Fauth/);
+    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings/);
     await expect(page.getByRole('heading', {
       name: /Administrator rights|Administratorske ovlasti/i,
     })).toBeVisible();
 
     await page.locator('#simbioza-admin-password').fill(adminPassword);
     await Promise.all([
-      page.waitForURL((url) => url.pathname === '/settings/auth'),
+      page.waitForURL((url) => url.pathname === '/settings'),
       page.getByRole('button', {
         name: /Enable administrator rights|Uključi administratorske ovlasti/i,
       }).click(),
@@ -185,8 +185,11 @@ test.describe('browser flows', () => {
       .toHaveAttribute('aria-checked', 'false');
     await expect(accountDropdown.getByText(/Administration|Administracija/i)).toHaveCount(0);
 
-    await page.goto('/settings/auth');
-    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings%2Fauth/);
+    await page.goto('/settings');
+    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings/);
+
+    await page.goto('/settings/calendar');
+    await expect(page).toHaveURL(/\/account\/administrator\?next=%2Fsettings%2Fcalendar/);
     await page.goto('/auth/logout');
     await expect(page).toHaveURL(/\/auth\/login$/);
     await expect(page.locator('#local_override_login')).toBeVisible();
@@ -194,10 +197,148 @@ test.describe('browser flows', () => {
 
   test('authenticated non-administrator receives a real 403 response', async ({ page }) => {
     await login(page, userLogin, userPassword);
-    const response = await page.goto('/settings/auth');
+    const response = await page.goto('/settings');
 
     expect(response?.status()).toBe(403);
     await expect(page.locator('body')).toContainText(/Access denied|Pristup nije dozvoljen/i);
+  });
+
+  test('Workspace manager organizes the complete tree without opening a denied page', async ({
+    page,
+    request,
+  }) => {
+    const suffix = Date.now();
+    const workspaceSlug = `e2e-manager-tree-${suffix}`;
+    const users = await expectData(await request.get('/api/v1/users?page[limit]=100', {
+      headers: apiHeaders(apiToken),
+    }));
+    const ordinaryUser = users.find((user) => user.login_identifier === userLogin);
+    expect(ordinaryUser?.id).toBeTruthy();
+
+    const workspace = await expectData(await request.post('/api/v1/workspaces', {
+      headers: apiHeaders(apiToken, {
+        'Idempotency-Key': idempotencyKey('manager-tree-workspace'),
+      }),
+      data: {
+        name: 'E2E Manager Tree',
+        slug: workspaceSlug,
+        visibility: 'restricted',
+      },
+    }), 201);
+    expect(workspace.slug).toBe(workspaceSlug);
+
+    const firstNode = await expectData(await request.post(
+      `/api/v1/workspaces/${workspaceSlug}/nodes`,
+      {
+        headers: apiHeaders(apiToken, {
+          'Idempotency-Key': idempotencyKey('manager-tree-first'),
+        }),
+        data: {
+          node_type: 'internal_link',
+          title: 'Manager Tree First',
+          slug: `manager-tree-first-${suffix}`,
+          target_url: '/about',
+          sort_order: 10,
+        },
+      },
+    ), 201);
+    const secondNode = await expectData(await request.post(
+      `/api/v1/workspaces/${workspaceSlug}/nodes`,
+      {
+        headers: apiHeaders(apiToken, {
+          'Idempotency-Key': idempotencyKey('manager-tree-second'),
+        }),
+        data: {
+          node_type: 'internal_link',
+          title: 'Manager Tree Second',
+          slug: `manager-tree-second-${suffix}`,
+          target_url: '/about',
+          sort_order: 20,
+        },
+      },
+    ), 201);
+
+    await expectData(await request.put(`/api/v1/workspaces/${workspaceSlug}/acl`, {
+      headers: apiHeaders(apiToken, {
+        'Idempotency-Key': idempotencyKey('manager-tree-acl'),
+      }),
+      data: {
+        subjects: [{
+          type: 'user',
+          id: ordinaryUser.id,
+          permissions: {
+            can_view: false,
+            can_add: false,
+            can_edit: false,
+            can_publish: false,
+            can_delete: false,
+            can_manage: true,
+          },
+        }],
+      },
+    }));
+    await expectData(await request.put(
+      `/api/v1/workspaces/${workspaceSlug}/nodes/${firstNode.id}/acl`,
+      {
+        headers: apiHeaders(apiToken, {
+          'Idempotency-Key': idempotencyKey('manager-tree-node-acl'),
+        }),
+        data: {
+          subjects: [{
+            type: 'user',
+            id: ordinaryUser.id,
+            permissions: {
+              can_view: false,
+              can_add: false,
+              can_edit: false,
+              can_publish: false,
+              can_delete: false,
+              can_manage: false,
+            },
+          }],
+        },
+      },
+    ));
+
+    await login(page, userLogin, userPassword);
+    const workspaceResponse = await page.goto(`/workspace/${workspaceSlug}`);
+    expect(workspaceResponse?.status()).toBe(200);
+    await expect(page.getByRole('button', { name: /Edit tree|Uredi stablo/i })).toBeVisible();
+    await expect(page.locator(`a[href^="/workspaces/manage?workspace=${workspaceSlug}"]`)).toHaveCount(1);
+    await expect(page.getByText('Manager Tree First', { exact: true })).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Edit tree|Uredi stablo/i }).click();
+    const organizer = page.locator('[data-workspace-tree-editor]');
+    await expect(organizer).toBeVisible();
+    const rows = organizer.locator('[data-workspace-tree-order-row]');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0)).toContainText(/Unavailable page|Nedostupna stranica/i);
+    await expect(rows.nth(0)).not.toContainText('Manager Tree First');
+    await expect(rows.nth(1)).toContainText('Manager Tree Second');
+    await expect(organizer.getByRole('button', {
+      name: /Add item|Dodaj stavku/i,
+      exact: true,
+    })).toHaveCount(0);
+    await expect(rows.nth(0).locator('.workspace-tree-node-edit')).toHaveCount(0);
+    await expect(rows.nth(1).locator('.workspace-tree-node-edit')).toHaveCount(1);
+
+    await rows.nth(0).getByRole('button', { name: /Move down|Pomakni dolje/i }).click();
+    await submitFormAndExpectPost(
+      page,
+      organizer.locator('button[type="submit"]'),
+      '/workspaces/tree/order',
+    );
+
+    const reorderedTree = await expectData(await request.get(
+      `/api/v1/workspaces/${workspaceSlug}/tree?lang=en`,
+      { headers: apiHeaders(apiToken) },
+    ));
+    expect(reorderedTree.map((node) => node.id)).toEqual([secondNode.id, firstNode.id]);
+
+    const manageResponse = await page.goto(`/workspaces/manage?workspace=${workspaceSlug}`);
+    expect(manageResponse?.status()).toBe(200);
+    await expect(page.getByRole('heading', { name: /Workspace data|Podaci područja/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Members and permissions|Članovi i prava/i })).toBeVisible();
   });
 
   test('administrator publishes content while drafts and immutable versions remain separated', async ({
@@ -266,6 +407,8 @@ test.describe('browser flows', () => {
     */
     await expect(page.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Create', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save and submit for review' })).toBeVisible();
     for (const actionName of ['Translations', 'History']) {
       const action = page.getByRole('button', { name: actionName, exact: true });
       if (await action.count() > 0) {
@@ -357,6 +500,18 @@ test.describe('browser flows', () => {
     await expect(page.getByText('Shared draft', { exact: true })).toBeVisible();
 
     await page.getByRole('link', { name: 'View', exact: true }).click();
+    await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
+    await expect(page.getByText(secondDraftBody, { exact: true })).toHaveCount(0);
+
+    await page.getByRole('link', { name: 'Edit draft', exact: true }).click();
+    await expect(editorSurface).toContainText(secondDraftBody);
+    await submitFormAndExpectPost(
+      page,
+      page.getByRole('button', { name: 'Save and submit for review' }),
+      '/editor-html/save',
+    );
+    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`
+      && url.searchParams.get('submitted') === '1');
     await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
     await expect(page.getByText(secondDraftBody, { exact: true })).toHaveCount(0);
 
