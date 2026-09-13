@@ -5,6 +5,11 @@ prijave za sve aktivne članove grupe Administrator, ne samo početni račun
 Administrator. Uključuje dorade backupa/uvoza/prijenosa stranica i HTML
 dropdown sadržaja razvijene uz sastanke.
 
+Backup i prijenos jedne stranice uključuju i opcionalne pružatelje Task i Comment.
+Zamjena je ograničena na izričito odabranu ciljnu stranicu; povezani podaci izvorne
+i drugih stranica ostaju sačuvani, a identiteti uvezenih redaka preslikavaju se
+kako ne bi došlo do sukoba.
+
 ## Tema i upute pri instalaciji i nadogradnji
 
 Nova instalacija sadrži aktualnu temu Simbioza i dvojezične upute pod

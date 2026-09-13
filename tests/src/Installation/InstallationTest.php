@@ -6,6 +6,7 @@ namespace Tests\Installation;
 
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
+use AaiEduHr\HeartPhrameModuleComment\ModuleComment;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
@@ -511,6 +512,20 @@ PHP);
             ->where('node_id', '=', $meetingPage['id'])->get();
         $otherNodesBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('id', '<>', $meetingPage['id'])->get();
+        $otherDocumentKey = $otherNodesBefore[0]['document_key'];
+        $this->assertIsString($otherDocumentKey);
+        $database->table(ModuleTask::TABLE_STATES)->insert([
+            'document_id' => $otherDocumentKey, 'task_uuid' => 'other-page-task',
+            'task_list_uuid' => 'other-page-list', 'is_completed' => 1,
+        ]);
+        $database->table(ModuleComment::TABLE_COMMENTS)->insert([
+            'uuid' => 'other-page-comment', 'document_id' => $otherDocumentKey,
+            'language_code' => 'en', 'user_id' => $administrator['id'],
+            'author_display_name' => 'Administrator', 'body' => 'Keep the other page unchanged.',
+        ]);
+        $otherTasks = $database->table(ModuleTask::TABLE_STATES)->where('document_id', '=', $otherDocumentKey)->get();
+        $otherComments = $database->table(ModuleComment::TABLE_COMMENTS)
+            ->where('document_id', '=', $otherDocumentKey)->get();
         // HR: Simulira stariju instalaciju: nema base_path metapodatka, a HTML je samo u datotekama.
         // EN: Simulates an older installation: no base_path metadata and file-only HTML payloads.
         $installationPath = $root . '/config/installation.php';
@@ -538,6 +553,10 @@ PHP);
             ->where('node_id', '=', $meetingPage['id'])->get());
         $this->assertSame($otherNodesBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('id', '<>', $meetingPage['id'])->get());
+        $this->assertSame($otherTasks, $database->table(ModuleTask::TABLE_STATES)
+            ->where('document_id', '=', $otherDocumentKey)->get());
+        $this->assertSame($otherComments, $database->table(ModuleComment::TABLE_COMMENTS)
+            ->where('document_id', '=', $otherDocumentKey)->get());
         $workflows = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
             ->where('node_id', '=', $meetingPage['id'])->get();
         $this->assertSame(['published', 'published'], array_column($workflows, 'status'));

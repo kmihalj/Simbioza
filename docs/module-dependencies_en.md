@@ -26,8 +26,8 @@ every run, resolves the latest compatible tags, and then executes the complete
 | `module-email` | Framework, Auth, ORM | — |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
 | `module-workspace` | Framework, Auth, ORM | Backup (0.1.4+ when installed), HTML Editor, Menu, Notification; Email only indirectly through Notification |
-| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification |
-| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
+| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.1.5+ when installed) |
+| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.1.5+ when installed) |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 | `module-audit` | Framework, Auth, ORM | Menu for Settings, Backup for portable activity-audit archives, API for `audit:read`, and every installed business-event producer |
 | `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |

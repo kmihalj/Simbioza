@@ -5,6 +5,11 @@ recovery for all active Administrator-group members, not just the initial
 Administrator account. It includes the page backup/import/transfer and HTML
 disclosure improvements developed alongside meetings.
 
+Single-page backups and transfers also include the optional Task and Comment
+providers. Page replacement is restricted to the explicit destination page;
+linked records on the source and other pages are preserved, and imported row
+identities are remapped to avoid collisions.
+
 ## Bundled content on installation and update
 
 Fresh installations include the current Simbioza theme and bilingual meeting
