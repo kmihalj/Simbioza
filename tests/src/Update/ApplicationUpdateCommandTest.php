@@ -75,6 +75,55 @@ TAGS;
     }
 
     /**
+     * HR: Composer koristi privatni cache procesa, ne cache instalacije ili drugog Unix korisnika.
+     * EN: Composer uses a private process cache, not the installation or another Unix user's cache.
+     */
+    public function testComposerCacheIsPrivateAndEnvironmentIsRestored(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-composer-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root . '/private', 0700, true));
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $temporary = new \ReflectionProperty($command, 'temporaryDirectory');
+        $temporary->setValue($command, $root . '/private');
+
+        $run = new \ReflectionMethod($command, 'mustRunComposer');
+        $previousCache = getenv('COMPOSER_CACHE_DIR');
+        $previousSuperuser = getenv('COMPOSER_ALLOW_SUPERUSER');
+        try {
+            putenv('COMPOSER_CACHE_DIR=' . $root . '/existing-cache');
+            putenv('COMPOSER_ALLOW_SUPERUSER=0');
+            $capture = 'file_put_contents($argv[1], json_encode(['
+            . '"cache" => getenv("COMPOSER_CACHE_DIR"),'
+            . '"superuser" => getenv("COMPOSER_ALLOW_SUPERUSER")]));';
+            foreach (['one', 'two'] as $name) {
+                $run->invoke($command, [PHP_BINARY, '-r', $capture, $root . '/' . $name . '.json'], $root);
+                $this->assertSame($root . '/existing-cache', getenv('COMPOSER_CACHE_DIR'));
+                $this->assertSame('0', getenv('COMPOSER_ALLOW_SUPERUSER'));
+            }
+
+            $expected = ['cache' => $root . '/private/composer-cache', 'superuser' => '1'];
+            $this->assertSame($expected, json_decode((string)file_get_contents($root . '/one.json'), true));
+            $this->assertSame($expected, json_decode((string)file_get_contents($root . '/two.json'), true));
+            $this->assertSame(0700, fileperms($expected['cache']) & 0777);
+            $this->assertDirectoryDoesNotExist($root . '/existing-cache');
+            try {
+                $run->invoke($command, [PHP_BINARY, '-r', 'exit(9);'], $root);
+                $this->fail('A failed Composer process was accepted.');
+            } catch (\RuntimeException $runtimeException) {
+                $this->assertStringContainsString('Command failed (9)', $runtimeException->getMessage());
+            }
+
+            $this->assertSame($root . '/existing-cache', getenv('COMPOSER_CACHE_DIR'));
+            $this->assertSame('0', getenv('COMPOSER_ALLOW_SUPERUSER'));
+        } finally {
+            putenv($previousCache === false ? 'COMPOSER_CACHE_DIR' : 'COMPOSER_CACHE_DIR=' . $previousCache);
+            putenv($previousSuperuser === false
+                ? 'COMPOSER_ALLOW_SUPERUSER' : 'COMPOSER_ALLOW_SUPERUSER=' . $previousSuperuser);
+        }
+    }
+
+    /**
      * HR: Verzija izvornog koda i zaštita održavanja sastavni su dio release paketa.
      *
      * EN: The source version and maintenance guard are part of the release package.

@@ -1152,15 +1152,29 @@ final class ApplicationUpdateCommand
     /** @param list<string> $command */
     private function mustRunComposer(array $command, ?string $workingDirectory = null): void
     {
-        $previousValue = getenv('COMPOSER_ALLOW_SUPERUSER');
+        $this->temporaryDirectory ??= $this->createTemporaryDirectory();
+        $cacheDirectory = $this->temporaryDirectory . '/composer-cache';
+        if (!is_dir($cacheDirectory) && !mkdir($cacheDirectory, 0700, true) && !is_dir($cacheDirectory)) {
+            throw new RuntimeException('Unable to create a private Composer update cache.');
+        }
+
+        $previousSuperuser = getenv('COMPOSER_ALLOW_SUPERUSER');
+        $previousCache = getenv('COMPOSER_CACHE_DIR');
         putenv('COMPOSER_ALLOW_SUPERUSER=1');
+        putenv('COMPOSER_CACHE_DIR=' . $cacheDirectory);
         try {
             $this->mustRun($command, $workingDirectory);
         } finally {
-            if ($previousValue === false) {
+            if ($previousSuperuser === false) {
                 putenv('COMPOSER_ALLOW_SUPERUSER');
             } else {
-                putenv('COMPOSER_ALLOW_SUPERUSER=' . $previousValue);
+                putenv('COMPOSER_ALLOW_SUPERUSER=' . $previousSuperuser);
+            }
+
+            if ($previousCache === false) {
+                putenv('COMPOSER_CACHE_DIR');
+            } else {
+                putenv('COMPOSER_CACHE_DIR=' . $previousCache);
             }
         }
     }
