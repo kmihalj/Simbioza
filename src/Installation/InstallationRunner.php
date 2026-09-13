@@ -89,6 +89,7 @@ final readonly class InstallationRunner
         }
 
         $this->databaseTester->test($databaseInput);
+        $application['base_path'] = rtrim($basePath, '/');
         $this->configWriter->write($databaseInput, $application);
         [$config, $database] = $this->runtime();
         $appliedMigrations = $this->migrate($database);

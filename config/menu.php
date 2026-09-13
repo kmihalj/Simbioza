@@ -9,12 +9,12 @@ return [
     ],
     'top' => [
         'enabled' => true,
-        'json' => dirname(__DIR__) . '/resources/config/menu/top.json',
+        'json' => __DIR__ . '/../resources/config/menu/top.json',
     ],
     'settings' => [
         'enabled' => true,
         'route' => 'menu.settings',
-        'json' => dirname(__DIR__) . '/resources/config/menu/settings.json',
+        'json' => __DIR__ . '/../resources/config/menu/settings.json',
     ],
     'updates' => [
         'application_repository' => 'https://github.com/kmihalj/Simbioza',
@@ -24,7 +24,7 @@ return [
     ],
     'contexts' => [
         'enabled' => true,
-        'json' => dirname(__DIR__) . '/resources/config/menu/contexts.json',
+        'json' => __DIR__ . '/../resources/config/menu/contexts.json',
     ],
     'language_selector' => [
         'enabled' => true,

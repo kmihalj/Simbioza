@@ -7,6 +7,7 @@ namespace Tests\Installation;
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
+use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace;
@@ -21,6 +22,7 @@ use App\Installation\InstallationRequirements;
 use App\Installation\InstallationRunner;
 use App\Installation\InstallationValidationException;
 use App\Installation\InstallationWebApplication;
+use App\Update\BundledAssetsUpdater;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -301,7 +303,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(31, $result['migration_count']);
+        $this->assertSame(32, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -326,7 +328,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(31, $database->table('_hph_migrations')->get());
+        $this->assertCount(32, $database->table('_hph_migrations')->get());
         $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)
             ->where('group_key', '=', ModuleCalendar::GROUP_KEY_CALENDAR_MANAGERS)
             ->first();
@@ -344,8 +346,29 @@ final class InstallationTest extends TestCase
         $this->assertSame('Korisničke upute', $workspaceNames['hr']);
         $this->assertSame('User guides', $workspaceNames['en']);
         $this->assertSame($workspaceNames['en'], $workspaces[0]['name']);
-        $this->assertCount(7, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $this->assertCount(8, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $meetingPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('slug', '=', 'sastanci')->first();
+        $this->assertIsArray($meetingPage);
+        $this->assertNotNull($meetingPage['parent_id']);
         $guideVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get();
+        $meetingDocument = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $meetingPage['document_key'])->first();
+        $this->assertIsArray($meetingDocument);
+        $meetingWorkflows = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
+            ->where('node_id', '=', $meetingPage['id'])->get();
+        $this->assertCount(2, $meetingWorkflows);
+        foreach ($meetingWorkflows as $workflow) {
+            $published = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+                ->where('document_id', '=', $meetingDocument['id'])
+                ->where('language_code', '=', $workflow['language_code'])
+                ->where('version_number', '=', $workflow['published_version_number'])->first();
+            $this->assertIsArray($published);
+            $this->assertSame('published', $workflow['status']);
+            $this->assertGreaterThan(30000, strlen((string)$published['content_html']));
+            $this->assertSame(36, substr_count((string)$published['content_html'], '<img '));
+        }
+
         $guideHtml = implode("\n", array_map(
             static fn(array $version): string => is_string($version['content_html'] ?? null)
                 ? $version['content_html']
@@ -442,6 +465,109 @@ final class InstallationTest extends TestCase
             static fn(string $entry): bool => !str_starts_with($entry, '.'),
         ));
         $this->assertSame(['simbioza'], $themeDirectories);
+
+        // HR: Stvarna nadogradnja postojeće instalacije čuva korisničke teme,
+        //     položaj i ACL uputa te ne ponavlja import istog paketa.
+        // EN: A real existing-install update preserves user themes, guide
+        //     identity and ACL, and does not reimport an unchanged package.
+        copy(
+            dirname(__DIR__, 3) . '/scripts/update_bundled_assets.php',
+            $root . '/scripts/update_bundled_assets.php',
+        );
+        copy(
+            dirname(__DIR__, 3) . '/resources/installation/workspace/sastanci.zip',
+            $root . '/resources/installation/workspace/sastanci.zip',
+        );
+        // HR: Reproducira javni CLI put starog update.php, ne izravni poziv novog koraka.
+        // EN: Reproduces the public CLI path of an old update.php, not a direct new-step call.
+        file_put_contents($root . '/scripts/legacy-updater-migrate.php', <<<'PHP'
+<?php
+require dirname(__DIR__) . '/vendor/autoload.php';
+$root = dirname(__DIR__);
+$app = new \HeartPhrame\App([$root . '/config'], $root);
+$app->loadCommands();
+$container = $app->getContainer();
+$command = $container->get(\HeartPhrame\Command\CommandManager::class)->getCommand('orm-migrate:up');
+$handler = $container->get(\HeartPhrame\Factory\CallableFactory::class)->buildCallable($command->getHandler());
+exit($handler([], ['connection' => 'default', 'path' => 'database/migrations']));
+PHP);
+        file_put_contents($root . '/data/update-maintenance.json', '{"target_tag":"0.1.68"}');
+        $customTheme = $themes[0];
+        $customTheme['id'] = 'custom-user-theme';
+        $customTheme['name'] = 'User custom theme';
+        $customTheme['system'] = false;
+        $customTheme['light']['colors']['primary'] = '#ABCDEF';
+        $themes[] = $customTheme;
+        file_put_contents($paths->themeConfigDirectory() . '/themes.json', json_encode($themes, JSON_THROW_ON_ERROR));
+        $settings['active_theme'] = 'custom-user-theme';
+        $settings['mode_policy'] = 'dark';
+        $settingsPath = $paths->themeConfigDirectory() . '/settings.json';
+        file_put_contents($settingsPath, json_encode($settings, JSON_THROW_ON_ERROR));
+        $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)->insert([
+            'node_id' => $meetingPage['id'], 'subject_type' => 'user',
+            'subject_id' => $administrator['id'], 'can_view' => 1, 'can_manage' => 1,
+        ]);
+        $aclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $meetingPage['id'])->get();
+        $otherNodesBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('id', '<>', $meetingPage['id'])->get();
+        // HR: Simulira stariju instalaciju: nema base_path metapodatka, a HTML je samo u datotekama.
+        // EN: Simulates an older installation: no base_path metadata and file-only HTML payloads.
+        $installationPath = $root . '/config/installation.php';
+        $installation = require $installationPath;
+        unset($installation['base_path']);
+        file_put_contents($installationPath, '<?php return ' . var_export($installation, true) . ';');
+        foreach ($guideVersions as $version) {
+            $relative = 'legacy-guide-' . $version['id'] . '.html';
+            file_put_contents($root . '/data/editor-html/' . $relative, (string)$version['content_html']);
+            $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->where('id', '=', $version['id'])
+                ->update(['storage_driver' => 'filesystem', 'content_path' => $relative, 'content_html' => null]);
+        }
+
+        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/legacy-updater-migrate.php')
+        . ' 2>&1';
+        $output = [];
+        exec($command, $output, $exit);
+        $this->assertSame(0, $exit, implode("\n", $output));
+        $updatedThemes = json_decode((string)file_get_contents($paths->themeConfigDirectory() . '/themes.json'), true);
+        $updatedThemes = array_column($updatedThemes, null, 'id');
+        $this->assertSame('#ABCDEF', $updatedThemes['custom-user-theme']['light']['colors']['primary']);
+        $updatedSettings = json_decode((string)file_get_contents($settingsPath), true);
+        $this->assertSame($settings, $updatedSettings);
+        $this->assertSame($aclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $meetingPage['id'])->get());
+        $this->assertSame($otherNodesBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('id', '<>', $meetingPage['id'])->get());
+        $workflows = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
+            ->where('node_id', '=', $meetingPage['id'])->get();
+        $this->assertSame(['published', 'published'], array_column($workflows, 'status'));
+        $meetingDocument = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $meetingPage['document_key'])->first();
+        $this->assertIsArray($meetingDocument);
+        $updatedVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('document_id', '=', $meetingDocument['id'])->get();
+        foreach ($updatedVersions as $version) {
+            $html = BundledAssetsUpdater::guideVersionHtml(
+                $version,
+                $root . '/data/editor-html',
+                new EditorHtmlDocumentFormatter(),
+            );
+            $this->assertGreaterThan(30000, strlen($html));
+            $this->assertSame(36, substr_count($html, '<img '));
+            $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $html, json_encode([
+                'document_key' => $meetingDocument['document_key'], 'version' => $version['version_number'],
+                'language' => $version['language_code'], 'driver' => $version['storage_driver'],
+                'path' => $version['content_path'],
+            ], JSON_THROW_ON_ERROR));
+        }
+
+        $this->assertSame(0600, fileperms($root . '/data/bundled-assets.json') & 0777);
+        $versionCount = count($database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get());
+        $output = [];
+        exec($command, $output, $exit);
+        $this->assertSame(0, $exit, implode("\n", $output));
+        $this->assertStringNotContainsString('updated;', implode("\n", $output));
+        $this->assertCount($versionCount, $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get());
     }
 
     /** HR: Pokreće cijeli web-tijek do locka bez druge kopije lozinke u sessionu. EN: Runs the full web flow to the lock with one session password copy. */
@@ -547,6 +673,7 @@ final class InstallationTest extends TestCase
         $directories = [
             'config',
             'data',
+            'scripts',
             'database/migrations',
             'resources/config/theme',
             'resources/config/menu',
@@ -596,6 +723,7 @@ final class InstallationTest extends TestCase
                 'app.php',
                 'backup-providers.php',
                 'backup.php',
+                'calendar.php',
                 'bootstrap.php',
                 'commands.php',
                 'editor-html.php',

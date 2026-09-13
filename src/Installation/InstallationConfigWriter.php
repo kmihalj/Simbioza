@@ -148,6 +148,9 @@ final readonly class InstallationConfigWriter
 
         return [
             'name' => $name,
+            'base_path' => \App\Update\BundledAssetsUpdater::validatedBasePath(
+                $this->scalarString($application['base_path'] ?? ''),
+            ),
             'primary_locale' => $primaryLocale,
             'supported_locales' => $supportedLocales,
             'timezone' => $timezone,

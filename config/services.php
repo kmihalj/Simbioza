@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use App\Performance\QueryLogWriter;
+use App\Update\BundledUpgradeCommandManager;
 use HeartPhrame\Authn\ArrayAuthnHandler;
 use HeartPhrame\Authn\AuthnHandlerInterface;
 use HeartPhrame\Cache\Cache;
+use HeartPhrame\Command\CommandManager;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Encryption\Encryption;
 use HeartPhrame\Encryption\EncryptionInterface;
@@ -31,6 +33,17 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    // HR: I stariji updater nakon preuzimanja koda koristi novu CLI integraciju paketa.
+    // EN: An older updater uses the new CLI bundle integration after downloading the code.
+    CommandManager::class => static function (ContainerInterface $container): CommandManager {
+        $logger = $container->get(LoggerInterface::class);
+        $config = $container->get(ConfigInterface::class);
+        if (!$logger instanceof LoggerInterface || !$config instanceof ConfigInterface) {
+            throw new RuntimeException('The CLI command manager requires valid logger and configuration services.');
+        }
+
+        return new BundledUpgradeCommandManager($container, $logger, $config->getAppRootDir());
+    },
     // HR: ORM profiler ostaje potpuno isključen dok alat za performanse ne
     //     postavi ciljnu JSONL datoteku. Normalni zahtjevi nemaju diskovni log.
     // EN: ORM profiling remains fully disabled until the performance tool sets

@@ -74,6 +74,7 @@ zaseban [engleski indeks](docs/index_en.md).
 
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
 - Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
+- [Planiranje sastanaka i isporučene upute u izdanju 0.1.68](docs/release-0.1.68_hr.md)
 - [Instalacija](docs/installation_hr.md)
 - [Zapis šest čistih instalacija i screenshotovi](docs/installation-lab_hr.md)
 - [Ovisnosti modula](docs/module-dependencies_hr.md)

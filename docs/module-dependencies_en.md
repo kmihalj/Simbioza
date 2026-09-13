@@ -21,11 +21,11 @@ every run, resolves the latest compatible tags, and then executes the complete
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu and Theme for the GUI only |
 | `module-menu` | Framework | Auth |
 | `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth, ORM | API, HTML Editor, Menu, Theme |
-| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Menu, Theme, Calendar, Workspace, Task, Comment |
+| `module-calendar` | Framework, Auth (0.1.11+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
+| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.1.4+ when installed), Menu, Theme, Calendar, Workspace, Task, Comment |
 | `module-email` | Framework, Auth, ORM | — |
-| `module-notification` | Framework, Auth, ORM | API, Email |
-| `module-workspace` | Framework, Auth, ORM | HTML Editor, Menu, Notification; Email only indirectly through Notification |
+| `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
+| `module-workspace` | Framework, Auth, ORM | Backup (0.1.4+ when installed), HTML Editor, Menu, Notification; Email only indirectly through Notification |
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification |
 | `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |

@@ -9,9 +9,9 @@ return [
         'route' => 'theme.settings',
     ],
     'storage' => [
-        'themes_json' => dirname(__DIR__) . '/resources/config/theme/themes.json',
-        'settings_json' => dirname(__DIR__) . '/resources/config/theme/settings.json',
-        'themes_dir' => dirname(__DIR__) . '/data/themes',
+        'themes_json' => __DIR__ . '/../resources/config/theme/themes.json',
+        'settings_json' => __DIR__ . '/../resources/config/theme/settings.json',
+        'themes_dir' => __DIR__ . '/../data/themes',
     ],
     'menu_integration' => [
         'enabled' => true,

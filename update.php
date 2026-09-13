@@ -179,10 +179,10 @@ final class ApplicationUpdateCommand
         ],
     ];
 
-    private string $locale;
+    private readonly string $locale;
 
     /** @var resource|null */
-    private $lockHandle = null;
+    private $lockHandle;
 
     private bool $maintenanceEnabled = false;
 
@@ -315,6 +315,9 @@ final class ApplicationUpdateCommand
                 '--path=database/migrations',
             ], $this->appRoot);
 
+            // HR: Paketi sadržaja primjenjuju se tek uz migriranu shemu.
+            // EN: Content packages are applied only after schema migrations.
+            $this->mustRun([PHP_BINARY, $this->appRoot . '/scripts/update_bundled_assets.php'], $this->appRoot);
             $this->write($this->message('cache'));
             $this->clearCache($this->appRoot . '/data/cache');
             $this->restorePreservedPathMetadata();
@@ -586,8 +589,8 @@ final class ApplicationUpdateCommand
 
         try {
             $themes = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
-            throw new RuntimeException('Preserved theme configuration contains invalid JSON.', 0, $exception);
+        } catch (\JsonException $jsonException) {
+            throw new RuntimeException('Preserved theme configuration contains invalid JSON.', 0, $jsonException);
         }
 
         if (!is_array($themes)) {
@@ -635,8 +638,8 @@ final class ApplicationUpdateCommand
                 $themes,
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
             ) . "\n";
-        } catch (\JsonException $exception) {
-            throw new RuntimeException('Unable to encode upgraded theme configuration.', 0, $exception);
+        } catch (\JsonException $jsonException) {
+            throw new RuntimeException('Unable to encode upgraded theme configuration.', 0, $jsonException);
         }
 
         $temporaryPath = dirname($path) . '/.simbioza-update-themes-' . bin2hex(random_bytes(8));
