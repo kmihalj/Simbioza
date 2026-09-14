@@ -253,6 +253,8 @@ final class ApplicationUpdateCommand
             $this->write($this->message('download'));
             $this->mustRun([
                 $git,
+                '-c',
+                'advice.detachedHead=false',
                 'clone',
                 '--quiet',
                 '--depth',

@@ -75,6 +75,21 @@ TAGS;
     }
 
     /**
+     * HR: Savjet o detached HEAD stanju isključen je samo za dohvat taga, bez skrivanja grešaka.
+     * EN: Detached HEAD advice is disabled only for the tag clone without hiding errors.
+     */
+    public function testReleaseCloneDisablesOnlyDetachedHeadAdvice(): void
+    {
+        $updater = (string)file_get_contents(dirname(__DIR__, 3) . '/update.php');
+        $this->assertMatchesRegularExpression(
+            '/\$this->mustRun\(\[\s*\$git,\s*\'-c\',\s*\'advice\.detachedHead=false\',\s*\'clone\',/',
+            $updater,
+        );
+        $this->assertStringNotContainsString('advice.detachedHead=true', $updater);
+        $this->assertStringContainsString('2 => STDERR', $updater);
+    }
+
+    /**
      * HR: Composer koristi privatni cache procesa, ne cache instalacije ili drugog Unix korisnika.
      * EN: Composer uses a private process cache, not the installation or another Unix user's cache.
      */
