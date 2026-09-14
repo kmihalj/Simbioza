@@ -1,6 +1,6 @@
 # Simbioza 0.1.70
 
-Uključuje sve popravke i isporučene upute i temu iz 0.1.69 te Calendar 0.1.15.
+Uključuje sve popravke i isporučene upute i temu iz 0.1.69 te Calendar 0.1.16.
 
 ## Višestruki odabir sudionika
 

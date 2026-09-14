@@ -1,6 +1,6 @@
 # Simbioza 0.1.70
 
-Includes the fixes, bundled guides and theme from 0.1.69, plus Calendar 0.1.15.
+Includes the fixes, bundled guides and theme from 0.1.69, plus Calendar 0.1.16.
 
 ## Multiple attendee selection
 
