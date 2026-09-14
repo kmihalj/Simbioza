@@ -93,6 +93,24 @@ final readonly class BundledAssetsUpdater
 
         $pageHash = hash_file('sha256', $pagePath);
         if (($state['meetings_sha256'] ?? null) === $pageHash) {
+            // HR: Stari sudo update mogao je uvesti sve slike, ali ostaviti root vlasništvo.
+            // EN: A previous sudo update may have imported all images but left root ownership.
+            $workspace = $this->workspaces->findWorkspaceBySlug('korisnicke-upute');
+            if (is_array($workspace)) {
+                $page = $this->workspaces->findNodeBySlug(
+                    BackupValue::integer($workspace['id'], 'workspace.id'),
+                    'sastanci',
+                );
+                if (
+                    is_array($page)
+                    && $this->normalizeDocumentAssetOwnership(
+                        BackupValue::string($page['document_key'], 'document_key'),
+                    )
+                ) {
+                    $actions[] = 'Meeting-guide attachment ownership repaired; content and visibility preserved.';
+                }
+            }
+
             return $actions;
         }
 
@@ -126,6 +144,9 @@ final readonly class BundledAssetsUpdater
 
             $nodes = $this->workspaces->nodesForWorkspace(BackupValue::integer($workspace['id'], 'workspace.id'));
             foreach ($nodes as $node) {
+                $this->normalizeDocumentAssetOwnership(
+                    BackupValue::string($node['document_key'] ?? '', 'document_key'),
+                );
                 $this->normalizeDocumentPaths(
                     BackupValue::string($node['document_key'] ?? '', 'document_key'),
                     $basePath,
@@ -178,7 +199,9 @@ final readonly class BundledAssetsUpdater
                 throw new RuntimeException('The imported meeting guide page is unavailable.');
             }
 
-            $this->normalizeDocumentPaths(BackupValue::string($page['document_key'], 'document_key'), $basePath);
+            $key = BackupValue::string($page['document_key'], 'document_key');
+            $this->normalizeDocumentAssetOwnership($key);
+            $this->normalizeDocumentPaths($key, $basePath);
         }
 
         $state['meetings_sha256'] = $pageHash;
@@ -196,6 +219,30 @@ final readonly class BundledAssetsUpdater
         }
 
         $this->backups->restore($archive, $context);
+    }
+
+    /**
+     * HR: Usklađuje samo datoteke privitaka odabranog dokumenta, nikada privatne backup artefakte.
+     * EN: Aligns only the selected document's attachment files, never private backup artifacts.
+     */
+    private function normalizeDocumentAssetOwnership(string $key): bool
+    {
+        $document = $this->database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $key)->first();
+        if (!is_array($document)) {
+            return false;
+        }
+
+        $paths = [];
+        $assets = $this->database->table(ModuleEditorHtml::TABLE_ASSETS)
+            ->where('document_id', '=', $document['id'])->get();
+        foreach ($assets as $asset) {
+            if (($asset['storage_driver'] ?? '') === 'filesystem' && is_string($asset['content_path'] ?? null)) {
+                $paths[] = $asset['content_path'];
+            }
+        }
+
+        return BundledAssetPermissions::inheritOwnership($this->editorConfig->uploadsRoot(), $paths);
     }
 
     /**

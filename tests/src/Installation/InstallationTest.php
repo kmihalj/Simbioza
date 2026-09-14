@@ -356,6 +356,7 @@ final class InstallationTest extends TestCase
         $meetingDocument = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
             ->where('document_key', '=', $meetingPage['document_key'])->first();
         $this->assertIsArray($meetingDocument);
+        $this->assertSame('none', $meetingDocument['attachment_visibility']);
         $meetingWorkflows = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
             ->where('node_id', '=', $meetingPage['id'])->get();
         $this->assertCount(2, $meetingWorkflows);
@@ -565,6 +566,9 @@ PHP);
         $this->assertIsArray($meetingDocument);
         $updatedVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
             ->where('document_id', '=', $meetingDocument['id'])->get();
+        $updatedAssets = $database->table(ModuleEditorHtml::TABLE_ASSETS)
+            ->where('document_id', '=', $meetingDocument['id'])->get();
+        $updatedAssetsByUuid = array_column($updatedAssets, null, 'uuid');
         foreach ($updatedVersions as $version) {
             $html = BundledAssetsUpdater::guideVersionHtml(
                 $version,
@@ -573,6 +577,16 @@ PHP);
             );
             $this->assertGreaterThan(30000, strlen($html));
             $this->assertSame(36, substr_count($html, '<img '));
+            preg_match_all('~/editor-html/asset/([0-9a-f-]{36})~i', $html, $updatedAssetMatches);
+            foreach (array_unique($updatedAssetMatches[1]) as $uuid) {
+                $this->assertArrayHasKey($uuid, $updatedAssetsByUuid);
+                $assetPath = $root . '/data/editor-html/uploads/' . $updatedAssetsByUuid[$uuid]['content_path'];
+                $this->assertFileExists($assetPath);
+                $this->assertIsReadable($assetPath);
+                $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($assetPath));
+                $this->assertSame(filegroup($root . '/data/editor-html/uploads'), filegroup($assetPath));
+            }
+
             $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $html, json_encode([
                 'document_key' => $meetingDocument['document_key'], 'version' => $version['version_number'],
                 'language' => $version['language_code'], 'driver' => $version['storage_driver'],
@@ -580,13 +594,28 @@ PHP);
             ], JSON_THROW_ON_ERROR));
         }
 
+        $this->assertSame('none', $meetingDocument['attachment_visibility']);
         $this->assertSame(0600, fileperms($root . '/data/bundled-assets.json') & 0777);
+        $stateHash = hash_file('sha256', $root . '/data/bundled-assets.json');
+        $repairPath = null;
+        if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            $repairPath = $root . '/data/editor-html/uploads/' . $updatedAssets[0]['content_path'];
+            $this->assertTrue(chown($repairPath, 65534));
+            $this->assertTrue(chgrp($repairPath, 65534));
+        }
+
         $versionCount = count($database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get());
         $output = [];
         exec($command, $output, $exit);
         $this->assertSame(0, $exit, implode("\n", $output));
         $this->assertStringNotContainsString('updated;', implode("\n", $output));
         $this->assertCount($versionCount, $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get());
+        $this->assertSame($stateHash, hash_file('sha256', $root . '/data/bundled-assets.json'));
+        if ($repairPath !== null) {
+            clearstatcache();
+            $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($repairPath));
+            $this->assertSame(filegroup($root . '/data/editor-html/uploads'), filegroup($repairPath));
+        }
     }
 
     /** HR: Pokreće cijeli web-tijek do locka bez druge kopije lozinke u sessionu. EN: Runs the full web flow to the lock with one session password copy. */
