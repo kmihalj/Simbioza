@@ -44,10 +44,10 @@ composer check-platform-reqs
 ## 2. Dohvat označenog izdanja
 
 Na poslužitelj se kopiraju samo datoteke odabranog taga, bez trajnog `.git`
-direktorija. Zamijenite `0.1.72` stvarnim izdanjem koje instalirate:
+direktorija. Zamijenite `0.1.73` stvarnim izdanjem koje instalirate:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.72 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.73 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -419,7 +419,7 @@ php update.php
 Za određeni tag:
 
 ```bash
-php update.php --tag=0.1.72
+php update.php --tag=0.1.73
 ```
 
 Updater izrađuje kopiju koda, uključuje održavanje, čuva privatnu konfiguraciju
@@ -427,6 +427,10 @@ i podatke, ažurira tagirane pakete, provjerava bootstrap, primjenjuje migracije
 osvježava ugrađene upute i temu te čisti cache. Neuspjeh prije migracija vraća
 prethodno stanje; nakon početka migracija održavanje ostaje uključeno radi
 sigurnog ručnog oporavka.
+
+Postojeći administratorski izbornik postavki ostaje netaknut. Ako novo izdanje
+donese postavke novog modula ili značajke, updater dodaje samo nedostajuće
+stavke na kraj, bez promjene postojećih oznaka, redoslijeda ili uključenosti.
 
 Kod koordiniranog izdanja prvo se moraju objaviti tagovi izmijenjenih modula, a
 tek zatim tag glavne Simbioze koji na njih upućuje.

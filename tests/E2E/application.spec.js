@@ -582,6 +582,42 @@ test.describe('browser flows', () => {
     )).toBeLessThanOrEqual(3);
     expect(desktopAttachmentLayout.historyRight).toBeLessThanOrEqual(desktopAttachmentLayout.itemRight);
 
+    const darkAttachmentInfo = await attachmentItem.evaluate((item) => {
+      document.documentElement.dataset.hphTheme = 'dark';
+      document.documentElement.dataset.bsTheme = 'dark';
+      const info = item.querySelector('.editor-html-asset-info');
+      const styles = info ? window.getComputedStyle(info) : null;
+      const channelValues = (color) => (String(color).match(/[\d.]+/g) || [])
+        .slice(0, 3)
+        .map(Number);
+      const luminance = (color) => {
+        const channels = channelValues(color).map((channel) => {
+          const normalized = channel / 255;
+          return normalized <= 0.03928
+            ? normalized / 12.92
+            : ((normalized + 0.055) / 1.055) ** 2.4;
+        });
+        return (0.2126 * (channels[0] ?? 0))
+          + (0.7152 * (channels[1] ?? 0))
+          + (0.0722 * (channels[2] ?? 0));
+      };
+      const background = styles?.backgroundColor || '';
+      const text = styles?.color || '';
+      const lighter = Math.max(luminance(background), luminance(text));
+      const darker = Math.min(luminance(background), luminance(text));
+
+      return {
+        background,
+        contrast: (lighter + 0.05) / (darker + 0.05),
+      };
+    });
+    expect(darkAttachmentInfo.background).not.toBe('rgb(248, 249, 250)');
+    expect(darkAttachmentInfo.contrast).toBeGreaterThanOrEqual(4.5);
+    await page.evaluate(() => {
+      document.documentElement.dataset.hphTheme = 'light';
+      document.documentElement.dataset.bsTheme = 'light';
+    });
+
     await page.setViewportSize({ width: 390, height: 844 });
     const mobileAttachmentLayout = await attachmentItem.evaluate((item) => {
       const rectangle = item.getBoundingClientRect();

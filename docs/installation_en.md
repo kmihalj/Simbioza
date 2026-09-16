@@ -43,10 +43,10 @@ composer check-platform-reqs
 ## 2. Fetch a tagged release
 
 Copy only the selected tag to the server; do not retain a `.git` directory.
-Replace `0.1.72` with the actual release being installed:
+Replace `0.1.73` with the actual release being installed:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.72 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.73 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -419,7 +419,7 @@ php update.php
 To select a tag:
 
 ```bash
-php update.php --tag=0.1.72
+php update.php --tag=0.1.73
 ```
 
 The updater backs up code, enables maintenance, preserves private
@@ -427,6 +427,11 @@ configuration and data, updates tagged packages, verifies bootstrap, applies
 migrations, refreshes bundled guides and the theme, and clears caches. A
 failure before migrations rolls back automatically; after migrations start,
 maintenance remains enabled for controlled recovery.
+
+The existing administrator-managed settings menu remains untouched. When a new
+release provides settings for a new module or feature, the updater appends only
+the missing entries at the end without changing existing labels, order, or
+enabled state.
 
 For a coordinated release, publish tags for every changed module first, then
 publish the main Simbioza tag that references them.

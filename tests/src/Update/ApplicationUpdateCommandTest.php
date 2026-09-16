@@ -165,6 +165,7 @@ TAGS;
         $this->assertStringContainsString("'/resources/config/theme/'", $updater);
         $this->assertStringContainsString('captureRuntimeSettings', $updater);
         $this->assertStringContainsString('restoreRuntimeSettings', $updater);
+        $this->assertStringContainsString('appendMissingMenuSettings', $updater);
         $this->assertStringContainsString('normalizeStoredThemeComponentHeights', $updater);
         $this->assertFileExists($root . '/resources/installation/theme/simbioza.zip');
         $preflightPosition = strpos($updater, '$this->write($this->message(\'preflight\'));');
@@ -366,6 +367,59 @@ TAGS;
         $this->assertSame(94, $stored[1]['components']['header']['height_px']);
         $this->assertSame(65, $stored[1]['components']['navigation']['height_px']);
         $this->assertSame(0, $normalize->invoke($command));
+    }
+
+    /**
+     * HR: Nadogradnja dodaje nove postavke modula na kraj bez promjene ijedne
+     *     zatečene stavke ili administratorskog redoslijeda.
+     * EN: An update appends new module settings without changing any existing
+     *     entry or administrator-defined order.
+     */
+    public function testMenuSettingsUpgradeAppendsOnlyMissingReleaseEntries(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-menu-settings-' . bin2hex(random_bytes(6));
+        $source = $root . '-source';
+        $this->temporaryDirectories[] = $root;
+        $this->temporaryDirectories[] = $source;
+        foreach ([$root, $source] as $directory) {
+            $this->assertTrue(mkdir($directory . '/resources/config/menu', 0770, true));
+        }
+
+        $current = [
+            ['id' => 'menu', 'order' => 25, 'enabled' => false, 'custom' => 'keep'],
+            ['id' => 'auth', 'order' => 70, 'enabled' => true],
+        ];
+        $release = [
+            ['id' => 'menu', 'order' => 10, 'enabled' => true, 'custom' => 'replace'],
+            ['id' => 'setup', 'order' => 5, 'enabled' => true],
+            ['id' => 'future-module', 'order' => 15, 'enabled' => true],
+        ];
+        file_put_contents(
+            $root . '/resources/config/menu/settings.json',
+            json_encode($current, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR),
+        );
+        file_put_contents(
+            $source . '/resources/config/menu/settings.json',
+            json_encode($release, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR),
+        );
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $append = new \ReflectionMethod($command, 'appendMissingMenuSettings');
+        $this->assertSame(2, $append->invoke($command, $source));
+        $this->assertSame(0, $append->invoke($command, $source));
+
+        $stored = json_decode(
+            (string)file_get_contents($root . '/resources/config/menu/settings.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertSame($current[0], $stored[0]);
+        $this->assertSame($current[1], $stored[1]);
+        $this->assertSame('setup', $stored[2]['id']);
+        $this->assertSame(80, $stored[2]['order']);
+        $this->assertSame('future-module', $stored[3]['id']);
+        $this->assertSame(90, $stored[3]['order']);
     }
 
     /**

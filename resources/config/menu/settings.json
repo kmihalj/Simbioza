@@ -1,34 +1,5 @@
 [
     {
-        "id": "setup",
-        "label": {
-            "hr": "Setup",
-            "en": "Setup"
-        },
-        "translation_key": null,
-        "route": null,
-        "url": null,
-        "query": [],
-        "order": 5,
-        "enabled": true,
-        "children": [
-            {
-                "id": "setup.index",
-                "label": {
-                    "hr": "Moduli i provjere",
-                    "en": "Modules and checks"
-                },
-                "translation_key": null,
-                "route": "setup.index",
-                "url": null,
-                "query": [],
-                "order": 10,
-                "enabled": true,
-                "children": []
-            }
-        ]
-    },
-    {
         "id": "menu",
         "label": {
             "hr": "Meni",
@@ -757,6 +728,35 @@
                 "translation_key": null,
                 "route": "backup.settings",
                 "url": "",
+                "query": [],
+                "order": 10,
+                "enabled": true,
+                "children": []
+            }
+        ]
+    },
+    {
+        "id": "setup",
+        "label": {
+            "hr": "Setup",
+            "en": "Setup"
+        },
+        "translation_key": null,
+        "route": null,
+        "url": null,
+        "query": [],
+        "order": 100,
+        "enabled": true,
+        "children": [
+            {
+                "id": "setup.index",
+                "label": {
+                    "hr": "Moduli i provjere",
+                    "en": "Modules and checks"
+                },
+                "translation_key": null,
+                "route": "setup.index",
+                "url": null,
                 "query": [],
                 "order": 10,
                 "enabled": true,

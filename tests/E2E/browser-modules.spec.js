@@ -237,7 +237,24 @@ test.describe('module browser surfaces', () => {
 
   test('Editor lookup dropdowns remain fully usable inside scrollable modals', async ({ page, request }) => {
     await page.setViewportSize({ width: 1800, height: 1000 });
-    await createEditorSurface(request, adminApiToken, 'modal-dropdown-target');
+    const targetPath = await createEditorSurface(request, adminApiToken, 'modal-dropdown-target');
+    const targetDocument = new URL(targetPath, 'http://localhost').searchParams.get('document');
+    expect(targetDocument).toBeTruthy();
+    const targetDraft = await getDataWithEtag(
+      request,
+      `/api/v1/pages/${encodeURIComponent(targetDocument)}/draft?lang=en`,
+      apiHeaders(adminApiToken),
+    );
+    await expectData(await request.post(
+      `/api/v1/pages/${encodeURIComponent(targetDocument)}/publish?lang=en`,
+      {
+        headers: apiHeaders(adminApiToken, {
+          'Idempotency-Key': idempotencyKey('modal-dropdown-target-publish'),
+          'If-Match': targetDraft.etag,
+        }),
+        data: {},
+      },
+    ));
     const editorPath = await createEditorSurface(request, adminApiToken, 'modal-dropdown-editor');
     await login(page, adminLogin, adminPassword);
     const response = await page.goto(editorPath);

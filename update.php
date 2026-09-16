@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 namespace Simbioza\Update;
 
+use JsonException;
 use RuntimeException;
 use Throwable;
 
@@ -280,6 +281,7 @@ final class ApplicationUpdateCommand
             $this->syncSource($rsync, $sourceDirectory);
             $this->restoreSelectedOptionalRequirements();
             $this->restoreRuntimeSettings();
+            $this->appendMissingMenuSettings($sourceDirectory);
             $this->write($this->message('theme_config'));
             $this->normalizeStoredThemeComponentHeights();
             $this->restorePreservedPathMetadata();
@@ -677,6 +679,92 @@ final class ApplicationUpdateCommand
                 throw new RuntimeException('Unable to restore runtime setting: ' . $relativePath);
             }
         }
+    }
+
+    /**
+     * HR: U zatečeni administratorski izbornik postavki dodaje samo nove
+     *     release stavke. Postojeće stavke, njihov redoslijed i postavke ostaju
+     *     netaknuti, a svaka nova značajka ili modul dodaje se na kraj.
+     * EN: Appends only new release entries to the administrator-managed
+     *     settings menu. Existing entries, order, and options stay untouched,
+     *     while every new feature or module is added at the end.
+     */
+    private function appendMissingMenuSettings(string $sourceDirectory): int
+    {
+        $relativePath = 'resources/config/menu/settings.json';
+        $currentPath = $this->appRoot . '/' . $relativePath;
+        $releasePath = rtrim($sourceDirectory, '/') . '/' . $relativePath;
+        if (!is_file($currentPath) || !is_file($releasePath)) {
+            return 0;
+        }
+
+        try {
+            $current = json_decode((string)file_get_contents($currentPath), true, 512, JSON_THROW_ON_ERROR);
+            $release = json_decode((string)file_get_contents($releasePath), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new RuntimeException('Menu settings could not be decoded during update.', 0, $exception);
+        }
+        if (!is_array($current) || !array_is_list($current) || !is_array($release) || !array_is_list($release)) {
+            throw new RuntimeException('Menu settings must contain a JSON list during update.');
+        }
+
+        $existingIds = [];
+        $lastOrder = 0;
+        foreach ($current as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            if (is_string($entry['id'] ?? null) && trim($entry['id']) !== '') {
+                $existingIds[$entry['id']] = true;
+            }
+            if (is_numeric($entry['order'] ?? null)) {
+                $lastOrder = max($lastOrder, (int)$entry['order']);
+            }
+        }
+
+        $added = 0;
+        foreach ($release as $entry) {
+            if (!is_array($entry) || !is_string($entry['id'] ?? null) || trim($entry['id']) === '') {
+                continue;
+            }
+            $id = $entry['id'];
+            if (isset($existingIds[$id])) {
+                continue;
+            }
+
+            $lastOrder += 10;
+            $entry['order'] = $lastOrder;
+            $current[] = $entry;
+            $existingIds[$id] = true;
+            ++$added;
+        }
+        if ($added === 0) {
+            return 0;
+        }
+
+        $encoded = json_encode(
+            $current,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+        ) . "\n";
+        $temporaryPath = tempnam(dirname($currentPath), '.simbioza-menu-settings-');
+        if (!is_string($temporaryPath)) {
+            throw new RuntimeException('Temporary menu settings file could not be created.');
+        }
+
+        try {
+            if (file_put_contents($temporaryPath, $encoded, LOCK_EX) === false) {
+                throw new RuntimeException('Updated menu settings could not be written.');
+            }
+            if (!rename($temporaryPath, $currentPath)) {
+                throw new RuntimeException('Updated menu settings could not replace the existing file.');
+            }
+        } finally {
+            if (is_file($temporaryPath)) {
+                @unlink($temporaryPath);
+            }
+        }
+
+        return $added;
     }
 
     /**
