@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Module\ModuleCatalog;
+use App\Setup\SetupGateway;
+use Composer\InstalledVersions;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -28,6 +32,8 @@ final readonly class InstallationWebApplication
 
     private const SESSION_LAST_ACTIVITY = 'last_activity';
 
+    private const SESSION_PREPARED_PACKAGES = 'prepared_packages';
+
     private const SESSION_TIMEOUT_SECONDS = 1800;
 
     /** HR: Inicijalizira sigurnosne i instalacijske servise. EN: Initializes security and installation services. */
@@ -39,6 +45,7 @@ final readonly class InstallationWebApplication
         private InstallationInputValidator $validator,
         private InstallationRunner $runner,
         private InstallationLogger $logger,
+        private ?SetupGateway $setup = null,
     ) {
     }
 
@@ -193,7 +200,9 @@ final readonly class InstallationWebApplication
     private function saveApplication(array $post, array &$session, string $installerPath): InstallationResponse
     {
         try {
-            $session[self::SESSION_APPLICATION] = $this->validator->application($post);
+            $application = $this->validator->application($post);
+            $session[self::SESSION_PREPARED_PACKAGES] = $this->prepareInstallerPackages($application);
+            $session[self::SESSION_APPLICATION] = $application;
             $session[self::SESSION_ADMINISTRATOR] = $this->validator->administrator($post);
             $session[self::SESSION_STAGE] = 'review';
             $this->rotateCsrf($session);
@@ -203,6 +212,12 @@ final readonly class InstallationWebApplication
             $session[self::SESSION_STAGE] = 'application';
             unset($session[self::SESSION_ADMINISTRATOR]);
             return $this->renderStage($session, $installerPath, $installationValidationException->errorCodes(), $post);
+        } catch (Throwable $throwable) {
+            $this->logger->error('Optional installation packages could not be prepared.', $throwable);
+            $session[self::SESSION_STAGE] = 'application';
+            unset($session[self::SESSION_ADMINISTRATOR]);
+
+            return $this->renderStage($session, $installerPath, ['setup_helper'], $post);
         }
     }
 
@@ -227,6 +242,16 @@ final readonly class InstallationWebApplication
             $session['regenerate_id'] = true;
             $basePath = substr($installerPath, 0, -strlen('/install'));
             $result = $this->runner->run($database, $application, $administrator, $basePath);
+            try {
+                $this->removeTransientInstallerPackages($application);
+            } catch (Throwable $cleanupFailure) {
+                // HR: Instalacija je već valjano zaključana. Ostatak neaktivnog
+                //     paketa može se sigurno ukloniti kasnije kroz Setup ili CLI.
+                // EN: Installation is already validly locked. An inactive
+                //     leftover package can safely be removed later via Setup or CLI.
+                $this->logger->error('Transient installer package cleanup failed.', $cleanupFailure);
+            }
+
             $body = $this->successPage(
                 $locale,
                 $installerPath,
@@ -242,6 +267,99 @@ final readonly class InstallationWebApplication
             $this->logger->error('Final installation failed.', $throwable);
             return $this->renderStage($session, $installerPath, ['installation_failed']);
         }
+    }
+
+    /**
+     * HR: Prije završnog koraka osigurava odabrane opcionalne pakete i
+     *     privremeni Backup potreban samo za uvoz početnih uputa.
+     * EN: Before the final step, ensures selected optional packages and the
+     *     temporary Backup package needed only to import starter guides.
+     *
+     * @param array{
+     *     name:string,
+     *     primary_locale:string,
+     *     supported_locales:list<string>,
+     *     timezone:string,
+     *     optional_modules:list<string>
+     * } $application
+     * @return list<string>
+     */
+    private function prepareInstallerPackages(array $application): array
+    {
+        $catalog = new ModuleCatalog();
+        $requested = array_values(array_unique([...$application['optional_modules'], 'backup']));
+        $missing = [];
+        foreach ($requested as $slug) {
+            $package = $catalog->definitionFor($slug)['package'];
+            if (!InstalledVersions::isInstalled($package)) {
+                $missing[] = $slug;
+            }
+        }
+
+        if ($missing === []) {
+            return [];
+        }
+
+        if (!$this->installerPackageChangesAvailable()) {
+            throw new RuntimeException('The privileged Setup helper is unavailable.');
+        }
+
+        $setup = $this->setup;
+        if (!$setup instanceof SetupGateway) {
+            throw new RuntimeException('The privileged Setup helper is unavailable.');
+        }
+
+        $setup->execute('packages-prepare', ['modules' => $missing]);
+
+        return $missing;
+    }
+
+    /**
+     * HR: Za paketne radnje installer traži namjenski FPM marker i stvarni
+     *     prolaz kroz ograničeni helper, jednako kao kasniji Setup ekran.
+     * EN: For package operations the installer requires a dedicated FPM marker
+     *     and a real restricted-helper round trip, just like the later Setup screen.
+     */
+    private function installerPackageChangesAvailable(): bool
+    {
+        return PHP_SAPI === 'fpm-fcgi'
+        && trim((string)getenv('SIMBIOZA_SETUP_POOL')) === '1'
+        && $this->setup instanceof SetupGateway
+        && $this->setup->isAvailable()
+        && $this->setup->probe();
+    }
+
+    /**
+     * HR: Nakon uspjeha uklanja privremeni Backup paket koji nije korisnički
+     *     odabran. Provjera ne ovisi o trenutačnoj sesiji jer paket može biti
+     *     dovršen nakon prekinutog prethodnog HTTP zahtjeva.
+     * EN: After success, removes the temporary Backup package when it was not
+     *     selected by the user. The check does not depend on the current
+     *     session because a previous interrupted HTTP request may have
+     *     completed the package operation in the background.
+     *
+     * @param array<array-key,mixed> $application
+     */
+    private function removeTransientInstallerPackages(array $application): void
+    {
+        $configuredModules = is_array($application['optional_modules'] ?? null)
+        ? $application['optional_modules']
+        : [];
+        $optionalModules = array_values(array_filter($configuredModules, is_string(...)));
+        if (in_array('backup', $optionalModules, true)) {
+            return;
+        }
+
+        $backupPackage = (new ModuleCatalog())->definitionFor('backup')['package'];
+        if (!InstalledVersions::isInstalled($backupPackage)) {
+            return;
+        }
+
+        if (!$this->setup instanceof SetupGateway || !$this->setup->isAvailable()) {
+            throw new RuntimeException('The transient Backup package could not be removed.');
+        }
+
+        $this->setup->execute('packages-cleanup', ['modules' => ['backup']]);
     }
 
     /**
@@ -392,6 +510,11 @@ final readonly class InstallationWebApplication
         $supported = is_array($values['supported_locales'] ?? null)
         ? $values['supported_locales']
         : ['hr', 'en'];
+        $catalog = new ModuleCatalog();
+        $optionalModules = is_array($values['optional_modules'] ?? null)
+        ? $values['optional_modules']
+        : $catalog->recommendedSlugs();
+        $packageChangesAvailable = $this->installerPackageChangesAvailable();
         $timezone = $this->scalarString(
             $values['timezone'] ?? ($primaryLocale === 'hr' ? 'Europe/Zagreb' : 'UTC'),
         );
@@ -402,6 +525,8 @@ final readonly class InstallationWebApplication
             . '<label class="grid__wide">%s<input name="name" required maxlength="100" value="%s"></label>'
             . '<label>%s<select name="primary_locale">%s</select></label><fieldset><legend>%s</legend>%s</fieldset>'
             . '<label class="grid__wide">%s<select name="timezone">%s</select></label></div></fieldset>'
+            . '<fieldset><legend>%s</legend><p>%s</p>%s<input type="hidden" name="module_selection_present" '
+            . 'value="1"><div class="grid">%s</div></fieldset>'
             . '<fieldset><legend>%s</legend><div class="grid">%s</div></fieldset><p class="hint">%s</p>'
             . '<div class="actions"><button class="button" type="submit" name="action" '
             . 'value="back_database">%s</button><button class="button button--primary" type="submit" '
@@ -419,6 +544,14 @@ final readonly class InstallationWebApplication
             $this->localeCheckboxes($supported, $locale),
             $this->escape($this->text('timezone_label', $locale)),
             $this->timezoneOptions($timezone),
+            $this->escape($this->text('modules_title', $locale)),
+            $this->escape($this->text('modules_intro', $locale)),
+            $packageChangesAvailable ? '' : sprintf(
+                '<p class="hint">%s <code>php scripts/installation_packages.php prepare '
+                . '--modules=theme,calendar</code></p>',
+                $this->escape($this->text('modules_cli_hint', $locale)),
+            ),
+            $this->moduleCheckboxes($optionalModules, $locale, $packageChangesAvailable),
             $this->escape($this->text('administrator_title', $locale)),
             $this->administratorFields($locale, $values),
             $this->escape($this->text('password_hint', $locale)),
@@ -452,6 +585,43 @@ final readonly class InstallationWebApplication
             $locale === 'en' ? 'Croatian' : 'Hrvatski',
             in_array('en', $selected, true) ? ' checked' : '',
         );
+    }
+
+    /**
+     * HR: Renderira izbor samo opcionalnih modula; obvezni moduli uvijek se instaliraju.
+     * EN: Renders only optional module choices; required modules are always installed.
+     *
+     * @param array<mixed> $selected
+     */
+    private function moduleCheckboxes(array $selected, string $locale, bool $packageChangesAvailable): string
+    {
+        $html = '';
+        foreach ((new ModuleCatalog())->definitions() as $slug => $definition) {
+            if (!$definition['optional']) {
+                continue;
+            }
+
+            $label = $locale === 'en' ? $definition['label_en'] : $definition['label_hr'];
+            $recommended = $definition['recommended']
+            ? ' <span class="badge">' . $this->escape($this->text('recommended', $locale)) . '</span>'
+            : '';
+            $installed = InstalledVersions::isInstalled($definition['package']);
+            $disabled = !$installed && !$packageChangesAvailable;
+            $availability = $disabled
+            ? ' <small>(' . $this->escape($this->text('module_requires_cli', $locale)) . ')</small>'
+            : '';
+            $html .= sprintf(
+                '<label class="choice"><input type="checkbox" name="optional_modules[]" value="%s"%s%s> %s%s%s</label>',
+                $this->escape($slug),
+                !$disabled && in_array($slug, $selected, true) ? ' checked' : '',
+                $disabled ? ' disabled' : '',
+                $this->escape($label),
+                $recommended,
+                $availability,
+            );
+        }
+
+        return $html;
     }
 
     /** HR: Renderira sve PHP vremenske zone. EN: Renders every PHP timezone. */
@@ -531,6 +701,21 @@ final readonly class InstallationWebApplication
         $locales = is_array($application['supported_locales'] ?? null)
         ? implode(', ', $this->stringList($application['supported_locales']))
         : '';
+        $moduleCatalog = new ModuleCatalog();
+        $moduleLabels = [];
+        $selectedModules = is_array($application['optional_modules'] ?? null)
+        ? $application['optional_modules']
+        : [];
+        foreach ($this->stringList($selectedModules) as $slug) {
+            try {
+                $definition = $moduleCatalog->definitionFor($slug);
+                $moduleLabels[] = $locale === 'en' ? $definition['label_en'] : $definition['label_hr'];
+            } catch (\InvalidArgumentException) {
+                // HR: Validator inače uklanja nepoznate module; pregled ih obrambeno preskače.
+                // EN: The validator normally removes unknown modules; review defensively skips them.
+            }
+        }
+
         $rows = [
             [$this->text('application_name_label', $locale), $this->scalarString($application['name'] ?? '')],
             [$this->text('database_type', $locale), $driverLabel],
@@ -539,6 +724,10 @@ final readonly class InstallationWebApplication
                 strtoupper($this->scalarString($application['primary_locale'] ?? '')),
             ],
             [$this->text('supported_locales_label', $locale), strtoupper($locales)],
+            [
+                $this->text('modules_title', $locale),
+                $moduleLabels === [] ? $this->text('modules_none', $locale) : implode(', ', $moduleLabels),
+            ],
             [$this->text('timezone_label', $locale), $this->scalarString($application['timezone'] ?? '')],
             [$this->text('administrator_login_label', $locale), $this->scalarString($administrator['login'] ?? '')],
             [$this->text('administrator_email_label', $locale), $this->scalarString($administrator['email'] ?? '')],
@@ -649,7 +838,10 @@ final readonly class InstallationWebApplication
         . '<body><main><h1>Simbioza</h1><p>' . $this->escape($message) . '</p></main></body></html>';
     }
 
-    /** HR: Vraća zaključani 404 bez otkrivanja instalera. EN: Returns a locked 404 without revealing the installer. */
+    /**
+     * HR: Vraća zaključani 404 bez otkrivanja instalera.
+     * EN: Returns a locked 404 without revealing the installer.
+     */
     private function notFound(): InstallationResponse
     {
         return $this->response(404, $this->simplePage('en', 'Not found.'));
@@ -664,7 +856,10 @@ final readonly class InstallationWebApplication
         return new InstallationResponse(303, $headers, '');
     }
 
-    /** HR: Gradi HTML odgovor sa svim sigurnosnim zaglavljima. EN: Builds an HTML response with every security header. */
+    /**
+     * HR: Gradi HTML odgovor sa svim sigurnosnim zaglavljima.
+     * EN: Builds an HTML response with every security header.
+     */
     private function response(int $status, string $body): InstallationResponse
     {
         return new InstallationResponse($status, $this->securityHeaders(), $body);
@@ -855,6 +1050,25 @@ final readonly class InstallationWebApplication
             'application_name_label' => ['hr' => 'Naziv aplikacije', 'en' => 'Application name'],
             'primary_locale_label' => ['hr' => 'Primarni jezik', 'en' => 'Primary language'],
             'supported_locales_label' => ['hr' => 'Dostupni jezici', 'en' => 'Available languages'],
+            'modules_title' => ['hr' => 'Opcionalni moduli', 'en' => 'Optional modules'],
+            'modules_intro' => [
+                'hr' => 'Odaberite dodatne mogućnosti. Obvezni moduli za područja, pretraživanje, korisnike, '
+                . 'HTML editor, autentikaciju, izbornik, obavijesti i bazu uvijek se instaliraju.',
+                'en' => 'Choose additional features. Required workspace, search, user, HTML editor, authentication, '
+                . 'menu, notification, and database modules are always installed.',
+            ],
+            'modules_cli_hint' => [
+                'hr' => 'Ova instalacija nema privilegirani FPM helper. Nedostupne pakete prvo pripremite '
+                . 'u CLI-ju, zatim osvježite ovu stranicu:',
+                'en' => 'This installation has no privileged FPM helper. Prepare unavailable packages in the CLI '
+                . 'first, then reload this page:',
+            ],
+            'module_requires_cli' => [
+                'hr' => 'prvo pripremiti u CLI-ju',
+                'en' => 'prepare in CLI first',
+            ],
+            'modules_none' => ['hr' => 'Nijedan', 'en' => 'None'],
+            'recommended' => ['hr' => 'preporučeno', 'en' => 'recommended'],
             'timezone_label' => ['hr' => 'Vremenska zona', 'en' => 'Timezone'],
             'administrator_title' => ['hr' => 'Prvi administratorski račun', 'en' => 'First administrator account'],
             'administrator_login_label' => ['hr' => 'Login oznaka', 'en' => 'Login identifier'],
@@ -876,20 +1090,20 @@ final readonly class InstallationWebApplication
                 'en' => 'Sensitive values are intentionally hidden. The final step runs the real migrations.',
             ],
             'review_notice' => [
-                'hr' => 'Nakon uspjeha token se uklanja, installer se trajno zaključava i tema Simbioza postavlja '
-                . 'kao zadana.',
-                'en' => 'After success, the token is removed, the installer is permanently locked, and Simbioza '
-                . 'becomes the default theme.',
+                'hr' => 'Nakon uspjeha token se uklanja, installer se trajno zaključava i aktiviraju se samo '
+                . 'odabrani opcionalni moduli.',
+                'en' => 'After success, the token is removed, the installer is permanently locked, and only the '
+                . 'selected optional modules are enabled.',
             ],
             'success_title' => [
                 'hr' => 'Simbioza je uspješno instalirana',
                 'en' => 'Simbioza was installed successfully',
             ],
             'success_intro' => [
-                'hr' => 'Migracije, prvi administrator i tema dovršeni su. Instalacijska adresa više se ne može '
-                . 'ponovno koristiti.',
-                'en' => 'Migrations, the first administrator, and the theme are complete. The installer URL cannot '
-                . 'be reused.',
+                'hr' => 'Migracije, prvi administrator i odabrani moduli dovršeni su. '
+                . 'Instalacijska adresa više se ne može ponovno koristiti.',
+                'en' => 'Migrations, the first administrator, and selected modules are complete. '
+                . 'The installer URL cannot be reused.',
             ],
             'continue' => ['hr' => 'Nastavi', 'en' => 'Continue'],
             'back' => ['hr' => 'Natrag', 'en' => 'Back'],
@@ -954,6 +1168,13 @@ final readonly class InstallationWebApplication
             'incomplete_state' => [
                 'hr' => 'Instalacijska sesija nije potpuna; krenite od početka.',
                 'en' => 'The installer session is incomplete; start again.',
+            ],
+            'setup_helper' => [
+                'hr' => 'Odabrane module nije moguće pripremiti iz preglednika. Pokrenite '
+                . '`php scripts/installation_packages.php prepare --modules=...`, osvježite installer i '
+                . 'pokušajte ponovno.',
+                'en' => 'Selected modules cannot be prepared in the browser. Run '
+                . '`php scripts/installation_packages.php prepare --modules=...`, reload the installer, and try again.',
             ],
             'installation_failed' => [
                 'hr' => 'Instalacija nije dovršena. Tehnički detalji zapisani su u privatni log; ništa povjerljivo '

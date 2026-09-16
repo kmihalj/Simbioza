@@ -3,7 +3,7 @@
     "description": "Simbioza - a collaborative knowledge application powered by HeartPhrame",
     "type": "project",
     "license": "EUPL-1.2",
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "repositories": [
         {
@@ -81,31 +81,15 @@
     ],
     "require": {
         "php": ">=8.2",
-        "aaieduhr/heartphrame-framework": "^0.0.25",
-        "aaieduhr/heartphrame-module-api": "^0.1.3",
-        "aaieduhr/heartphrame-module-audit": "^0.1.0",
-        "aaieduhr/heartphrame-module-auth": "^0.1.11",
-        "aaieduhr/heartphrame-module-calendar": "^0.1.17",
-        "aaieduhr/heartphrame-module-comment": "^0.1.2",
-        "aaieduhr/heartphrame-module-editor-html": "^0.1.28",
-        "aaieduhr/heartphrame-module-email": "^0.1.2",
-        "aaieduhr/heartphrame-module-menu": "^0.1.12",
+        "aaieduhr/heartphrame-framework": "^0.0.25.1",
+        "aaieduhr/heartphrame-module-auth": "^0.1.12",
+        "aaieduhr/heartphrame-module-editor-html": "^0.1.29",
+        "aaieduhr/heartphrame-module-menu": "^0.1.13",
         "aaieduhr/heartphrame-module-notification": "^0.1.4",
         "aaieduhr/heartphrame-module-orm": "^0.1.0",
-        "aaieduhr/heartphrame-module-task": "^0.1.4",
-        "aaieduhr/heartphrame-module-theme": "^0.1.14",
-        "aaieduhr/simbioza-module-workspace": "^0.1.30",
+        "aaieduhr/simbioza-module-workspace": "^0.1.31",
         "aaieduhr/simbioza-module-workspace-search": "^0.1.8",
-        "aaieduhr/heartphrame-module-backup": "^0.1.5",
-        "aaieduhr/simbioza-module-user": "^0.1.9",
-        "aaieduhr/simbioza-module-confluence-import": "^0.1.30"
-    },
-    "require-dev": {
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^10 || ^11",
-        "rector/rector": "^2.0",
-        "squizlabs/php_codesniffer": "^3",
-        "slevomat/coding-standard": "^8"
+        "aaieduhr/simbioza-module-user": "^0.1.9"
     },
     "autoload": {
         "psr-4": {
@@ -138,7 +122,38 @@
         "optimize-autoloader": true,
         "composer-runtime-api": "^2.1"
     },
+    "suggest": {
+        "aaieduhr/heartphrame-module-api": "Adds the authenticated Simbioza API.",
+        "aaieduhr/heartphrame-module-audit": "Adds activity audit logs.",
+        "aaieduhr/heartphrame-module-backup": "Adds site, workspace, and page backup and restore.",
+        "aaieduhr/heartphrame-module-calendar": "Adds calendars, resources, and meeting planning.",
+        "aaieduhr/heartphrame-module-comment": "Adds page comments and reactions.",
+        "aaieduhr/heartphrame-module-email": "Adds queued e-mail delivery.",
+        "aaieduhr/heartphrame-module-task": "Adds document tasks.",
+        "aaieduhr/heartphrame-module-theme": "Recommended: installs themes and the bundled Simbioza theme.",
+        "aaieduhr/simbioza-module-confluence-import": "Adds Confluence archive import."
+    },
     "extra": {
+        "simbioza": {
+            "optional-modules": {
+                "aaieduhr/heartphrame-module-api": "^0.1.3",
+                "aaieduhr/heartphrame-module-audit": "^0.1.0",
+                "aaieduhr/heartphrame-module-backup": "^0.1.5",
+                "aaieduhr/heartphrame-module-calendar": "^0.1.18",
+                "aaieduhr/heartphrame-module-comment": "^0.1.2",
+                "aaieduhr/heartphrame-module-email": "^0.1.2",
+                "aaieduhr/heartphrame-module-task": "^0.1.4",
+                "aaieduhr/heartphrame-module-theme": "^0.1.14",
+                "aaieduhr/simbioza-module-confluence-import": "^0.1.32"
+            },
+            "development-tools": {
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^10 || ^11",
+                "rector/rector": "^2.0",
+                "squizlabs/php_codesniffer": "^3",
+                "slevomat/coding-standard": "^8"
+            }
+        }
     },
     "scripts": {
         "pre-commit": [

@@ -580,7 +580,6 @@ function verifyMatrixCase(
                 'composer',
                 'update',
                 '--with-all-dependencies',
-                '--no-dev',
                 '--no-interaction',
                 '--no-progress',
                 '--prefer-dist',

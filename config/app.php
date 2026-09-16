@@ -8,21 +8,85 @@ if (!is_array($installation)) {
     $installation = [];
 }
 
+$moduleStateFile = __DIR__ . '/modules.php';
+$moduleState = is_file($moduleStateFile) ? require $moduleStateFile : [];
+if (!is_array($moduleState)) {
+    $moduleState = [];
+}
+
+$defaultEnabledModules = [
+    'aaieduhr/heartphrame-module-orm',
+    'aaieduhr/heartphrame-module-menu',
+    'aaieduhr/heartphrame-module-auth',
+    'aaieduhr/heartphrame-module-notification',
+    'aaieduhr/heartphrame-module-editor-html',
+    'aaieduhr/simbioza-module-workspace',
+    'aaieduhr/simbioza-module-workspace-search',
+    'aaieduhr/simbioza-module-user',
+];
+$allowedModules = [
+    ...$defaultEnabledModules,
+    'aaieduhr/heartphrame-module-theme',
+    'aaieduhr/heartphrame-module-audit',
+    'aaieduhr/heartphrame-module-api',
+    'aaieduhr/heartphrame-module-email',
+    'aaieduhr/heartphrame-module-task',
+    'aaieduhr/heartphrame-module-comment',
+    'aaieduhr/heartphrame-module-calendar',
+    'aaieduhr/simbioza-module-confluence-import',
+    'aaieduhr/heartphrame-module-backup',
+];
+$legacyInstalledModules = [];
+if (!array_key_exists('enabled', $moduleState) && is_file(__DIR__ . '/../data/installation.lock')) {
+    $legacyInstalledModules = array_values(array_filter(
+        $allowedModules,
+        static fn(string $package): bool => \Composer\InstalledVersions::isInstalled($package),
+    ));
+}
+
+$enabledModules = is_array($moduleState['enabled'] ?? null)
+? array_values(array_unique([
+    ...$defaultEnabledModules,
+    ...array_filter(
+        $moduleState['enabled'],
+        static fn(mixed $package): bool => is_string($package) && in_array($package, $allowedModules, true),
+    ),
+]))
+: ($legacyInstalledModules !== [] ? $legacyInstalledModules : $defaultEnabledModules);
+
 $applicationName = is_string($installation['name'] ?? null) && trim($installation['name']) !== ''
 ? trim($installation['name'])
 : 'Simbioza';
 $primaryLocale = is_string($installation['primary_locale'] ?? null)
 ? strtolower(trim($installation['primary_locale']))
 : 'hr';
+$languageRegistryFile = __DIR__ . '/languages.php';
+$languageRegistry = is_file($languageRegistryFile) ? require $languageRegistryFile : [];
+$availableLocales = [];
+foreach (is_array($languageRegistry) ? array_keys($languageRegistry) : [] as $locale) {
+    if (
+        is_string($locale)
+        && preg_match('/\A[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*\z/D', $locale) === 1
+        && is_file(__DIR__ . '/../lang/' . $locale . '.php')
+    ) {
+        $availableLocales[] = strtolower($locale);
+    }
+}
+
+$availableLocales = array_values(array_unique($availableLocales));
+if ($availableLocales === []) {
+    $availableLocales = ['hr', 'en'];
+}
+
 $supportedLocales = is_array($installation['supported_locales'] ?? null)
 ? array_values(array_filter(
     $installation['supported_locales'],
-    static fn(mixed $locale): bool => is_string($locale) && in_array($locale, ['hr', 'en'], true),
+    static fn(mixed $locale): bool => is_string($locale) && in_array($locale, $availableLocales, true),
 ))
-: ['hr', 'en'];
+: array_values(array_intersect(['hr', 'en'], $availableLocales));
 if ($supportedLocales === [] || !in_array($primaryLocale, $supportedLocales, true)) {
-    $primaryLocale = 'hr';
-    $supportedLocales = ['hr', 'en'];
+    $primaryLocale = in_array('hr', $availableLocales, true) ? 'hr' : $availableLocales[0];
+    $supportedLocales = $availableLocales;
 }
 
 $timezone = is_string($installation['timezone'] ?? null)
@@ -97,25 +161,7 @@ return [
             'heartphrame-module',
         ],
         // List of enabled modules (package names)
-        'enabled' => [
-            'aaieduhr/heartphrame-module-orm',
-            'aaieduhr/heartphrame-module-menu',
-            'aaieduhr/heartphrame-module-theme',
-            'aaieduhr/heartphrame-module-auth',
-            'aaieduhr/heartphrame-module-audit',
-            'aaieduhr/heartphrame-module-api',
-            'aaieduhr/heartphrame-module-email',
-            'aaieduhr/heartphrame-module-notification',
-            'aaieduhr/heartphrame-module-editor-html',
-            'aaieduhr/heartphrame-module-task',
-            'aaieduhr/heartphrame-module-comment',
-            'aaieduhr/simbioza-module-workspace',
-            'aaieduhr/simbioza-module-workspace-search',
-            'aaieduhr/heartphrame-module-calendar',
-            'aaieduhr/simbioza-module-user',
-            'aaieduhr/simbioza-module-confluence-import',
-            'aaieduhr/heartphrame-module-backup',
-        ],
+        'enabled' => $enabledModules,
     ],
 
     'csrf' => [

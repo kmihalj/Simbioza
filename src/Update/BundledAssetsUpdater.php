@@ -20,20 +20,40 @@ use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use RuntimeException;
 
 /**
- * HR: Ažurira samo isporučenu temu Simbioza i stranicu uputa za sastanke.
- * EN: Updates only the bundled Simbioza theme and the meeting-guide page.
+ * HR: Ažurira uključenu temu Simbioza i pojedinačne isporučene stranice uputa.
+ * EN: Updates the enabled Simbioza theme and individual bundled guide pages.
  */
 final readonly class BundledAssetsUpdater
 {
     private const PASSPHRASE = 'SimbiozaSeed2026!';
+
+    /**
+     * @var array<string,array{file:string,slug:string,parent:?string,recovery:string,message:string}>
+     */
+    private const GUIDE_PAGES = [
+        'meetings_sha256' => [
+            'file' => 'sastanci.zip',
+            'slug' => 'sastanci',
+            'parent' => 'kalendari',
+            'recovery' => 'previous_meeting_guide',
+            'message' => 'Bilingual meeting guides updated; other pages and existing page permissions preserved.',
+        ],
+        'installation_sha256' => [
+            'file' => 'instalacija.zip',
+            'slug' => 'instalacija',
+            'parent' => null,
+            'recovery' => 'previous_installation_guide',
+            'message' => 'Bilingual installation guides updated; other pages and existing page permissions preserved.',
+        ],
+    ];
 
     /** HR: Prima javne servise modula. EN: Receives the modules' public services. */
     public function __construct(
         private Database $database,
         private BackupManager $backups,
         private WorkspaceRepository $workspaces,
-        private ThemeConfigRepository $themes,
-        private ThemeArchiveService $themeArchives,
+        private ?ThemeConfigRepository $themes,
+        private ?ThemeArchiveService $themeArchives,
         private AuthUserService $users,
         private EditorHtmlConfig $editorConfig,
         private EditorHtmlDocumentFormatter $formatter,
@@ -43,9 +63,10 @@ final readonly class BundledAssetsUpdater
     /**
      * HR: Primjenjuje izmijenjene pakete jednom i čuva privatne povratne točke.
      * EN: Applies changed packages once and keeps private recovery points.
+     * @param list<string> $skippedGuideProviders
      * @return list<string>
      */
-    public function run(string $root, string $basePath): array
+    public function run(string $root, string $basePath, array $skippedGuideProviders = []): array
     {
         $basePath = self::validatedBasePath($basePath);
         $statePath = $root . '/data/bundled-assets.json';
@@ -64,15 +85,21 @@ final readonly class BundledAssetsUpdater
 
         $actions = [];
         $themePath = $root . '/resources/installation/theme/simbioza.zip';
-        $pagePath = $root . '/resources/installation/workspace/sastanci.zip';
-        foreach ([$themePath, $pagePath] as $path) {
-            if (!is_file($path)) {
-                throw new RuntimeException('A bundled asset package is missing: ' . basename($path));
-            }
+        if (
+            $this->themes instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository
+            && $this->themeArchives instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService
+            && !is_file($themePath)
+        ) {
+            throw new RuntimeException('A bundled asset package is missing: ' . basename($themePath));
         }
 
-        $themeHash = hash_file('sha256', $themePath);
-        if (($state['theme_sha256'] ?? null) !== $themeHash) {
+        $themeHash = is_file($themePath) ? hash_file('sha256', $themePath) : false;
+        if (
+            $this->themes instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository
+            && $this->themeArchives instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService
+            && is_string($themeHash)
+            && ($state['theme_sha256'] ?? null) !== $themeHash
+        ) {
             $directory = $root . '/data/backups/bundled-assets';
             if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
                 throw new RuntimeException('The bundled-asset recovery directory is unavailable.');
@@ -91,27 +118,44 @@ final readonly class BundledAssetsUpdater
             $actions[] = 'Simbioza theme updated; other themes and active-theme settings preserved.';
         }
 
-        $pageHash = hash_file('sha256', $pagePath);
-        if (($state['meetings_sha256'] ?? null) === $pageHash) {
-            // HR: Stari sudo update mogao je uvesti sve slike, ali ostaviti root vlasništvo.
-            // EN: A previous sudo update may have imported all images but left root ownership.
-            $workspace = $this->workspaces->findWorkspaceBySlug('korisnicke-upute');
-            if (is_array($workspace)) {
-                $page = $this->workspaces->findNodeBySlug(
-                    BackupValue::integer($workspace['id'], 'workspace.id'),
-                    'sastanci',
-                );
+        $pagePackages = [];
+        foreach (self::GUIDE_PAGES as $stateKey => $definition) {
+            $path = $root . '/resources/installation/workspace/' . $definition['file'];
+            if (!is_file($path)) {
+                throw new RuntimeException('A bundled asset package is missing: ' . basename($path));
+            }
+
+            $hash = hash_file('sha256', $path);
+            if (!is_string($hash)) {
+                throw new RuntimeException('A bundled asset package cannot be checksummed: ' . basename($path));
+            }
+
+            $pagePackages[$stateKey] = ['definition' => $definition, 'path' => $path, 'hash' => $hash];
+        }
+
+        $workspace = $this->workspaces->findWorkspaceBySlug('korisnicke-upute');
+        $hasChangedPage = !is_array($workspace);
+        foreach ($pagePackages as $stateKey => $package) {
+            if (($state[$stateKey] ?? null) !== $package['hash']) {
+                $hasChangedPage = true;
+            }
+        }
+
+        if (!$hasChangedPage && is_array($workspace)) {
+            $workspaceId = BackupValue::integer($workspace['id'], 'workspace.id');
+            foreach ($pagePackages as $package) {
+                $page = $this->workspaces->findNodeBySlug($workspaceId, $package['definition']['slug']);
                 if (
                     is_array($page)
                     && $this->normalizeDocumentAssetOwnership(
                         BackupValue::string($page['document_key'], 'document_key'),
                     )
                 ) {
-                    $actions[] = 'Meeting-guide attachment ownership repaired; content and visibility preserved.';
+                    $actions[] = 'Bundled-guide attachment ownership repaired; content and visibility preserved.';
                 }
             }
 
-            return $actions;
+            return array_values(array_unique($actions));
         }
 
         $administratorIds = $this->users->listActiveAdministratorIds();
@@ -120,13 +164,12 @@ final readonly class BundledAssetsUpdater
             throw new RuntimeException('Updating the bundled guides requires an active administrator.');
         }
 
-        $workspace = $this->workspaces->findWorkspaceBySlug('korisnicke-upute');
         if (!is_array($workspace)) {
             $context = new BackupImportContext(
                 new BackupScope(BackupScope::WORKSPACE, 'korisnicke-upute'),
                 BackupImportContext::CONFLICT_COPY,
                 [],
-                [],
+                $skippedGuideProviders,
                 [
                     'workspace-scope' => ['target_slug' => 'korisnicke-upute', 'preserve_name_on_copy' => true],
                     'comment-workspace' => ['fallback_users_to_actor' => true],
@@ -152,62 +195,107 @@ final readonly class BundledAssetsUpdater
                     $basePath,
                 );
             }
+
+            foreach ($pagePackages as $stateKey => $package) {
+                $state[$stateKey] = $package['hash'];
+            }
+
+            $this->saveState($statePath, $state);
+            $actions[] = 'Bilingual user guides installed; bundled pages and attachments are updateable.';
         } else {
             $workspaceId = BackupValue::integer($workspace['id'], 'workspace.id');
-            $page = $this->workspaces->findNodeBySlug($workspaceId, 'sastanci');
-            $parent = $this->workspaces->findNodeBySlug($workspaceId, 'kalendari');
-            $pageId = is_array($page) ? BackupValue::integer($page['id'], 'page.id') : null;
-            $options = [
-                'target_workspace' => $workspaceId, 'target_page_id' => $pageId,
-                'target_parent_id' => is_array($parent) ? BackupValue::integer($parent['id'], 'parent.id') : null,
-                'import_permissions' => false, 'include_history' => true,
-            ];
-            $context = new BackupImportContext(
-                new BackupScope(BackupScope::PAGE, (string)$workspaceId),
-                $pageId !== null ? BackupImportContext::CONFLICT_REPLACE : BackupImportContext::CONFLICT_COPY,
-                [],
-                [],
-                ['page-transfer' => $options, 'editor-html-workspace' => $options],
-                $actorId,
-                self::PASSPHRASE,
-            );
-            $preflight = $this->backups->preflight($pagePath, $context);
-            if (!$preflight->isAllowed()) {
-                throw new RuntimeException('Bundled meeting guides failed preflight: '
-                    . implode(' | ', $preflight->errors));
-            }
+            foreach ($pagePackages as $stateKey => $package) {
+                if (($state[$stateKey] ?? null) === $package['hash']) {
+                    continue;
+                }
 
-            if ($pageId !== null) {
-                $recoveryPassphrase = bin2hex(random_bytes(32));
-                $snapshot = $this->backups->create(new BackupExportContext(
-                    new BackupScope(BackupScope::PAGE, (string)$pageId),
-                    [],
-                    [
-                        'page-transfer' => ['include_history' => true, 'include_permissions' => true],
-                        'editor-html-workspace' => ['include_history' => true, 'include_permissions' => true],
-                    ],
+                $this->updateGuidePage(
+                    $workspaceId,
+                    $package['definition'],
+                    $package['path'],
                     $actorId,
-                    $recoveryPassphrase,
-                ), 'before-bundled-meeting-guide-update');
-                $state['previous_meeting_guide'] = ['archive' => $snapshot, 'passphrase' => $recoveryPassphrase];
+                    $basePath,
+                    $state,
+                    $statePath,
+                    $skippedGuideProviders,
+                );
+                $state[$stateKey] = $package['hash'];
                 $this->saveState($statePath, $state);
+                $actions[] = $package['definition']['message'];
             }
-
-            $this->backups->restore($pagePath, $context);
-            $page = $this->workspaces->findNodeBySlug($workspaceId, 'sastanci');
-            if (!is_array($page)) {
-                throw new RuntimeException('The imported meeting guide page is unavailable.');
-            }
-
-            $key = BackupValue::string($page['document_key'], 'document_key');
-            $this->normalizeDocumentAssetOwnership($key);
-            $this->normalizeDocumentPaths($key, $basePath);
         }
 
-        $state['meetings_sha256'] = $pageHash;
-        $this->saveState($statePath, $state);
-        $actions[] = 'Bilingual meeting guides updated; other pages and existing page permissions preserved.';
         return $actions;
+    }
+
+    /**
+     * HR: Sigurno zamjenjuje jednu upravljanu stranicu i prije toga izrađuje povratnu točku.
+     * EN: Safely replaces one managed page after first creating a recovery point.
+     * @param array{file:string,slug:string,parent:?string,recovery:string,message:string} $definition
+     * @param array<string,mixed> $state
+     * @param list<string> $skippedGuideProviders
+     */
+    private function updateGuidePage(
+        int $workspaceId,
+        array $definition,
+        string $pagePath,
+        int $actorId,
+        string $basePath,
+        array &$state,
+        string $statePath,
+        array $skippedGuideProviders,
+    ): void {
+        $page = $this->workspaces->findNodeBySlug($workspaceId, $definition['slug']);
+        $parent = $definition['parent'] !== null
+        ? $this->workspaces->findNodeBySlug($workspaceId, $definition['parent'])
+        : null;
+        $pageId = is_array($page) ? BackupValue::integer($page['id'], 'page.id') : null;
+        $options = [
+            'target_workspace' => $workspaceId,
+            'target_page_id' => $pageId,
+            'target_parent_id' => is_array($parent) ? BackupValue::integer($parent['id'], 'parent.id') : null,
+            'import_permissions' => false,
+            'include_history' => true,
+        ];
+        $context = new BackupImportContext(
+            new BackupScope(BackupScope::PAGE, (string)$workspaceId),
+            $pageId !== null ? BackupImportContext::CONFLICT_REPLACE : BackupImportContext::CONFLICT_COPY,
+            [],
+            $skippedGuideProviders,
+            ['page-transfer' => $options, 'editor-html-workspace' => $options],
+            $actorId,
+            self::PASSPHRASE,
+        );
+        $preflight = $this->backups->preflight($pagePath, $context);
+        if (!$preflight->isAllowed()) {
+            throw new RuntimeException('Bundled guide failed preflight: ' . implode(' | ', $preflight->errors));
+        }
+
+        if ($pageId !== null) {
+            $recoveryPassphrase = bin2hex(random_bytes(32));
+            $snapshot = $this->backups->create(new BackupExportContext(
+                new BackupScope(BackupScope::PAGE, (string)$pageId),
+                [],
+                [
+                    'page-transfer' => ['include_history' => true, 'include_permissions' => true],
+                    'editor-html-workspace' => ['include_history' => true, 'include_permissions' => true],
+                ],
+                $actorId,
+                $recoveryPassphrase,
+            ), 'before-bundled-' . $definition['slug'] . '-update');
+            $state[$definition['recovery']] = ['archive' => $snapshot, 'passphrase' => $recoveryPassphrase];
+            $this->saveState($statePath, $state);
+        }
+
+        $this->backups->restore($pagePath, $context);
+        $page = $this->workspaces->findNodeBySlug($workspaceId, $definition['slug']);
+        if (!is_array($page)) {
+            throw new RuntimeException('The imported guide page is unavailable: ' . $definition['slug']);
+        }
+
+        $key = BackupValue::string($page['document_key'], 'document_key');
+        $this->normalizeDocumentAssetOwnership($key);
+        $this->normalizeDocumentPaths($key, $basePath);
     }
 
     /** HR: Provjerava paket prije vraćanja. EN: Validates the archive before restoring it. */

@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+env:
+  COMPOSER: composer.ci.json
+
 jobs:
   release-metadata:
     name: Release metadata / Metapodaci izdanja
@@ -61,7 +64,9 @@ jobs:
           coverage: pcov
 
       - name: Validate Composer metadata / Provjeri Composer metapodatke
-        run: composer validate --strict
+        run: |
+          php scripts/build_ci_composer.php
+          composer validate --strict
 
       - name: Resolve latest dependencies / Dohvati najnovije ovisnosti
         run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
@@ -89,7 +94,9 @@ jobs:
           coverage: none
 
       - name: Resolve verifier dependencies / Dohvati ovisnosti alata
-        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          php scripts/build_ci_composer.php
+          composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Verify clean module combinations / Provjeri čiste kombinacije modula
         run: composer clean-matrix
@@ -141,7 +148,9 @@ jobs:
           coverage: none
 
       - name: Resolve verifier dependencies / Dohvati ovisnosti alata
-        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          php scripts/build_ci_composer.php
+          composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Verify PostgreSQL clean installation / Provjeri čistu PostgreSQL instalaciju
         env:
@@ -183,7 +192,9 @@ jobs:
           node-version: latest
 
       - name: Resolve latest PHP dependencies / Dohvati najnovije PHP ovisnosti
-        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          php scripts/build_ci_composer.php
+          composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
         run: npm install --no-package-lock
@@ -245,7 +256,9 @@ jobs:
           node-version: latest
 
       - name: Resolve latest PHP dependencies / Dohvati najnovije PHP ovisnosti
-        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          php scripts/build_ci_composer.php
+          composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
         run: npm install --no-package-lock
@@ -314,7 +327,9 @@ jobs:
           node-version: latest
 
       - name: Resolve latest PHP dependencies / Dohvati najnovije PHP ovisnosti
-        run: composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          php scripts/build_ci_composer.php
+          composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
         run: npm install --no-package-lock

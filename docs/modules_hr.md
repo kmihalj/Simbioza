@@ -125,3 +125,53 @@ okruženju ili konfiguraciji:
 
 `AbstractModuleManifest` prema zadanim postavkama vraća vrijednosti koje
 omogućuju učitavanje. Te metode možete nadjačati vlastitom logikom.
+
+## Upravljanje ugrađenim modulima Simbioze
+
+Release Simbioze sadrži samo obveznu jezgru. Kod opcionalnog modula instalira
+se tek kada je potreban. Administrator ne mijenja ručno `config/app.php`, nego
+koristi CLI ili **Postavke → Setup i moduli**; oba načina čuvaju ispravan
+redoslijed, provjeravaju ovisnosti i održavaju privatnu datoteku
+`config/modules.php`:
+
+```bash
+vendor/bin/hph modules list
+vendor/bin/hph modules enable calendar
+vendor/bin/hph modules disable calendar
+vendor/bin/hph modules remove calendar --yes
+vendor/bin/hph modules backups calendar
+vendor/bin/hph modules add calendar --restore
+vendor/bin/hph modules add calendar --fresh
+```
+
+Obvezni su ORM, Menu, Auth, Notification, HTML Editor, Workspace, Workspace
+Search i Simbioza User. Neobvezni su API, Task, Theme, Audit, E-mail, Comment,
+Calendar, Confluence Import i Backup. Theme je jedini preporučeni modul i
+unaprijed je označen u novoj instalaciji, ali ga korisnik može isključiti.
+
+`disable` samo prestaje učitavati modul: tablice i podaci ostaju netaknuti pa se
+modul može odmah ponovno uključiti. `remove` je dopušten samo za neobvezni
+modul. Prije uklanjanja njegovih migracija i tablica alat izrađuje privatnu
+NDJSON kopiju u `data/module-backups/<modul>/`, a zatim uklanja i Composer
+paket. Njegove rute, servisi i shema više se ne koriste.
+
+GUI instalacija i uklanjanje paketa dostupni su samo kada dijagnostika potvrdi
+namjenski PHP-FPM pool, ograničeni helper i ispravna prava. Bez toga GUI i dalje
+može uključiti ili isključiti već instalirani modul i prikazuje točnu CLI
+naredbu za instalaciju ili uklanjanje paketa.
+
+Pri kasnijem `add` alat prepoznaje zadnju kopiju. U interaktivnom terminalu pita
+želite li povrat podataka ili praznu instalaciju; u automatizaciji odluka mora
+biti izričita s `--restore` ili `--fresh`. Povrat se izvršava transakcijski i
+odbija tablicu koja više nije prazna. Modul se ne može isključiti dok ga treba
+drugi uključeni modul, a obvezni se moduli ne mogu isključiti ni ukloniti.
+
+Theme nema vlastite poslovne tablice. Njegovo isključivanje ostavlja spremljene
+teme na disku i aplikacija nastavlja raditi sa svojim osnovnim prikazima.
+Confluence Import nakon dovršenog uvoza nije potreban za prikaz stranica:
+Workspace i HTML Editor čuvaju samostalan sadržaj i trajne interne poveznice.
+Prije `remove confluence-import` alat dodatno pregledava sve verzije HTML-a u
+bazi i na filesystemu. Ako pronađe stari privremeni import-proxy ili dinamičku
+referencu na izvorno Confluence područje, uklanjanje se zaustavlja dok se te
+reference ne razriješe. Time se ne može slučajno ukloniti modul koji je još
+potreban ijednoj uvezenoj verziji stranice.

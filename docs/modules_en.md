@@ -139,3 +139,53 @@ By default, in `AbstractModuleManifest` those methods return default values
 which will enable the module to be loaded. You can override those methods
 in your manifest to implement custom logic for determining whether the module
 should be loaded or not.
+
+## Managing Simbioza bundled modules
+
+A Simbioza release contains only the required core. An optional module's code
+is installed only when needed. An administrator does not edit `config/app.php`
+manually, but uses the CLI or **Settings → Setup and modules**; both preserve
+module order, check dependencies, and maintain the private
+`config/modules.php` file:
+
+```bash
+vendor/bin/hph modules list
+vendor/bin/hph modules enable calendar
+vendor/bin/hph modules disable calendar
+vendor/bin/hph modules remove calendar --yes
+vendor/bin/hph modules backups calendar
+vendor/bin/hph modules add calendar --restore
+vendor/bin/hph modules add calendar --fresh
+```
+
+ORM, Menu, Auth, Notification, HTML Editor, Workspace, Workspace Search, and
+Simbioza User are required. API, Task, Theme, Audit, E-mail, Comment, Calendar,
+Confluence Import, and Backup are optional. Theme is the only recommended
+module and is preselected for a new installation, but the user may deselect it.
+
+`disable` only stops loading a module: its schema and data remain intact, so it
+can be enabled again immediately. `remove` is available only for optional
+modules. Before removing their migrations and tables, the command writes a
+private NDJSON backup under `data/module-backups/<module>/`, then removes the
+Composer package. Its routes, services, and schema are no longer used.
+
+GUI package installation and removal are available only when diagnostics
+confirm the dedicated PHP-FPM pool, restricted helper, and correct
+permissions. Without them, the GUI can still enable or disable an installed
+module and shows the exact CLI command for installing or removing a package.
+
+On a later `add`, the command detects the newest backup. An interactive terminal
+asks whether to restore it or start fresh; automation must choose explicitly
+with `--restore` or `--fresh`. Restoration is transactional and refuses a
+non-empty target table. A module cannot be disabled while another enabled
+module depends on it, and required modules cannot be disabled or removed.
+
+Theme owns no business tables. Disabling it retains theme files and the
+application continues with its base views. Confluence Import is not required to
+render completed imports: Workspace and HTML Editor retain standalone content
+and durable internal links.
+Before `remove confluence-import`, the command additionally scans every HTML
+version in the database and on the filesystem. Removal stops if a legacy
+temporary import proxy or dynamic source-workspace reference is found, so an
+operator cannot accidentally remove a module that any imported page version
+still needs.

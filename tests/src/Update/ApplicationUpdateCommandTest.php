@@ -277,6 +277,13 @@ TAGS;
             }
         }
 
+        $preservedInodes = [];
+        foreach ($preservedFiles as $relativePath) {
+            $inode = fileinode($root . '/' . $relativePath);
+            $this->assertIsInt($inode);
+            $preservedInodes[$relativePath] = $inode;
+        }
+
         file_put_contents($root . '/config/routes.php', 'old routes');
         file_put_contents($source . '/config/routes.php', 'new release routes');
         file_put_contents($root . '/config/services.php', 'old services');
@@ -304,6 +311,7 @@ TAGS;
 
         foreach ($preservedFiles as $relativePath) {
             $this->assertSame('site:' . $relativePath, file_get_contents($root . '/' . $relativePath));
+            $this->assertSame($preservedInodes[$relativePath], fileinode($root . '/' . $relativePath));
         }
 
         $this->assertSame('new release routes', file_get_contents($root . '/config/routes.php'));
@@ -361,8 +369,8 @@ TAGS;
     }
 
     /**
-     * HR: Release config datoteka nasljeđuje vlasnika direktorija i ostaje čitljiva web-procesu.
-     * EN: A release-managed config file inherits the directory owner and remains web-readable.
+     * HR: Nova release config datoteka zadržava vlasnika deploy procesa i ostaje čitljiva web-procesu.
+     * EN: A new release-managed config file keeps the deploy-process owner and remains web-readable.
      */
     public function testReleaseConfigurationFileInheritsSafeMetadata(): void
     {
@@ -385,11 +393,13 @@ TAGS;
 
         file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
         chmod($root . '/config/editor-html.php', 0600);
+        $owner = fileowner($root . '/config/editor-html.php');
+        $group = filegroup($root . '/config/editor-html.php');
         $normalize->invoke($command);
 
-        $this->assertSame(0640, fileperms($root . '/config/editor-html.php') & 07777);
-        $this->assertSame(fileowner($root . '/config'), fileowner($root . '/config/editor-html.php'));
-        $this->assertSame(filegroup($root . '/config'), filegroup($root . '/config/editor-html.php'));
+        $this->assertSame(0644, fileperms($root . '/config/editor-html.php') & 07777);
+        $this->assertSame($owner, fileowner($root . '/config/editor-html.php'));
+        $this->assertSame($group, filegroup($root . '/config/editor-html.php'));
     }
 
     /**

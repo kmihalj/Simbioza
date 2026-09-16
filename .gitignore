@@ -3,6 +3,8 @@
 /composer.lock
 /composer.local.json
 /composer.local.lock
+/composer.ci.json
+/composer.ci.lock
 /.playwright-cli/
 /node_modules/
 /package-lock.json

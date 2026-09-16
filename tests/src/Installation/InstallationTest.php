@@ -143,6 +143,7 @@ final class InstallationTest extends TestCase
         $stored = file_get_contents($paths->tokenFile());
         $this->assertIsString($stored);
         $this->assertStringNotContainsString($token, $stored);
+        $this->assertSame(0640, fileperms($paths->tokenFile()) & 0777);
         $this->assertTrue($tokens->consume($token));
         $this->assertFileDoesNotExist($paths->tokenFile());
         $this->assertFalse($tokens->consume($token));
@@ -291,6 +292,8 @@ final class InstallationTest extends TestCase
                 'primary_locale' => 'en',
                 'supported_locales' => ['en', 'hr'],
                 'timezone' => 'Europe/Zagreb',
+                'optional_modules' => (new \App\Module\ModuleCatalog())->optionalSlugs(),
+                'module_selection_present' => '1',
             ],
             [
                 'login' => 'first-admin',
@@ -304,10 +307,11 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(32, $result['migration_count']);
+        $this->assertSame(34, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
+        $this->assertSame(0640, fileperms($paths->lockFile()) & 0777);
         $this->assertFileDoesNotExist($paths->tokenFile());
         $this->assertSame(0600, fileperms($paths->databaseConfig()) & 0777);
         $this->assertSame(0600, fileperms($paths->environmentConfig()) & 0777);
@@ -329,7 +333,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(32, $database->table('_hph_migrations')->get());
+        $this->assertCount(34, $database->table('_hph_migrations')->get());
         $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)
             ->where('group_key', '=', ModuleCalendar::GROUP_KEY_CALENDAR_MANAGERS)
             ->first();
@@ -480,6 +484,10 @@ final class InstallationTest extends TestCase
             dirname(__DIR__, 3) . '/resources/installation/workspace/sastanci.zip',
             $root . '/resources/installation/workspace/sastanci.zip',
         );
+        copy(
+            dirname(__DIR__, 3) . '/resources/installation/workspace/instalacija.zip',
+            $root . '/resources/installation/workspace/instalacija.zip',
+        );
         // HR: Reproducira javni CLI put starog update.php, ne izravni poziv novog koraka.
         // EN: Reproduces the public CLI path of an old update.php, not a direct new-step call.
         file_put_contents($root . '/scripts/legacy-updater-migrate.php', <<<'PHP'
@@ -509,10 +517,22 @@ PHP);
             'node_id' => $meetingPage['id'], 'subject_type' => 'user',
             'subject_id' => $administrator['id'], 'can_view' => 1, 'can_manage' => 1,
         ]);
+        $installationPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('slug', '=', 'instalacija')->first();
+        $this->assertIsArray($installationPage);
+        $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)->insert([
+            'node_id' => $installationPage['id'], 'subject_type' => 'user',
+            'subject_id' => $administrator['id'], 'can_view' => 1, 'can_manage' => 1,
+        ]);
         $aclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $meetingPage['id'])->get();
-        $otherNodesBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
-            ->where('id', '<>', $meetingPage['id'])->get();
+        $installationAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $installationPage['id'])->get();
+        $managedPageIds = [(int)$meetingPage['id'], (int)$installationPage['id']];
+        $otherNodesBefore = array_values(array_filter(
+            $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
+            static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
+        ));
         $otherDocumentKey = $otherNodesBefore[0]['document_key'];
         $this->assertIsString($otherDocumentKey);
         $database->table(ModuleTask::TABLE_STATES)->insert([
@@ -552,8 +572,13 @@ PHP);
         $this->assertSame($settings, $updatedSettings);
         $this->assertSame($aclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $meetingPage['id'])->get());
-        $this->assertSame($otherNodesBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
-            ->where('id', '<>', $meetingPage['id'])->get());
+        $this->assertSame($installationAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $installationPage['id'])->get());
+        $otherNodesAfter = array_values(array_filter(
+            $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
+            static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
+        ));
+        $this->assertSame($otherNodesBefore, $otherNodesAfter);
         $this->assertSame($otherTasks, $database->table(ModuleTask::TABLE_STATES)
             ->where('document_id', '=', $otherDocumentKey)->get());
         $this->assertSame($otherComments, $database->table(ModuleComment::TABLE_COMMENTS)
@@ -618,7 +643,107 @@ PHP);
         }
     }
 
-    /** HR: Pokreće cijeli web-tijek do locka bez druge kopije lozinke u sessionu. EN: Runs the full web flow to the lock with one session password copy. */
+    /**
+     * HR: Čista instalacija bez opcionalnih modula preskače njihove migracije,
+     *     ali ipak uvozi početne korisničke upute.
+     * EN: A clean installation without optional modules skips their migrations
+     *     while still importing the starter user guides.
+     */
+    public function testRunnerInstallsRequiredModulesWithoutOptionalSchemas(): void
+    {
+        $root = $this->completeRoot();
+        $paths = new InstallationPaths($root);
+        $accessToken = new InstallationAccessToken($paths);
+        $accessToken->generate();
+
+        $writer = new InstallationConfigWriter($paths);
+        $tester = new InstallationDatabaseTester($writer);
+        $validator = new InstallationInputValidator();
+        $runner = new InstallationRunner(
+            $paths,
+            $accessToken,
+            $writer,
+            $tester,
+            $validator,
+            new InstallationRequirements($paths),
+            new InstallationLogger($paths),
+        );
+
+        $result = $runner->run(
+            ['driver' => 'sqlite'],
+            [
+                'name' => 'Minimal Simbioza',
+                'primary_locale' => 'hr',
+                'supported_locales' => ['hr', 'en'],
+                'timezone' => 'Europe/Zagreb',
+                'optional_modules' => [],
+                'module_selection_present' => '1',
+            ],
+            [
+                'login' => 'minimal-admin',
+                'display_name' => 'Minimal Administrator',
+                'first_name' => 'Minimal',
+                'last_name' => 'Administrator',
+                'email' => 'minimal.admin@example.test',
+                'password' => 'Secure#Minimal987',
+                'password_confirmation' => 'Secure#Minimal987',
+            ],
+            '/minimal',
+        );
+
+        $this->assertSame(21, $result['migration_count']);
+        $this->assertSame('', $result['theme_id']);
+        $this->assertSame('korisnicke-upute', $result['workspace_slug']);
+        $moduleState = require $paths->configDirectory() . '/modules.php';
+        $this->assertIsArray($moduleState);
+        // HR: Web-installer prvo piše privatno; jednokratni FPM `--finalize`
+        //     zatim postavlja zajedničku runtime grupu i 0660.
+        // EN: The web installer writes privately first; the one-time FPM
+        //     `--finalize` then applies the shared runtime group and mode 0660.
+        $this->assertSame(0600, fileperms($paths->configDirectory() . '/modules.php') & 0777);
+        $this->assertNotContains('aaieduhr/heartphrame-module-calendar', $moduleState['enabled']);
+        $this->assertNotContains('aaieduhr/heartphrame-module-theme', $moduleState['enabled']);
+
+        $databaseConfig = require $paths->databaseConfig();
+        $helper = new Helper();
+        $config = new Config($helper, ['database' => $databaseConfig]);
+        $database = new Database($config, $helper);
+        $this->assertFalse($database->schema()->hasTable('calendar_calendars'));
+        $this->assertFalse($database->schema()->hasTable('document_comments'));
+        $this->assertFalse($database->schema()->hasTable('simbioza_confluence_import_jobs'));
+        $this->assertTrue($database->schema()->hasTable(ModuleWorkspace::TABLE_WORKSPACES));
+
+        // HR: Updater mora moći osvježiti ugrađene upute i bez trajno
+        //     uključenih opcionalnih modula Backup i Theme.
+        // EN: The updater must be able to refresh bundled guides without the
+        //     optional Backup and Theme modules being persistently enabled.
+        copy(
+            dirname(__DIR__, 3) . '/scripts/update_bundled_assets.php',
+            $root . '/scripts/update_bundled_assets.php',
+        );
+        copy(
+            dirname(__DIR__, 3) . '/resources/installation/workspace/sastanci.zip',
+            $root . '/resources/installation/workspace/sastanci.zip',
+        );
+        copy(
+            dirname(__DIR__, 3) . '/resources/installation/workspace/instalacija.zip',
+            $root . '/resources/installation/workspace/instalacija.zip',
+        );
+        $output = [];
+        exec(
+            escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/update_bundled_assets.php')
+                . ' --base-path=/minimal 2>&1',
+            $output,
+            $exit,
+        );
+        $this->assertSame(0, $exit, implode("\n", $output));
+        $this->assertStringNotContainsString('Simbioza theme updated', implode("\n", $output));
+        $unchangedModuleState = require $paths->configDirectory() . '/modules.php';
+        $this->assertNotContains('aaieduhr/heartphrame-module-backup', $unchangedModuleState['enabled']);
+        $this->assertNotContains('aaieduhr/heartphrame-module-theme', $unchangedModuleState['enabled']);
+    }
+
+    /** HR: Web čarobnjak dovršava stvarnu SQLite instalaciju. EN: The web wizard completes a real SQLite installation. */
     public function testWebApplicationCompletesRealSqliteInstallation(): void
     {
         $root = $this->completeRoot();
@@ -808,6 +933,14 @@ PHP);
         copy(
             $projectRoot . '/resources/installation/workspace/korisnicke-upute.zip',
             $root . '/resources/installation/workspace/korisnicke-upute.zip',
+        );
+        copy(
+            $projectRoot . '/resources/installation/workspace/instalacija.zip',
+            $root . '/resources/installation/workspace/instalacija.zip',
+        );
+        copy(
+            $projectRoot . '/resources/installation/workspace/sastanci.zip',
+            $root . '/resources/installation/workspace/sastanci.zip',
         );
 
         return $root;

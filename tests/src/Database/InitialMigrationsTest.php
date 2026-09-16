@@ -54,12 +54,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće trideset i dvije aktualne aplikacijske migracije te provjerava aktualne
+     * HR: Pokreće trideset i četiri aktualne aplikacijske migracije te provjerava aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      *
-     * EN: Runs thirty-two current application migrations and verifies the current Auth,
+     * EN: Runs thirty-four current application migrations and verifies the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
@@ -69,7 +69,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(32, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(34, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             $migration = require $migrationFile;
@@ -252,6 +252,21 @@ final class InitialMigrationsTest extends TestCase
             'is_deleted',
             'deleted_by_user_id',
             'deleted_at',
+            'created_at',
+            'updated_at',
+        ]);
+        $this->assertColumns(ModuleEditorHtml::TABLE_ASSET_VERSIONS, [
+            'id',
+            'uuid',
+            'asset_id',
+            'version_number',
+            'original_name',
+            'stored_name',
+            'mime_type',
+            'file_size',
+            'storage_driver',
+            'content_path',
+            'created_by_user_id',
             'created_at',
             'updated_at',
         ]);
@@ -817,6 +832,11 @@ final class InitialMigrationsTest extends TestCase
             );
         }
 
+        $this->assertColumns(ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS, [
+            'source_creator_key',
+            'source_created_at',
+        ]);
+
         $this->assertTrue(
             $this->database->schema()->hasIndex(
                 ModuleSimbiozaConfluenceImport::TABLE_ATTACHMENTS,
@@ -832,6 +852,7 @@ final class InitialMigrationsTest extends TestCase
         $this->assertSame([], $this->database->table(ModuleCalendar::TABLE_CALENDAR_EVENTS)->get());
         $this->assertSame([], $this->database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
         $this->assertSame([], $this->database->table(ModuleEditorHtml::TABLE_ASSETS)->get());
+        $this->assertSame([], $this->database->table(ModuleEditorHtml::TABLE_ASSET_VERSIONS)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACES)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
         $this->assertSame([], $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->get());

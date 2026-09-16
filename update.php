@@ -197,6 +197,9 @@ final class ApplicationUpdateCommand
     /** @var array<string, array{mode:int,uid:int,gid:int}> */
     private array $preservedPathMetadata = [];
 
+    /** @var array<string,string> */
+    private array $selectedOptionalRequirements = [];
+
     /** @param list<string> $arguments */
     public function __construct(
         private readonly string $appRoot,
@@ -266,6 +269,7 @@ final class ApplicationUpdateCommand
                 $sourceDirectory,
             ]);
             $this->assertReleaseSource($sourceDirectory, $targetTag);
+            $this->captureSelectedOptionalRequirements($sourceDirectory);
 
             $this->backupPath = $this->createBackup($tar, $currentTag, $targetTag);
             $this->write(sprintf($this->message('backup'), $this->backupPath));
@@ -274,6 +278,7 @@ final class ApplicationUpdateCommand
 
             $this->write($this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
+            $this->restoreSelectedOptionalRequirements();
             $this->restoreRuntimeSettings();
             $this->write($this->message('theme_config'));
             $this->normalizeStoredThemeComponentHeights();
@@ -284,8 +289,8 @@ final class ApplicationUpdateCommand
             $this->updateComposerDependencies($composer);
 
             $this->write($this->message('platform'));
-            $this->mustRunComposer([$composer, 'check-platform-reqs', '--no-dev'], $this->appRoot);
-            $this->mustRunComposer([$composer, 'audit', '--locked', '--no-dev'], $this->appRoot);
+            $this->mustRunComposer([$composer, 'check-platform-reqs'], $this->appRoot);
+            $this->mustRunComposer([$composer, 'audit', '--locked'], $this->appRoot);
 
             // HR: Read-only status prisiljava potpuni bootstrap aplikacije prije
             //     nego označimo da su migracije započele. Pad tijekom bootstrapa
@@ -489,12 +494,103 @@ final class ApplicationUpdateCommand
             '--no-group',
             '--no-perms',
         ];
-        foreach (self::SOURCE_SYNC_EXCLUDES as $exclude) {
+        foreach ($this->sourceSyncExcludes() as $exclude) {
             $command[] = '--exclude=' . $exclude;
         }
         $command[] = rtrim($sourceDirectory, '/') . '/';
         $command[] = rtrim($this->appRoot, '/') . '/';
         $this->mustRun($command);
+    }
+
+    /**
+     * HR: Spaja stalna izuzeća izdanja sa svim zatečenim administratorskim
+     *     postavkama. Trajne datoteke zato ostaju na mjestu, s istim inodeom,
+     *     vlasnikom i pravima, čak i kada updater radi kao odvojeni deploy korisnik.
+     * EN: Combines permanent release exclusions with every discovered
+     *     administrator-managed setting. Persistent files therefore stay in
+     *     place with the same inode, owner, and mode even under a separate deploy user.
+     *
+     * @return list<string>
+     */
+    private function sourceSyncExcludes(): array
+    {
+        $excludes = array_fill_keys(self::SOURCE_SYNC_EXCLUDES, true);
+        foreach ($this->runtimeSettingsFiles() as $relativePath) {
+            $excludes['/' . ltrim($relativePath, '/')] = true;
+        }
+
+        return array_keys($excludes);
+    }
+
+    /**
+     * HR: Pamti opcionalne module koje je administrator stvarno dodao u
+     *     aplikacijski Composer skup. Ograničenja verzija čita iz zasebnog
+     *     kataloga stabilnih opcionalnih paketa u manifestu izdanja.
+     * EN: Remembers optional modules that the administrator actually added to
+     *     the application Composer set. Version constraints are read from the
+     *     release manifest's separate stable optional-package catalog.
+     */
+    private function captureSelectedOptionalRequirements(string $sourceDirectory): void
+    {
+        $current = json_decode((string)file_get_contents($this->appRoot . '/composer.json'), true);
+        $release = json_decode((string)file_get_contents($sourceDirectory . '/composer.json'), true);
+        if (!is_array($current) || !is_array($release)) {
+            throw new RuntimeException('Composer manifests could not be compared before update.');
+        }
+
+        $currentRequire = is_array($current['require'] ?? null) ? $current['require'] : [];
+        $releaseOptional = is_array($release['suggest'] ?? null) ? $release['suggest'] : [];
+        $releaseExtra = is_array($release['extra'] ?? null) ? $release['extra'] : [];
+        $releaseSimbioza = is_array($releaseExtra['simbioza'] ?? null) ? $releaseExtra['simbioza'] : [];
+        $releaseConstraints = is_array($releaseSimbioza['optional-modules'] ?? null)
+            ? $releaseSimbioza['optional-modules']
+            : [];
+        $selected = [];
+        foreach ($releaseOptional as $package => $_description) {
+            if (!is_string($package) || !isset($currentRequire[$package])) {
+                continue;
+            }
+            $constraint = $releaseConstraints[$package] ?? $currentRequire[$package];
+            if (is_string($constraint) && trim($constraint) !== '') {
+                $selected[$package] = $constraint;
+            }
+        }
+        ksort($selected, SORT_STRING);
+        $this->selectedOptionalRequirements = $selected;
+    }
+
+    /**
+     * HR: Nakon sinkronizacije vraća odabrane opcionalne pakete u produkcijski
+     *     dio manifesta prije Composer razrješenja novog izdanja.
+     * EN: After source synchronization, restores selected optional packages to
+     *     the production manifest before resolving the new release dependencies.
+     */
+    private function restoreSelectedOptionalRequirements(): void
+    {
+        if ($this->selectedOptionalRequirements === []) {
+            return;
+        }
+
+        $path = $this->appRoot . '/composer.json';
+        $manifest = json_decode((string)file_get_contents($path), true);
+        if (!is_array($manifest)) {
+            throw new RuntimeException('Updated Composer manifest is invalid.');
+        }
+        $require = is_array($manifest['require'] ?? null) ? $manifest['require'] : [];
+        foreach ($this->selectedOptionalRequirements as $package => $constraint) {
+            $require[$package] = $constraint;
+        }
+        ksort($require, SORT_STRING);
+        $manifest['require'] = $require;
+        $encoded = json_encode(
+            $manifest,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+        ) . "\n";
+        $temporary = $this->appRoot . '/.simbioza-update-composer-' . bin2hex(random_bytes(8));
+        if (file_put_contents($temporary, $encoded, LOCK_EX) === false || !rename($temporary, $path)) {
+            @unlink($temporary);
+            throw new RuntimeException('Selected optional modules could not be restored to composer.json.');
+        }
     }
 
     /**
@@ -558,6 +654,18 @@ final class ApplicationUpdateCommand
             }
 
             $target = $this->appRoot . '/' . $relativePath;
+            if (is_file($target) && !is_link($target)) {
+                $snapshotContents = file_get_contents($source);
+                $currentContents = file_get_contents($target);
+                if (is_string($snapshotContents) && hash_equals($snapshotContents, (string)$currentContents)) {
+                    continue;
+                }
+                if (!is_string($snapshotContents) || file_put_contents($target, $snapshotContents, LOCK_EX) === false) {
+                    throw new RuntimeException('Unable to restore runtime setting: ' . $relativePath);
+                }
+                continue;
+            }
+
             $targetDirectory = dirname($target);
             if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0770, true) && !is_dir($targetDirectory)) {
                 throw new RuntimeException('Unable to recreate runtime-settings directory: ' . $relativePath);
@@ -739,12 +847,12 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Nova ili izdanjem upravljana konfiguracijska datoteka bez zapamćenih
-     *     metapodataka mora naslijediti vlasnika i grupu konfiguracijskog direktorija.
-     *     Postojeće trajne postavke zadržavaju vlastite zatečene metapodatke.
-     * EN: A new or release-managed configuration file without captured metadata
-     *     must inherit the configuration directory owner and group. Existing
-     *     persistent settings keep their original metadata.
+     * HR: Nova konfiguracijska datoteka izdanja bez zapamćenih metapodataka ostaje
+     *     u vlasništvu deploy procesa i postaje čitljiva FPM procesu. Updater zato
+     *     ne treba privilegirani chown, dok trajne postavke zadržavaju svoja prava.
+     * EN: A new release configuration file without captured metadata remains owned
+     *     by the deploy process and is made readable by FPM. The updater therefore
+     *     needs no privileged chown while persistent settings keep their metadata.
      */
     private function normalizeReleaseConfigFileMetadata(): void
     {
@@ -752,8 +860,7 @@ final class ApplicationUpdateCommand
             return;
         }
 
-        $directoryMetadata = $this->preservedPathMetadata['config'] ?? null;
-        if (!is_array($directoryMetadata)) {
+        if (!isset($this->preservedPathMetadata['config'])) {
             return;
         }
 
@@ -763,35 +870,18 @@ final class ApplicationUpdateCommand
                 continue;
             }
 
-            $restored = true;
-            clearstatcache(true, $path);
-            $owner = @fileowner($path);
-            if (!is_int($owner)) {
-                $restored = false;
-            } elseif ($owner !== $directoryMetadata['uid']) {
-                $restored = @chown($path, $directoryMetadata['uid']);
-            }
-
-            clearstatcache(true, $path);
-            $group = @filegroup($path);
-            if (!is_int($group)) {
-                $restored = false;
-            } elseif ($group !== $directoryMetadata['gid']) {
-                $restored = @chgrp($path, $directoryMetadata['gid']) && $restored;
-            }
-
-            $restored = @chmod($path, 0640) && $restored;
-            if (!$restored) {
+            if (!@chmod($path, 0644)) {
                 throw new RuntimeException(sprintf(
                     $this->message('metadata_restore_failure'),
                     $relativePath,
                 ));
             }
 
+            clearstatcache(true, $path);
             $this->preservedPathMetadata[$relativePath] = [
-                'mode' => 0640,
-                'uid' => $directoryMetadata['uid'],
-                'gid' => $directoryMetadata['gid'],
+                'mode' => 0644,
+                'uid' => (int)@fileowner($path),
+                'gid' => (int)@filegroup($path),
             ];
         }
     }
@@ -859,7 +949,6 @@ final class ApplicationUpdateCommand
             $composer,
             'update',
             '--with-all-dependencies',
-            '--no-dev',
             '--no-install',
             '--no-interaction',
             '--no-progress',
@@ -881,7 +970,6 @@ final class ApplicationUpdateCommand
             $this->mustRunComposer([
                 $composer,
                 'install',
-                '--no-dev',
                 '--no-interaction',
                 '--no-progress',
                 '--prefer-dist',
@@ -931,7 +1019,6 @@ final class ApplicationUpdateCommand
         $this->mustRunComposer([
             $composer,
             'install',
-            '--no-dev',
             '--no-interaction',
             '--no-progress',
             '--prefer-dist',
@@ -946,7 +1033,7 @@ final class ApplicationUpdateCommand
             '--no-group',
             '--no-perms',
         ];
-        foreach (self::SOURCE_SYNC_EXCLUDES as $exclude) {
+        foreach ($this->sourceSyncExcludes() as $exclude) {
             $command[] = '--exclude=' . $exclude;
         }
         $command[] = rtrim($rollbackDirectory, '/') . '/';

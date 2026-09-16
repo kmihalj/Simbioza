@@ -38,6 +38,9 @@ use App\Installation\InstallationPaths;
 use App\Installation\InstallationRequirements;
 use App\Installation\InstallationRunner;
 use App\Installation\InstallationWebApplication;
+use App\Module\NativeProcessRunner;
+use App\Setup\SetupGateway;
+use App\Setup\SetupRequestStore;
 use HeartPhrame\App;
 use HeartPhrame\CodeBook\EnvKeyEnum;
 
@@ -87,6 +90,23 @@ if (!$installationPaths->isInstalled()) {
     $inputValidator = new InstallationInputValidator();
     $requirements = new InstallationRequirements($installationPaths);
     $logger = new InstallationLogger($installationPaths);
+    $setupConfiguration = require $hphAppPath . '/config/setup.php';
+    $setupRequestDirectory = is_array($setupConfiguration)
+        && is_string($setupConfiguration['request_dir'] ?? null)
+        ? $setupConfiguration['request_dir']
+        : $hphAppPath . '/data/setup-requests';
+    $setupHelper = is_array($setupConfiguration) && is_string($setupConfiguration['helper'] ?? null)
+        ? $setupConfiguration['helper']
+        : '/usr/local/sbin/simbioza-setup';
+    $directLocalSetup = getenv('SIMBIOZA_SETUP_DIRECT') === '1'
+        || (is_array($setupConfiguration) && ($setupConfiguration['direct_local_testing'] ?? false) === true);
+    $setupGateway = new SetupGateway(
+        new SetupRequestStore($setupRequestDirectory),
+        new NativeProcessRunner(),
+        $hphAppPath,
+        $setupHelper,
+        $directLocalSetup,
+    );
     $runner = new InstallationRunner(
         $installationPaths,
         $accessToken,
@@ -104,6 +124,7 @@ if (!$installationPaths->isInstalled()) {
         $inputValidator,
         $runner,
         $logger,
+        $setupGateway,
     );
     $method = is_string($_SERVER['REQUEST_METHOD'] ?? null) ? $_SERVER['REQUEST_METHOD'] : 'GET';
     $requestUri = is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '/';

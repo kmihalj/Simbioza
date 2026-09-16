@@ -2,6 +2,19 @@
 
 declare(strict_types=1);
 
+$languageRegistry = is_file(__DIR__ . '/languages.php') ? require __DIR__ . '/languages.php' : [];
+$languageLabels = [];
+foreach (is_array($languageRegistry) ? $languageRegistry : [] as $locale => $definition) {
+    if (!is_string($locale) || !is_array($definition)) {
+        continue;
+    }
+
+    $nativeName = $definition['native_name'] ?? null;
+    if (is_string($nativeName) && trim($nativeName) !== '') {
+        $languageLabels[strtolower($locale)] = trim($nativeName);
+    }
+}
+
 return [
     'enabled' => true,
     'brand' => [
@@ -30,9 +43,7 @@ return [
         'enabled' => true,
         'route' => 'menu.locale.switch',
         'session_key' => 'hfc_locale',
-        'labels' => [
-            'hr' => 'Hrvatski',
-            'en' => 'English',
-        ],
+        'labels' => $languageLabels !== [] ? $languageLabels : ['hr' => 'Hrvatski', 'en' => 'English'],
+        'flags_dir' => __DIR__ . '/../data/languages/flags',
     ],
 ];

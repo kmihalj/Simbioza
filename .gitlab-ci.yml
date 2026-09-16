@@ -12,6 +12,7 @@ stages:
   stage: test
   variables:
     XDEBUG_MODE: "coverage"
+    COMPOSER: "composer.ci.json"
     COMPOSER_AUTH: >
       {
         "gitlab-token": {
@@ -20,6 +21,7 @@ stages:
       }
   script:
     - echo "Running tests for PHP with image tag ${PHP_IMAGE_TAG}..."
+    - php scripts/build_ci_composer.php
     - composer update --with-all-dependencies --no-interaction --no-progress --no-ansi --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - composer on-commit
   coverage: '/^\s*Lines:\s*\d+.\d+\%/'
@@ -51,6 +53,7 @@ clean-install-sqlite:
   stage: test
   image: cicnavi/dap:08
   variables:
+    COMPOSER: "composer.ci.json"
     COMPOSER_AUTH: >
       {
         "gitlab-token": {
@@ -58,5 +61,6 @@ clean-install-sqlite:
         }
       }
   script:
+    - php scripts/build_ci_composer.php
     - composer update --with-all-dependencies --no-interaction --no-progress --no-ansi --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - composer clean-matrix

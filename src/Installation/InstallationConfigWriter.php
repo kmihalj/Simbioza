@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Module\ModuleCatalog;
 use Psr\Log\LogLevel;
 
 /**
@@ -17,7 +18,7 @@ final readonly class InstallationConfigWriter
 {
     private const SUPPORTED_DRIVERS = ['sqlite', 'mysql', 'pgsql'];
 
-    private const SUPPORTED_LOCALES = ['hr', 'en'];
+    private const SUPPORTED_LOCALES = ['hr', 'en', 'de'];
 
     /** HR: Inicijalizira konfiguracijske putanje. EN: Initializes configuration paths. */
     public function __construct(private InstallationPaths $paths)
@@ -50,6 +51,23 @@ final readonly class InstallationConfigWriter
         $this->atomicWritePhpConfig($this->paths->databaseConfig(), $databaseConfig);
         $this->atomicWritePhpConfig($this->paths->environmentConfig(), $environmentConfig);
         $this->atomicWritePhpConfig($this->paths->installationConfig(), $installationConfig);
+        $optionalModules = [];
+        $selectedModules = is_array($application['optional_modules'] ?? null)
+        ? $application['optional_modules']
+        : [];
+        foreach ($selectedModules as $module) {
+            if (is_string($module)) {
+                $optionalModules[] = $module;
+            }
+        }
+
+        $this->atomicWritePhpConfig(
+            $this->paths->configDirectory() . DIRECTORY_SEPARATOR . 'modules.php',
+            [
+                'enabled' => (new ModuleCatalog())->packagesForSelection($optionalModules),
+                'removed' => [],
+            ],
+        );
     }
 
     /**

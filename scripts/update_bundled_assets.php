@@ -12,6 +12,7 @@ use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
+use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
 use HeartPhrame\App;
 
@@ -37,6 +38,24 @@ try {
         'upload_dir' => $root . '/data/backups/uploads',
     ];
     file_put_contents($runtime . '/backup.php', "<?php return " . var_export($backup, true) . ";\n");
+    // HR: Backup se privremeno uključuje samo za upravljane pakete uputa; trajni odabir modula ostaje netaknut.
+    // EN: Backup is enabled temporarily only for managed guide packages; the persistent module selection stays intact.
+    $runtimeApp = require $root . '/config/app.php';
+    if (!is_array($runtimeApp)) {
+        throw new RuntimeException('The application configuration is invalid.');
+    }
+    $catalog = new ModuleCatalog();
+    $backupPackage = $catalog->definitionFor('backup')['package'];
+    $enabledModules = $runtimeApp['modules']['enabled'] ?? [];
+    if (!is_array($enabledModules)) {
+        throw new RuntimeException('The enabled-module configuration is invalid.');
+    }
+    $persistentlyEnabledModules = $enabledModules;
+    if (!in_array($backupPackage, $enabledModules, true)) {
+        $enabledModules[] = $backupPackage;
+    }
+    $runtimeApp['modules']['enabled'] = array_values(array_unique($enabledModules));
+    file_put_contents($runtime . '/app.php', "<?php return " . var_export($runtimeApp, true) . ";\n");
     $app = new App([$root . '/config', $runtime], $root);
     $app->loadCommands();
     $container = $app->getContainer();
@@ -78,22 +97,39 @@ try {
         $basePath = BundledAssetsUpdater::basePathFromGuideHtml($html);
     }
 
-    $themes = $container->get(ThemeConfigRepository::class);
+    $themePackage = $catalog->definitionFor('theme')['package'];
+    $themeEnabled = in_array($themePackage, $persistentlyEnabledModules, true);
+    $guideProviders = [
+        'calendar' => 'calendar-workspace',
+        'comment' => 'comment-workspace',
+        'confluence-import' => 'simbioza-confluence-import-workspace',
+        'task' => 'task-workspace',
+    ];
+    $skippedGuideProviders = [];
+    foreach ($guideProviders as $module => $provider) {
+        if (!in_array($catalog->definitionFor($module)['package'], $persistentlyEnabledModules, true)) {
+            $skippedGuideProviders[] = $provider;
+        }
+    }
+
+    $themes = $themeEnabled ? $container->get(ThemeConfigRepository::class) : null;
     $updater = new BundledAssetsUpdater(
         $database,
         $container->get(BackupManager::class),
         $repository,
         $themes,
-        new ThemeArchiveService($themes, new ThemeAssetLibrary($themes)),
+        $themes instanceof ThemeConfigRepository
+            ? new ThemeArchiveService($themes, new ThemeAssetLibrary($themes))
+            : null,
         $container->get(AuthUserService::class),
         $container->get(EditorHtmlConfig::class),
         $container->get(EditorHtmlDocumentFormatter::class),
     );
-    foreach ($updater->run($root, $basePath) as $action) {
+    foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
         echo $action . PHP_EOL;
     }
 } finally {
-    foreach (['bootstrap.php', 'backup.php'] as $name) {
+    foreach (['bootstrap.php', 'backup.php', 'app.php'] as $name) {
         if (is_file($runtime . '/' . $name)) {
             unlink($runtime . '/' . $name);
         }

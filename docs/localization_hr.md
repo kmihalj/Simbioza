@@ -108,3 +108,33 @@ Prijevodi modula učitavaju se automatski kada modul u svojem korijenu sadrži
 direktorij istog naziva kao konfigurirani direktorij prijevoda. Primjerice, uz
 postavku `'translations_dir' => __DIR__ . '/../lang'`, automatski se učitavaju
 prijevodi iz direktorija `lang` svakog modula.
+
+## Objedinjeni jezični paketi
+
+Za dodavanje novog jezika nije potrebno uređivati svaki modul. Simbioza može
+skupiti ključeve glavne aplikacije i svih ugrađenih modula u jedan JSON paket:
+
+```bash
+vendor/bin/hph languages list
+vendor/bin/hph languages template de --source=en --output=/tmp/de.json
+vendor/bin/hph languages validate /tmp/de.json
+vendor/bin/hph languages add /tmp/de.json
+```
+
+U JSON-u se prevode samo vrijednosti u objektu `translations`. Ne mijenjajte
+ključeve ni zamjenske oznake poput `:name`, `%s` ili `{{value}}`. `validate`
+uspoređuje sve ključeve i zamjenske oznake s izvornim jezikom. Nepotpun paket se
+odbija, osim ako je svjesno zadan `--allow-missing`; postojeći jezik se ne
+pregazuje bez `--replace`.
+
+`add` instalira jedan objedinjeni `lang/<jezik>.php` i dodaje jezik u privatnu
+instalacijsku konfiguraciju. Aplikacijska datoteka ima prednost pred
+pojedinačnim prijevodima modula, pa je paket odmah potpun i nakon toga module ne
+treba mijenjati. Novo izdanje ipak može dodati ključeve; tada ponovno izradite
+predložak, prenesite postojeće prijevode, prevedite nove vrijednosti, provjerite
+paket i instalirajte ga s `--replace`.
+
+Njemački `de` priložen je samo kao potpuni primjer paketa i ne dodaje se niti
+uključuje automatski. Ima jednak broj ključeva i očuvane zamjenske oznake.
+Prije produkcijske objave novoga prijevoda preporučena je završna jezična
+provjera izvornog govornika.

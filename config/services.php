@@ -2,9 +2,26 @@
 
 declare(strict_types=1);
 
+use AaiEduHr\HeartPhrameModuleMenu\Service\ComponentUpdateService;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use App\Controllers\SetupController;
+use App\Localization\LanguageCommand;
+use App\Localization\LanguagePackManager;
+use App\Module\ComposerPackageManager;
+use App\Module\ModuleCatalog;
+use App\Module\ModuleCommand;
+use App\Module\ModuleDataArchive;
+use App\Module\ModuleLifecycleManager;
+use App\Module\ModuleStateStore;
+use App\Module\NativeProcessRunner;
+use App\Module\ProcessRunnerInterface;
 use App\Performance\QueryLogWriter;
+use App\Setup\ApplicationUpdateStatusStore;
+use App\Setup\SetupDiagnostics;
+use App\Setup\SetupGateway;
+use App\Setup\SetupRequestStore;
 use App\Update\BundledUpgradeCommandManager;
+use HeartPhrame\Alert\AlertHandler;
 use HeartPhrame\Authn\ArrayAuthnHandler;
 use HeartPhrame\Authn\AuthnHandlerInterface;
 use HeartPhrame\Cache\Cache;
@@ -17,11 +34,14 @@ use HeartPhrame\Event\ListenerProvider;
 use HeartPhrame\Factory\CallableFactory;
 use HeartPhrame\Helper\Helper;
 use HeartPhrame\Http\Request;
+use HeartPhrame\Http\ResponseFactory;
 use HeartPhrame\Http\StreamFactory;
+use HeartPhrame\Localization\TranslatorInterface;
 use HeartPhrame\Logger\FileLogHandler;
 use HeartPhrame\Logger\Logger;
 use HeartPhrame\Module\ModuleBootstrapper;
 use HeartPhrame\Module\ModuleBootstrapperInterface;
+use HeartPhrame\Routing\UrlGenerator;
 use HeartPhrame\Session\PhpSessionFactory;
 use HeartPhrame\Session\SessionFactoryInterface;
 use HeartPhrame\Session\SessionInterface;
@@ -33,6 +53,189 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    LanguagePackManager::class => static function (ContainerInterface $container): LanguagePackManager {
+        $config = $container->get(ConfigInterface::class);
+        $catalog = $container->get(ModuleCatalog::class);
+        if (!$config instanceof ConfigInterface || !$catalog instanceof ModuleCatalog) {
+            throw new RuntimeException('Language-pack services are unavailable.');
+        }
+
+        return new LanguagePackManager($config->getAppRootDir(), $catalog);
+    },
+    LanguageCommand::class => static function (ContainerInterface $container): LanguageCommand {
+        $languages = $container->get(LanguagePackManager::class);
+        if (!$languages instanceof LanguagePackManager) {
+            throw new RuntimeException('The language-pack manager is unavailable.');
+        }
+
+        return new LanguageCommand($languages);
+    },
+    ModuleCatalog::class => static fn(): ModuleCatalog => new ModuleCatalog(),
+    ProcessRunnerInterface::class => static fn(): ProcessRunnerInterface => new NativeProcessRunner(),
+    ComposerPackageManager::class => static function (ContainerInterface $container): ComposerPackageManager {
+        $catalog = $container->get(ModuleCatalog::class);
+        $runner = $container->get(ProcessRunnerInterface::class);
+        $config = $container->get(ConfigInterface::class);
+        if (
+            !$catalog instanceof ModuleCatalog
+            || !$runner instanceof ProcessRunnerInterface
+            || !$config instanceof ConfigInterface
+        ) {
+            throw new RuntimeException('Composer package services are unavailable.');
+        }
+
+        return new ComposerPackageManager($catalog, $runner, $config->getAppRootDir());
+    },
+    SetupRequestStore::class => static function (ContainerInterface $container): SetupRequestStore {
+        $config = $container->get(ConfigInterface::class);
+        if (!$config instanceof ConfigInterface) {
+            throw new RuntimeException('Setup request configuration is unavailable.');
+        }
+
+        return new SetupRequestStore(
+            $config->getAsString('setup.request_dir', $config->getAppRootDir() . '/data/setup-requests')
+                ?? $config->getAppRootDir() . '/data/setup-requests',
+        );
+    },
+    SetupGateway::class => static function (ContainerInterface $container): SetupGateway {
+        $config = $container->get(ConfigInterface::class);
+        $requests = $container->get(SetupRequestStore::class);
+        $processes = $container->get(ProcessRunnerInterface::class);
+        if (
+            !$config instanceof ConfigInterface
+            || !$requests instanceof SetupRequestStore
+            || !$processes instanceof ProcessRunnerInterface
+        ) {
+            throw new RuntimeException('Setup gateway services are unavailable.');
+        }
+
+        return new SetupGateway(
+            $requests,
+            $processes,
+            $config->getAppRootDir(),
+            $config->getAsString('setup.helper', '/usr/local/sbin/simbioza-setup')
+                ?? '/usr/local/sbin/simbioza-setup',
+            getenv('SIMBIOZA_SETUP_DIRECT') === '1'
+                || ($config->getAsBoolean('setup.direct_local_testing', false) ?? false),
+        );
+    },
+    SetupDiagnostics::class => static function (ContainerInterface $container): SetupDiagnostics {
+        $config = $container->get(ConfigInterface::class);
+        $gateway = $container->get(SetupGateway::class);
+        if (!$config instanceof ConfigInterface || !$gateway instanceof SetupGateway) {
+            throw new RuntimeException('Setup diagnostics services are unavailable.');
+        }
+
+        return new SetupDiagnostics($config->getAppRootDir(), $gateway);
+    },
+    ApplicationUpdateStatusStore::class => static function (
+        ContainerInterface $container,
+    ): ApplicationUpdateStatusStore {
+        $config = $container->get(ConfigInterface::class);
+        if (!$config instanceof ConfigInterface) {
+            throw new RuntimeException('Application update status service is unavailable.');
+        }
+
+        return new ApplicationUpdateStatusStore($config->getAppRootDir());
+    },
+    ModuleStateStore::class => static function (ContainerInterface $container): ModuleStateStore {
+        $config = $container->get(ConfigInterface::class);
+        $catalog = $container->get(ModuleCatalog::class);
+        if (!$config instanceof ConfigInterface || !$catalog instanceof ModuleCatalog) {
+            throw new RuntimeException('Module-state services are unavailable.');
+        }
+
+        return new ModuleStateStore($config->getAppRootDir(), $catalog);
+    },
+    ModuleDataArchive::class => static function (ContainerInterface $container): ModuleDataArchive {
+        $database = $container->get(Database::class);
+        $config = $container->get(ConfigInterface::class);
+        if (!$database instanceof Database || !$config instanceof ConfigInterface) {
+            throw new RuntimeException('Module-archive services are unavailable.');
+        }
+
+        return new ModuleDataArchive($database, $config->getAppRootDir());
+    },
+    ModuleLifecycleManager::class => static function (ContainerInterface $container): ModuleLifecycleManager {
+        $database = $container->get(Database::class);
+        $catalog = $container->get(ModuleCatalog::class);
+        $state = $container->get(ModuleStateStore::class);
+        $archives = $container->get(ModuleDataArchive::class);
+        $config = $container->get(ConfigInterface::class);
+        $packages = $container->get(ComposerPackageManager::class);
+        if (
+            !$database instanceof Database
+            || !$catalog instanceof ModuleCatalog
+            || !$state instanceof ModuleStateStore
+            || !$archives instanceof ModuleDataArchive
+            || !$config instanceof ConfigInterface
+            || !$packages instanceof ComposerPackageManager
+        ) {
+            throw new RuntimeException('Module-lifecycle services are unavailable.');
+        }
+
+        return new ModuleLifecycleManager(
+            $database,
+            $catalog,
+            $state,
+            $archives,
+            $config->getAppRootDir(),
+            $packages,
+        );
+    },
+    ModuleCommand::class => static function (ContainerInterface $container): ModuleCommand {
+        $modules = $container->get(ModuleLifecycleManager::class);
+        if (!$modules instanceof ModuleLifecycleManager) {
+            throw new RuntimeException('The module lifecycle manager is unavailable.');
+        }
+
+        return new ModuleCommand($modules);
+    },
+    SetupController::class => static function (ContainerInterface $container): SetupController {
+        $responses = $container->get(ResponseFactory::class);
+        $modules = $container->get(ModuleLifecycleManager::class);
+        $catalog = $container->get(ModuleCatalog::class);
+        $diagnostics = $container->get(SetupDiagnostics::class);
+        $gateway = $container->get(SetupGateway::class);
+        $requests = $container->get(SetupRequestStore::class);
+        $languages = $container->get(LanguagePackManager::class);
+        $componentUpdates = $container->get(ComponentUpdateService::class);
+        $updates = $container->get(ApplicationUpdateStatusStore::class);
+        $alerts = $container->get(AlertHandler::class);
+        $urls = $container->get(UrlGenerator::class);
+        $translator = $container->get(TranslatorInterface::class);
+        if (
+            !$responses instanceof ResponseFactory
+            || !$modules instanceof ModuleLifecycleManager
+            || !$catalog instanceof ModuleCatalog
+            || !$diagnostics instanceof SetupDiagnostics
+            || !$gateway instanceof SetupGateway
+            || !$requests instanceof SetupRequestStore
+            || !$languages instanceof LanguagePackManager
+            || !$componentUpdates instanceof ComponentUpdateService
+            || !$updates instanceof ApplicationUpdateStatusStore
+            || !$alerts instanceof AlertHandler
+            || !$urls instanceof UrlGenerator
+            || !$translator instanceof TranslatorInterface
+        ) {
+            throw new RuntimeException('Setup controller services are unavailable.');
+        }
+
+        return new SetupController(
+            $responses,
+            $modules,
+            $catalog,
+            $diagnostics,
+            $gateway,
+            $requests,
+            $languages,
+            $componentUpdates,
+            $updates,
+            $alerts,
+            $urls,
+            $translator,
+        );
+    },
     // HR: I stariji updater nakon preuzimanja koda koristi novu CLI integraciju paketa.
     // EN: An older updater uses the new CLI bundle integration after downloading the code.
     CommandManager::class => static function (ContainerInterface $container): CommandManager {

@@ -152,6 +152,103 @@ test.describe('browser flows', () => {
     expect(stacking.receivesPointer).toBe(true);
   });
 
+  test('Setup checks releases and presents module versions in responsive rows', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.route('**/settings/check-updates/status', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          checked_at: 1789552800,
+          checked_at_iso: '2026-09-16T12:00:00+02:00',
+          failures: 0,
+          updates: 2,
+          components: [
+            {
+              package: 'aaieduhr/simbioza',
+              kind: 'application',
+              installed_version: '0.1.71',
+              latest_version: '9.9.9',
+              status: 'update_available',
+            },
+            {
+              package: 'aaieduhr/heartphrame-module-menu',
+              kind: 'module',
+              installed_version: '0.1.12',
+              latest_version: '0.1.13',
+              status: 'update_available',
+            },
+          ],
+        }),
+      });
+    });
+    const response = await page.goto('/settings/setup');
+
+    expect(response?.status()).toBe(200);
+    const moduleTable = page.locator('.setup-modules-grid[role="table"]');
+    await expect(moduleTable).toBeVisible();
+    await expect(moduleTable.getByRole('columnheader', { name: /^(Module|Modul)$/i })).toBeVisible();
+    await expect(moduleTable.getByRole('columnheader', { name: /^(Version|Verzija)$/i })).toBeVisible();
+    await expect(moduleTable.getByRole('columnheader', { name: /^(Actions|Radnje)$/i })).toBeVisible();
+    await expect.poll(() => moduleTable.locator('.setup-module-row').count()).toBeGreaterThan(5);
+    await expect(page.locator('[data-setup-application-update]')).toContainText('9.9.9');
+    const menuModule = moduleTable.locator('[data-component-package="aaieduhr/heartphrame-module-menu"]');
+    await expect(menuModule.locator('[data-component-installed-version]')).toHaveText('0.1.12');
+    await expect(menuModule.locator('[data-component-update-version]')).toContainText('0.1.13');
+
+    const stateButtons = moduleTable.getByRole('button', {
+      name: /^(Enable|Disable|Uključi|Isključi)$/i,
+    });
+    await expect.poll(() => stateButtons.count()).toBeGreaterThan(0);
+    await expect(stateButtons.first()).toHaveClass(/btn-sm/);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(moduleTable).toBeVisible();
+    const mobileModule = moduleTable.locator('.setup-module-row').filter({
+      has: page.getByRole('button', { name: /^(Enable|Disable|Uključi|Isključi)$/i }),
+    }).first();
+    await expect(mobileModule).toBeVisible();
+    const moduleLayout = await moduleTable.evaluate((grid) => {
+      const rectangle = grid.getBoundingClientRect();
+      const overflowingChildren = Array.from(grid.querySelectorAll('*')).filter((element) => {
+        const childRectangle = element.getBoundingClientRect();
+
+        return childRectangle.width > 0
+          && (childRectangle.left < rectangle.left - 1 || childRectangle.right > rectangle.right + 1);
+      });
+
+      return {
+        left: rectangle.left,
+        right: rectangle.right,
+        clientWidth: grid.clientWidth,
+        scrollWidth: grid.scrollWidth,
+        overflowingChildren: overflowingChildren.length,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(moduleLayout.left).toBeGreaterThanOrEqual(0);
+    expect(moduleLayout.right).toBeLessThanOrEqual(moduleLayout.viewportWidth);
+    expect(moduleLayout.scrollWidth).toBeLessThanOrEqual(moduleLayout.clientWidth);
+    expect(moduleLayout.overflowingChildren).toBe(0);
+    const mobileLayout = await mobileModule.evaluate((row) => {
+      const rectangle = row.getBoundingClientRect();
+      const actionCell = row.querySelector('.setup-module-actions')?.getBoundingClientRect();
+
+      return {
+        display: getComputedStyle(row).display,
+        left: rectangle.left,
+        right: rectangle.right,
+        actionRight: actionCell?.right ?? Number.POSITIVE_INFINITY,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(mobileLayout.display).toBe('block');
+    expect(mobileLayout.left).toBeGreaterThanOrEqual(0);
+    expect(mobileLayout.right).toBeLessThanOrEqual(mobileLayout.viewportWidth);
+    expect(mobileLayout.actionRight).toBeLessThanOrEqual(mobileLayout.viewportWidth);
+  });
+
   test('local administrator login immediately activates rights and they can be disabled', async ({ page }) => {
     await page.goto('/settings');
     await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsettings/);
@@ -307,7 +404,7 @@ test.describe('browser flows', () => {
     await expect(organizer.getByRole('button', {
       name: /Add item|Dodaj stavku/i,
       exact: true,
-    })).toHaveCount(0);
+    })).toHaveCount(1);
     await expect(rows.nth(0).locator('.workspace-tree-node-edit')).toHaveCount(0);
     await expect(rows.nth(1).locator('.workspace-tree-node-edit')).toHaveCount(1);
 
@@ -448,6 +545,67 @@ test.describe('browser flows', () => {
       await closeModal(dialog);
     }
 
+    // HR: Novi kompaktni prikaz privitka mora ostati poravnat na desktopu i
+    //     bez vodoravnog preljeva na mobilnom prikazu. Isti privitak zatim
+    //     provjeravamo u tabličnom pregledu objavljene stranice.
+    // EN: The compact attachment editor must stay aligned on desktop and free
+    //     of horizontal overflow on mobile. The same attachment is then checked
+    //     in the published page's tabular attachment view.
+    const attachmentName = 'e2e-attachment-layout.txt';
+    await page.locator('#editor-html-attachment').setInputFiles({
+      name: attachmentName,
+      mimeType: 'text/plain',
+      buffer: Buffer.from('Attachment layout fixture.\n', 'utf8'),
+    });
+    await page.locator('[data-editor-html-upload-form] button[type="submit"]').click();
+    const attachmentItem = page.locator('[data-editor-html-asset-item]').filter({
+      hasText: attachmentName,
+    });
+    await expect(attachmentItem).toBeVisible();
+    const desktopAttachmentLayout = await attachmentItem.evaluate((item) => {
+      const rectangle = item.getBoundingClientRect();
+      const metadata = item.querySelector('[data-editor-html-asset-metadata-form]')?.getBoundingClientRect();
+      const actions = item.querySelector('.editor-html-asset-actions')?.getBoundingClientRect();
+      const history = item.querySelector('[data-editor-html-asset-history]')?.getBoundingClientRect();
+
+      return {
+        height: rectangle.height,
+        metadataBottom: metadata?.bottom ?? Number.NEGATIVE_INFINITY,
+        actionsBottom: actions?.bottom ?? Number.POSITIVE_INFINITY,
+        historyRight: history?.right ?? Number.POSITIVE_INFINITY,
+        itemRight: rectangle.right,
+      };
+    });
+    expect(desktopAttachmentLayout.height).toBeLessThan(190);
+    expect(Math.abs(
+      desktopAttachmentLayout.metadataBottom - desktopAttachmentLayout.actionsBottom,
+    )).toBeLessThanOrEqual(3);
+    expect(desktopAttachmentLayout.historyRight).toBeLessThanOrEqual(desktopAttachmentLayout.itemRight);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileAttachmentLayout = await attachmentItem.evaluate((item) => {
+      const rectangle = item.getBoundingClientRect();
+
+      return {
+        left: rectangle.left,
+        right: rectangle.right,
+        clientWidth: item.clientWidth,
+        scrollWidth: item.scrollWidth,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(mobileAttachmentLayout.left).toBeGreaterThanOrEqual(0);
+    expect(mobileAttachmentLayout.right).toBeLessThanOrEqual(mobileAttachmentLayout.viewportWidth);
+    expect(mobileAttachmentLayout.scrollWidth).toBeLessThanOrEqual(mobileAttachmentLayout.clientWidth);
+    await page.setViewportSize({ width: 1280, height: 720 });
+
+    await page.locator('#editor-html-attachment-visibility').selectOption('public');
+    await submitFormAndExpectPost(
+      page,
+      page.getByRole('button', { name: 'Save visibility', exact: true }),
+      '/editor-html/attachment-visibility',
+    );
+
     await editorSurface.fill(firstPublishedBody);
     await submitFormAndExpectPost(
       page,
@@ -457,6 +615,14 @@ test.describe('browser flows', () => {
     await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`
       && url.searchParams.get('saved') === '1');
     await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
+
+    await page.goto(`/workspace/${workspaceSlug}/${pageSlug}?attachments=on`);
+    const attachmentTable = page.locator('.editor-html-view-attachment-table');
+    await expect(attachmentTable).toBeVisible();
+    for (const heading of ['File', 'Version', 'File type', 'Size', 'Uploaded by']) {
+      await expect(attachmentTable.getByRole('columnheader', { name: heading, exact: true })).toBeVisible();
+    }
+    await expect(attachmentTable.getByRole('link', { name: attachmentName })).toBeVisible();
 
     await page.getByRole('link', { name: 'Edit', exact: true }).click();
     await expect(editorSurface).toBeVisible();
@@ -1025,7 +1191,14 @@ test.describe('browser flows', () => {
         name: 'E2E Published Page Renamed',
         exact: true,
       })).toBeVisible();
+      /*
+       * HR: Čista instalacija uključuje samo hrvatski i engleski. Njemački
+       *     paket ostaje primjer koji administrator naknadno instalira.
+       * EN: A clean installation enables Croatian and English only. The
+       *     German pack remains an example installed later by an administrator.
+       */
       await expect(offlinePage.locator('[data-export-language] option')).toHaveCount(2);
+      await expect(offlinePage.locator('[data-export-language] option[value="de"]')).toHaveCount(0);
       const offlineLogo = offlinePage.locator('.hph-site-header__logo:visible');
       const offlineHeroVisual = offlinePage.locator('.hph-hero__visual img:visible');
       await expect(offlineLogo).toBeVisible();

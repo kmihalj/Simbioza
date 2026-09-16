@@ -7,14 +7,18 @@ namespace App\Update;
 use RuntimeException;
 
 /**
- * HR: Uvezeni javno posluživi sadržaj nasljeđuje vlasništvo svojega runtime spremišta.
- * EN: Imported web-served content inherits its runtime storage ownership.
+ * HR: Uvezeni javno posluživi sadržaj nasljeđuje runtime grupu, a root postupak
+ *     može uskladiti i vlasnika. Odvojeni deploy korisnik ne treba chown ovlasti.
+ * EN: Imported web-served content inherits the runtime group, while a root-run
+ *     process may also align the owner. A separate deploy user needs no chown privilege.
  */
 final class BundledAssetPermissions
 {
     /**
-     * HR: Mijenja samo vlasništvo provjerenih datoteka i njihovih roditelja; prava ostaju ista.
-     * EN: Changes only validated files' and parents' ownership; permission modes remain unchanged.
+     * HR: Usklađuje grupu provjerenih datoteka i roditelja. Vlasnika mijenja samo
+     *     root, pa sigurno radi i iz neprivilegiranog GUI updatera.
+     * EN: Aligns the group of validated files and parents. It changes ownership
+     *     only as root, so the unprivileged GUI updater remains safe.
      * @param list<string> $relativePaths
      */
     public static function inheritOwnership(string $storageRoot, array $relativePaths): bool
@@ -62,6 +66,8 @@ final class BundledAssetPermissions
             }
         }
 
+        $effectiveUserId = function_exists('posix_geteuid') ? posix_geteuid() : null;
+        $mayChangeOwner = $effectiveUserId === 0;
         $changed = false;
         foreach (array_keys($paths) as $path) {
             clearstatcache(true, $path);
@@ -70,7 +76,7 @@ final class BundledAssetPermissions
                 throw new RuntimeException('Unable to read bundled-asset ownership.');
             }
 
-            if ($current['uid'] !== $metadata['uid']) {
+            if ($mayChangeOwner && $current['uid'] !== $metadata['uid']) {
                 if (!@chown($path, $metadata['uid'])) {
                     throw new RuntimeException('Unable to inherit bundled-asset storage owner: ' . $path);
                 }

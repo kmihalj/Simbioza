@@ -112,3 +112,33 @@ For example, if the option is set to
 `'translations_dir' => __DIR__ . '/../lang'` like in the example above,
 translations from the `lang` directory of the module will be loaded
 automatically.
+
+## Consolidated language packs
+
+Adding a locale does not require editing every module. Simbioza can collect the
+application and every bundled module key into one JSON pack:
+
+```bash
+vendor/bin/hph languages list
+vendor/bin/hph languages template de --source=en --output=/tmp/de.json
+vendor/bin/hph languages validate /tmp/de.json
+vendor/bin/hph languages add /tmp/de.json
+```
+
+Translate only values inside the JSON `translations` object. Do not change keys
+or placeholders such as `:name`, `%s`, or `{{value}}`. `validate` compares all
+keys and placeholders with the source locale. An incomplete pack is rejected
+unless `--allow-missing` is deliberately supplied, and an existing locale is
+not overwritten without `--replace`.
+
+`add` installs one consolidated `lang/<locale>.php` file and enables the locale
+in the private installation configuration. The application-level file takes
+precedence over module translations, so the pack is complete immediately and
+the modules need no edits. A later release can add keys; create a new template,
+carry existing translations forward, translate the new values, validate it,
+and install it with `--replace`.
+
+The included German `de` locale is only a complete example pack and is not
+added or enabled automatically. It has the same key count and preserves
+placeholders. A native-language review is still recommended before publishing
+any new translation in production.

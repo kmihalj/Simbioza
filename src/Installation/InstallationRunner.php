@@ -17,6 +17,7 @@ use AaiEduHr\HeartPhrameModuleTheme\ModuleTheme;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
+use App\Module\ModuleCatalog;
 use HeartPhrame\App;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -91,17 +92,29 @@ final readonly class InstallationRunner
         $this->databaseTester->test($databaseInput);
         $application['base_path'] = rtrim($basePath, '/');
         $this->configWriter->write($databaseInput, $application);
+        $catalog = new ModuleCatalog();
+        $enabledPackages = $catalog->packagesForSelection($application['optional_modules']);
         [$config, $database] = $this->runtime();
-        $appliedMigrations = $this->migrate($database);
-        $this->prepareThemeStorage();
-        $themeId = $this->importTheme($config);
+        $appliedMigrations = $this->migrate($database, $enabledPackages);
+        $themePackage = $catalog->definitionFor('theme')['package'];
+        $themeId = '';
+        if (in_array($themePackage, $enabledPackages, true)) {
+            $this->prepareThemeStorage();
+            $themeId = $this->importTheme($config);
+        }
+
         $administratorId = $this->createAdministrator(
             $database,
             $config,
             $administrator,
             $application['timezone'],
         );
-        $workspaceSlug = $this->importUserGuides($database, $administratorId, $basePath);
+        $workspaceSlug = $this->importUserGuides(
+            $database,
+            $administratorId,
+            $basePath,
+            $enabledPackages,
+        );
         $this->writeLock($driver, $application, $themeId);
 
         $this->logger->info(sprintf(
@@ -142,9 +155,10 @@ final readonly class InstallationRunner
      * HR: Učitava i stvarno izvršava sve aplikacijske migracije preko ORM migratora.
      * EN: Loads and actually executes every application migration through the ORM migrator.
      *
+     * @param list<string> $enabledPackages
      * @return list<string>
      */
-    private function migrate(Database $database): array
+    private function migrate(Database $database, array $enabledPackages): array
     {
         $files = glob($this->paths->migrationsDirectory() . DIRECTORY_SEPARATOR . '*.php');
         if (!is_array($files) || $files === []) {
@@ -153,13 +167,23 @@ final readonly class InstallationRunner
 
         sort($files, SORT_STRING);
         $migrations = [];
+        $catalog = new ModuleCatalog();
         foreach ($files as $file) {
+            $migrationName = pathinfo($file, PATHINFO_FILENAME);
+            $owner = $catalog->slugForMigration($migrationName);
+            if ($owner !== null) {
+                $ownerPackage = $catalog->definitionFor($owner)['package'];
+                if (!in_array($ownerPackage, $enabledPackages, true)) {
+                    continue;
+                }
+            }
+
             $migration = require $file;
             if (!$migration instanceof MigrationInterface) {
                 throw new RuntimeException('An application migration has an invalid contract.');
             }
 
-            $migrations[pathinfo($file, PATHINFO_FILENAME)] = $migration;
+            $migrations[$migrationName] = $migration;
         }
 
         return array_values($database->migrator()->migrate($migrations));
@@ -228,7 +252,10 @@ final readonly class InstallationRunner
         }
     }
 
-    /** HR: Uklanja datoteke svih tema osim aktivne Simbioza teme. EN: Removes files for every theme except active Simbioza. */
+    /**
+     * HR: Uklanja datoteke svih tema osim aktivne Simbioza teme.
+     * EN: Removes files for every theme except active Simbioza.
+     */
     private function removeUnusedThemeDirectories(ThemeConfigRepository $repository, string $themeId): void
     {
         $directories = glob($repository->themesDirectoryPath() . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
@@ -245,11 +272,17 @@ final readonly class InstallationRunner
      * preslikava na upravo kreiranog administratora.
      * EN: Imports the public bilingual guide workspace and maps all source authors
      * to the newly created administrator.
+     *
+     * @param list<string> $enabledPackages
      */
-    private function importUserGuides(Database $database, int $administratorId, string $basePath): string
-    {
+    private function importUserGuides(
+        Database $database,
+        int $administratorId,
+        string $basePath,
+        array $enabledPackages,
+    ): string {
         try {
-            $runtimeConfig = $this->prepareImportConfig();
+            $runtimeConfig = $this->prepareImportConfig($enabledPackages);
             $application = new App(
                 [$this->paths->configDirectory(), $runtimeConfig],
                 $this->paths->appRoot(),
@@ -266,11 +299,12 @@ final readonly class InstallationRunner
                 throw new RuntimeException('The Backup manager is unavailable during installation.');
             }
 
+            $skippedProviders = $this->unavailableGuideProviders($enabledPackages);
             $context = new BackupImportContext(
                 new BackupScope(BackupScope::WORKSPACE, self::USER_GUIDES_WORKSPACE_SLUG),
                 BackupImportContext::CONFLICT_COPY,
                 [],
-                [],
+                $skippedProviders,
                 [
                     'workspace-scope' => [
                         'target_slug' => self::USER_GUIDES_WORKSPACE_SLUG,
@@ -296,6 +330,36 @@ final readonly class InstallationRunner
         } finally {
             $this->removeImportConfig();
         }
+    }
+
+    /**
+     * HR: Navodi komponente početnog paketa koje pripadaju neodabranim
+     *     opcionalnim modulima kako bi se njihov prazan ili pomoćni sadržaj
+     *     izričito preskočio, bez tihog djelomičnog uvoza.
+     * EN: Lists starter-package components owned by unselected optional modules
+     *     so their empty or auxiliary data is explicitly skipped instead of
+     *     being silently partially restored.
+     *
+     * @param list<string> $enabledPackages
+     * @return list<string>
+     */
+    private function unavailableGuideProviders(array $enabledPackages): array
+    {
+        $catalog = new ModuleCatalog();
+        $providers = [
+            'calendar' => 'calendar-workspace',
+            'comment' => 'comment-workspace',
+            'confluence-import' => 'simbioza-confluence-import-workspace',
+            'task' => 'task-workspace',
+        ];
+        $skipped = [];
+        foreach ($providers as $module => $provider) {
+            if (!in_array($catalog->definitionFor($module)['package'], $enabledPackages, true)) {
+                $skipped[] = $provider;
+            }
+        }
+
+        return $skipped;
     }
 
     /**
@@ -361,9 +425,11 @@ final readonly class InstallationRunner
     /**
      * HR: Gradi uski config sloj bez web bootstrapa i s temp-root backup putanjama.
      * EN: Builds a narrow no-web-bootstrap config layer with temp-root backup paths.
+     *
+     * @param list<string> $enabledPackages
      * @return non-empty-string
      */
-    private function prepareImportConfig(): string
+    private function prepareImportConfig(array $enabledPackages): string
     {
         $directory = $this->paths->importConfigDirectory();
         if ($directory === '') {
@@ -379,9 +445,17 @@ final readonly class InstallationRunner
             'staging_dir' => $this->paths->dataDirectory() . '/backups/staging',
             'upload_dir' => $this->paths->dataDirectory() . '/backups/uploads',
         ];
+        $backupPackage = (new ModuleCatalog())->definitionFor('backup')['package'];
+        if (!in_array($backupPackage, $enabledPackages, true)) {
+            $enabledPackages[] = $backupPackage;
+        }
+
         $files = [
             'bootstrap.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn [];\n",
             'backup.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($backup, true) . ";\n",
+            'app.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export([
+                'modules' => ['enabled' => array_values($enabledPackages)],
+            ], true) . ";\n",
         ];
         foreach ($files as $name => $contents) {
             if (file_put_contents($directory . '/' . $name, $contents, LOCK_EX) === false) {
@@ -392,11 +466,14 @@ final readonly class InstallationRunner
         return $directory;
     }
 
-    /** HR: Uklanja isključivo privremeni config sloj ovog instalera. EN: Removes only this installer's temporary config layer. */
+    /**
+     * HR: Uklanja isključivo privremeni config sloj ovog instalera.
+     * EN: Removes only this installer's temporary config layer.
+     */
     private function removeImportConfig(): void
     {
         $directory = $this->paths->importConfigDirectory();
-        foreach (['bootstrap.php', 'backup.php'] as $file) {
+        foreach (['bootstrap.php', 'backup.php', 'app.php'] as $file) {
             $path = $directory . '/' . $file;
             if (is_file($path)) {
                 unlink($path);
@@ -455,7 +532,13 @@ final readonly class InstallationRunner
      * HR: Atomski aktivira trajni lock nakon uklanjanja svake preostale kopije tokena.
      * EN: Atomically activates the permanent lock after removing any remaining token copy.
      *
-     * @param array{name:string,primary_locale:string,supported_locales:list<string>,timezone:string} $application
+     * @param array{
+     *     name:string,
+     *     primary_locale:string,
+     *     supported_locales:list<string>,
+     *     timezone:string,
+     *     optional_modules?:list<string>
+     * } $application
      */
     private function writeLock(string $driver, array $application, string $themeId): void
     {
@@ -465,6 +548,7 @@ final readonly class InstallationRunner
                 'database_driver' => $driver,
                 'primary_locale' => $application['primary_locale'],
                 'supported_locales' => $application['supported_locales'],
+                'optional_modules' => $application['optional_modules'] ?? [],
                 'theme_id' => $themeId,
             ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         } catch (JsonException $jsonException) {
@@ -481,7 +565,11 @@ final readonly class InstallationRunner
                 throw new RuntimeException('The installation lock could not be written.');
             }
 
-            if (!chmod($temporaryPath, 0600)) {
+            // HR: Lock ne sadrži tajne; Setup/CLI ga moraju moći pročitati
+            //     kroz isključivu runtime grupu radi čišćenja privremenih paketa.
+            // EN: The lock contains no secrets; Setup/CLI must be able to read
+            //     it through the exclusive runtime group to clean temporary packages.
+            if (!chmod($temporaryPath, 0640)) {
                 throw new RuntimeException('The installation lock permissions could not be secured.');
             }
 

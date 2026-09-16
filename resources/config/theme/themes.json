@@ -17,6 +17,7 @@
                 "enabled": true,
                 "sticky": true,
                 "container": "fluid",
+                "height_px": 72,
                 "items": [
                     {
                         "id": "aai-logo",
@@ -77,6 +78,7 @@
             "navigation": {
                 "placement": "standalone",
                 "container": "fluid",
+                "height_px": 56,
                 "breakpoint": "lg",
                 "tabs_style": "standard",
                 "tabs_accent_enabled": true,
@@ -409,6 +411,7 @@
                 "enabled": true,
                 "sticky": true,
                 "container": "fluid",
+                "height_px": 72,
                 "items": [
                     {
                         "id": "dabar-logo",
@@ -422,7 +425,7 @@
                             "hr": "Dabar",
                             "en": "Dabar"
                         },
-                        "height": 30,
+                        "height": 50,
                         "new_tab": true
                     },
                     {
@@ -469,6 +472,7 @@
             "navigation": {
                 "placement": "standalone",
                 "container": "fluid",
+                "height_px": 56,
                 "breakpoint": "lg",
                 "tabs_style": "standard",
                 "tabs_accent_enabled": true,
@@ -801,6 +805,7 @@
                 "enabled": true,
                 "sticky": true,
                 "container": "fluid",
+                "height_px": 72,
                 "items": [
                     {
                         "id": "header-1",
@@ -861,6 +866,7 @@
             "navigation": {
                 "placement": "standalone",
                 "container": "fluid",
+                "height_px": 56,
                 "breakpoint": "lg",
                 "tabs_style": "standard",
                 "tabs_accent_enabled": true,
@@ -1193,6 +1199,7 @@
                 "enabled": true,
                 "sticky": false,
                 "container": "wide",
+                "height_px": 72,
                 "items": [
                     {
                         "id": "header-1",
@@ -1253,6 +1260,7 @@
             "navigation": {
                 "placement": "hero",
                 "container": "wide",
+                "height_px": 56,
                 "breakpoint": "lg",
                 "tabs_style": "top-accent",
                 "tabs_accent_enabled": true,
@@ -1585,6 +1593,7 @@
                 "enabled": true,
                 "sticky": true,
                 "container": "fluid",
+                "height_px": 72,
                 "items": [
                     {
                         "id": "header-1",
@@ -1645,6 +1654,7 @@
             "navigation": {
                 "placement": "hero",
                 "container": "fluid",
+                "height_px": 56,
                 "breakpoint": "lg",
                 "tabs_style": "standard",
                 "tabs_accent_enabled": false,

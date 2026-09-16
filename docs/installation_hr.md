@@ -1,439 +1,493 @@
-# Instalacija Simbioze
+# Instalacija i održavanje Simbioze
 
 [English version](installation_en.md)
 
-Simbioza ima jednokratni web-čarobnjak za potpuno novu instalaciju. Čarobnjak
-se može otvoriti samo sigurnom adresom koju generira lokalna CLI naredba. Nakon
-uspješnih migracija, izrade prvog administratora te uvoza teme i javnih uputa nastaje trajni
-`data/installation.lock`; token se uklanja, a `/install` više nije dostupan.
+Simbioza se instalira iz označenog izdanja. Početni paket sadrži samo obveznu
+jezgru; opcionalni se moduli dodaju tijekom instalacije ili poslije nje. Modul
+**Tema** je preporučen i unaprijed označen, ali ga je moguće isključiti.
+
+Postoje dva podržana načina rada:
+
+- s namjenskim PHP-FPM poolom administrator iz GUI-ja može instalirati,
+  uklanjati, uključivati i isključivati module, dodavati jezike i nadograđivati
+  aplikaciju;
+- bez namjenskog FPM-a iste paketne radnje izvode se CLI-jem, dok GUI i dalje
+  može uključiti ili isključiti već instalirane module.
+
+Za svakodnevni rad i održavanje nije potreban `sudo`. Koristi se samo jednom za
+izradu izoliranih sistemskih računa, FPM servisa i strogo ograničenog helpera.
 
 ## 1. Preduvjeti
 
-- Linux, macOS ili drugo podržano PHP okruženje;
+- Linux ili macOS;
 - PHP 8.2 ili noviji;
-- Composer 2 i Git pristup repozitorijima paketa;
-- web-poslužitelj Apache 2.4 ili Nginx;
-- PHP-FPM kada web-poslužitelj ne izvršava PHP izravno;
+- Composer 2 i Git;
+- Apache 2.4 ili Nginx;
 - prazna SQLite, MySQL ili PostgreSQL baza;
 - HTTPS za svaku javno dostupnu instalaciju.
 
-Obvezne PHP ekstenzije su:
+Obvezne PHP ekstenzije:
 
 ```text
 ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip
 ```
 
-Treba biti uključena i točno odgovarajuća PDO ekstenzija: `pdo_sqlite`,
-`pdo_mysql` ili `pdo_pgsql`. Instalirane ekstenzije i Composerove zahtjeve
-provjerite ovako:
+Potrebna je i odgovarajuća PDO ekstenzija: `pdo_sqlite`, `pdo_mysql` ili
+`pdo_pgsql`. Provjera:
 
 ```bash
 php -v
 php -m
-composer check-platform-reqs --no-dev
+composer check-platform-reqs
 ```
 
-Službeni popis PHP ekstenzija nalazi se u
-[PHP priručniku](https://www.php.net/manual/en/extensions.alphabetical.php), a
-`mbstring` se ne podrazumijeva u svakoj PHP izgradnji.
+## 2. Dohvat označenog izdanja
 
-## 2. Dohvat aplikacije
-
-Za razvojnu kopiju, u kojoj se promjene prate Gitom, koristite:
+Na poslužitelj se kopiraju samo datoteke odabranog taga, bez trajnog `.git`
+direktorija. Zamijenite `0.1.72` stvarnim izdanjem koje instalirate:
 
 ```bash
-git clone https://github.com/kmihalj/Simbioza.git simbioza
-cd simbioza
-composer update --with-all-dependencies
-composer check-platform-reqs --no-dev
-```
-
-Na poslužitelju se preporučuje **release instalacija bez trajnog `.git`
-direktorija**. Označeno izdanje dohvatite u privremeni direktorij, a u
-aplikacijski direktorij kopirajte samo njegove datoteke. Primjer za izdanje
-`0.1.51`:
-
-```bash
-git clone --quiet --depth 1 --branch 0.1.51 --single-branch \
-  https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
+git clone --quiet --depth 1 --branch 0.1.72 --single-branch \
+https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
 cd /srv/simbioza
-composer update --with-all-dependencies --no-dev --optimize-autoloader
-composer check-platform-reqs --no-dev
+composer update --with-all-dependencies --optimize-autoloader
+composer check-platform-reqs
 ```
 
-Privremenu kopiju nakon provjere možete ukloniti. `.git` zato ne postoji u
-instaliranoj aplikaciji: nije izgubljen niti potreban za njezin rad. Instalacija
-čuva vlastiti `composer.lock`, kojim Composer pamti točno instalirana izdanja
-modula. Sljedeće nadogradnje obavlja samostalni `update.php`, opisan u 11.
-poglavlju, bez pretvaranja poslužitelja u razvojnu Git kopiju.
+Simbioza se objavljuje s tagiranim paketima. Ne koristite `--no-dev`: razvojne
+ovisnosti nisu dio produkcijskog manifesta, a razvojne kopije povezujemo samo u
+lokalnom razvojnom okruženju.
 
-Projekt koristi označeno izdanje Frameworka `^0.0.25` i kompatibilna izdanja
-internih modula iz linije `^0.1.0`; ne sprema `composer.lock`. Za ponovljivi
-produkcijski deployment organizacija može izraditi i zasebno pohraniti vlastiti
-provjereni lock, ali ga ne treba miješati s izvornim repozitorijem.
+Obvezna jezgra sadrži Framework, ORM, Menu, Auth, Notification, HTML Editor,
+Workspace, Workspace Search i Simbioza User. API, Task, Theme, Audit, E-mail,
+Comment, Calendar, Confluence Import i Backup instaliraju se samo kada ih
+odaberete ili naknadno dodate.
 
-## 3. Direktoriji i prava
+## 3. Document root i osnovna prava
 
-Document root smije biti isključivo `public/`; `config/`, `data/`, migracije i
-paket teme ne smiju biti izravno dostupni webom. PHP proces mora moći čitati
-cijeli projekt, a pisati samo tamo gdje je potrebno:
+Document root smije biti isključivo `public/`. `config/`, `data/`, migracije i
+paketi uputa ne smiju biti dostupni webom.
 
 ```bash
-mkdir -p data data/logs data/cache data/themes
-chmod 750 config data resources/config/theme resources/config/menu
-find data -type d -exec chmod 750 {} \;
-find data -type f -exec chmod 640 {} \;
+mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
+chmod 750 config data resources/config/menu resources/config/theme
 ```
 
-Vlasnika i grupu prilagodite korisniku PHP-FPM poola ili Apache procesa. Nemojte
-koristiti `chmod 777`. Installer sam zapisuje `config/database.php`,
-`config/env.php` i `config/installation.php` s pravima `0600`.
-Direktorij `resources/config/menu` mora biti zapisiv jer uvoz početnog područja
-s korisničkim uputama istodobno obnavlja njegovu posebnu konfiguraciju izbornika.
+Nemojte koristiti `chmod 777`. Namjenski alat iz 6. poglavlja postavlja točne
+vlasnike i prava. Ako ne koristite taj alat, proces koji izvršava PHP mora moći
+čitati aplikaciju i pisati u `data/`, dinamičke datoteke u `config/` te
+`resources/config/menu/` i `resources/config/theme/`.
 
-Naziv procesnog korisnika nije dio Simbioze: na Debian/Ubuntu sustavu često je
-`www-data`, na Fedori može biti `apache`, a na macOS-u `_www` ili korisnik
-lokalnog PHP procesa. Dodijelite prava stvarnom korisniku odabranog PHP-FPM
-poola ili web-poslužitelja. Na Windowsu se umjesto `chown`/`chmod` naredbi kroz
-NTFS ACL dodjeljuje pravo **Modify** samo servisnom računu PHP/IIS procesa i samo
-nad navedenim zapisivim direktorijima. Installer ne pokušava pogađati niti
-mijenjati procesnog korisnika ili Windows ACL.
+## 4. Apache
 
-## 4. Apache 2.4
-
-Najjednostavniji VirtualHost koristi `public/` kao korijen i dopušta samo
-projektni `.htaccess` s rewrite pravilima:
+Minimalni VirtualHost:
 
 ```apache
 <VirtualHost *:443>
-    ServerName simbioza.example.org
-    DocumentRoot /srv/simbioza/public
+ServerName simbioza.example.org
+DocumentRoot /srv/simbioza/public
 
-    <Directory /srv/simbioza/public>
-        Options -Indexes +FollowSymLinks
-        AllowOverride FileInfo Options
-        Require all granted
-    </Directory>
+<Directory /srv/simbioza/public>
+Options -Indexes +FollowSymLinks
+AllowOverride FileInfo Options
+Require all granted
+</Directory>
 
-    SSLEngine on
-    # Ovdje dodajte certifikat i privatni ključ svoje organizacije.
+<FilesMatch ".+\.php$">
+SetHandler "proxy:fcgi://127.0.0.1:9075"
+</FilesMatch>
+
+SSLEngine on
+# Ovdje postavite certifikat i privatni ključ organizacije.
 </VirtualHost>
 ```
 
-Uključite `mod_rewrite`, HTTPS modul i odgovarajući PHP/PHP-FPM spoj. Apacheova
-[dokumentacija za mod_rewrite](https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html)
-objašnjava zašto `AllowOverride` mora dopustiti `FileInfo`. Još je sigurnije
-rewrite pravila iz `public/.htaccess` premjestiti u VirtualHost i tada postaviti
-`AllowOverride None`.
+Uključite `rewrite`, `proxy`, `proxy_fcgi`, TLS i odgovarajuću FastCGI
+konfiguraciju. Port `9075` sluša samo na `127.0.0.1` i ne smije biti dostupan
+iz mreže.
 
-## 5. Nginx i PHP-FPM
-
-Primjer za Unix socket PHP-FPM poola:
+## 5. Nginx
 
 ```nginx
 server {
-    listen 443 ssl http2;
-    server_name simbioza.example.org;
-    root /srv/simbioza/public;
-    index index.php;
+listen 443 ssl http2;
+server_name simbioza.example.org;
+root /srv/simbioza/public;
+index index.php;
 
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
+location / {
+try_files $uri $uri/ /index.php?$query_string;
+}
 
-    location ~ \.php$ {
-        try_files $uri =404;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_pass unix:/run/php/php-fpm-simbioza.sock;
-    }
+location ~ \.php$ {
+try_files $uri =404;
+include fastcgi_params;
+fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+fastcgi_pass 127.0.0.1:9075;
+}
 
-    location ~ /\. {
-        deny all;
-    }
+location ~ /\. {
+deny all;
+}
 }
 ```
 
-Nginx dokumentira `try_files` u
-[core modulu](https://nginx.org/en/docs/http/ngx_http_core_module.html), a
-`SCRIPT_FILENAME` i ostale FastCGI parametre u
-[FastCGI modulu](https://nginx.org/en/docs/http/ngx_http_fastcgi_module.html).
-PHP-FPM pool mora slušati na privatnom socketu ili ograničenom lokalnom TCP
-portu; javno dostupan FPM port je sigurnosna pogreška. Smjernice za `listen`,
-vlasnika socketa, procesni model i logove nalaze se u
-[službenom PHP-FPM priručniku](https://www.php.net/manual/en/install.fpm.configuration.php).
+## 6. Preporučeni namjenski FPM i siguran GUI Setup
 
-## 6. Priprema prazne baze
+Na Debianu najprije instalirajte PHP-FPM verziju koja odgovara CLI PHP-u i paket
+`acl`, potreban za odvojeno pravo čitanja privatnog SAML configa. Zatim
+jednom, iz release direktorija, pokrenite:
 
-Installer odbija bazu koja već sadrži korisničke tablice. Za svaki pokušaj
-koristite novu praznu bazu i zasebnog aplikacijskog korisnika bez globalnih ili
-administratorskih ovlasti.
+```bash
+cd /srv/simbioza
+sudo php scripts/configure_fpm_setup.php \
+--install \
+--app-root=/srv/simbioza \
+--maintainer=KORISNIK
+```
 
-### SQLite
+Alat izrađuje zaključane račune `fpm-simbioza` i `simbioza-deploy` te odvojene
+grupe `app-simbioza`, `deploy-simbioza` i `run-simbioza`. Održavatelja dodaje
+u deploy i runtime grupu. Web proces nema pravo mijenjati cijeli kod.
+Na Linuxu se pool izvršava u zasebnom systemd servisu s `ProtectSystem=strict`,
+read-only prikazom aplikacijskog koda i upisom samo u dokumentirane runtime
+putanje. Ograničeni root-owned helper prihvaća samo nasumični ID unaprijed
+provjerenog zahtjeva. Na Linuxu zatim preko systemd-a pokreće zaseban,
+neprivilegirani `simbioza-deploy` worker s ponovno uključenim
+`NoNewPrivileges`; web proces ne dobiva opću root ljusku ni izravan pristup
+Composeru.
 
-Nije potrebna poslužiteljska priprema. Installer stvara
-`data/simbioza.sqlite`; PHP proces mora moći pisati u `data/`. SQLite je dobar
-za razvoj i manje instalacije na jednom poslužitelju, ali prije opterećenog
-produkcijskog korištenja izmjerite stvarnu konkurentnost pisanja.
+Provjera ne mijenja sustav:
 
-### MySQL
+```bash
+php scripts/configure_fpm_setup.php \
+--check \
+--app-root=/srv/simbioza \
+--maintainer=KORISNIK
+```
 
-Prijavite se kao ovlašteni administrator baze, zatim izradite praznu bazu i
-ograničenog korisnika. Lozinku unesite sigurnim mehanizmom svoje organizacije i
-nemojte je spremati u shell history:
+Nakon dovršetka web instalera jednom učvrstite nova runtime prava:
+
+```bash
+sudo php scripts/configure_fpm_setup.php \
+--finalize \
+--app-root=/srv/simbioza \
+--maintainer=KORISNIK
+```
+
+Odjavite se i ponovno prijavite kako bi novo članstvo u grupama vrijedilo u
+shellu. Nakon toga CLI, GUI Setup i nadogradnje rade bez `sudo`.
+
+### 6.1. SAML autentikacija i FPM postavke
+
+Ako instalacija koristi SimpleSAMLphp, aplikacija i njezin SimpleSAMLphp
+endpoint moraju prolaziti kroz **isti** namjenski FPM pool. Nije dovoljno samo
+prebaciti Simbiozu na FPM, a postojeći zajednički `/simplesaml` ostaviti na
+drugom PHP handleru: kod `store.type = phpsession` tada se prijava i povratni
+poziv ne služe istom pohranom sesija.
+
+Koristi se zajednički instalirani SimpleSAMLphp kod, ali svaka Simbioza ima
+vlastite postavke i runtime. Pripremite primjerice:
+
+```text
+/srv/simbioza/data/saml/config/config.php
+/srv/simbioza/data/saml/config/authsources.php
+/srv/simbioza/data/saml/cert/
+/srv/simbioza/data/saml-runtime/cache/
+/srv/simbioza/data/saml-runtime/data/
+/srv/simbioza/data/sessions/
+```
+
+Privatni `config.php` mora imati vlastite `secretsalt`, `assets.salt`,
+administratorsku lozinku, cookie nazive i putanju. Ne kopirajte zajedničke
+saltove, administratorsku lozinku ni SP privatne ključeve. Za instalaciju na
+`/simbioza/` bitne postavke izgledaju ovako:
+
+```php
+'baseurlpath' => 'https://simbioza.example.org/simbioza/simplesaml/',
+'cachedir' => '/srv/simbioza/data/saml-runtime/cache',
+'datadir' => '/srv/simbioza/data/saml-runtime/data',
+'certdir' => '/srv/simbioza/data/saml/cert',
+'metadatadir' => '/usr/share/simplesamlphp-aai/metadata',
+'store.type' => 'phpsession',
+'session.phpsession.savepath' => '/srv/simbioza/data/sessions',
+'session.phpsession.cookiename' => 'SimpleSAMLSimbioza',
+'session.cookie.name' => 'SimpleSAMLSimbiozaStore',
+'session.cookie.path' => '/simbioza/',
+```
+
+Zatim pri početnom podešavanju i završnom učvršćivanju navedite privatni
+direktorij. Alat ga provjerava, postavlja samo za Simbiozin pool i ostavlja
+config zapisivim deploy korisniku, a FPM-u samo čitljivim:
+
+```bash
+sudo php scripts/configure_fpm_setup.php \
+--install \
+--app-root=/srv/simbioza \
+--maintainer=KORISNIK \
+--simplesaml-config-dir=/srv/simbioza/data/saml/config
+
+sudo php scripts/configure_fpm_setup.php \
+--finalize \
+--app-root=/srv/simbioza \
+--maintainer=KORISNIK \
+--simplesaml-config-dir=/srv/simbioza/data/saml/config
+```
+
+Na Apacheu aplikacijski SAML PHP endpoint usmjerite na isti `127.0.0.1:9075`
+pool, prije općenitih PHP pravila:
+
+```apache
+ProxyPassMatch "^/simbioza/simplesaml/(.+?[.]php)(/.*)?$" \
+"fcgi://127.0.0.1:9075/usr/share/simplesamlphp-aai/public/$1$2"
+Alias /simbioza/simplesaml "/usr/share/simplesamlphp-aai/public/"
+
+<Directory "/usr/share/simplesamlphp-aai/public">
+Options -Indexes
+AllowOverride None
+Require all granted
+</Directory>
+```
+
+U AAI/proxy registru moraju biti registrirani novi aplikacijski EntityID, ACS
+i SLO URL-ovi ispod `/simbioza/simplesaml/`. Na postojećoj instalaciji stari
+endpoint ostavite aktivnim dok novi retci nisu uneseni i propagirani; tek tada
+prebacite prijavu i napravite cijeli preglednički test prijave i odjave. Sam
+`auth_source` može ostati `default-sp`, a aplikacija i dalje učitava autoloader
+zajedničkog SimpleSAMLphp paketa.
+
+Za AAI izvor `default-sp` registrirajte sljedeće nove vrijednosti (domenu i
+osnovnu putanju zamijenite stvarnom instalacijom):
+
+| Polje | Nova vrijednost |
+|---|---|
+| **EntityID** | `https://simbioza.example.org/simbioza/simplesaml/module.php/saml/sp/metadata.php/default-sp` |
+| **AssertionConsumerService URL** | `https://simbioza.example.org/simbioza/simplesaml/module.php/saml/sp/saml2-acs.php/default-sp` |
+| **SingleLogoutService URL** | `https://simbioza.example.org/simbioza/simplesaml/module.php/saml/sp/saml2-logout.php/default-sp` |
+
+Ako koristite i `proxy-sp`, registrirajte isti skup URL-ova sa završetkom
+`/proxy-sp` umjesto `/default-sp`. Odgovarajući `authsources.php` mora sadržavati
+isti EntityID koji je registriran za taj izvor. Promjena PHP handlera bez ove
+registracije prekida povratak s IdP-a i odjavu, iako se početna stranica
+Simbioze može normalno otvoriti.
+
+## 7. Instalacija bez namjenskog FPM-a
+
+Web-installer ne pokreće Composer iz običnog web procesa. Prije otvaranja
+čarobnjaka CLI-jem pripremite pakete koje želite odabrati. Bez argumenta se
+priprema preporučeni Theme:
+
+```bash
+php scripts/installation_packages.php prepare
+```
+
+Za vlastiti izbor:
+
+```bash
+php scripts/installation_packages.php prepare \
+--modules=theme,calendar,email
+```
+
+Nakon uspješne web instalacije uklonite samo privremeni Backup paket koji je
+bio potreban za uvoz ugrađenih uputa:
+
+```bash
+php scripts/installation_packages.php cleanup
+```
+
+Ako je Backup bio izričito odabran, ostaje instaliran.
+
+## 8. Prazna baza
+
+SQLite ne traži poslužitelj; installer stvara `data/simbioza.sqlite`. Za MySQL
+ili PostgreSQL napravite praznu bazu i zasebnog aplikacijskog korisnika bez
+globalnih administratorskih ovlasti.
+
+Primjer MySQL-a:
 
 ```sql
 CREATE DATABASE simbioza CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'simbioza'@'127.0.0.1' IDENTIFIED BY '<sigurna-jedinstvena-lozinka>';
+CREATE USER 'simbioza'@'127.0.0.1' IDENTIFIED BY '<sigurna-lozinka>';
 GRANT ALL PRIVILEGES ON simbioza.* TO 'simbioza'@'127.0.0.1';
 ```
 
-Službene reference su MySQL
-[CREATE USER](https://dev.mysql.com/doc/refman/8.4/en/create-user.html) i
-[GRANT](https://dev.mysql.com/doc/refman/9.1/en/grant.html). Aplikacija se ne
-smije spajati kao `root`.
-
-### PostgreSQL
-
-Koristite ulogu bez superuser, `CREATEDB`, `CREATEROLE`, replikacijskih ili
-bypass-RLS ovlasti:
+Primjer PostgreSQL-a:
 
 ```bash
 createuser --pwprompt --no-superuser --no-createdb --no-createrole simbioza
 createdb --owner=simbioza --encoding=UTF8 simbioza
 ```
 
-Službene naredbe opisane su u PostgreSQL dokumentaciji za
-[`createuser`](https://www.postgresql.org/docs/current/app-createuser.html) i
-[`createdb`](https://www.postgresql.org/docs/current/app-createdb.html).
+## 9. Web-installer
 
-## 7. Pokretanje jednokratnog instalera
-
-Iz korijena aplikacije pokrenite:
+Izradite jednokratnu adresu:
 
 ```bash
-bin/simbioza install:prepare --base-url=https://simbioza.example.org
+bin/simbioza install:prepare \
+--base-url=https://simbioza.example.org
 ```
 
-Vrijednost `--base-url` javna je osnovna URL adresa na kojoj će aplikacija biti
-dostupna u pregledniku. Ako je Simbioza postavljena u poddirektorij, u adresu
-obvezno uključite i taj poddirektorij:
+Za instalaciju u poddirektoriju uključite ga u osnovnu adresu:
 
 ```bash
-# Aplikacija u korijenu domene
-bin/simbioza install:prepare --base-url=https://simbioza.example.org
-
-# Aplikacija u poddirektoriju /simbioza
-bin/simbioza install:prepare --base-url=https://simbioza.example.org/simbioza
+bin/simbioza install:prepare \
+--base-url=https://simbioza.example.org/simbioza
 ```
 
-Ne unosite putanju na datotečnom sustavu, završni `/public`, `/install`, token
-ni query parametre. CLI će na osnovnu adresu sam dodati `/install?token=...`.
+Adresu s tokenom otvorite u privatnom prozoru i nemojte je slati e-poštom,
+chatom ili screenshotom. Token se troši pri prvom valjanom otvaranju.
 
-CLI ispisuje jednu adresu s 256-bitnim tokenom. Kopirajte je izravno u privatni
-prozor preglednika. Ne šaljite je e-poštom, chatom, ticketom ili screenshotom.
-Nakon prvog valjanog otvaranja token se troši, session ID rotira, a preglednik
-se preusmjerava na čisti `/install` bez tajne u adresnoj traci. Ako se sesija
-izgubi prije završetka, lokalno ponovno pokrenite istu CLI naredbu.
+Čarobnjak vodi kroz:
 
-![HR provjera preduvjeta](installation-screenshots/simbioza_hr_SQLite/01-requirements.png)
+1. provjeru PHP-a, ekstenzija, putanja i paketa;
+2. spajanje na praznu bazu;
+3. naziv aplikacije, jezike, vremensku zonu i prvog administratora;
+4. odabir opcionalnih modula;
+5. pregled bez prikaza lozinki i stvarnu instalaciju.
 
-## 8. Koraci web-čarobnjaka
+Theme je preporučen i unaprijed označen. Ako ga ostavite označenim, uvozi se i
+aktivira ugrađena tema Simbioza. Uvijek se uvozi dvojezično područje
+**Korisničke upute**; stranice opcionalnih modula uvoze se samo kada je njihov
+modul dostupan.
 
-### Korak 1 — preduvjeti
+## 10. Setup nakon prijave
 
-Čarobnjak provjerava PHP verziju, sve osnovne ekstenzije, tri PDO drivera,
-Composer autoloader, migracije, paket teme, paket javnih uputa te čitanje i pisanje u potrebne
-direktorije. Crvena obvezna stavka mora se ispraviti prije nastavka. Driveri
-baza postaju obvezni tek nakon odabira baze.
+Administrator otvara **Postavke → Setup i moduli**. Dijagnostika prikazuje
+stvarni FPM način, dostupnost helpera, vlasnika, grupu i prava svake bitne
+putanje.
 
-### Korak 2 — baza
+Ako su sve FPM provjere zelene, GUI omogućava:
 
-Odaberite SQLite, MySQL ili PostgreSQL. Za mrežne baze unesite host, port, naziv
-prazne baze, aplikacijskog korisnika i lozinku. Lozinka se nikada ne vraća u
-HTML niti prikazuje u završnom pregledu. Nastavak je moguć tek nakon stvarnog
-PDO spajanja, `SELECT 1` provjere i potvrde da baza nema tablice.
+- instalaciju i deinstalaciju opcionalnog modula;
+- uključivanje i isključivanje instaliranog modula;
+- povrat podataka iz NDJSON kopije ili čistu ponovnu instalaciju;
+- dodavanje provjerenog JSON jezičnog paketa;
+- provjeru i pokretanje nadogradnje cijele aplikacije.
 
-![HR SQLite odabir](installation-screenshots/simbioza_hr_SQLite/02-database.png)
-![HR MySQL odabir](installation-screenshots/simbioza_hr_MySQL/02-database.png)
-![HR PostgreSQL odabir](installation-screenshots/simbioza_hr_PGSQL/02-database.png)
+Bez namjenskog FPM-a GUI nudi samo sigurne promjene stanja postojećih modula i
+prikazuje točnu CLI naredbu za svaku nedostupnu paketnu radnju.
 
-### Korak 3 — aplikacija i administrator
-
-Unesite naziv aplikacije, primarni jezik, dostupne jezike i PHP vremensku zonu.
-Zatim unesite login, prikazno ime, ime, prezime, e-mail i jedinstvenu lozinku
-prvog administratora. Lozinka mora imati 12–128 znakova i najmanje tri skupine
-znakova te ne smije sadržavati login ili početak e-mail adrese. Polja lozinke
-nisu prepunjena pri povratku na korak.
-
-![HR aplikacija i administrator](installation-screenshots/simbioza_hr_SQLite/03-application.png)
-
-### Korak 4 — pregled i stvarna instalacija
-
-Pregled namjerno ne prikazuje ni lozinku baze ni administratorsku lozinku.
-Klikom na **Instaliraj Simbiozu** sustav ponovno provjerava preduvjete i vezu,
-atomski zapisuje privatnu konfiguraciju, izvršava sve aplikacijske migracije,
-uvozi `resources/installation/theme/simbioza.zip`, provjerava svijetlu i tamnu
-paletu i grafičke datoteke, aktivira način `auto`, transakcijski stvara prvog
-administratora te iz `resources/installation/workspace/korisnicke-upute.zip`
-uvozi javno dvojezično područje **Korisničke upute**. Tek tada zapisuje lock.
-
-![HR završni pregled](installation-screenshots/simbioza_hr_SQLite/04-review.png)
-
-### Korak 5 — potvrda i prijava
-
-Potvrda sadrži naziv aplikacije, login oznaku i poveznicu na `/auth/login`.
-Ponovno otvaranje instalacijske adrese nakon toga ne pokreće installer.
-
-![HR uspješna instalacija](installation-screenshots/simbioza_hr_SQLite/05-success.png)
-
-## 9. Tema Simbioza
-
-Instalacijski paket teme već se nalazi u repozitoriju Simbioza na putanji
-`resources/installation/theme/simbioza.zip`. Tijekom instalacije čarobnjak ga
-automatski provjerava, uvozi kroz Theme servis i postavlja kao zadanu temu u
-načinu `auto`; korisnik ne treba izvoziti ni ručno učitavati temu. Paket sadrži
-`theme.json`, checksummed `manifest.json`, svijetlu i tamnu grafiku te cijelu
-biblioteku teme. Nakon prve prijave otvorite **Postavke → Tema** i provjerite
-svijetli, tamni i automatski prikaz.
-
-## 10. Prvi koraci nakon instalacije
-
-Čista instalacija namjerno sadrži samo jedan administratorski račun, jednu
-aktivnu temu **Simbioza** i jedno javno područje **Korisničke upute**. U području
-se nalazi sedam hrvatsko-engleskih stranica u redoslijedu Simbioza, Instalacija,
-Prijava i korisnici, Kalendari, Područja (s podstranicom Confluence import) i
-Uređivanje stranica. Nema oglednih kalendara, zadataka, dodatnih tema ni drugog
-sadržaja.
-
-1. Prijavite se novim administratorskim računom.
-2. Provjerite naziv aplikacije, jezike i vremensku zonu.
-3. Provjerite temu i obje varijante prikaza.
-4. Podesite SMTP bez spremanja lozinke u Git.
-5. Izradite početne grupe, prava i područja.
-6. Konfigurirajte sigurnosni backup baze, `config/` tajni, `data/themes` i uploadova.
-7. Pokrenite potrebne outbox/webhook workere kroz upravitelj procesa.
-8. Nadzirite aplikacijski i `data/logs/installer.log` bez izlaganja webom.
-
-## 11. Nadogradnja release instalacije
-
-Početna stranica **Postavke** prikazuje lokalno instalirane verzije Simbioze,
-frameworka i svih modula. Gumb **Provjeri ažuriranja** uspoređuje ih sa stabilnim tagovima u
-javnim repozitorijima i ne traži token. Ta je provjera informativna i ne mijenja
-instalaciju; stvarnu nadogradnju i dalje izvodi provjereni CLI updater.
-
-U korijenu aplikacije pokrenite provjeru dostupnog izdanja, a zatim nadogradnju:
+## 11. CLI za module
 
 ```bash
-cd /srv/simbioza
-sudo php update.php --check
-sudo php update.php
+vendor/bin/hph modules list
+vendor/bin/hph modules add calendar --fresh
+vendor/bin/hph modules disable calendar
+vendor/bin/hph modules enable calendar
+vendor/bin/hph modules remove calendar --yes
+vendor/bin/hph modules backups calendar
+vendor/bin/hph modules add calendar --restore
 ```
 
-`sudo` je potreban samo kada korisnik koji pokreće naredbu nema pravo pisanja u
-aplikacijski direktorij. Ne morate unaprijed znati zadnji tag: updater pronalazi
-najnovije stabilno izdanje Simbioze, preuzima ga u privremeni direktorij i
-Composerom odabire najnovije kompatibilne tagove svih modula. Za namjerno
-zadržavanje na određenom izdanju može se zadati, primjerice,
-`sudo php update.php --tag=0.1.51`.
+`disable` ostavlja tablice i podatke. `remove` najprije izrađuje NDJSON kopiju u
+`data/module-backups/`, zatim uklanja migracije, tablice i Composer paket. Pri
+ponovnom dodavanju odaberite `--restore` ili `--fresh`. Obvezni modul nije
+moguće ukloniti, a ovisnosti se provjeravaju prije svake promjene.
 
-Svako izdanje u datoteci `VERSION` nosi istu stabilnu semantičku verziju kao
-njegov Git tag. CI odbija tag čiji se naziv i `VERSION` ne podudaraju, pa updater
-ne može prihvatiti izdanje s neispravnim metapodacima.
+Confluence Import nije potreban za normalan prikaz već uvezenih stranica.
+Uklanjanje se ipak zaustavlja ako neka verzija sadržaja još sadrži privremenu
+import-referencu.
 
-Simbioza i svi moduli koje updater dohvaća javno su dostupni. Updater stoga ne
-traži niti prihvaća tokene, lozinke ili druge vjerodajnice za preuzimanje
-izdanja.
-
-Prije izmjene updater zaključava postupak i sprema komprimiranu kopiju koda u
-`data/backups/application-updates/`. Tijekom nadogradnje HTTP zahtjevi dobivaju
-dvojezičnu stranicu održavanja i status 503. Zatim se ažuriraju kod i Composerov
-lock, provjeravaju PHP preduvjeti i sigurnosna upozorenja, izvršavaju migracije
-te čisti cache. Ostaju sačuvani:
-
-- baza, uploadovi, cache i ostali podaci u `data/`;
-- `composer.lock` kao zapis konkretne instalacije;
-- privatne datoteke `config/database.php`, `config/env.php`,
-  `config/installation.php`, `config/email.php` i `config/workspace.php`;
-- postavke aktivnog izbornika i teme u `resources/config/menu/` i
-  `resources/config/theme/`.
-
-Kada izdanje uvede novu strukturnu postavku teme, updater je može nenasilno
-dodati samo zapisima kojima ključ nedostaje. Za podesive visine zaglavlja i
-glavnog menija upisuje dosadašnje vrijednosti od 72 i 56 piksela u sve postojeće
-sistemske i privatne teme područja; postojeće vrijednosti i druge postavke ne
-mijenja.
-
-Updater ne postavlja vlasnika na `www-data` niti na bilo koji drugi unaprijed
-zadani račun. Na Unix sustavima prije izmjene pamti postojeći UID, GID i mode
-zapisivih putanja te ih vraća nakon sinkronizacije i rollbacka. Na Windowsu ne
-izvodi POSIX promjene prava, pa postojeći NTFS ACL ostaje mjerodavan. Nove
-datoteke koda dobivaju uobičajena prava procesa koji je pokrenuo updater, dok se
-postojeća privatna konfiguracija i zapisivi direktoriji ne zamjenjuju.
-
-Composer prvo izračuna novi lock bez izmjene postojećih paketa, a zatim ih
-instalira u čisti privremeno zamijenjeni `vendor`. Zato release instalacija i
-moduli ne trebaju sadržavati vlastite `.git` direktorije. Neuspjela instalacija
-paketa automatski vraća prethodni `vendor` prije općeg rollbacka aplikacije.
-Prije prve migracije updater read-only naredbom provjerava puni bootstrap
-aplikacije i pristup bazi; pad u toj provjeri još uvijek sigurno vraća prethodni
-kod i pakete, umjesto da instalaciju pogrešno ostavi u stanju započetih migracija.
-
-Ako postupak stane prije migracija, updater automatski vraća prethodni kod i
-Composer pakete. Nakon početka migracija namjerno ostavlja način održavanja
-uključen jer slijepi povrat samo koda više nije siguran; tada sačuvajte ispis i
-putanju backupa te otklonite uzrok prije ponovnog pokretanja. Uz aplikacijsku
-kopiju i dalje je obvezan neovisan, redovito provjeren backup baze i korisničkih
-datoteka.
-
-## 12. Sigurnosne preporuke
-
-- uvijek koristite HTTPS i obnovljive certifikate;
-- ograničite pristup serveru, bazi, `config/` i `data/` direktoriju;
-- koristite zasebnu bazu i najmanje potrebne ovlasti;
-- ne spremajte tokene, lozinke, konfiguracije ni screenshotove s tajnama u Git;
-- postavite sigurne vlasnike i prava umjesto `777`;
-- redovito ažurirajte PHP, Composer pakete, web-poslužitelj i bazu;
-- provjerite backup i postupak povrata prije produkcije;
-- tehničku pogrešku tražite u privatnom logu; korisniku se prikazuje samo sigurna poruka;
-- nakon neuspjele djelomične migracije pripremite novu praznu bazu, uklonite
-  nedovršeni `data/simbioza.sqlite` kada je SQLite u pitanju i ponovno izdajte token.
-
-Installer postavlja CSRF zaštitu, strogu jednokratnu autorizaciju, rotaciju
-session ID-a, `HttpOnly`/`SameSite=Strict` cookie, 30-minutni timeout, escaping
-svakog dinamičkog izlaza, CSP, `X-Frame-Options: DENY`, HSTS, no-sniff,
-no-referrer i zabranu cacheiranja.
-
-## 13. Neobvezni macOS primjer s vanjskim diskom
-
-Ovo je samo lokalni primjer, nije opći ni obvezni postupak. Izvorna instalacija
-ostaje na vanjskom disku, a u Homebrew Apache web-rootu postoji samo simbolička
-poveznica prema njezinu `public/` direktoriju:
+## 12. Dodavanje jezika
 
 ```bash
-cd /Volumes/Ext/Development/CR
-git clone https://github.com/kmihalj/Simbioza.git simbioza_hr_SQLite
-ln -s /Volumes/Ext/Development/CR/simbioza_hr_SQLite/public \
-  /opt/homebrew/var/www/simbioza_hr_SQLite
+vendor/bin/hph languages list
+vendor/bin/hph languages template de \
+--source=en \
+--output=/tmp/de.json
+vendor/bin/hph languages validate /tmp/de.json
+vendor/bin/hph languages add /tmp/de.json
 ```
 
-Prije izrade poveznice provjerite da odredište ne postoji i da konfiguracija
-Apachea dopušta `SymLinksIfOwnerMatch` ili kontrolirani `FollowSymLinks` samo za
-taj web-root. Detaljni laboratorijski zapis šest provjerenih instalacija nalazi
-se u [macOS instalacijskom zapisu](installation-lab_hr.md).
+Jedan paket sadrži sve stringove aplikacije i trenutno instaliranih modula,
+višejezične nazive jezika i sigurnu SVG zastavicu. Njemački je samo priloženi
+primjer; ne uključuje se automatski. Detalji su u
+[uputi za lokalizaciju](localization_hr.md).
 
-## 14. Dijagnostika i provjera
+## 13. Nadogradnja
+
+U namjenskom FPM načinu nadogradnju možete provjeriti i pokrenuti iz GUI
+Setupa. U svakom okruženju dostupan je isti CLI:
 
 ```bash
-composer on-commit
-vendor/bin/phpunit tests/src/Installation/InstallationTest.php
+php update.php --check
+php update.php
+```
+
+Za određeni tag:
+
+```bash
+php update.php --tag=0.1.72
+```
+
+Updater izrađuje kopiju koda, uključuje održavanje, čuva privatnu konfiguraciju
+i podatke, ažurira tagirane pakete, provjerava bootstrap, primjenjuje migracije,
+osvježava ugrađene upute i temu te čisti cache. Neuspjeh prije migracija vraća
+prethodno stanje; nakon početka migracija održavanje ostaje uključeno radi
+sigurnog ručnog oporavka.
+
+Kod koordiniranog izdanja prvo se moraju objaviti tagovi izmijenjenih modula, a
+tek zatim tag glavne Simbioze koji na njih upućuje.
+
+## 14. Posebnosti macOS-a
+
+Za lokalni ili interni macOS poslužitelj instalirajte Homebrew PHP, Composer,
+Git i Apache:
+
+```bash
+brew install php composer git httpd
+brew_prefix="$(brew --prefix)"
+php_fpm="$brew_prefix/sbin/php-fpm"
+```
+
+Na Apple Silicon računalima Homebrew je obično u `/opt/homebrew`, a na Intel
+računalima u `/usr/local`. Alat prepoznaje prefiks prema stvarnom `php-fpm`
+programu i na tom mjestu stvara zasebnu konfiguraciju i runtime direktorij.
+
+Aplikaciju stavite na datotečni sustav na kojem macOS primjenjuje vlasništvo,
+primjerice `/Users/Shared/Simbioza/simbioza`. Vanjski volumen montiran s
+`noowners` nije prikladan: `chown` može izgledati uspješno, ali izolacija
+korisnika nije stvarno provedena. Svi roditeljski direktoriji moraju
+namjenskom FPM korisniku dopuštati prolaz.
+
+```bash
+sudo php scripts/configure_fpm_setup.php \
+--install \
+--app-root=/Users/Shared/Simbioza/simbioza \
+--maintainer="$USER" \
+--php-fpm="$php_fpm"
+```
+
+Alat stvara system `launchd` servis `hr.simbioza.php-fpm`. Homebrew Apache treba
+učitati `mod_proxy` i `mod_proxy_fcgi`, koristiti `public/` kao DocumentRoot i
+slati PHP na `127.0.0.1:9075`, jednako kao primjer u 4. poglavlju.
+
+Nakon web instalacije:
+
+```bash
+sudo php scripts/configure_fpm_setup.php \
+--finalize \
+--app-root=/Users/Shared/Simbioza/simbioza \
+--maintainer="$USER" \
+--php-fpm="$php_fpm"
+```
+
+Ponovno se prijavite u macOS sesiju. Daljnje upravljanje iz GUI-ja ili CLI-ja
+ne traži `sudo`.
+
+## 15. Završna provjera
+
+```bash
+php scripts/configure_fpm_setup.php \
+--check \
+--app-root=/srv/simbioza \
+--maintainer=KORISNIK
 vendor/bin/hph orm-migrate:status
+composer check-platform-reqs
 ```
 
-`orm-migrate:status` nakon instalacije mora pokazati nula migracija na čekanju.
-HTTP provjera treba potvrditi HTTPS, 200 za prijavu i početnu stranicu te 404 za
-ponovni pristup installeru. Povjerljive vrijednosti nikada nemojte dodavati u
-bug report; zabilježite vrijeme i administratoru sustava pošaljite privatni
-izvadak iz loga.
+Očekujte nula migracija na čekanju, HTTP 200 za prijavu i početnu stranicu te
+404 za zaključani `/install`. Provjerite i backup baze, `config/`, korisničkih
+datoteka i teme. Povjerljive vrijednosti nikada ne dodajte u prijavu greške.

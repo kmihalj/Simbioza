@@ -9,7 +9,8 @@ namespace App\Installation;
  * Na disku se sprema samo SHA-256 sažetak, nikada izvorni token.
  *
  * EN: Creates, verifies, and consumes the fresh installer's one-time secret.
- * Only its SHA-256 digest is stored on disk, never the original token.
+ * Only its SHA-256 digest is stored on disk, never the original token. The
+ * runtime group may read that digest so a dedicated FPM identity can consume it.
  */
 final readonly class InstallationAccessToken
 {
@@ -100,7 +101,11 @@ final readonly class InstallationAccessToken
                 throw new \RuntimeException('The installer file could not be written.');
             }
 
-            if (!chmod($temporaryPath, 0600)) {
+            // HR: CLI održavatelj i FPM imaju zajedničku isključivu runtime
+            //     grupu. Grupi je čitljiv samo sažetak, nikada izvorni token.
+            // EN: The CLI maintainer and FPM share an exclusive runtime group.
+            //     The group may read only the digest, never the original token.
+            if (!chmod($temporaryPath, 0640)) {
                 throw new \RuntimeException('The installer file permissions could not be secured.');
             }
 

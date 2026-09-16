@@ -1,5 +1,34 @@
 [
     {
+        "id": "setup",
+        "label": {
+            "hr": "Setup",
+            "en": "Setup"
+        },
+        "translation_key": null,
+        "route": null,
+        "url": null,
+        "query": [],
+        "order": 5,
+        "enabled": true,
+        "children": [
+            {
+                "id": "setup.index",
+                "label": {
+                    "hr": "Moduli i provjere",
+                    "en": "Modules and checks"
+                },
+                "translation_key": null,
+                "route": "setup.index",
+                "url": null,
+                "query": [],
+                "order": 10,
+                "enabled": true,
+                "children": []
+            }
+        ]
+    },
+    {
         "id": "menu",
         "label": {
             "hr": "Meni",
@@ -488,20 +517,6 @@
                 "children": []
             },
             {
-                "id": "workspace-search.settings",
-                "label": {
-                    "hr": "Indeks pretrage",
-                    "en": "Search index"
-                },
-                "translation_key": null,
-                "route": "workspace-search.settings",
-                "url": "",
-                "query": [],
-                "order": 50,
-                "enabled": true,
-                "children": []
-            },
-            {
                 "id": "workspace.settings.maintenance",
                 "label": {
                     "hr": "Održavanje",
@@ -512,6 +527,20 @@
                 "url": "",
                 "query": [],
                 "order": 60,
+                "enabled": true,
+                "children": []
+            },
+            {
+                "id": "simbioza-user.personal-workspaces.settings",
+                "label": {
+                    "hr": "Osobna područja",
+                    "en": "Personal Workspaces"
+                },
+                "translation_key": null,
+                "route": "simbioza-user.personal-workspaces.settings",
+                "url": "",
+                "query": [],
+                "order": 70,
                 "enabled": true,
                 "children": []
             },
@@ -530,16 +559,16 @@
                 "children": []
             },
             {
-                "id": "simbioza-user.personal-workspaces.settings",
+                "id": "workspace-search.settings",
                 "label": {
-                    "hr": "Osobna područja",
-                    "en": "Personal Workspaces"
+                    "hr": "Indeks pretrage",
+                    "en": "Search index"
                 },
                 "translation_key": null,
-                "route": "simbioza-user.personal-workspaces.settings",
+                "route": "workspace-search.settings",
                 "url": "",
                 "query": "",
-                "order": 70,
+                "order": 50,
                 "enabled": true,
                 "children": [],
                 "parent_id": "workspace.settings.group",

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Module\ModuleCatalog;
+
 /**
  * HR: Normalizira i provjerava sve podatke web-čarobnjaka prije zapisivanja.
  * EN: Normalizes and validates all wizard data before anything is written.
@@ -87,7 +89,7 @@ final readonly class InstallationInputValidator
      * EN: Validates and normalizes application identity, locales, and timezone.
      *
      * @param array<array-key, mixed> $input
-     * @return array{name:string,primary_locale:string,supported_locales:list<string>,timezone:string}
+     * @return array{name:string,primary_locale:string,supported_locales:list<string>,timezone:string,optional_modules:list<string>}
      */
     public function application(array $input): array
     {
@@ -105,6 +107,19 @@ final readonly class InstallationInputValidator
         }
 
         $timezone = trim($this->scalarString($input['timezone'] ?? 'Europe/Zagreb'));
+        $catalog = new ModuleCatalog();
+        $selectionSubmitted = $this->scalarString($input['module_selection_present'] ?? '') === '1';
+        $requestedModules = is_array($input['optional_modules'] ?? null)
+        ? $input['optional_modules']
+        : ($selectionSubmitted ? [] : $catalog->recommendedSlugs());
+        $optionalModules = [];
+        foreach ($requestedModules as $module) {
+            $module = $catalog->normalizeSlug($this->scalarString($module));
+            if (in_array($module, $catalog->optionalSlugs(), true) && !in_array($module, $optionalModules, true)) {
+                $optionalModules[] = $module;
+            }
+        }
+
         $errors = [];
         if ($name === '' || mb_strlen($name) > 100) {
             $errors[] = 'application_name';
@@ -131,6 +146,7 @@ final readonly class InstallationInputValidator
             'primary_locale' => $primaryLocale,
             'supported_locales' => $supportedLocales,
             'timezone' => $timezone,
+            'optional_modules' => $optionalModules,
         ];
     }
 
