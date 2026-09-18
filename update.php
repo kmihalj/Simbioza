@@ -746,23 +746,11 @@ final class ApplicationUpdateCommand
             $current,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
         ) . "\n";
-        $temporaryPath = tempnam(dirname($currentPath), '.simbioza-menu-settings-');
-        if (!is_string($temporaryPath)) {
-            throw new RuntimeException('Temporary menu settings file could not be created.');
-        }
-
-        try {
-            if (file_put_contents($temporaryPath, $encoded, LOCK_EX) === false) {
-                throw new RuntimeException('Updated menu settings could not be written.');
-            }
-            if (!rename($temporaryPath, $currentPath)) {
-                throw new RuntimeException('Updated menu settings could not replace the existing file.');
-            }
-        } finally {
-            if (is_file($temporaryPath)) {
-                @unlink($temporaryPath);
-            }
-        }
+        $this->writeExistingFilePreservingMetadata(
+            $currentPath,
+            $encoded,
+            'Updated menu settings could not be written.',
+        );
 
         return $added;
     }
@@ -840,13 +828,58 @@ final class ApplicationUpdateCommand
             throw new RuntimeException('Unable to encode upgraded theme configuration.', 0, $jsonException);
         }
 
-        $temporaryPath = dirname($path) . '/.simbioza-update-themes-' . bin2hex(random_bytes(8));
-        if (file_put_contents($temporaryPath, $encoded, LOCK_EX) === false || !rename($temporaryPath, $path)) {
-            @unlink($temporaryPath);
-            throw new RuntimeException('Unable to upgrade preserved theme configuration.');
-        }
+        $this->writeExistingFilePreservingMetadata(
+            $path,
+            $encoded,
+            'Unable to upgrade preserved theme configuration.',
+        );
 
         return $changedThemes;
+    }
+
+    /**
+     * HR: Zaključano prepisuje sadržaj postojeće trajne datoteke bez zamjene
+     *     inodea. Time neprivilegirani deploy proces čuva FPM vlasnika, grupu,
+     *     ACL i prava administratorski upravljane konfiguracije.
+     * EN: Rewrites an existing persistent file under an exclusive lock without
+     *     replacing its inode. This lets an unprivileged deploy process retain
+     *     the FPM owner, group, ACL, and mode of administrator-managed config.
+     */
+    private function writeExistingFilePreservingMetadata(
+        string $path,
+        string $contents,
+        string $failureMessage,
+    ): void {
+        $handle = @fopen($path, 'r+b');
+        if (!is_resource($handle)) {
+            throw new RuntimeException($failureMessage);
+        }
+
+        $locked = false;
+        try {
+            $locked = flock($handle, LOCK_EX);
+            if (!$locked || !rewind($handle) || !ftruncate($handle, 0)) {
+                throw new RuntimeException($failureMessage);
+            }
+
+            $length = strlen($contents);
+            $written = 0;
+            while ($written < $length) {
+                $chunk = fwrite($handle, substr($contents, $written));
+                if (!is_int($chunk) || $chunk <= 0) {
+                    throw new RuntimeException($failureMessage);
+                }
+                $written += $chunk;
+            }
+            if (!fflush($handle)) {
+                throw new RuntimeException($failureMessage);
+            }
+        } finally {
+            if ($locked) {
+                flock($handle, LOCK_UN);
+            }
+            fclose($handle);
+        }
     }
 
     /**

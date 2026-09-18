@@ -81,6 +81,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 - [Brand identity and theme](docs/branding_en.md)
+- [FPM-safe persistent settings update in 0.1.74](docs/release-0.1.74_en.md)
 - [Attachment layout, safe settings merge, and release checks in 0.1.73](docs/release-0.1.73_en.md)
 - [Meeting planning and bundled guides in release 0.1.68](docs/release-0.1.68_en.md)
 

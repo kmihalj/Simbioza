@@ -352,6 +352,11 @@ TAGS;
             ],
         ];
         file_put_contents($path, json_encode($themes, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+        chmod($path, 0660);
+        clearstatcache(true, $path);
+        $originalInode = fileinode($path);
+        $originalOwner = fileowner($path);
+        $originalGroup = filegroup($path);
 
         $command = new ApplicationUpdateCommand($root, ['--lang=en']);
         $normalize = new \ReflectionMethod($command, 'normalizeStoredThemeComponentHeights');
@@ -367,6 +372,11 @@ TAGS;
         $this->assertSame(94, $stored[1]['components']['header']['height_px']);
         $this->assertSame(65, $stored[1]['components']['navigation']['height_px']);
         $this->assertSame(0, $normalize->invoke($command));
+        clearstatcache(true, $path);
+        $this->assertSame($originalInode, fileinode($path));
+        $this->assertSame($originalOwner, fileowner($path));
+        $this->assertSame($originalGroup, filegroup($path));
+        $this->assertSame(0660, fileperms($path) & 0777);
     }
 
     /**
@@ -398,6 +408,11 @@ TAGS;
             $root . '/resources/config/menu/settings.json',
             json_encode($current, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR),
         );
+        chmod($root . '/resources/config/menu/settings.json', 0660);
+        clearstatcache(true, $root . '/resources/config/menu/settings.json');
+        $originalInode = fileinode($root . '/resources/config/menu/settings.json');
+        $originalOwner = fileowner($root . '/resources/config/menu/settings.json');
+        $originalGroup = filegroup($root . '/resources/config/menu/settings.json');
         file_put_contents(
             $source . '/resources/config/menu/settings.json',
             json_encode($release, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR),
@@ -420,6 +435,11 @@ TAGS;
         $this->assertSame(80, $stored[2]['order']);
         $this->assertSame('future-module', $stored[3]['id']);
         $this->assertSame(90, $stored[3]['order']);
+        clearstatcache(true, $root . '/resources/config/menu/settings.json');
+        $this->assertSame($originalInode, fileinode($root . '/resources/config/menu/settings.json'));
+        $this->assertSame($originalOwner, fileowner($root . '/resources/config/menu/settings.json'));
+        $this->assertSame($originalGroup, filegroup($root . '/resources/config/menu/settings.json'));
+        $this->assertSame(0660, fileperms($root . '/resources/config/menu/settings.json') & 0777);
     }
 
     /**
