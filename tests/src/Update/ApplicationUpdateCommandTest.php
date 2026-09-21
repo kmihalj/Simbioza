@@ -316,6 +316,37 @@ TAGS;
     }
 
     /**
+     * HR: Restriktivni FPM umask ne smije ostaviti novi Composer vendor nečitljivim web procesu.
+     * EN: A restrictive FPM umask must not leave a new Composer vendor unreadable by the web process.
+     */
+    public function testComposerVendorBecomesWebReadableWithoutChangingWritePermissions(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
+        }
+
+        $root = sys_get_temp_dir() . '/simbioza-update-vendor-metadata-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root . '/vendor/package/bin', 0770, true));
+        file_put_contents($root . '/vendor/autoload.php', "<?php\n");
+        file_put_contents($root . '/vendor/package/bin/tool', "#!/bin/sh\n");
+        chmod($root . '/vendor', 02770);
+        chmod($root . '/vendor/package', 0770);
+        chmod($root . '/vendor/package/bin', 0770);
+        chmod($root . '/vendor/autoload.php', 0660);
+        chmod($root . '/vendor/package/bin/tool', 0770);
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $normalize = new \ReflectionMethod($command, 'normalizeComposerVendorMetadata');
+        $normalize->invoke($command);
+
+        $this->assertSame(02775, fileperms($root . '/vendor') & 07777);
+        $this->assertSame(0775, fileperms($root . '/vendor/package') & 07777);
+        $this->assertSame(0664, fileperms($root . '/vendor/autoload.php') & 07777);
+        $this->assertSame(0774, fileperms($root . '/vendor/package/bin/tool') & 07777);
+    }
+
+    /**
      * HR: Sinkronizacija izdanja čuva sve postavke koje administratori mogu mijenjati kroz aplikaciju.
      * EN: Release synchronization preserves every setting administrators can change through the application.
      */

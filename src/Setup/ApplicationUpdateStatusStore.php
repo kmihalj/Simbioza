@@ -77,12 +77,12 @@ final readonly class ApplicationUpdateStatusStore
      */
     private function processExists(int $pid): bool
     {
-        if (PHP_OS_FAMILY === 'Linux') {
-            return is_dir('/proc/' . $pid);
+        if (PHP_OS_FAMILY === 'Linux' && is_dir('/proc/' . $pid)) {
+            return true;
         }
 
         if (!function_exists('posix_kill')) {
-            return true;
+            return PHP_OS_FAMILY !== 'Linux';
         }
 
         if (@posix_kill($pid, 0)) {

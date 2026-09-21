@@ -1450,6 +1450,7 @@ final class ApplicationUpdateCommand
                 '--prefer-dist',
                 '--optimize-autoloader',
             ], $this->appRoot);
+            $this->normalizeComposerVendorMetadata();
         } catch (Throwable $throwable) {
             $this->removeDirectory($vendorDirectory);
             if ($vendorMoved && !rename($vendorBackupDirectory, $vendorDirectory)) {
@@ -1465,6 +1466,57 @@ final class ApplicationUpdateCommand
 
         if ($vendorMoved) {
             $this->removeDirectory($vendorBackupDirectory);
+        }
+    }
+
+    /**
+     * HR: Composerove datoteke čini čitljivima web procesu i prohodnima kroz
+     *     direktorije bez promjene vlasnika, grupe ili prava pisanja. To je
+     *     potrebno kada sigurni FPM helper stvara vendor uz umask 0007.
+     * EN: Makes Composer files readable by the web process and directories
+     *     traversable without changing ownership, group, or write permissions.
+     *     This is required when the secure FPM helper creates vendor with umask 0007.
+     */
+    private function normalizeComposerVendorMetadata(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $vendorDirectory = $this->appRoot . '/vendor';
+        if (!is_dir($vendorDirectory)) {
+            throw new RuntimeException('Composer vendor directory is unavailable after installation.');
+        }
+
+        $paths = [new \SplFileInfo($vendorDirectory)];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($vendorDirectory, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST,
+        );
+        foreach ($iterator as $item) {
+            if ($item instanceof \SplFileInfo) {
+                $paths[] = $item;
+            }
+        }
+
+        foreach ($paths as $item) {
+            if ($item->isLink()) {
+                continue;
+            }
+
+            $path = $item->getPathname();
+            $permissions = @fileperms($path);
+            if (!is_int($permissions)) {
+                throw new RuntimeException('Unable to read Composer path permissions: ' . $path);
+            }
+            $mode = $permissions & 07777;
+            $required = $item->isDir() ? 0005 : 0004;
+            if (($mode & $required) === $required) {
+                continue;
+            }
+            if (!@chmod($path, $mode | $required)) {
+                throw new RuntimeException('Unable to make Composer path web-readable: ' . $path);
+            }
         }
     }
 
@@ -1499,6 +1551,7 @@ final class ApplicationUpdateCommand
             '--prefer-dist',
             '--optimize-autoloader',
         ], $this->appRoot);
+        $this->normalizeComposerVendorMetadata();
 
         $command = [
             $rsync,
