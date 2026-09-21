@@ -4,12 +4,34 @@
 
 > Znanje koje živi zajedno.
 
-Simbioza je aplikacija za zajedničko znanje izgrađena na HeartPhrame Frameworku i njegovim
-samostalno održavanim modulima. Aplikacijski razvoj pripada ovdje i u repozitorije
-modula; Framework se koristi iz označenog izdanja `v0.0.25` i ne razvija se u ovom
-repozitoriju.
+Simbioza je otvorena aplikacija koju možete instalirati na vlastiti poslužitelj:
+**hibrid wikija i CMS-a** za timove čije znanje treba ostati korisno i kada
+naraste. Povezuje jednostavno pisanje i povezivanje wiki stranica s uređenom
+strukturom, navigacijom i kontrolom objavljivanja kakvu očekujete od sustava
+za upravljanje sadržajem. Namijenjena je dokumentaciji, postupcima, korisničkim
+uputama i zajedničkim bazama znanja, uz kontrolu nad vlastitim podacima.
+
+## Što možete raditi u Simbiozi
+
+- Organizirati stranice u područja, povezivati srodni sadržaj i pronaći
+  informacije pretraživanjem.
+- Zajednički uređivati sadržaj uz uloge i prava za uređivanje i objavljivanje.
+- Čuvati datoteke uz stranice, s podacima o učitavaču i poviješću verzija
+  privitaka.
+- Uključiti samo potrebne mogućnosti kroz module, među njima komentare,
+  obavijesti, kalendare, teme, dnevnike aktivnosti i sigurnosne kopije.
+  Opcionalni Confluence importer pomaže preseliti postojeći sadržaj.
+
+Počnite s [uputom za instalaciju](docs/installation_hr.md) ili pregledajte
+[dokumentaciju](docs/index_hr.md). Sučelje i upute dostupni su i na
+[engleskom](README.md).
 
 ## Ovisnosti
+
+Simbioza je izgrađena na HeartPhrame Frameworku i njegovim samostalno
+održavanim modulima. Aplikacijski razvoj pripada ovdje i u repozitorije modula;
+Framework se koristi iz označenog izdanja `v0.0.25` i ne razvija se u ovom
+repozitoriju.
 
 Svaki HeartPhrame modul zahtijeva
 `aaieduhr/heartphrame-framework:^0.0.25`. Simbioza trenutačno povezuje ORM,
@@ -59,12 +81,14 @@ korijena instalacije provjerite i instalirajte najnovije stabilne tagove
 aplikacije i kompatibilnih modula ovako:
 
 ```bash
-sudo php update.php --check
-sudo php update.php
+php update.php --check
+php update.php
 ```
 
 Cijeli postupak release instalacije i nadogradnje opisan je u
 [uputama za instalaciju](docs/installation_hr.md#11-nadogradnja-release-instalacije).
+Nakon početnog podešavanja redovna nadogradnja ne zahtijeva `sudo`; uputa
+opisuje zasebne postupke za FPM i instalacije bez FPM-a.
 
 Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
 su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima

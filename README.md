@@ -4,12 +4,33 @@
 
 > Knowledge that lives together.
 
-Simbioza is the collaborative knowledge application built on the HeartPhrame Framework and its
-independently maintained modules. Application work belongs here and in module
-repositories; the Framework is consumed from its tagged `v0.0.25` release and is
-not developed as part of this repository.
+Simbioza is an open-source, self-hosted **wiki/CMS hybrid** for teams that need
+to keep knowledge useful as it grows. It combines the ease of writing and
+connecting wiki pages with the structure, navigation, and publishing controls
+of a content management system. Use it for documentation, procedures, user
+guides, and shared knowledge bases while keeping control of your own data.
+
+## What you can do with it
+
+- Organize pages into areas, link related content, and find information with
+  search.
+- Collaborate on content with role-based editing and publishing permissions.
+- Keep files alongside pages, with uploader details and attachment version
+  history.
+- Add only the capabilities you need through modules, including comments,
+  notifications, calendars, themes, audit logs, and backups. An optional
+  Confluence importer helps move existing content into Simbioza.
+
+Start with the [installation guide](docs/installation_en.md) or explore the
+[documentation](docs/index_en.md). The interface and guides are also available
+in [Croatian](README_hr.md).
 
 ## Dependencies
+
+Simbioza is built on the HeartPhrame Framework and its independently maintained
+modules. Application work belongs here and in module repositories; the
+Framework is consumed from its tagged `v0.0.25` release and is not developed
+as part of this repository.
 
 Every HeartPhrame module requires `aaieduhr/heartphrame-framework:^0.0.25`.
 Simbioza currently integrates ORM, Menu, Theme, Auth, E-mail, Notification,
