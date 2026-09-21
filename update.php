@@ -955,7 +955,11 @@ final class ApplicationUpdateCommand
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
         $temporary = $this->appRoot . '/.simbioza-update-composer-' . bin2hex(random_bytes(8));
-        if (file_put_contents($temporary, $encoded, LOCK_EX) === false || !rename($temporary, $path)) {
+        if (
+            file_put_contents($temporary, $encoded, LOCK_EX) === false
+            || (PHP_OS_FAMILY !== 'Windows' && !chmod($temporary, 0664))
+            || !rename($temporary, $path)
+        ) {
             @unlink($temporary);
             throw new RuntimeException('Selected optional modules could not be restored to composer.json.');
         }

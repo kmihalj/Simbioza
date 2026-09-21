@@ -101,6 +101,42 @@ TAGS;
     }
 
     /**
+     * HR: Vraćanje opcionalnih modula ostavlja manifest čitljivim odvojenom FPM korisniku.
+     * EN: Restoring optional modules leaves the manifest readable by a separate FPM user.
+     */
+    public function testRestoredOptionalModulesLeaveComposerManifestWebReadable(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
+        }
+
+        $root = sys_get_temp_dir() . '/simbioza-update-composer-manifest-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root, 0770, true));
+        file_put_contents($root . '/composer.json', json_encode([
+            'require' => ['vendor/core' => '^1.0'],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $selected = new \ReflectionProperty($command, 'selectedOptionalRequirements');
+        $selected->setValue($command, ['vendor/theme' => '^2.0']);
+
+        $restore = new \ReflectionMethod($command, 'restoreSelectedOptionalRequirements');
+
+        $previousUmask = umask(0007);
+        try {
+            $restore->invoke($command);
+        } finally {
+            umask($previousUmask);
+        }
+
+        $manifest = json_decode((string)file_get_contents($root . '/composer.json'), true);
+        $this->assertIsArray($manifest);
+        $this->assertSame('^2.0', $manifest['require']['vendor/theme'] ?? null);
+        $this->assertSame(0664, fileperms($root . '/composer.json') & 07777);
+    }
+
+    /**
      * HR: FPM CLI delegira samo kada helper cilja istu instalaciju i pozivatelj
      *     nije vlasnik koda; vlasnik i ne-FPM instalacija ostaju izravni.
      * EN: FPM CLI delegates only when the helper targets the same installation

@@ -880,6 +880,8 @@ PHP);
             throw new RuntimeException('Unable to link installation test dependencies.');
         }
 
+        copy($projectRoot . '/composer.json', $root . '/composer.json');
+
         foreach (['lang', 'views'] as $applicationDirectory) {
             if (!symlink($projectRoot . '/' . $applicationDirectory, $root . '/' . $applicationDirectory)) {
                 throw new RuntimeException('Unable to link installation test application resources.');

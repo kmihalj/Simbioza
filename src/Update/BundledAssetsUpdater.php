@@ -387,6 +387,36 @@ final readonly class BundledAssetsUpdater
         }
     }
 
+    /**
+     * HR: Završni korak novog izdanja dodaje samo pravo čitanja manifestu kako bi
+     *     nadogradnja pokrenuta starijim FPM updaterom ostavila ispravan web runtime.
+     * EN: The new release finalization adds only manifest read permission so an
+     *     update started by an older FPM updater leaves a working web runtime.
+     */
+    public static function normalizeComposerManifestMetadata(string $root): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $path = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
+        $permissions = @fileperms($path);
+        if (!is_int($permissions)) {
+            throw new RuntimeException('The Composer manifest permissions cannot be read.');
+        }
+
+        $mode = $permissions & 07777;
+        if (($mode & 0004) === 0004) {
+            return;
+        }
+
+        if (!@chmod($path, $mode | 0004)) {
+            throw new RuntimeException('The Composer manifest cannot be made web-readable.');
+        }
+
+        clearstatcache(true, $path);
+    }
+
     /** HR: Odbija neispravni base path. EN: Rejects an invalid base path. */
     public static function validatedBasePath(string $value): string
     {

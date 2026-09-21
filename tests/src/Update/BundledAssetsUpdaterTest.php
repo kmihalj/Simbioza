@@ -13,6 +13,35 @@ use RuntimeException;
 #[CoversNothing]
 final class BundledAssetsUpdaterTest extends TestCase
 {
+    /**
+     * HR: Završni korak novog izdanja popravlja manifest koji je stariji FPM updater ostavio privatnim.
+     * EN: New-release finalization repairs a manifest left private by an older FPM updater.
+     */
+    public function testLegacyFpmUpdateLeavesComposerManifestWebReadable(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
+        }
+
+        $directory = sys_get_temp_dir() . '/simbioza-manifest-permissions-' . bin2hex(random_bytes(8));
+        mkdir($directory, 0700);
+        $manifest = $directory . '/composer.json';
+        try {
+            file_put_contents($manifest, "{}\n");
+            chmod($manifest, 0660);
+
+            BundledAssetsUpdater::normalizeComposerManifestMetadata($directory);
+
+            $this->assertSame(0664, fileperms($manifest) & 07777);
+        } finally {
+            if (is_file($manifest)) {
+                unlink($manifest);
+            }
+
+            rmdir($directory);
+        }
+    }
+
     /** HR: Upute otkrivaju stvarni root ili poddirektorij. EN: Guides identify the actual root or subdirectory. */
     public function testOldGuideLinksDetermineTheBasePath(): void
     {
