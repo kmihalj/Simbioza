@@ -151,6 +151,7 @@ TAGS;
         );
         $this->assertStringContainsString("'/usr/local/sbin/simbioza-setup',\n        'invalid',", $source);
         $this->assertStringContainsString("return \$probe['code'] === 64;", $source);
+        $this->assertStringContainsString("'data/config'", $source);
         $this->assertMatchesRegularExpression(
             '/else \{\s*installIdentities\([^;]+;\s*installHelper\(/s',
             $source,

@@ -326,7 +326,10 @@ function installFilesystem(
     // EN: Only the deploy group writes code. FPM reads it through the read-only
     //     systemd bind and world-read bit, but cannot modify it.
     applyTree($root, 'simbioza-deploy', 'deploy-simbioza', 02775, 0664, ['data']);
-    foreach (['data', 'data/cache', 'data/logs', 'data/tmp', 'data/sessions', 'data/setup-requests'] as $relative) {
+    foreach (
+        ['data', 'data/cache', 'data/config', 'data/logs', 'data/tmp', 'data/sessions', 'data/setup-requests']
+        as $relative
+    ) {
         $path = $root . '/' . $relative;
         if (!is_dir($path) && !mkdir($path, 02770, true) && !is_dir($path)) {
             throw new RuntimeException('Unable to create runtime directory: ' . $path);
