@@ -556,7 +556,7 @@ SH;
     );
     writeSystemFile('/usr/local/sbin/simbioza-setup', $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
     $sudoers = 'fpm-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n"
-        . '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n";
+    . '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n";
     writeSystemFile('/etc/sudoers.d/simbioza-setup', $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
     runCommand(['visudo', '-cf', '/etc/sudoers.d/simbioza-setup']);
 }
@@ -780,6 +780,34 @@ function writeSystemFile(string $path, string $contents, int $mode, string $owne
     }
 }
 
+/**
+ * HR: Provjerava stvarnu delegaciju helpera i kada obični održavatelj ne smije
+ *     čitati root-only direktorij /etc/sudoers.d.
+ * EN: Checks actual helper delegation even when an ordinary maintainer may not
+ *     read the root-only /etc/sudoers.d directory.
+ */
+function sudoersRuleAvailable(): bool
+{
+    if (is_file('/etc/sudoers.d/simbioza-setup')) {
+        return true;
+    }
+
+    if (!is_file('/usr/bin/sudo') || !is_executable('/usr/bin/sudo')) {
+        return false;
+    }
+
+    $probe = runCommand([
+        '/usr/bin/sudo',
+        '-n',
+        '-u',
+        'root',
+        '/usr/local/sbin/simbioza-setup',
+        'invalid',
+    ], true);
+
+    return $probe['code'] === 64;
+}
+
 /** HR: Ispisuje provjere potrebne prije i poslije instalacije. EN: Prints checks required before and after installation. */
 function printChecks(
     string $root,
@@ -795,7 +823,7 @@ function printChecks(
         ['Maintainer deploy group', membershipExists($platform, $maintainer, 'deploy-simbioza')],
         ['Maintainer runtime group', membershipExists($platform, $maintainer, 'run-simbioza')],
         ['Setup helper', is_file('/usr/local/sbin/simbioza-setup') && is_executable('/usr/local/sbin/simbioza-setup')],
-        ['Sudoers rule', is_file('/etc/sudoers.d/simbioza-setup')],
+        ['Sudoers rule', sudoersRuleAvailable()],
         ['Application readable', is_readable($root . '/public/index.php')],
         ['Runtime data writable', is_writable($root . '/data')],
         ['Runtime config is sticky', is_dir($root . '/config') && (fileperms($root . '/config') & 01000) !== 0],

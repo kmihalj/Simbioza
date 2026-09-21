@@ -149,6 +149,8 @@ TAGS;
             '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *',
             $source,
         );
+        $this->assertStringContainsString("'/usr/local/sbin/simbioza-setup',\n        'invalid',", $source);
+        $this->assertStringContainsString("return \$probe['code'] === 64;", $source);
         $this->assertMatchesRegularExpression(
             '/else \{\s*installIdentities\([^;]+;\s*installHelper\(/s',
             $source,
