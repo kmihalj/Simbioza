@@ -111,3 +111,9 @@ domain rules; the application composes them and supplies deployment settings.
 
 This work is published under the
 [European Union Public Licence (EUPL) v1.2](LICENSE).
+
+## Community
+
+- [Get support](SUPPORT.md)
+- [Report a security vulnerability privately](SECURITY.md)
+- [Contribute](CONTRIBUTING.md)

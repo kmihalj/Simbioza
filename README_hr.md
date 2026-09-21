@@ -106,3 +106,9 @@ svojim domenskim pravilima, a aplikacija ih povezuje i daje postavke deploymenta
 
 Ovaj rad objavljen je pod
 [Javnom licencijom Europske unije (EUPL) v1.2](LICENSE).
+
+## Zajednica
+
+- [Podrška](SUPPORT.md)
+- [Privatna prijava sigurnosne ranjivosti](SECURITY.md)
+- [Doprinos projektu](CONTRIBUTING.md)
