@@ -132,6 +132,36 @@ return [
     'Zadnje izdanje ili tag 1.2.3' => 'Zadnje izdanje ili tag 1.2.3',
     'Ciljno izdanje' => 'Ciljno izdanje',
     'Pokreni nadogradnju' => 'Pokreni nadogradnju',
+    'Nadogradnja aplikacije je u tijeku' => 'Nadogradnja aplikacije je u tijeku',
+    'Updater radi u pozadini. Ovaj prikaz možete ostaviti otvoren.' =>
+        'Updater radi u pozadini. Ovaj prikaz možete ostaviti otvoren.',
+    'Napredak nadogradnje' => 'Napredak nadogradnje',
+    'Napredak:' => 'Napredak:',
+    'Proteklo vrijeme:' => 'Proteklo vrijeme:',
+    'Osvježi prikaz' => 'Osvježi prikaz',
+    'Nadogradnja je uspješno završena. Osvježavam aplikaciju...' =>
+        'Nadogradnja je uspješno završena. Osvježavam aplikaciju...',
+    'Nadogradnja nije uspjela. Provjerite administratorski zapis prije novog pokušaja.' =>
+        'Nadogradnja nije uspjela. Provjerite administratorski zapis prije novog pokušaja.',
+    'Nadogradnja čeka sigurno pokretanje.' => 'Nadogradnja čeka sigurno pokretanje.',
+    'Pripremam nadogradnju i provjeravam okruženje.' => 'Pripremam nadogradnju i provjeravam okruženje.',
+    'Dohvaćam označeno izdanje Simbioze.' => 'Dohvaćam označeno izdanje Simbioze.',
+    'Izrađujem sigurnosnu kopiju aplikacijskog koda.' => 'Izrađujem sigurnosnu kopiju aplikacijskog koda.',
+    'Ažuriram aplikacijske datoteke i čuvam privatne postavke.' =>
+        'Ažuriram aplikacijske datoteke i čuvam privatne postavke.',
+    'Dopunjujem konfiguraciju postojećih tema.' => 'Dopunjujem konfiguraciju postojećih tema.',
+    'Ažuriram i provjeravam Composer module.' => 'Ažuriram i provjeravam Composer module.',
+    'Provjeravam PHP i platformske preduvjete.' => 'Provjeravam PHP i platformske preduvjete.',
+    'Provjeravam pokretanje aplikacije i pristup bazi.' =>
+        'Provjeravam pokretanje aplikacije i pristup bazi.',
+    'Primjenjujem migracije baze.' => 'Primjenjujem migracije baze.',
+    'Provjeravam da nema migracija na čekanju.' => 'Provjeravam da nema migracija na čekanju.',
+    'Čistim aplikacijsku predmemoriju.' => 'Čistim aplikacijsku predmemoriju.',
+    'Vraćam prethodno izdanje nakon prekinute nadogradnje.' =>
+        'Vraćam prethodno izdanje nakon prekinute nadogradnje.',
+    'Nadogradnja je uspješno završena.' => 'Nadogradnja je uspješno završena.',
+    'Nadogradnja nije uspjela.' => 'Nadogradnja nije uspjela.',
+    'Nadogradnja aplikacije je u tijeku.' => 'Nadogradnja aplikacije je u tijeku.',
     'Nadogradnja kroz CLI' => 'Nadogradnja kroz CLI',
     'Nadogradnja iz GUI-ja nije dostupna. Upotrijebite prikazanu CLI naredbu.' =>
         'Nadogradnja iz GUI-ja nije dostupna. Upotrijebite prikazanu CLI naredbu.',

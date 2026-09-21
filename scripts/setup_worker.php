@@ -296,6 +296,8 @@ function writeUpdateLaunchStatus(string $path, int $pid): void
     try {
         $json = json_encode([
             'state' => 'queued',
+            'stage' => 'queued',
+            'progress' => 0,
             'started_at' => gmdate(DATE_ATOM),
             'finished_at' => null,
             'pid' => $pid,

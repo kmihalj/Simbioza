@@ -135,6 +135,36 @@ return [
     'Zadnje izdanje ili tag 1.2.3' => 'Latest release or tag 1.2.3',
     'Ciljno izdanje' => 'Target release',
     'Pokreni nadogradnju' => 'Start update',
+    'Nadogradnja aplikacije je u tijeku' => 'Application update in progress',
+    'Updater radi u pozadini. Ovaj prikaz možete ostaviti otvoren.' =>
+        'The updater is running in the background. You can leave this screen open.',
+    'Napredak nadogradnje' => 'Update progress',
+    'Napredak:' => 'Progress:',
+    'Proteklo vrijeme:' => 'Elapsed time:',
+    'Osvježi prikaz' => 'Refresh status',
+    'Nadogradnja je uspješno završena. Osvježavam aplikaciju...' =>
+        'The update completed successfully. Refreshing the application...',
+    'Nadogradnja nije uspjela. Provjerite administratorski zapis prije novog pokušaja.' =>
+        'The update failed. Check the administrator log before trying again.',
+    'Nadogradnja čeka sigurno pokretanje.' => 'The update is waiting for a safe start.',
+    'Pripremam nadogradnju i provjeravam okruženje.' => 'Preparing the update and checking the environment.',
+    'Dohvaćam označeno izdanje Simbioze.' => 'Fetching the tagged Simbioza release.',
+    'Izrađujem sigurnosnu kopiju aplikacijskog koda.' => 'Creating an application-code backup.',
+    'Ažuriram aplikacijske datoteke i čuvam privatne postavke.' =>
+        'Updating application files while preserving private settings.',
+    'Dopunjujem konfiguraciju postojećih tema.' => 'Completing the existing theme configuration.',
+    'Ažuriram i provjeravam Composer module.' => 'Updating and checking Composer modules.',
+    'Provjeravam PHP i platformske preduvjete.' => 'Checking PHP and platform requirements.',
+    'Provjeravam pokretanje aplikacije i pristup bazi.' =>
+        'Checking application bootstrap and database access.',
+    'Primjenjujem migracije baze.' => 'Applying database migrations.',
+    'Provjeravam da nema migracija na čekanju.' => 'Checking that no migrations remain pending.',
+    'Čistim aplikacijsku predmemoriju.' => 'Clearing the application cache.',
+    'Vraćam prethodno izdanje nakon prekinute nadogradnje.' =>
+        'Restoring the previous release after the interrupted update.',
+    'Nadogradnja je uspješno završena.' => 'The update completed successfully.',
+    'Nadogradnja nije uspjela.' => 'The update failed.',
+    'Nadogradnja aplikacije je u tijeku.' => 'The application update is in progress.',
     'Nadogradnja kroz CLI' => 'Update through CLI',
     'Nadogradnja iz GUI-ja nije dostupna. Upotrijebite prikazanu CLI naredbu.' =>
         'GUI updates are unavailable. Use the displayed CLI command.',

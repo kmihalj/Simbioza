@@ -259,7 +259,7 @@ TAGS;
         $this->assertStringContainsString('appendMissingMenuSettings', $updater);
         $this->assertStringContainsString('normalizeStoredThemeComponentHeights', $updater);
         $this->assertFileExists($root . '/resources/installation/theme/simbioza.zip');
-        $preflightPosition = strpos($updater, '$this->write($this->message(\'preflight\'));');
+        $preflightPosition = strpos($updater, '$this->progress(\'preflight\', 78, $this->message(\'preflight\'));');
         $themeUpgradePosition = strpos($updater, '$this->normalizeStoredThemeComponentHeights();');
         $migrationPosition = strpos($updater, '$this->migrationStarted = true;');
         $this->assertIsInt($preflightPosition);
@@ -271,11 +271,34 @@ TAGS;
         $frontController = file_get_contents($root . '/public/index.php');
         $this->assertIsString($frontController);
         $this->assertStringContainsString('/data/update-maintenance.json', $frontController);
+        $this->assertStringContainsString('/settings/setup/application-update-status', $frontController);
+        $this->assertStringContainsString('role="progressbar"', $frontController);
+        $this->assertStringContainsString('window.setTimeout(poll, 750)', $frontController);
         $maintenancePosition = strpos($frontController, '$updateMaintenanceFile');
         $autoloadPosition = strpos($frontController, 'require_once $hphAppPath');
         $this->assertIsInt($maintenancePosition);
         $this->assertIsInt($autoloadPosition);
         $this->assertLessThan($autoloadPosition, $maintenancePosition);
+    }
+
+    /**
+     * HR: GUI izvjestitelj prima ograničenu fazu, postotak i poruku bez promjene CLI izlaza.
+     * EN: The GUI reporter receives a restricted stage, percentage, and message without changing CLI output.
+     */
+    public function testProgressReporterReceivesNormalizedUpdateProgress(): void
+    {
+        $events = [];
+        $command = new ApplicationUpdateCommand(
+            dirname(__DIR__, 3),
+            ['--lang=en'],
+            static function (string $stage, int $progress, string $message) use (&$events): void {
+                $events[] = [$stage, $progress, $message];
+            },
+        );
+        $report = new \ReflectionMethod($command, 'reportProgress');
+        $report->invoke($command, 'dependencies', 140, 'Updating dependencies.');
+
+        $this->assertSame([['dependencies', 100, 'Updating dependencies.']], $events);
     }
 
     /**

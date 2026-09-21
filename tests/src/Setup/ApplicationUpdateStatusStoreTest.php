@@ -45,6 +45,8 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
         $status = (new ApplicationUpdateStatusStore($this->root))->status();
 
         $this->assertSame('running', $status['state']);
+        $this->assertSame('running', $status['stage']);
+        $this->assertNull($status['progress']);
         $this->assertSame(getmypid(), $status['pid']);
         $this->assertSame('1.2.3', $status['current_version']);
     }
@@ -61,15 +63,41 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
         $status = (new ApplicationUpdateStatusStore($this->root))->status();
 
         $this->assertSame('failed', $status['state']);
+        $this->assertSame('failed', $status['stage']);
         $this->assertNull($status['pid']);
         $this->assertSame('Application update process is no longer running.', $status['message']);
     }
 
+    /**
+     * HR: GUI dobiva ograničenu fazu i postotak, a završeno starije stanje sigurno se normalizira.
+     * EN: The GUI receives a restricted stage and percentage while legacy completed state is normalized safely.
+     */
+    public function testProgressIsNormalizedForCurrentAndLegacyStatusPayloads(): void
+    {
+        $this->writeStatus('running', getmypid(), 'dependencies', 150);
+        $running = (new ApplicationUpdateStatusStore($this->root))->status();
+        $this->assertSame('dependencies', $running['stage']);
+        $this->assertSame(100, $running['progress']);
+
+        file_put_contents($this->root . '/data/application-update-status.json', json_encode([
+            'state' => 'success',
+            'started_at' => '2026-09-21T11:07:46+00:00',
+            'finished_at' => '2026-09-21T11:08:12+00:00',
+            'pid' => null,
+            'message' => 'done',
+        ], JSON_THROW_ON_ERROR));
+        $success = (new ApplicationUpdateStatusStore($this->root))->status();
+        $this->assertSame('complete', $success['stage']);
+        $this->assertSame(100, $success['progress']);
+    }
+
     /** HR: Zapisuje jedan kontrolirani status. EN: Writes one controlled status record. */
-    private function writeStatus(string $state, int $pid): void
+    private function writeStatus(string $state, int $pid, ?string $stage = null, ?int $progress = null): void
     {
         file_put_contents($this->root . '/data/application-update-status.json', json_encode([
             'state' => $state,
+            'stage' => $stage,
+            'progress' => $progress,
             'started_at' => '2026-09-21T11:07:46+00:00',
             'finished_at' => null,
             'pid' => $pid,

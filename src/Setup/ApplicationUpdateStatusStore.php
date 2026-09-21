@@ -21,7 +21,7 @@ final readonly class ApplicationUpdateStatusStore
      * HR: Vraća normalizirano stanje i trenutačnu verziju aplikacije.
      * EN: Returns normalized state and the current application version.
      *
-     * @return array{state:string,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string}
+     * @return array{state:string,stage:string,progress:?int,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string}
      */
     public function status(): array
     {
@@ -42,10 +42,28 @@ final readonly class ApplicationUpdateStatusStore
             $state = 'failed';
             $pid = null;
             $payload['message'] = 'Application update process is no longer running.';
+            $payload['stage'] = 'failed';
         }
+
+        $stage = is_string($payload['stage'] ?? null) ? trim($payload['stage']) : '';
+        if (preg_match('/\A[a-z][a-z0-9_-]{0,31}\z/D', $stage) !== 1) {
+            $stage = match ($state) {
+                'queued' => 'queued',
+                'running' => 'running',
+                'success' => 'complete',
+                'failed' => 'failed',
+                default => 'idle',
+            };
+        }
+
+        $progress = is_int($payload['progress'] ?? null)
+        ? max(0, min(100, $payload['progress']))
+        : ($state === 'success' ? 100 : null);
 
         return [
             'state' => $state,
+            'stage' => $stage,
+            'progress' => $progress,
             'started_at' => is_string($payload['started_at'] ?? null) ? $payload['started_at'] : null,
             'finished_at' => is_string($payload['finished_at'] ?? null) ? $payload['finished_at'] : null,
             'pid' => $pid,

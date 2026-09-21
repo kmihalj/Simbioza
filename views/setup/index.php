@@ -12,7 +12,8 @@ declare(strict_types=1);
  * @var array{is_fpm:bool,helper_ready:bool,state_changes_allowed:bool,package_changes_allowed:bool,application_updates_allowed:bool,checks:list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}>} $diagnostics
  * @var list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float}> $languages
  * @var array{components:list<array{package:string,name:string,kind:string,installed_version:string,latest_version:?string,status:string}>,checked_at:?int,failures:int,updates:int} $componentUpdates
- * @var array{state:string,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string} $applicationUpdate
+ * @var array{state:string,stage:string,progress:?int,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string} $applicationUpdate
+ * @var string $applicationUpdateStatusPath
  * @var string $automaticUpdateCheckPath
  * @var string $actionPath
  * @var string $settingsMenuActiveSection
@@ -79,6 +80,37 @@ $componentUpdateUi = json_encode(
     ],
     JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR,
 );
+$applicationUpdateUi = json_encode(
+    [
+        'confirmLabel' => __('Pokrenuti sigurnosnu kopiju i nadogradnju cijele aplikacije?'),
+        'titleLabel' => __('Nadogradnja aplikacije je u tijeku'),
+        'elapsedLabel' => __('Proteklo vrijeme:'),
+        'percentLabel' => __('Napredak:'),
+        'retryLabel' => __('Osvježi prikaz'),
+        'successLabel' => __('Nadogradnja je uspješno završena. Osvježavam aplikaciju...'),
+        'failedLabel' => __('Nadogradnja nije uspjela. Provjerite administratorski zapis prije novog pokušaja.'),
+        'waitingLabel' => __('Updater radi u pozadini. Ovaj prikaz možete ostaviti otvoren.'),
+        'stages' => [
+            'queued' => __('Nadogradnja čeka sigurno pokretanje.'),
+            'preparing' => __('Pripremam nadogradnju i provjeravam okruženje.'),
+            'download' => __('Dohvaćam označeno izdanje Simbioze.'),
+            'backup' => __('Izrađujem sigurnosnu kopiju aplikacijskog koda.'),
+            'sync' => __('Ažuriram aplikacijske datoteke i čuvam privatne postavke.'),
+            'configuration' => __('Dopunjujem konfiguraciju postojećih tema.'),
+            'dependencies' => __('Ažuriram i provjeravam Composer module.'),
+            'platform' => __('Provjeravam PHP i platformske preduvjete.'),
+            'preflight' => __('Provjeravam pokretanje aplikacije i pristup bazi.'),
+            'migrations' => __('Primjenjujem migracije baze.'),
+            'verification' => __('Provjeravam da nema migracija na čekanju.'),
+            'cache' => __('Čistim aplikacijsku predmemoriju.'),
+            'rollback' => __('Vraćam prethodno izdanje nakon prekinute nadogradnje.'),
+            'complete' => __('Nadogradnja je uspješno završena.'),
+            'failed' => __('Nadogradnja nije uspjela.'),
+            'running' => __('Nadogradnja aplikacije je u tijeku.'),
+        ],
+    ],
+    JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR,
+);
 ?>
 <style>
     .setup-modules-header,
@@ -113,6 +145,24 @@ $componentUpdateUi = json_encode(
     .setup-module-cell {
         min-width: 0;
         overflow-wrap: anywhere;
+    }
+
+    .setup-update-overlay {
+        backdrop-filter: blur(0.35rem);
+        background: color-mix(in srgb, var(--bs-body-bg) 88%, transparent);
+        inset: 0;
+        overflow-y: auto;
+        padding: 1rem;
+        z-index: 2000;
+    }
+
+    .setup-update-dialog {
+        max-width: 44rem;
+        width: 100%;
+    }
+
+    .setup-update-progress {
+        height: 1.25rem;
     }
 
     @media (max-width: 991.98px) {
@@ -229,6 +279,8 @@ $componentUpdateUi = json_encode(
             class="card shadow-sm mb-4"
             data-setup-component-updates
             data-update-check-path="<?= $this->escape($automaticUpdateCheckPath) ?>"
+            data-application-update-status-path="<?= $this->escape($applicationUpdateStatusPath) ?>"
+            data-application-update-state="<?= $this->escape($applicationUpdate['state']) ?>"
         >
             <div class="card-body">
                 <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-start">
@@ -280,7 +332,12 @@ $componentUpdateUi = json_encode(
                         <?= $this->escape(__('Provjeri novo izdanje')) ?>
                                 </button>
                             </form>
-                            <form method="post" action="<?= $this->escape($actionPath) ?>" class="d-flex flex-column flex-sm-row gap-2" onsubmit="return confirm('<?= $this->escape(__('Pokrenuti sigurnosnu kopiju i nadogradnju cijele aplikacije?')) ?>')">
+                            <form
+                                method="post"
+                                action="<?= $this->escape($actionPath) ?>"
+                                class="d-flex flex-column flex-sm-row gap-2"
+                                data-setup-application-update-form
+                            >
                         <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                 <input type="hidden" name="action" value="application-update-start">
                                 <input class="form-control" name="tag" inputmode="numeric" pattern="v?[0-9]+\.[0-9]+\.[0-9]+" placeholder="<?= $this->escape(__('Zadnje izdanje ili tag 1.2.3')) ?>" aria-label="<?= $this->escape(__('Ciljno izdanje')) ?>">
@@ -499,6 +556,48 @@ $componentUpdateUi = json_encode(
         </section>
     </main>
 </div>
+<div
+    class="setup-update-overlay position-fixed align-items-center justify-content-center <?= $updateRunning ? 'd-flex' : 'd-none' ?>"
+    data-setup-update-overlay
+    data-initial-progress="<?= $applicationUpdate['progress'] === null ? '' : $this->escape((string)$applicationUpdate['progress']) ?>"
+    data-initial-stage="<?= $this->escape($applicationUpdate['stage']) ?>"
+    data-started-at="<?= $this->escape($applicationUpdate['started_at'] ?? '') ?>"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="setup-update-title"
+    aria-describedby="setup-update-stage"
+>
+    <div class="setup-update-dialog card border-primary shadow-lg">
+        <div class="card-body p-4 p-lg-5">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="spinner-border text-primary" data-setup-update-spinner aria-hidden="true"></div>
+                <div>
+                    <h2 class="h3 mb-1" id="setup-update-title"><?= $this->escape(__('Nadogradnja aplikacije je u tijeku')) ?></h2>
+                    <div class="text-body-secondary"><?= $this->escape(__('Updater radi u pozadini. Ovaj prikaz možete ostaviti otvoren.')) ?></div>
+                </div>
+            </div>
+            <p class="lead mb-3" id="setup-update-stage" data-setup-update-stage aria-live="polite"></p>
+            <div
+                class="progress setup-update-progress mb-2"
+                role="progressbar"
+                aria-label="<?= $this->escape(__('Napredak nadogradnje')) ?>"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                data-setup-update-progress
+            >
+                <div class="progress-bar progress-bar-striped progress-bar-animated" data-setup-update-progress-bar></div>
+            </div>
+            <div class="d-flex justify-content-between gap-3 small text-body-secondary">
+                <span><span><?= $this->escape(__('Napredak:')) ?></span> <strong data-setup-update-percent>—</strong></span>
+                <span><span><?= $this->escape(__('Proteklo vrijeme:')) ?></span> <strong data-setup-update-elapsed>00:00</strong></span>
+            </div>
+            <div class="alert alert-danger mt-4 mb-0 d-none" data-setup-update-error role="alert"></div>
+            <div class="text-end mt-4 d-none" data-setup-update-actions>
+                <button class="btn btn-primary" type="button" data-setup-update-reload><?= $this->escape(__('Osvježi prikaz')) ?></button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 (function () {
     'use strict';
@@ -519,6 +618,172 @@ $componentUpdateUi = json_encode(
         }
     });
     const ui = <?= $componentUpdateUi ?>;
+    const updateUi = <?= $applicationUpdateUi ?>;
+    const updateStatusPath = panel.dataset.applicationUpdateStatusPath || '';
+    const initialUpdateState = panel.dataset.applicationUpdateState || 'idle';
+    const updateForm = document.querySelector('[data-setup-application-update-form]');
+    const updateOverlay = document.querySelector('[data-setup-update-overlay]');
+    const updateStage = document.querySelector('[data-setup-update-stage]');
+    const updateProgress = document.querySelector('[data-setup-update-progress]');
+    const updateProgressBar = document.querySelector('[data-setup-update-progress-bar]');
+    const updatePercent = document.querySelector('[data-setup-update-percent]');
+    const updateElapsed = document.querySelector('[data-setup-update-elapsed]');
+    const updateSpinner = document.querySelector('[data-setup-update-spinner]');
+    const updateError = document.querySelector('[data-setup-update-error]');
+    const updateActions = document.querySelector('[data-setup-update-actions]');
+    const updateReload = document.querySelector('[data-setup-update-reload]');
+    const initialStartedAt = updateOverlay instanceof HTMLElement && updateOverlay.dataset.startedAt !== ''
+        ? Date.parse(updateOverlay.dataset.startedAt || '')
+        : Date.now();
+    let updateStartedAt = Number.isFinite(initialStartedAt) ? initialStartedAt : Date.now();
+    let updatePolling = false;
+    let updateElapsedTimer = null;
+
+    const formatElapsed = function () {
+        if (!(updateElapsed instanceof HTMLElement)) {
+            return;
+        }
+        const seconds = Math.max(0, Math.floor((Date.now() - updateStartedAt) / 1000));
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainder = seconds % 60;
+        updateElapsed.textContent = hours > 0
+            ? [hours, minutes, remainder].map((value) => String(value).padStart(2, '0')).join(':')
+            : [minutes, remainder].map((value) => String(value).padStart(2, '0')).join(':');
+    };
+
+    const stageLabel = function (stage) {
+        return typeof updateUi.stages[stage] === 'string'
+            ? updateUi.stages[stage]
+            : updateUi.stages.running;
+    };
+
+    const renderUpdate = function (update) {
+        if (!(updateOverlay instanceof HTMLElement)) {
+            return;
+        }
+        const state = typeof update.state === 'string' ? update.state : 'running';
+        const stage = typeof update.stage === 'string' ? update.stage : state;
+        const numericProgress = Number.isInteger(update.progress)
+            ? Math.max(0, Math.min(100, Number(update.progress)))
+            : null;
+        if (typeof update.started_at === 'string' && update.started_at !== '') {
+            const parsed = Date.parse(update.started_at);
+            if (Number.isFinite(parsed)) {
+                updateStartedAt = parsed;
+            }
+        }
+
+        updateOverlay.classList.remove('d-none');
+        updateOverlay.classList.add('d-flex');
+        document.body.classList.add('overflow-hidden');
+        if (updateStage instanceof HTMLElement) {
+            updateStage.textContent = state === 'success' ? updateUi.successLabel : stageLabel(stage);
+        }
+        if (updateProgressBar instanceof HTMLElement) {
+            const displayProgress = numericProgress === null ? 12 : numericProgress;
+            updateProgressBar.style.width = String(displayProgress) + '%';
+            updateProgressBar.classList.toggle('progress-bar-animated', state === 'queued' || state === 'running');
+            updateProgressBar.classList.toggle('progress-bar-striped', state === 'queued' || state === 'running');
+            updateProgressBar.classList.toggle('bg-danger', state === 'failed');
+            updateProgressBar.classList.toggle('bg-success', state === 'success');
+        }
+        if (updateProgress instanceof HTMLElement) {
+            if (numericProgress === null) {
+                updateProgress.removeAttribute('aria-valuenow');
+                updateProgress.setAttribute('aria-valuetext', stageLabel(stage));
+            } else {
+                updateProgress.setAttribute('aria-valuenow', String(numericProgress));
+                updateProgress.removeAttribute('aria-valuetext');
+            }
+        }
+        if (updatePercent instanceof HTMLElement) {
+            updatePercent.textContent = numericProgress === null ? '—' : String(numericProgress) + '%';
+        }
+        if (updateSpinner instanceof HTMLElement) {
+            updateSpinner.classList.toggle('d-none', state === 'success' || state === 'failed');
+        }
+        if (updateError instanceof HTMLElement) {
+            updateError.textContent = state === 'failed' ? updateUi.failedLabel : '';
+            updateError.classList.toggle('d-none', state !== 'failed');
+        }
+        if (updateActions instanceof HTMLElement) {
+            updateActions.classList.toggle('d-none', state !== 'failed');
+        }
+        formatElapsed();
+    };
+
+    const pollApplicationUpdate = async function () {
+        if (!updatePolling || updateStatusPath === '') {
+            return;
+        }
+        try {
+            const response = await fetch(updateStatusPath, {
+                headers: {Accept: 'application/json'},
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            const contentType = response.headers.get('content-type') || '';
+            if (!response.ok || !contentType.includes('application/json')) {
+                renderUpdate({state: 'running', stage: 'running', progress: null});
+            } else {
+                const payload = await response.json();
+                if (payload.ok !== true || typeof payload.update !== 'object' || payload.update === null) {
+                    throw new Error('Invalid update status.');
+                }
+                renderUpdate(payload.update);
+                if (payload.update.state === 'success') {
+                    updatePolling = false;
+                    window.setTimeout(function () { window.location.reload(); }, 1500);
+                    return;
+                }
+                if (payload.update.state === 'failed') {
+                    updatePolling = false;
+                    return;
+                }
+            }
+        } catch (_error) {
+            renderUpdate({state: 'running', stage: 'running', progress: null});
+        }
+        window.setTimeout(pollApplicationUpdate, 750);
+    };
+
+    const startUpdateProgress = function (update) {
+        updatePolling = true;
+        renderUpdate(update);
+        if (updateElapsedTimer === null) {
+            updateElapsedTimer = window.setInterval(formatElapsed, 1000);
+        }
+        window.setTimeout(pollApplicationUpdate, 500);
+    };
+
+    if (updateForm instanceof HTMLFormElement) {
+        updateForm.addEventListener('submit', function (event) {
+            if (!window.confirm(updateUi.confirmLabel)) {
+                event.preventDefault();
+                return;
+            }
+            updateStartedAt = Date.now();
+            startUpdateProgress({state: 'queued', stage: 'queued', progress: 0});
+        });
+    }
+
+    if (updateReload instanceof HTMLButtonElement) {
+        updateReload.addEventListener('click', function () { window.location.reload(); });
+    }
+
+    if (initialUpdateState === 'queued' || initialUpdateState === 'running') {
+        const initialProgress = updateOverlay instanceof HTMLElement
+            && /^\d+$/.test(updateOverlay.dataset.initialProgress || '')
+            ? Number(updateOverlay.dataset.initialProgress)
+            : null;
+        startUpdateProgress({
+            state: initialUpdateState,
+            stage: updateOverlay instanceof HTMLElement ? updateOverlay.dataset.initialStage || 'running' : 'running',
+            progress: initialProgress,
+            started_at: updateOverlay instanceof HTMLElement ? updateOverlay.dataset.startedAt || '' : ''
+        });
+    }
 
     const setSummary = function (payload) {
         if (!(summary instanceof HTMLElement)) {

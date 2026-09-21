@@ -62,6 +62,7 @@ final readonly class SetupController
             'languages' => $this->languages->status(),
             'componentUpdates' => $this->componentUpdates->status(),
             'applicationUpdate' => $this->updates->status(),
+            'applicationUpdateStatusPath' => $this->applicationUpdateStatusPath(),
             'automaticUpdateCheckPath' => $this->automaticUpdateCheckPath(),
             'actionPath' => $this->path(),
             'locale' => $this->translator->getLocale(),
@@ -125,6 +126,18 @@ final readonly class SetupController
         }
 
         return $this->responses->redirect($this->path());
+    }
+
+    /**
+     * HR: Vraća samo javno siguran status pozadinske nadogradnje za administratorski prikaz napretka.
+     * EN: Returns only the disclosure-safe background-update status for the administrator progress screen.
+     */
+    public function applicationUpdateStatus(): ResponseInterface
+    {
+        return $this->responses->json(
+            ['ok' => true, 'update' => $this->updates->status()],
+            headers: ['Cache-Control' => 'no-store, max-age=0'],
+        );
     }
 
     /**
@@ -298,5 +311,13 @@ final readonly class SetupController
         return $this->urls->namedRouteExists('settings.check-updates.status')
         ? $this->urls->getPathFor('settings.check-updates.status')
         : '/settings/check-updates/status';
+    }
+
+    /** HR: Vraća putanju sigurnog statusa updatera. EN: Returns the safe updater-status path. */
+    private function applicationUpdateStatusPath(): string
+    {
+        return $this->urls->namedRouteExists('setup.application-update-status')
+        ? $this->urls->getPathFor('setup.application-update-status')
+        : '/settings/setup/application-update-status';
     }
 }

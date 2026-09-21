@@ -217,12 +217,23 @@ final class ApplicationUpdateCommand
     /** @var array<string,string> */
     private array $selectedOptionalRequirements = [];
 
-    /** @param list<string> $arguments */
+    /** @var (\Closure(string,int,string):void)|null */
+    private readonly ?\Closure $progressReporter;
+
+    /**
+     * HR: Prima korijen, CLI argumente i opcionalni izvjestitelj GUI napretka.
+     * EN: Receives the root, CLI arguments, and an optional GUI progress reporter.
+     *
+     * @param list<string> $arguments
+     * @param (callable(string,int,string):void)|null $progressReporter
+     */
     public function __construct(
         private readonly string $appRoot,
         private readonly array $arguments,
+        ?callable $progressReporter = null,
     ) {
         $this->locale = $this->requestedLocale() ?? $this->installedLocale();
+        $this->progressReporter = $progressReporter === null ? null : \Closure::fromCallable($progressReporter);
     }
 
     public function run(): int
@@ -273,7 +284,7 @@ final class ApplicationUpdateCommand
 
             $this->temporaryDirectory = $this->createTemporaryDirectory();
             $sourceDirectory = $this->temporaryDirectory . '/source';
-            $this->write($this->message('download'));
+            $this->progress('download', 10, $this->message('download'));
             $this->mustRun([
                 $git,
                 'init',
@@ -314,26 +325,26 @@ final class ApplicationUpdateCommand
             $this->captureSelectedOptionalRequirements($sourceDirectory);
 
             $this->backupPath = $this->createBackup($tar, $currentTag, $targetTag);
-            $this->write(sprintf($this->message('backup'), $this->backupPath));
+            $this->progress('backup', 25, sprintf($this->message('backup'), $this->backupPath));
             $this->enableMaintenance($targetTag);
             $this->ensureModuleStateConfig();
             $this->capturePreservedPathMetadata();
             $this->captureRuntimeSettings();
 
-            $this->write($this->message('sync'));
+            $this->progress('sync', 35, $this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
             $this->restoreSelectedOptionalRequirements();
             $this->restoreRuntimeSettings();
             $this->appendMissingMenuSettings($sourceDirectory);
-            $this->write($this->message('theme_config'));
+            $this->progress('configuration', 42, $this->message('theme_config'));
             $this->normalizeStoredThemeComponentHeights();
             $this->restorePreservedPathMetadata();
             $this->normalizeReleaseConfigFileMetadata();
 
-            $this->write($this->message('composer'));
+            $this->progress('dependencies', 50, $this->message('composer'));
             $this->updateComposerDependencies($composer);
 
-            $this->write($this->message('platform'));
+            $this->progress('platform', 70, $this->message('platform'));
             $this->mustRunComposer([$composer, 'check-platform-reqs'], $this->appRoot);
             $this->mustRunComposer([$composer, 'audit', '--locked'], $this->appRoot);
 
@@ -343,7 +354,7 @@ final class ApplicationUpdateCommand
             // EN: The read-only status command forces a complete application
             //     bootstrap before migrations are marked as started. A bootstrap
             //     failure can therefore still safely restore code and packages.
-            $this->write($this->message('preflight'));
+            $this->progress('preflight', 78, $this->message('preflight'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
                 'modules',
@@ -351,13 +362,13 @@ final class ApplicationUpdateCommand
             ], $this->appRoot);
 
             $this->migrationStarted = true;
-            $this->write($this->message('migrate'));
+            $this->progress('migrations', 85, $this->message('migrate'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
                 'modules',
                 'migrate-up',
             ], $this->appRoot);
-            $this->write($this->message('status'));
+            $this->progress('verification', 92, $this->message('status'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
                 'modules',
@@ -367,11 +378,11 @@ final class ApplicationUpdateCommand
             // HR: Paketi sadržaja primjenjuju se tek uz migriranu shemu.
             // EN: Content packages are applied only after schema migrations.
             $this->mustRun([PHP_BINARY, $this->appRoot . '/scripts/update_bundled_assets.php'], $this->appRoot);
-            $this->write($this->message('cache'));
+            $this->progress('cache', 96, $this->message('cache'));
             $this->clearCache($this->appRoot . '/data/cache');
             $this->restorePreservedPathMetadata();
             $this->disableMaintenance();
-            $this->write(sprintf($this->message('success'), $targetTag));
+            $this->progress('complete', 100, sprintf($this->message('success'), $targetTag));
             return 0;
         } catch (Throwable $throwable) {
             $this->error(sprintf($this->message('failure'), $throwable->getMessage()));
@@ -386,6 +397,7 @@ final class ApplicationUpdateCommand
 
             if ($this->maintenanceEnabled && $this->backupPath !== null) {
                 try {
+                    $this->reportProgress('rollback', 60, $this->message('rollback'));
                     $this->rollback();
                 } catch (Throwable $rollbackError) {
                     $this->error(sprintf($this->message('failure'), $rollbackError->getMessage()));
@@ -1838,6 +1850,29 @@ final class ApplicationUpdateCommand
     private function message(string $key): string
     {
         return self::MESSAGES[$key][$this->locale] ?? self::MESSAGES[$key]['en'] ?? $key;
+    }
+
+    /**
+     * HR: Ispisuje CLI poruku i, kada postoji GUI omotač, atomski javlja fazu i postotak.
+     * EN: Writes the CLI message and, when a GUI wrapper exists, atomically reports its stage and percentage.
+     */
+    private function progress(string $stage, int $percentage, string $message): void
+    {
+        $this->write($message);
+        $this->reportProgress($stage, $percentage, $message);
+    }
+
+    /**
+     * HR: Šalje ograničeni napredak bez uvjetovanja samostalnog CLI rada.
+     * EN: Sends restricted progress without making standalone CLI execution depend on it.
+     */
+    private function reportProgress(string $stage, int $percentage, string $message): void
+    {
+        if ($this->progressReporter === null) {
+            return;
+        }
+
+        ($this->progressReporter)($stage, max(0, min(100, $percentage)), $message);
     }
 
     private function write(string $message): void

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -186,6 +186,23 @@ test.describe('browser flows', () => {
     const response = await page.goto('/settings/setup');
 
     expect(response?.status()).toBe(200);
+    const updateStatus = await page.evaluate(async () => {
+      const statusResponse = await fetch('/settings/setup/application-update-status', {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+
+      return { status: statusResponse.status, payload: await statusResponse.json() };
+    });
+    expect(updateStatus.status).toBe(200);
+    expect(updateStatus.payload.ok).toBe(true);
+    expect(updateStatus.payload.update).toEqual(expect.objectContaining({
+      state: expect.any(String),
+      stage: expect.any(String),
+      current_version: expect.any(String),
+    }));
+    await expect(page.locator('[data-setup-update-overlay]')).toBeHidden();
+    await expect(page.locator('[data-setup-update-progress]')).toHaveAttribute('role', 'progressbar');
     const moduleTable = page.locator('.setup-modules-grid[role="table"]');
     await expect(moduleTable).toBeVisible();
     await expect(moduleTable.getByRole('columnheader', { name: /^(Module|Modul)$/i })).toBeVisible();
@@ -247,6 +264,37 @@ test.describe('browser flows', () => {
     expect(mobileLayout.left).toBeGreaterThanOrEqual(0);
     expect(mobileLayout.right).toBeLessThanOrEqual(mobileLayout.viewportWidth);
     expect(mobileLayout.actionRight).toBeLessThanOrEqual(mobileLayout.viewportWidth);
+
+    /*
+     * HR: Aktivna GUI nadogradnja mora nakon navigacije obnoviti trajni prikaz
+     *     napretka iz privatnog statusa pozadinskog procesa.
+     * EN: An active GUI update must restore its persistent progress screen
+     *     from the background process's private status after navigation.
+     */
+    const e2eProject = process.env.HPH_E2E_PROJECT;
+    expect(e2eProject).toBeTruthy();
+    const updateStatusPath = join(e2eProject, 'data/application-update-status.json');
+    await writeFile(updateStatusPath, JSON.stringify({
+      state: 'running',
+      stage: 'configuration',
+      progress: 42,
+      started_at: new Date().toISOString(),
+      finished_at: null,
+      pid: null,
+      message: '',
+    }));
+    try {
+      const progressResponse = await page.goto('/settings/setup');
+      expect(progressResponse?.status()).toBe(200);
+      const updateOverlay = page.locator('[data-setup-update-overlay]');
+      await expect(updateOverlay).toBeVisible();
+      await expect(updateOverlay.locator('[data-setup-update-progress]')).toHaveAttribute('aria-valuenow', '42');
+      await expect(updateOverlay.locator('[data-setup-update-stage]')).toContainText(
+        /existing theme configuration|konfiguraciju postojećih tema/i,
+      );
+    } finally {
+      await rm(updateStatusPath, { force: true });
+    }
   });
 
   test('local administrator login immediately activates rights and they can be disabled', async ({ page }) => {

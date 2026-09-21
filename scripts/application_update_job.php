@@ -31,6 +31,8 @@ foreach (array_slice($argv, 1) as $argument) {
 
 writeApplicationUpdateStatus($statusPath, [
     'state' => 'running',
+    'stage' => 'preparing',
+    'progress' => 5,
     'started_at' => gmdate(DATE_ATOM),
     'finished_at' => null,
     'pid' => getmypid(),
@@ -38,9 +40,23 @@ writeApplicationUpdateStatus($statusPath, [
 ]);
 
 require $root . '/update.php';
-$exitCode = (new \Simbioza\Update\ApplicationUpdateCommand($root, $arguments))->run();
+$reportProgress = static function (string $stage, int $progress, string $message) use ($statusPath): void {
+    writeApplicationUpdateStatus($statusPath, [
+        'state' => 'running',
+        'stage' => $stage,
+        'progress' => $progress,
+        'started_at' => readApplicationUpdateStartedAt($statusPath),
+        'finished_at' => null,
+        'pid' => getmypid(),
+        'message' => $message,
+    ]);
+};
+$exitCode = (new \Simbioza\Update\ApplicationUpdateCommand($root, $arguments, $reportProgress))->run();
+$lastProgress = readApplicationUpdateProgress($statusPath);
 writeApplicationUpdateStatus($statusPath, [
     'state' => $exitCode === 0 ? 'success' : 'failed',
+    'stage' => $exitCode === 0 ? 'complete' : 'failed',
+    'progress' => $exitCode === 0 ? 100 : $lastProgress,
     'started_at' => readApplicationUpdateStartedAt($statusPath),
     'finished_at' => gmdate(DATE_ATOM),
     'pid' => null,
@@ -82,4 +98,15 @@ function readApplicationUpdateStartedAt(string $path): string
     return is_array($payload) && is_string($payload['started_at'] ?? null)
         ? $payload['started_at']
         : gmdate(DATE_ATOM);
+}
+
+/** HR: Čuva zadnji potvrđeni postotak za prikaz neuspjele faze. EN: Preserves the last confirmed percentage for a failed-stage display. */
+function readApplicationUpdateProgress(string $path): ?int
+{
+    $payload = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;
+    $progress = is_array($payload) && is_int($payload['progress'] ?? null)
+        ? $payload['progress']
+        : null;
+
+    return $progress === null ? null : max(0, min(100, $progress));
 }

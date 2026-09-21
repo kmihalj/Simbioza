@@ -21,5 +21,12 @@ return [
         [],
     ),
     new Route(HttpMethodsEnum::GET, '/settings/setup', [SetupController::class, 'index'], 'setup.index', []),
+    new Route(
+        HttpMethodsEnum::GET,
+        '/settings/setup/application-update-status',
+        [SetupController::class, 'applicationUpdateStatus'],
+        'setup.application-update-status',
+        [],
+    ),
     new Route(HttpMethodsEnum::POST, '/settings/setup', [SetupController::class, 'change'], 'setup.change', []),
 ];
