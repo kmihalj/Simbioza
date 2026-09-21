@@ -62,7 +62,7 @@ final readonly class InstallationConfigWriter
         }
 
         $this->atomicWritePhpConfig(
-            $this->paths->configDirectory() . DIRECTORY_SEPARATOR . 'modules.php',
+            $this->paths->moduleStateConfig(),
             [
                 'enabled' => (new ModuleCatalog())->packagesForSelection($optionalModules),
                 'removed' => [],
@@ -179,7 +179,13 @@ final readonly class InstallationConfigWriter
     /** HR: Izrađuje privatne zapisive direktorije. EN: Creates private writable directories. */
     private function ensureDirectories(): void
     {
-        foreach ([$this->paths->configDirectory(), $this->paths->dataDirectory()] as $directory) {
+        foreach (
+            [
+                $this->paths->configDirectory(),
+                $this->paths->dataDirectory(),
+                dirname($this->paths->moduleStateConfig()),
+            ] as $directory
+        ) {
             if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
                 throw new \RuntimeException('An installation directory could not be created.');
             }

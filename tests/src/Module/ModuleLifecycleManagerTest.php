@@ -7,10 +7,14 @@ namespace Tests\Module;
 use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\Blueprint;
+use App\Module\CommandResult;
+use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
 use App\Module\ModuleDataArchive;
 use App\Module\ModuleLifecycleManager;
 use App\Module\ModuleStateStore;
+use App\Module\NativeProcessRunner;
+use App\Module\ProcessRunnerInterface;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,6 +25,8 @@ use RuntimeException;
 use SplFileInfo;
 
 #[CoversClass(ModuleLifecycleManager::class)]
+#[CoversClass(ComposerPackageManager::class)]
+#[CoversClass(CommandResult::class)]
 #[CoversClass(ModuleDataArchive::class)]
 #[CoversClass(ModuleStateStore::class)]
 #[CoversClass(ModuleCatalog::class)]
@@ -92,7 +98,7 @@ final class ModuleLifecycleManagerTest extends TestCase
         $catalog = new ModuleCatalog();
         $this->state = new ModuleStateStore($this->root, $catalog);
         $this->state->initialize(['email']);
-        $this->assertSame(0660, fileperms($this->root . '/config/modules.php') & 0777);
+        $this->assertSame(0660, fileperms($this->root . '/data/config/modules.php') & 0777);
 
         $archives = new ModuleDataArchive($this->database, $this->root);
         $this->manager = new ModuleLifecycleManager(
@@ -158,6 +164,9 @@ final class ModuleLifecycleManagerTest extends TestCase
 
         $this->assertDirectoryExists($archive);
         $this->assertFileExists($archive . '/manifest.json');
+        $this->assertSame(02770, fileperms($this->root . '/data/module-backups') & 07777);
+        $this->assertSame(02770, fileperms(dirname($archive)) & 07777);
+        $this->assertSame(0660, fileperms($archive . '/manifest.json') & 0777);
         $this->assertFalse($this->database->schema()->hasTable(ModuleEmail::TABLE_OUTBOX));
         $this->assertFalse($this->state->isEnabled('email'));
         $email = array_values(array_filter(
@@ -185,6 +194,142 @@ final class ModuleLifecycleManagerTest extends TestCase
         $this->assertTrue($this->database->schema()->hasTable(ModuleEmail::TABLE_OUTBOX));
         $this->manager->enable('email');
         $this->assertTrue($this->state->isEnabled('email'));
+    }
+
+    /**
+     * HR: Neuspjela Composer radnja ne smije prije vremena isključiti modul ni
+     *     ukloniti njegovu shemu, a privatni cache mora biti počišćen.
+     * EN: A failed Composer operation must not disable the module or drop its
+     *     schema prematurely, and its private cache must be cleaned up.
+     */
+    public function testPackageFailureLeavesEnabledSchemaIntact(): void
+    {
+        $manifest = json_encode([
+            'require' => ['aaieduhr/heartphrame-module-email' => '^0.1.2'],
+        ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
+        file_put_contents($this->root . '/composer.json', $manifest);
+        $runner = new class implements ProcessRunnerInterface {
+            public ?string $composerCache = null;
+
+            /** HR: Bilježi privatni cache i simulira Composer kvar. EN: Records the private cache and simulates a Composer failure. */
+            public function run(array $command, string $workingDirectory): CommandResult
+            {
+                $cache = getenv('COMPOSER_CACHE_DIR');
+                $this->composerCache = is_string($cache) ? $cache : null;
+
+                return new CommandResult(1, '', 'simulated package failure');
+            }
+        };
+        $catalog = new ModuleCatalog();
+        $manager = new ModuleLifecycleManager(
+            $this->database,
+            $catalog,
+            $this->state,
+            new ModuleDataArchive($this->database, $this->root),
+            $this->root,
+            new ComposerPackageManager($catalog, $runner, $this->root),
+        );
+
+        try {
+            $manager->remove('email');
+            self::fail('The simulated Composer failure was not propagated.');
+        } catch (RuntimeException $runtimeException) {
+            $this->assertStringContainsString('simulated package failure', $runtimeException->getMessage());
+        }
+
+        $this->assertTrue($this->state->isEnabled('email'));
+        $this->assertTrue($this->database->schema()->hasTable(ModuleEmail::TABLE_OUTBOX));
+        $this->assertSame($manifest, file_get_contents($this->root . '/composer.json'));
+        $this->assertIsString($runner->composerCache);
+        $this->assertDirectoryDoesNotExist($runner->composerCache);
+    }
+
+    /**
+     * HR: Globalna migracija preskače omotač opcionalnog paketa koji nije
+     *     instaliran, ali i dalje primjenjuje aplikacijsku migraciju bez vlasnika.
+     * EN: Global migration skips the wrapper of an absent optional package
+     *     while still applying an unowned application migration.
+     */
+    public function testInstalledMigrationSetSkipsAbsentOptionalPackages(): void
+    {
+        $filteredRoot = $this->root . '/filtered';
+        foreach (['config', 'data', 'database/migrations', 'vendor/composer'] as $directory) {
+            $this->assertTrue(mkdir($filteredRoot . '/' . $directory, 0770, true));
+        }
+
+        file_put_contents(
+            $filteredRoot . '/vendor/composer/installed.json',
+            json_encode(['packages' => []], JSON_THROW_ON_ERROR),
+        );
+        file_put_contents(
+            $filteredRoot . '/database/migrations/20260608000212_install_calendar_module_schema.php',
+            "<?php\nthrow new RuntimeException('Absent Calendar migration was loaded.');\n",
+        );
+        file_put_contents(
+            $filteredRoot . '/database/migrations/20990101000000_unowned_application_migration.php',
+            <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\HeartPhrameModuleOrm\Database\MigrationInterface;
+use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\Blueprint;
+
+return new class implements MigrationInterface {
+    /** HR: Stvara probnu tablicu. EN: Creates the test table. */
+    public function up(Database $db): void
+    {
+        $db->schema()->create('module_migration_probe', static function (Blueprint $table): void {
+            $table->increments('id');
+        });
+    }
+};
+PHP,
+        );
+
+        $helper = new Helper();
+        $database = new Database(new Config($helper, [
+            'database' => [
+                'connections' => [
+                    'default' => [
+                        'driver' => 'sqlite',
+                        'database' => ':memory:',
+                    ],
+                ],
+            ],
+        ]), $helper);
+        $catalog = new ModuleCatalog();
+        $this->assertSame(
+            'calendar',
+            $catalog->slugForMigration('20990101000001_install_calendar_module_schema'),
+        );
+        $state = new ModuleStateStore($filteredRoot, $catalog);
+        $state->initialize([]);
+
+        $packages = new ComposerPackageManager(
+            $catalog,
+            new NativeProcessRunner(),
+            $filteredRoot,
+        );
+        $manager = new ModuleLifecycleManager(
+            $database,
+            $catalog,
+            $state,
+            new ModuleDataArchive($database, $filteredRoot),
+            $filteredRoot,
+            $packages,
+        );
+
+        $this->assertSame([
+            'ran' => [],
+            'pending' => ['20990101000000_unowned_application_migration'],
+        ], $manager->installedMigrationStatus());
+        $this->assertSame(
+            ['20990101000000_unowned_application_migration'],
+            $manager->migrateInstalled(),
+        );
+        $this->assertTrue($database->schema()->hasTable('module_migration_probe'));
     }
 
     /**

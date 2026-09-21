@@ -53,6 +53,7 @@ final class ApplicationUpdateCommand
 
     /** @var list<string> */
     private const RELEASE_MANAGED_CONFIG_FILES = [
+        'config/app.php',
         'config/bootstrap.php',
         'config/commands.php',
         'config/listeners.php',
@@ -246,7 +247,6 @@ final class ApplicationUpdateCommand
             }
 
             $this->acquireLock();
-            $this->capturePreservedPathMetadata();
             $rsync = $this->requireExecutable('rsync');
             $tar = $this->requireExecutable('tar');
             $composer = $this->requireExecutable('composer');
@@ -275,6 +275,8 @@ final class ApplicationUpdateCommand
             $this->backupPath = $this->createBackup($tar, $currentTag, $targetTag);
             $this->write(sprintf($this->message('backup'), $this->backupPath));
             $this->enableMaintenance($targetTag);
+            $this->ensureModuleStateConfig();
+            $this->capturePreservedPathMetadata();
             $this->captureRuntimeSettings();
 
             $this->write($this->message('sync'));
@@ -303,25 +305,22 @@ final class ApplicationUpdateCommand
             $this->write($this->message('preflight'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
-                'orm-migrate:status',
-                '--connection=default',
-                '--path=database/migrations',
+                'modules',
+                'migrate-status',
             ], $this->appRoot);
 
             $this->migrationStarted = true;
             $this->write($this->message('migrate'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
-                'orm-migrate:up',
-                '--connection=default',
-                '--path=database/migrations',
+                'modules',
+                'migrate-up',
             ], $this->appRoot);
             $this->write($this->message('status'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
-                'orm-migrate:status',
-                '--connection=default',
-                '--path=database/migrations',
+                'modules',
+                'migrate-status',
             ], $this->appRoot);
 
             // HR: Paketi sadržaja primjenjuju se tek uz migriranu shemu.
@@ -505,6 +504,84 @@ final class ApplicationUpdateCommand
     }
 
     /**
+     * HR: Starije instalacije spremale su popis modula izravno u release datoteku
+     *     app.php. Prije njezine zamjene izdvaja taj odabir u trajnu runtime
+     *     konfiguraciju pod data/ kako bi je i GUI i CLI mogli atomski mijenjati.
+     * EN: Legacy installations stored the module list directly in the release
+     *     app.php file. Before replacing it, extracts that selection into the
+     *     persistent runtime configuration under data/ so both GUI and CLI can
+     *     update it atomically without allowing FPM to replace release config.
+     */
+    private function ensureModuleStateConfig(): void
+    {
+        $moduleStatePath = $this->appRoot . '/data/config/modules.php';
+        if (is_file($moduleStatePath)) {
+            return;
+        }
+
+        $legacyModuleStatePath = $this->appRoot . '/config/modules.php';
+        $legacyModuleState = is_file($legacyModuleStatePath) ? require $legacyModuleStatePath : null;
+        $legacyAppPath = $this->appRoot . '/config/app.php';
+        $legacyApp = is_file($legacyAppPath) ? require $legacyAppPath : null;
+        $legacyModules = is_array($legacyModuleState)
+        && is_array($legacyModuleState['enabled'] ?? null)
+        ? $legacyModuleState['enabled']
+        : (is_array($legacyApp)
+            && is_array($legacyApp['modules'] ?? null)
+            && is_array($legacyApp['modules']['enabled'] ?? null)
+            ? $legacyApp['modules']['enabled']
+            : []);
+        $enabled = array_values(array_unique(array_filter(
+            $legacyModules,
+            static fn(mixed $package): bool => is_string($package) && trim($package) !== '',
+        )));
+        $removed = is_array($legacyModuleState)
+        && is_array($legacyModuleState['removed'] ?? null)
+        ? array_values(array_unique(array_filter(
+            $legacyModuleState['removed'],
+            static fn(mixed $slug): bool => is_string($slug) && trim($slug) !== '',
+        )))
+        : [];
+        if ($enabled === []) {
+            throw new RuntimeException(
+                'Legacy module selection could not be extracted before replacing config/app.php.',
+            );
+        }
+
+        $moduleStateDirectory = dirname($moduleStatePath);
+        if (!is_dir($moduleStateDirectory)) {
+            if (!mkdir($moduleStateDirectory, 02770, true) && !is_dir($moduleStateDirectory)) {
+                throw new RuntimeException('Unable to create the persistent module state directory.');
+            }
+            if (!chmod($moduleStateDirectory, 02770)) {
+                throw new RuntimeException('Unable to secure the persistent module state directory.');
+            }
+        }
+
+        $temporary = tempnam($moduleStateDirectory, '.simbioza-modules-update-');
+        if (!is_string($temporary)) {
+            throw new RuntimeException('Unable to prepare the persistent module configuration.');
+        }
+
+        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export([
+            'enabled' => $enabled,
+            'removed' => $removed,
+        ], true) . ";\n";
+        try {
+            if (file_put_contents($temporary, $contents, LOCK_EX) === false || !chmod($temporary, 0660)) {
+                throw new RuntimeException('Unable to write the persistent module configuration.');
+            }
+            if (!rename($temporary, $moduleStatePath)) {
+                throw new RuntimeException('Unable to activate the persistent module configuration.');
+            }
+        } finally {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
+        }
+    }
+
+    /**
      * HR: Spaja stalna izuzeća izdanja sa svim zatečenim administratorskim
      *     postavkama. Trajne datoteke zato ostaju na mjestu, s istim inodeom,
      *     vlasnikom i pravima, čak i kada updater radi kao odvojeni deploy korisnik.
@@ -545,8 +622,8 @@ final class ApplicationUpdateCommand
         $releaseExtra = is_array($release['extra'] ?? null) ? $release['extra'] : [];
         $releaseSimbioza = is_array($releaseExtra['simbioza'] ?? null) ? $releaseExtra['simbioza'] : [];
         $releaseConstraints = is_array($releaseSimbioza['optional-modules'] ?? null)
-            ? $releaseSimbioza['optional-modules']
-            : [];
+        ? $releaseSimbioza['optional-modules']
+        : [];
         $selected = [];
         foreach ($releaseOptional as $package => $_description) {
             if (!is_string($package) || !isset($currentRequire[$package])) {

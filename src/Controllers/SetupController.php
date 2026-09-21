@@ -186,7 +186,21 @@ final readonly class SetupController
     {
         $this->assertPackageChangesAllowed($allowed);
         $this->modules->removePrepared($slug);
-        $this->gateway->execute('package-uninstall', ['module' => $slug]);
+        try {
+            $this->gateway->execute('package-uninstall', ['module' => $slug]);
+        } catch (Throwable $throwable) {
+            // HR: Vraća cijeli modul ako privilegirana paketna radnja zakaže
+            //     nakon što je web sloj već izradio kopiju i uklonio shemu.
+            // EN: Restores the complete module if the privileged package action
+            //     fails after the web layer already backed up and removed schema.
+            $this->gateway->execute('package-install', ['module' => $slug]);
+            $this->modules->addPrepared($slug, true);
+            throw new RuntimeException(
+                __('Uklanjanje paketa nije uspjelo; modul i podaci su vraćeni.'),
+                0,
+                $throwable,
+            );
+        }
 
         return __('Modul je sigurnosno kopiran i deinstaliran.');
     }

@@ -8,7 +8,11 @@ if (!is_array($installation)) {
     $installation = [];
 }
 
-$moduleStateFile = __DIR__ . '/modules.php';
+$runtimeModuleStateFile = __DIR__ . '/../data/config/modules.php';
+$legacyModuleStateFile = __DIR__ . '/modules.php';
+$moduleStateFile = is_file($runtimeModuleStateFile)
+? $runtimeModuleStateFile
+: $legacyModuleStateFile;
 $moduleState = is_file($moduleStateFile) ? require $moduleStateFile : [];
 if (!is_array($moduleState)) {
     $moduleState = [];

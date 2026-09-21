@@ -146,7 +146,7 @@ A Simbioza release contains only the required core. An optional module's code
 is installed only when needed. An administrator does not edit `config/app.php`
 manually, but uses the CLI or **Settings → Setup and modules**; both preserve
 module order, check dependencies, and maintain the private
-`config/modules.php` file:
+`data/config/modules.php` file:
 
 ```bash
 vendor/bin/hph modules list
@@ -156,6 +156,8 @@ vendor/bin/hph modules remove calendar --yes
 vendor/bin/hph modules backups calendar
 vendor/bin/hph modules add calendar --restore
 vendor/bin/hph modules add calendar --fresh
+vendor/bin/hph modules migrate-status
+vendor/bin/hph modules migrate-up
 ```
 
 ORM, Menu, Auth, Notification, HTML Editor, Workspace, Workspace Search, and
@@ -163,16 +165,24 @@ Simbioza User are required. API, Task, Theme, Audit, E-mail, Comment, Calendar,
 Confluence Import, and Backup are optional. Theme is the only recommended
 module and is preselected for a new installation, but the user may deselect it.
 
-`disable` only stops loading a module: its schema and data remain intact, so it
-can be enabled again immediately. `remove` is available only for optional
-modules. Before removing their migrations and tables, the command writes a
-private NDJSON backup under `data/module-backups/<module>/`, then removes the
-Composer package. Its routes, services, and schema are no longer used.
+`disable` stops loading the module on the next HTTP or CLI request: its
+manifest, routes, services, and menu entries are not registered, and the
+application does not query its tables. The package, tables, data, and saved
+settings remain intact, so the module can be enabled again immediately.
+`remove` is available only for optional modules. Before removing their
+migrations and tables, the command writes a private NDJSON backup under
+`data/module-backups/<module>/`, then removes the Composer package. Its routes,
+services, and schema are no longer used.
 
 GUI package installation and removal are available only when diagnostics
 confirm the dedicated PHP-FPM pool, restricted helper, and correct
 permissions. Without them, the GUI can still enable or disable an installed
 module and shows the exact CLI command for installing or removing a package.
+
+The CLI is identical in both modes. On a verified FPM installation it
+automatically delegates package operations to the restricted deploy helper;
+without FPM, the installation owner runs Composer. State changes and
+migrations always use the same durable `data/config/modules.php` registry.
 
 On a later `add`, the command detects the newest backup. An interactive terminal
 asks whether to restore it or start fresh; automation must choose explicitly

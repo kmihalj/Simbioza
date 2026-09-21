@@ -343,18 +343,32 @@ final readonly class ModuleCatalog
     public function slugForMigration(string $migration): ?string
     {
         foreach ($this->definitions() as $slug => $definition) {
-            if (in_array(trim($migration), $definition['migrations'], true)) {
-                return $slug;
+            foreach ($definition['migrations'] as $ownedMigration) {
+                if ($this->migrationMatches($ownedMigration, $migration)) {
+                    return $slug;
+                }
             }
         }
 
         return null;
     }
 
+    /** HR: Uspoređuje migracije neovisno o vremenskoj oznaci instalacijskog omotača. EN: Compares migrations independently of an installer wrapper timestamp. */
+    public function migrationMatches(string $catalogMigration, string $actualMigration): bool
+    {
+        return $this->migrationIdentity($catalogMigration) === $this->migrationIdentity($actualMigration);
+    }
+
     /** HR: Normalizira i provjerava kratki naziv. EN: Normalizes and validates a short name. */
     public function normalizeSlug(string $slug): string
     {
         return strtolower(trim($slug));
+    }
+
+    /** HR: Vraća stabilni dio naziva migracije bez početne vremenske oznake. EN: Returns the stable migration name without its leading timestamp. */
+    private function migrationIdentity(string $migration): string
+    {
+        return preg_replace('/\A\d{14}_/', '', trim($migration)) ?? trim($migration);
     }
 
     /**

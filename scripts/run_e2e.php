@@ -167,26 +167,36 @@ function assertEmptyE2eNetworkDatabase(string $database): void
 function configureE2eApplication(string $projectDirectory): void
 {
     $configPath = $projectDirectory . '/config/app.php';
-    $configValue = require $configPath;
-    if (!is_array($configValue)) {
+    $configSource = file_get_contents($configPath);
+    if (!is_string($configSource)) {
         throw new RuntimeException('E2E application configuration is invalid.');
     }
 
-    $config = matrixStringKeyedArray($configValue, 'E2E application configuration');
-    $config['name'] = 'Simbioza E2E';
-    $localization = is_array($config['localization'] ?? null) ? $config['localization'] : [];
-    $localization['locale'] = 'en';
-    $localization['fallback_locale'] = 'en';
-    $localization['detect_browser_locale'] = false;
-    $config['localization'] = $localization;
+    // HR: Testna aplikacija mora zadržati dinamički app.php kako bi browser
+    //     stvarno dokazao enable/disable životni ciklus. Mijenjaju se samo dvije
+    //     lokalne HTTP session vrijednosti, ne rezultat učitavanja konfiguracije.
+    // EN: The test application must keep dynamic app.php so the browser genuinely
+    //     proves the enable/disable lifecycle. Only two local HTTP session values
+    //     are changed, not the evaluated configuration result.
+    $configSource = str_replace(
+        ["'cookie_secure' => 1,", "'name' => 'HEARTPHRAME_SESSION',"],
+        ["'cookie_secure' => 0,", "'name' => 'HEARTPHRAME_E2E_SESSION',"],
+        $configSource,
+        $replacementCount,
+    );
+    if ($replacementCount !== 2 || file_put_contents($configPath, $configSource) === false) {
+        throw new RuntimeException('E2E session configuration could not be prepared.');
+    }
 
-    $session = is_array($config['session'] ?? null) ? $config['session'] : [];
-    $sessionOptions = is_array($session['options'] ?? null) ? $session['options'] : [];
-    $sessionOptions['cookie_secure'] = 0;
-    $sessionOptions['name'] = 'HEARTPHRAME_E2E_SESSION';
-    $session['options'] = $sessionOptions;
-    $config['session'] = $session;
-    writeMatrixPhpConfig($configPath, $config);
+    $installationPath = $projectDirectory . '/config/installation.php';
+    $installationValue = is_file($installationPath) ? require $installationPath : [];
+    $installation = is_array($installationValue)
+    ? matrixStringKeyedArray($installationValue, 'E2E installation configuration')
+    : [];
+    $installation['name'] = 'Simbioza E2E';
+    $installation['primary_locale'] = 'en';
+    $installation['supported_locales'] = ['hr', 'en'];
+    writeMatrixPhpConfig($installationPath, $installation);
 
     $apiConfigPath = $projectDirectory . '/config/api.php';
     $apiConfigValue = require $apiConfigPath;

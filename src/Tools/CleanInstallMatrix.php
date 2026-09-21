@@ -596,23 +596,33 @@ function verifyMatrixCase(
         }
 
         $installedModules = installedMatrixModules($projectDirectory);
-        $appConfigValue = require $projectDirectory . '/config/app.php';
-        if (!is_array($appConfigValue)) {
-            throw new RuntimeException('Application configuration is not an array.');
+        // HR: Release app.php mora ostati dinamičan jer pri svakom bootstrapu
+        //     učitava trajni odabir modula. Statička testna kopija skrivala je
+        //     regresiju u kojoj GUI promijeni oznaku, ali modul ostane učitan.
+        // EN: The release app.php must remain dynamic because every bootstrap
+        //     reads the persistent module selection. A static test copy hid the
+        //     regression where the GUI changed the badge while the module stayed loaded.
+        writeMatrixPhpConfig($projectDirectory . '/config/installation.php', [
+            'name' => 'Simbioza matrix: ' . $caseName,
+            'base_path' => '',
+            'primary_locale' => 'hr',
+            'supported_locales' => ['hr', 'en'],
+            'timezone' => 'Europe/Zagreb',
+            'installed_at' => gmdate(DATE_ATOM),
+        ]);
+        $moduleStateDirectory = $projectDirectory . '/data/config';
+        if (
+            !is_dir($moduleStateDirectory)
+            && !mkdir($moduleStateDirectory, 0770, true)
+            && !is_dir($moduleStateDirectory)
+        ) {
+            throw new RuntimeException('Unable to create matrix module state directory.');
         }
 
-        $appConfig = matrixStringKeyedArray($appConfigValue, 'Application configuration');
-        $appConfig['name'] = 'Simbioza matrix: ' . $caseName;
-        $appConfig['cache_dir'] = $projectDirectory . '/data/cache';
-        $logsConfig = $appConfig['logs'] ?? [];
-        $logsConfig = is_array($logsConfig) ? $logsConfig : [];
-        $logsConfig['dir'] = $projectDirectory . '/data/logs';
-        $appConfig['logs'] = $logsConfig;
-        $modulesConfig = $appConfig['modules'] ?? [];
-        $modulesConfig = is_array($modulesConfig) ? $modulesConfig : [];
-        $modulesConfig['enabled'] = $installedModules;
-        $appConfig['modules'] = $modulesConfig;
-        writeMatrixPhpConfig($projectDirectory . '/config/app.php', $appConfig);
+        writeMatrixPhpConfig($projectDirectory . '/data/config/modules.php', [
+            'enabled' => $installedModules,
+            'removed' => [],
+        ]);
         writeMatrixPhpConfig(
             $projectDirectory . '/config/database.php',
             matrixDatabaseConfiguration($database, $projectDirectory),
@@ -661,7 +671,10 @@ function verifyMatrixCase(
         $steps['install_migrations'] = $migrationCommands;
 
         if (in_array('aaieduhr/heartphrame-module-orm', $installedModules, true)) {
-            $migrateResult = runMatrixCommand(['vendor/bin/hph', 'orm-migrate:up'], $projectDirectory);
+            $migrateResult = runMatrixCommand(
+                ['vendor/bin/hph', 'modules', 'migrate-up'],
+                $projectDirectory,
+            );
             $steps['migrate_up'] = [
                 'exit_code' => $migrateResult->exitCode,
                 'duration_seconds' => round($migrateResult->durationSeconds, 3),

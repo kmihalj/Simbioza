@@ -338,7 +338,7 @@ function installFilesystem(
     }
 
     $runtimeFiles = [
-        'config/database.php', 'config/env.php', 'config/installation.php', 'config/modules.php',
+        'config/database.php', 'config/env.php', 'config/installation.php',
         'config/editor-html.php', 'config/email.php', 'config/workspace.php',
     ];
     foreach ($runtimeFiles as $relative) {
@@ -542,6 +542,7 @@ function installFpm(
     ?string $simpleSamlConfig,
 ): void {
     $pool = fpmPool($root, $listen, $platform === 'linux', $simpleSamlConfig);
+    prepareFpmLogFiles($root);
     if ($platform === 'linux') {
         $version = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
         $baseDirectory = '/etc/php/' . $version . '/fpm-simbioza';
@@ -549,10 +550,10 @@ function installFpm(
             throw new RuntimeException('Install the php' . $version . '-fpm package before running this tool.');
         }
         $configuration = "[global]\n"
-            . "pid = /run/php-fpm-simbioza/php-fpm.pid\n"
-            . 'error_log = ' . $root . "/data/logs/php-fpm.log\n"
-            . "daemonize = no\n\n"
-            . $pool;
+        . "pid = /run/php-fpm-simbioza/php-fpm.pid\n"
+        . 'error_log = ' . $root . "/data/logs/php-fpm.log\n"
+        . "daemonize = no\n\n"
+        . $pool;
         $configurationPath = $baseDirectory . '/php-fpm.conf';
         writeSystemFile($configurationPath, $configuration, 0644, 'root', 'root');
         runCommand([$phpFpm, '--test', '--fpm-config', $configurationPath]);
@@ -565,25 +566,25 @@ function installFpm(
             '/run/php-fpm-simbioza',
         ];
         $unit = "[Unit]\nDescription=Isolated PHP-FPM for Simbioza\nAfter=network.target\n\n"
-            . "[Service]\nType=notify\n"
-            . 'ExecStart=' . $phpFpm . ' --nodaemonize --fpm-config ' . $configurationPath . "\n"
-            . "ExecReload=/bin/kill -USR2 \$MAINPID\nRestart=on-failure\n"
-            . "RuntimeDirectory=php-fpm-simbioza\nRuntimeDirectoryMode=0755\nUMask=0007\n"
-            . "ProtectSystem=strict\nProtectHome=true\nPrivateTmp=true\nPrivateDevices=true\n"
+        . "[Service]\nType=notify\n"
+        . 'ExecStart=' . $phpFpm . ' --nodaemonize --fpm-config ' . $configurationPath . "\n"
+        . "ExecReload=/bin/kill -USR2 \$MAINPID\nRestart=on-failure\n"
+        . "RuntimeDirectory=php-fpm-simbioza\nRuntimeDirectoryMode=0755\nUMask=0007\n"
+        . "ProtectSystem=strict\nProtectHome=true\nPrivateTmp=true\nPrivateDevices=true\n"
             // HR: FPM smije preko jednog root-owned helpera zatražiti od
             //     systemd-a zaseban worker. Worker ponovno uključuje
             //     NoNewPrivileges i radi kao neprivilegirani deploy račun.
             // EN: FPM may request a separate worker from systemd through one
             //     root-owned helper. The worker re-enables NoNewPrivileges
             //     and runs as the unprivileged deploy account.
-            . "ProtectProc=invisible\n"
-            . "TemporaryFileSystem=/data:ro /var/www:ro\n"
-            . 'BindReadOnlyPaths=' . systemdQuote($root) . "\n"
-            . 'InaccessiblePaths=/usr/share/simplesamlphp-aai/config '
-            . "/usr/share/simplesamlphp-aai/cert /usr/share/simplesamlphp-aai/cache /var/lib/php /run/php\n"
-            . 'ReadWritePaths=' . implode(' ', array_map('systemdQuote', $readWritePaths)) . "\n"
-            . "MemoryHigh=768M\nMemoryMax=1G\nTasksMax=64\n\n"
-            . "[Install]\nWantedBy=multi-user.target\n";
+        . "ProtectProc=invisible\n"
+        . "TemporaryFileSystem=/data:ro /var/www:ro\n"
+        . 'BindReadOnlyPaths=' . systemdQuote($root) . "\n"
+        . 'InaccessiblePaths=/usr/share/simplesamlphp-aai/config '
+        . "/usr/share/simplesamlphp-aai/cert /usr/share/simplesamlphp-aai/cache /var/lib/php /run/php\n"
+        . 'ReadWritePaths=' . implode(' ', array_map('systemdQuote', $readWritePaths)) . "\n"
+        . "MemoryHigh=768M\nMemoryMax=1G\nTasksMax=64\n\n"
+        . "[Install]\nWantedBy=multi-user.target\n";
         writeSystemFile(
             '/etc/systemd/system/php-fpm-simbioza.service',
             $unit,
@@ -608,10 +609,10 @@ function installFpm(
     }
     writeSystemFile($configurationDirectory . '/pool.conf', $pool, 0644, 'root', 'wheel');
     $global = "[global]\n"
-        . 'pid = ' . $runDirectory . "/php-fpm.pid\n"
-        . 'error_log = ' . $root . "/data/logs/php-fpm.log\n"
-        . "daemonize = no\n"
-        . 'include = ' . $configurationDirectory . "/pool.conf\n";
+    . 'pid = ' . $runDirectory . "/php-fpm.pid\n"
+    . 'error_log = ' . $root . "/data/logs/php-fpm.log\n"
+    . "daemonize = no\n"
+    . 'include = ' . $configurationDirectory . "/pool.conf\n";
     writeSystemFile($configurationDirectory . '/php-fpm.conf', $global, 0644, 'root', 'wheel');
     // HR: Alat se u instalacijskom koraku izvršava kao root, dok launchd
     //     stvarni proces pokreće kao fpm-simbioza. -R vrijedi samo za ovu
@@ -622,18 +623,18 @@ function installFpm(
     runCommand([$phpFpm, '--test', '--allow-to-run-as-root', '--fpm-config', $configurationDirectory . '/php-fpm.conf']);
 
     $plist = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-        . '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
-        . '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n"
-        . '<plist version="1.0"><dict>'
-        . '<key>Label</key><string>hr.simbioza.php-fpm</string>'
-        . '<key>UserName</key><string>fpm-simbioza</string>'
-        . '<key>ProgramArguments</key><array><string>' . htmlspecialchars($phpFpm, ENT_XML1) . '</string>'
-        . '<string>--nodaemonize</string><string>--fpm-config</string>'
-        . '<string>' . htmlspecialchars($configurationDirectory . '/php-fpm.conf', ENT_XML1) . '</string></array>'
-        . '<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>'
-        . '<key>StandardOutPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
-        . '<key>StandardErrorPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
-        . '</dict></plist>' . "\n";
+    . '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
+    . '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n"
+    . '<plist version="1.0"><dict>'
+    . '<key>Label</key><string>hr.simbioza.php-fpm</string>'
+    . '<key>UserName</key><string>fpm-simbioza</string>'
+    . '<key>ProgramArguments</key><array><string>' . htmlspecialchars($phpFpm, ENT_XML1) . '</string>'
+    . '<string>--nodaemonize</string><string>--fpm-config</string>'
+    . '<string>' . htmlspecialchars($configurationDirectory . '/php-fpm.conf', ENT_XML1) . '</string></array>'
+    . '<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>'
+    . '<key>StandardOutPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
+    . '<key>StandardErrorPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
+    . '</dict></plist>' . "\n";
     $plistPath = '/Library/LaunchDaemons/hr.simbioza.php-fpm.plist';
     writeSystemFile($plistPath, $plist, 0644, 'root', 'wheel');
     runCommand(['launchctl', 'bootout', 'system/' . 'hr.simbioza.php-fpm'], true);
@@ -658,6 +659,23 @@ function installFpm(
     }
 }
 
+/**
+ * HR: Prije root sintaktičke provjere stvara FPM logove s runtime vlasnikom.
+ *     Inače bi sama provjera ostavila root-only datoteku koju servis ne može otvoriti.
+ * EN: Creates FPM logs with the runtime owner before the root syntax check.
+ *     Otherwise the check itself would leave a root-only file the service cannot open.
+ */
+function prepareFpmLogFiles(string $root): void
+{
+    foreach (['php-fpm.log', 'php-fpm-launchd.log'] as $filename) {
+        $path = $root . '/data/logs/' . $filename;
+        if (!is_file($path) && !touch($path)) {
+            throw new RuntimeException('Unable to create FPM log: ' . $path);
+        }
+        applyMetadata($path, 'fpm-simbioza', 'run-simbioza', 0660);
+    }
+}
+
 /** HR: Sigurno navodi apsolutnu putanju u systemd direktivi. EN: Safely quotes an absolute path in a systemd directive. */
 function systemdQuote(string $path): string
 {
@@ -673,13 +691,13 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
 {
     $identity = $includeIdentity ? "user = fpm-simbioza\ngroup = app-simbioza\n" : '';
     $simpleSamlEnvironment = $simpleSamlConfig === null
-        ? ''
-        : 'env[SIMPLESAMLPHP_CONFIG_DIR] = ' . $simpleSamlConfig . "\n";
+    ? ''
+    : 'env[SIMPLESAMLPHP_CONFIG_DIR] = ' . $simpleSamlConfig . "\n";
     return "[simbioza]\n"
-        . $identity
-        . 'listen = ' . $listen . "\n"
-        . "listen.allowed_clients = 127.0.0.1\n"
-        . "pm = ondemand\npm.max_children = 8\npm.process_idle_timeout = 10s\npm.max_requests = 500\n"
+    . $identity
+    . 'listen = ' . $listen . "\n"
+    . "listen.allowed_clients = 127.0.0.1\n"
+    . "pm = ondemand\npm.max_children = 8\npm.process_idle_timeout = 10s\npm.max_requests = 500\n"
         // HR: Instalacija i Composer radnje mogu trajati dulje od zadanih 30
         //     sekundi. Ograničeni Setup worker i dalje prihvaća samo unaprijed
         //     dopuštene radnje, pa ih namjenski pool ne prekida usred promjene.
@@ -687,25 +705,25 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
         //     seconds. The restricted Setup worker still accepts only
         //     allowlisted actions, so the dedicated pool does not terminate
         //     those operations mid-change.
-        . "request_terminate_timeout = 0\n"
-        . "clear_env = yes\ncatch_workers_output = yes\ndecorate_workers_output = no\n"
-        . "security.limit_extensions = .php\n"
-        . "env[SIMBIOZA_SETUP_POOL] = 1\n"
-        . 'env[HPH_APP_PATH] = ' . $root . "\n"
-        . $simpleSamlEnvironment
-        . 'env[TMPDIR] = ' . $root . "/data/tmp\n"
-        . "env[PATH] = /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\n"
-        . 'php_admin_value[session.save_path] = ' . $root . "/data/sessions\n"
-        . 'php_admin_value[upload_tmp_dir] = ' . $root . "/data/tmp\n"
-        . 'php_admin_value[sys_temp_dir] = ' . $root . "/data/tmp\n"
-        . "php_admin_value[max_execution_time] = 0\n"
+    . "request_terminate_timeout = 0\n"
+    . "clear_env = yes\ncatch_workers_output = yes\ndecorate_workers_output = no\n"
+    . "security.limit_extensions = .php\n"
+    . "env[SIMBIOZA_SETUP_POOL] = 1\n"
+    . 'env[HPH_APP_PATH] = ' . $root . "\n"
+    . $simpleSamlEnvironment
+    . 'env[TMPDIR] = ' . $root . "/data/tmp\n"
+    . "env[PATH] = /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\n"
+    . 'php_admin_value[session.save_path] = ' . $root . "/data/sessions\n"
+    . 'php_admin_value[upload_tmp_dir] = ' . $root . "/data/tmp\n"
+    . 'php_admin_value[sys_temp_dir] = ' . $root . "/data/tmp\n"
+    . "php_admin_value[max_execution_time] = 0\n"
         // HR: Dinamičke config datoteke mijenjaju se atomskim renameom kroz
         //     Setup GUI. Namjenski pool mora ih provjeriti u svakom zahtjevu.
         // EN: Setup GUI changes dynamic config files through atomic renames.
         //     The dedicated pool must revalidate them on every request.
-        . "php_admin_flag[opcache.validate_timestamps] = On\n"
-        . "php_admin_value[opcache.revalidate_freq] = 0\n"
-        . "php_admin_value[expose_php] = Off\n";
+    . "php_admin_flag[opcache.validate_timestamps] = On\n"
+    . "php_admin_value[opcache.revalidate_freq] = 0\n"
+    . "php_admin_value[expose_php] = Off\n";
 }
 
 /** HR: Atomski zapisuje root-owned sistemsku datoteku. EN: Atomically writes a root-owned system file. */
@@ -772,8 +790,8 @@ function printChecks(
 function identityExists(string $platform, string $identity, bool $group): bool
 {
     $command = $platform === 'linux'
-        ? ['getent', $group ? 'group' : 'passwd', $identity]
-        : ['dscl', '.', '-read', ($group ? '/Groups/' : '/Users/') . $identity];
+    ? ['getent', $group ? 'group' : 'passwd', $identity]
+    : ['dscl', '.', '-read', ($group ? '/Groups/' : '/Users/') . $identity];
     return runCommand($command, true)['code'] === 0;
 }
 
@@ -784,13 +802,13 @@ function membershipExists(string $platform, string $user, string $group): bool
         return false;
     }
     $result = $platform === 'linux'
-        ? runCommand(['id', '-nG', $user], true)
-        : runCommand(['dseditgroup', '-o', 'checkmember', '-m', $user, $group], true);
+    ? runCommand(['id', '-nG', $user], true)
+    : runCommand(['dseditgroup', '-o', 'checkmember', '-m', $user, $group], true);
     if ($result['code'] !== 0) {
         return false;
     }
 
     return $platform === 'linux'
-        ? in_array($group, preg_split('/\s+/', trim($result['stdout'])) ?: [], true)
-        : str_contains(strtolower($result['stdout']), 'yes');
+    ? in_array($group, preg_split('/\s+/', trim($result['stdout'])) ?: [], true)
+    : str_contains(strtolower($result['stdout']), 'yes');
 }

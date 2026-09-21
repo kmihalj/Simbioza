@@ -160,7 +160,7 @@ final readonly class SetupDiagnostics
                 'module_state_writable',
                 'Stanje modula je zapisivo',
                 'Module state is writable',
-                $this->appRoot . '/config/modules.php',
+                $this->appRoot . '/data/config/modules.php',
                 true,
                 true,
                 true,

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Module;
 
+use App\Setup\SetupGateway;
 use RuntimeException;
+use Throwable;
 
 use function array_slice;
 use function array_values;
@@ -22,14 +24,16 @@ use const STDOUT;
 /** HR: Izlaže upravljanje ugrađenim modulima kroz jednu predvidljivu CLI naredbu. EN: Exposes bundled-module management through one predictable CLI command. */
 final readonly class ModuleCommand
 {
-    /** HR: Prima poslovni servis životnog ciklusa. EN: Receives the lifecycle business service. */
-    public function __construct(private ModuleLifecycleManager $modules)
-    {
+    /** HR: Prima životni ciklus i opcionalni FPM helper za paketne radnje. EN: Receives lifecycle and the optional FPM helper for package operations. */
+    public function __construct(
+        private ModuleLifecycleManager $modules,
+        private ?SetupGateway $gateway = null,
+    ) {
     }
 
     /**
-     * HR: Obrađuje `modules list|add|enable|disable|remove|backups` podnaredbe.
-     * EN: Handles `modules list|add|enable|disable|remove|backups` subcommands.
+     * HR: Obrađuje životni ciklus modula i migracije instaliranih paketa.
+     * EN: Handles module lifecycle and migrations for installed packages.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -46,6 +50,8 @@ final readonly class ModuleCommand
             'disable' => $this->disable($rest),
             'remove' => $this->remove($rest, $options),
             'backups' => $this->backups($rest),
+            'migrate-up' => $this->migrateUp(),
+            'migrate-status' => $this->migrateStatus(),
             'help', '--help', '-h', '' => $this->help(),
             default => $this->unknown($subcommand),
         };
@@ -90,7 +96,14 @@ final readonly class ModuleCommand
             $fresh = !$restore;
         }
 
-        $archive = $this->modules->add($slug, $restore);
+        $gateway = $this->packageGateway();
+        if ($gateway instanceof SetupGateway) {
+            $gateway->execute('package-install', ['module' => $slug]);
+            $archive = $this->modules->addPrepared($slug, $restore);
+        } else {
+            $archive = $this->modules->add($slug, $restore);
+        }
+
         fwrite(STDOUT, 'Module added: ' . $slug . ($archive !== null ? ' (restored ' . $archive . ')' : '') . PHP_EOL);
 
         return 0;
@@ -141,7 +154,24 @@ final readonly class ModuleCommand
             return 2;
         }
 
-        $archive = $this->modules->remove($slug);
+        $gateway = $this->packageGateway();
+        if ($gateway instanceof SetupGateway) {
+            $archive = $this->modules->removePrepared($slug);
+            try {
+                $gateway->execute('package-uninstall', ['module' => $slug]);
+            } catch (Throwable $throwable) {
+                // HR: Ako deploy helper zakaže, vrati paket, shemu, podatke i
+                //     enabled stanje iz upravo stvorene kopije prije prijave greške.
+                // EN: If the deploy helper fails, restore package, schema, data,
+                //     and enabled state from the just-created backup before reporting.
+                $gateway->execute('package-install', ['module' => $slug]);
+                $this->modules->addPrepared($slug, true);
+                throw new RuntimeException('Package removal failed; module state was restored.', 0, $throwable);
+            }
+        } else {
+            $archive = $this->modules->remove($slug);
+        }
+
         fwrite(STDOUT, 'Module removed: ' . $slug . PHP_EOL . 'Backup: ' . $archive . PHP_EOL);
 
         return 0;
@@ -169,6 +199,61 @@ final readonly class ModuleCommand
         return 0;
     }
 
+    /**
+     * HR: FPM CLI koristi isti ograničeni deploy helper kao GUI; obična
+     *     instalacija pada natrag na izravnu paketnu radnju trenutačnog vlasnika.
+     * EN: FPM CLI uses the same restricted deploy helper as GUI; a regular
+     *     installation falls back to a direct package operation by its owner.
+     */
+    private function packageGateway(): ?SetupGateway
+    {
+        if (
+            !$this->gateway instanceof SetupGateway
+            || !$this->gateway->isAvailable()
+            || !$this->gateway->probe()
+        ) {
+            return null;
+        }
+
+        return $this->gateway;
+    }
+
+    /** HR: Primjenjuje samo migracije stvarno instaliranih paketa. EN: Applies migrations only for actually installed packages. */
+    private function migrateUp(): int
+    {
+        $applied = $this->modules->migrateInstalled();
+        if ($applied === []) {
+            fwrite(STDOUT, "No pending migrations for installed modules.\n");
+            return 0;
+        }
+
+        foreach ($applied as $migration) {
+            fwrite(STDOUT, '[RAN] ' . $migration . PHP_EOL);
+        }
+
+        fwrite(STDOUT, 'Applied migrations: ' . count($applied) . PHP_EOL);
+
+        return 0;
+    }
+
+    /** HR: Ispisuje migracije samo stvarno instaliranih paketa. EN: Prints migrations only for actually installed packages. */
+    private function migrateStatus(): int
+    {
+        $status = $this->modules->installedMigrationStatus();
+        foreach ($status['ran'] as $migration) {
+            fwrite(STDOUT, '[RAN] ' . $migration . PHP_EOL);
+        }
+
+        foreach ($status['pending'] as $migration) {
+            fwrite(STDOUT, '[PENDING] ' . $migration . PHP_EOL);
+        }
+
+        fwrite(STDOUT, 'Executed migrations: ' . count($status['ran']) . PHP_EOL);
+        fwrite(STDOUT, 'Pending migrations: ' . count($status['pending']) . PHP_EOL);
+
+        return 0;
+    }
+
     /** HR: Ispisuje kratku pomoć. EN: Prints concise help. */
     private function help(): int
     {
@@ -181,6 +266,8 @@ Simbioza module manager / Upravljanje modulima
   vendor/bin/hph modules disable <module>
   vendor/bin/hph modules remove <module> [--yes]
   vendor/bin/hph modules backups <module>
+  vendor/bin/hph modules migrate-status
+  vendor/bin/hph modules migrate-up
 
 `disable` keeps data. `remove` first writes an NDJSON backup, then drops only
 the selected optional module schema. Required modules cannot be removed.

@@ -43,10 +43,10 @@ composer check-platform-reqs
 ## 2. Fetch a tagged release
 
 Copy only the selected tag to the server; do not retain a `.git` directory.
-Replace `0.1.74` with the actual release being installed:
+Replace `0.1.75` with the actual release being installed:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.74 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.75 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -381,10 +381,19 @@ vendor/bin/hph modules backups calendar
 vendor/bin/hph modules add calendar --restore
 ```
 
-`disable` retains tables and data. `remove` first creates an NDJSON backup in
-`data/module-backups/`, then removes the module migrations, tables, and
-Composer package. On a later add, choose `--restore` or `--fresh`. A required
-module cannot be removed, and dependencies are checked before every change.
+The same commands are used in both installation modes. On a correctly
+configured FPM installation, CLI Composer package add/remove automatically
+uses the same restricted deploy helper as the GUI; the signed-in maintainer
+runs `enable`, `disable`, and migrations directly. Without dedicated FPM, the
+installation owner performs package operations. Routine work needs no `sudo`
+in either mode.
+
+On the next request, `disable` stops loading the module manifest, routes,
+services, menu entries, and tables, while retaining its package, tables, and
+data. `remove` first creates an NDJSON backup in `data/module-backups/`, then
+removes the module migrations, tables, and Composer package. On a later add,
+choose `--restore` or `--fresh`. A required module cannot be removed, and
+dependencies are checked before every change.
 
 Confluence Import is not needed for normal display of already imported pages.
 Removal still stops if any content version contains an unresolved temporary
@@ -409,7 +418,10 @@ example only; it is not enabled automatically. See the
 ## 13. Updates
 
 In dedicated FPM mode, updates can be checked and started from GUI Setup. The
-same CLI is always available:
+background job then runs as the restricted `simbioza-deploy` account, while
+the FPM process receives no write access to application code.
+
+The same CLI works in both installation modes:
 
 ```bash
 php update.php --check
@@ -419,14 +431,41 @@ php update.php
 To select a tag:
 
 ```bash
-php update.php --tag=0.1.74
+php update.php --tag=0.1.75
 ```
+
+On a dedicated FPM installation, run it as the signed-in maintainer who became
+a member of `deploy-simbioza` and `run-simbioza` after initial setup and a new
+login session. Do not run the updater as `fpm-simbioza`; `sudo` is not needed:
+
+```bash
+cd /srv/simbioza
+php update.php --check
+php update.php
+```
+
+Without dedicated FPM, run the same commands as the Unix account that owns the
+application code and writable settings. If the permissions check fails, fix
+ownership once; do not routinely run the web application or updater as `root`.
 
 The updater backs up code, enables maintenance, preserves private
 configuration and data, updates tagged packages, verifies bootstrap, applies
 migrations, refreshes bundled guides and the theme, and clears caches. A
 failure before migrations rolls back automatically; after migrations start,
 maintenance remains enabled for controlled recovery.
+
+`data/update-maintenance.json` is an updater safety guard. Do not move or
+delete it until you have verified that no update process is running. The
+updater removes it after success or a safe automatic rollback. After a failure
+that occurred once migrations had started, it deliberately keeps the guard in
+place and prints the backup path for controlled recovery.
+
+On the first update of a legacy installation, the updater extracts the current
+module state from the static `config/app.php` or legacy `config/modules.php`
+into persistent `data/config/modules.php`, then installs the new dynamic
+configuration. The selection remains unchanged, GUI and CLI can both use an
+atomic replacement of the same file, and FPM still cannot modify release
+configuration.
 
 The existing administrator-managed settings menu remains untouched. When a new
 release provides settings for a new module or feature, the updater appends only
@@ -489,7 +528,7 @@ php scripts/configure_fpm_setup.php \
 --check \
 --app-root=/srv/simbioza \
 --maintainer=LOGIN
-vendor/bin/hph orm-migrate:status
+vendor/bin/hph modules migrate-status
 composer check-platform-reqs
 ```
 

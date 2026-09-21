@@ -75,16 +75,18 @@ $services = [
     ComposerPackageManager::class => static function (ContainerInterface $container): ComposerPackageManager {
         $catalog = $container->get(ModuleCatalog::class);
         $runner = $container->get(ProcessRunnerInterface::class);
+        $state = $container->get(ModuleStateStore::class);
         $config = $container->get(ConfigInterface::class);
         if (
             !$catalog instanceof ModuleCatalog
             || !$runner instanceof ProcessRunnerInterface
+            || !$state instanceof ModuleStateStore
             || !$config instanceof ConfigInterface
         ) {
             throw new RuntimeException('Composer package services are unavailable.');
         }
 
-        return new ComposerPackageManager($catalog, $runner, $config->getAppRootDir());
+        return new ComposerPackageManager($catalog, $runner, $config->getAppRootDir(), $state);
     },
     SetupRequestStore::class => static function (ContainerInterface $container): SetupRequestStore {
         $config = $container->get(ConfigInterface::class);
@@ -185,11 +187,12 @@ $services = [
     },
     ModuleCommand::class => static function (ContainerInterface $container): ModuleCommand {
         $modules = $container->get(ModuleLifecycleManager::class);
-        if (!$modules instanceof ModuleLifecycleManager) {
-            throw new RuntimeException('The module lifecycle manager is unavailable.');
+        $gateway = $container->get(SetupGateway::class);
+        if (!$modules instanceof ModuleLifecycleManager || !$gateway instanceof SetupGateway) {
+            throw new RuntimeException('The module CLI services are unavailable.');
         }
 
-        return new ModuleCommand($modules);
+        return new ModuleCommand($modules, $gateway);
     },
     SetupController::class => static function (ContainerInterface $container): SetupController {
         $responses = $container->get(ResponseFactory::class);

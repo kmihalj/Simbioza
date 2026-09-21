@@ -74,6 +74,14 @@ final readonly class InstallationPaths
         return $this->configDirectory() . DIRECTORY_SEPARATOR . 'installation.php';
     }
 
+    /** HR: Vraća runtime stanje modula zapisivo iz GUI-ja i CLI-ja. EN: Returns GUI- and CLI-writable module runtime state. */
+    public function moduleStateConfig(): string
+    {
+        return $this->dataDirectory()
+        . DIRECTORY_SEPARATOR . 'config'
+        . DIRECTORY_SEPARATOR . 'modules.php';
+    }
+
     /** HR: Vraća putanju trajnog instalacijskog locka. EN: Returns the permanent installation lock path. */
     public function lockFile(): string
     {

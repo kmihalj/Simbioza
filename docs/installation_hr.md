@@ -44,10 +44,10 @@ composer check-platform-reqs
 ## 2. Dohvat označenog izdanja
 
 Na poslužitelj se kopiraju samo datoteke odabranog taga, bez trajnog `.git`
-direktorija. Zamijenite `0.1.74` stvarnim izdanjem koje instalirate:
+direktorija. Zamijenite `0.1.75` stvarnim izdanjem koje instalirate:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.74 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.75 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -381,10 +381,18 @@ vendor/bin/hph modules backups calendar
 vendor/bin/hph modules add calendar --restore
 ```
 
-`disable` ostavlja tablice i podatke. `remove` najprije izrađuje NDJSON kopiju u
-`data/module-backups/`, zatim uklanja migracije, tablice i Composer paket. Pri
-ponovnom dodavanju odaberite `--restore` ili `--fresh`. Obvezni modul nije
-moguće ukloniti, a ovisnosti se provjeravaju prije svake promjene.
+Iste naredbe koriste se u oba načina instalacije. Na ispravno podešenoj FPM
+instalaciji CLI za Composerovo dodavanje i uklanjanje paketa automatski koristi
+isti ograničeni deploy helper kao GUI; `enable`, `disable` i migracije izvršava
+izravno prijavljeni održavatelj. Bez namjenskog FPM-a paketne radnje izvršava
+vlasnik instalacije. Ni u jednom slučaju za redovni rad nije potreban `sudo`.
+
+`disable` pri sljedećem zahtjevu prestaje učitavati manifest, rute, servise,
+stavke izbornika i tablice modula, ali ostavlja paket, tablice i podatke.
+`remove` najprije izrađuje NDJSON kopiju u `data/module-backups/`, zatim uklanja
+migracije, tablice i Composer paket. Pri ponovnom dodavanju odaberite
+`--restore` ili `--fresh`. Obvezni modul nije moguće ukloniti, a ovisnosti se
+provjeravaju prije svake promjene.
 
 Confluence Import nije potreban za normalan prikaz već uvezenih stranica.
 Uklanjanje se ipak zaustavlja ako neka verzija sadržaja još sadrži privremenu
@@ -409,7 +417,10 @@ primjer; ne uključuje se automatski. Detalji su u
 ## 13. Nadogradnja
 
 U namjenskom FPM načinu nadogradnju možete provjeriti i pokrenuti iz GUI
-Setupa. U svakom okruženju dostupan je isti CLI:
+Setupa. Pozadinski posao tada radi kao ograničeni `simbioza-deploy`, a FPM
+proces ne dobiva pravo pisanja po aplikacijskom kodu.
+
+Isti CLI radi u oba načina instalacije:
 
 ```bash
 php update.php --check
@@ -419,14 +430,42 @@ php update.php
 Za određeni tag:
 
 ```bash
-php update.php --tag=0.1.74
+php update.php --tag=0.1.75
 ```
+
+Na namjenskoj FPM instalaciji naredbu pokreće prijavljeni održavatelj koji je
+nakon početnog podešavanja i ponovne prijave član grupa `deploy-simbioza` i
+`run-simbioza`. Ne pokrećite updater kao `fpm-simbioza` i ne treba koristiti
+`sudo`:
+
+```bash
+cd /srv/simbioza
+php update.php --check
+php update.php
+```
+
+Na instalaciji bez namjenskog FPM-a iste naredbe pokreće Unix korisnik koji je
+vlasnik aplikacijskog koda i zapisivih postavki. Ako provjera prava ne prolazi,
+ispravite vlasništvo jednom; nemojte rutinski pokretati web aplikaciju ili
+updater kao `root`.
 
 Updater izrađuje kopiju koda, uključuje održavanje, čuva privatnu konfiguraciju
 i podatke, ažurira tagirane pakete, provjerava bootstrap, primjenjuje migracije,
 osvježava ugrađene upute i temu te čisti cache. Neuspjeh prije migracija vraća
 prethodno stanje; nakon početka migracija održavanje ostaje uključeno radi
 sigurnog ručnog oporavka.
+
+Datoteka `data/update-maintenance.json` dio je zaštite updatera. Ne premještajte
+je niti brišite dok ne provjerite da nema aktivnog procesa ažuriranja. Nakon
+uspjeha ili sigurnog automatskog povrata updater je sam uklanja; nakon greške
+koja se dogodila poslije početka migracija ostavlja je namjerno i ispisuje
+putanju sigurnosne kopije za kontrolirani oporavak.
+
+Pri prvoj nadogradnji starije instalacije updater iz statičkog `config/app.php`
+ili stare `config/modules.php` izdvaja zatečeno stanje u trajni
+`data/config/modules.php`, a zatim postavlja novu dinamičku konfiguraciju. Time
+se postojeći odabir ne mijenja, GUI i CLI mogu sigurno koristiti atomsku
+zamjenu iste datoteke, a FPM i dalje ne može mijenjati release konfiguraciju.
 
 Postojeći administratorski izbornik postavki ostaje netaknut. Ako novo izdanje
 donese postavke novog modula ili značajke, updater dodaje samo nedostajuće
@@ -488,7 +527,7 @@ php scripts/configure_fpm_setup.php \
 --check \
 --app-root=/srv/simbioza \
 --maintainer=KORISNIK
-vendor/bin/hph orm-migrate:status
+vendor/bin/hph modules migrate-status
 composer check-platform-reqs
 ```
 

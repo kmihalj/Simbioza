@@ -7,6 +7,7 @@ namespace Tests\Module;
 use App\Module\CommandResult;
 use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
+use App\Module\ModuleStateStore;
 use App\Module\ProcessRunnerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +18,8 @@ use SplFileInfo;
 
 #[CoversClass(ComposerPackageManager::class)]
 #[CoversClass(ModuleCatalog::class)]
+#[CoversClass(ModuleStateStore::class)]
+#[CoversClass(CommandResult::class)]
 final class ComposerPackageManagerTest extends TestCase
 {
     private string $root;
@@ -113,6 +116,76 @@ final class ComposerPackageManagerTest extends TestCase
         $manager->registerCurrentAutoloader();
 
         $this->assertTrue(class_exists($namespace . '\\LoadedClass'));
+    }
+
+    /**
+     * HR: Razvojno ograničenje paketa preživljava uklanjanje i ponovnu instalaciju.
+     * EN: A development package constraint survives removal and reinstallation.
+     */
+    public function testRemovalAndReinstallationPreserveCurrentConstraint(): void
+    {
+        $package = 'aaieduhr/heartphrame-module-api';
+        file_put_contents(
+            $this->root . '/composer.json',
+            json_encode(['require' => [$package => 'dev-main']], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n",
+        );
+        $this->writeInstalledMetadata([$package]);
+        $state = new ModuleStateStore($this->root, new ModuleCatalog());
+        $state->initialize(['api']);
+
+        $runner = new class ($this->root, $package) implements ProcessRunnerInterface {
+            /** @var list<string|null> */
+            public array $observedConstraints = [];
+
+            /** HR: Prima probni korijen i paket. EN: Receives the test root and package. */
+            public function __construct(private readonly string $root, private readonly string $package)
+            {
+            }
+
+            /**
+             * HR: Oponaša Composerovu osvježenu installed.json datoteku.
+             * EN: Emulates Composer's refreshed installed.json file.
+             */
+            public function run(array $command, string $workingDirectory): CommandResult
+            {
+                $manifest = json_decode(
+                    (string)file_get_contents($this->root . '/composer.json'),
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR,
+                );
+                $constraint = is_array($manifest['require'] ?? null)
+                && is_string($manifest['require'][$this->package] ?? null)
+                ? $manifest['require'][$this->package]
+                : null;
+                $this->observedConstraints[] = $constraint;
+                $packages = $constraint === null ? [] : [[
+                    'name' => $this->package,
+                    'version' => 'dev-main',
+                    'type' => 'heartphrame-module',
+                ]];
+                file_put_contents(
+                    $this->root . '/vendor/composer/installed.json',
+                    json_encode(['packages' => $packages], JSON_THROW_ON_ERROR) . "\n",
+                );
+
+                return new CommandResult(0, '', '');
+            }
+        };
+        $manager = new ComposerPackageManager(new ModuleCatalog(), $runner, $this->root, $state);
+
+        $manager->uninstall('api');
+        $this->assertSame('dev-main', $state->requirementConstraint('api'));
+        $manager->install('api');
+
+        $this->assertSame([null, 'dev-main'], $runner->observedConstraints);
+        $manifest = json_decode(
+            (string)file_get_contents($this->root . '/composer.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertSame('dev-main', $manifest['require'][$package] ?? null);
     }
 
     /**

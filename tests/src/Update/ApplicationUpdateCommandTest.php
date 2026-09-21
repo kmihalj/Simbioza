@@ -252,7 +252,6 @@ TAGS;
         }
 
         $preservedFiles = [
-            'config/app.php',
             'config/api.php',
             'config/backup.php',
             'config/calendar.php',
@@ -277,6 +276,9 @@ TAGS;
                 file_put_contents($source . '/' . $relativePath, 'release:' . $relativePath);
             }
         }
+
+        file_put_contents($root . '/config/app.php', 'old static application config');
+        file_put_contents($source . '/config/app.php', 'new dynamic release config');
 
         $preservedInodes = [];
         foreach ($preservedFiles as $relativePath) {
@@ -315,12 +317,55 @@ TAGS;
             $this->assertSame($preservedInodes[$relativePath], fileinode($root . '/' . $relativePath));
         }
 
+        $this->assertSame('new dynamic release config', file_get_contents($root . '/config/app.php'));
         $this->assertSame('new release routes', file_get_contents($root . '/config/routes.php'));
         $this->assertSame('new release services', file_get_contents($root . '/config/services.php'));
         $this->assertSame('new release database example', file_get_contents($root . '/config/database.php.dist'));
         $this->assertSame('new release policy', file_get_contents($root . '/config/new-policy.php'));
         $this->assertSame('install me', file_get_contents($root . '/new-release-file.php'));
         $this->assertFileDoesNotExist($root . '/obsolete.php');
+    }
+
+    /**
+     * HR: Stari statički app.php prije zamjene postaje trajni modules.php,
+     *     a postojeće stanje modula nikada se ne prepisuje.
+     * EN: A legacy static app.php becomes persistent modules.php before it is
+     *     replaced, while existing module state is never overwritten.
+     */
+    public function testLegacyModuleSelectionIsExtractedOnlyOnce(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-modules-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root . '/config', 0770, true));
+        file_put_contents($root . '/config/app.php', <<<'PHP'
+<?php
+
+return [
+    'modules' => [
+        'enabled' => [
+            'aaieduhr/heartphrame-module-orm',
+            'aaieduhr/heartphrame-module-theme',
+        ],
+    ],
+];
+PHP);
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $extract = new \ReflectionMethod($command, 'ensureModuleStateConfig');
+        $extract->invoke($command);
+
+        $statePath = $root . '/data/config/modules.php';
+        $state = require $statePath;
+        $this->assertSame([
+            'aaieduhr/heartphrame-module-orm',
+            'aaieduhr/heartphrame-module-theme',
+        ], $state['enabled']);
+        $this->assertSame([], $state['removed']);
+        $this->assertSame(0660, fileperms($statePath) & 0777);
+
+        file_put_contents($statePath, "<?php return ['enabled' => ['kept'], 'removed' => ['theme']];\n");
+        $extract->invoke($command);
+        $this->assertSame(['enabled' => ['kept'], 'removed' => ['theme']], require $statePath);
     }
 
     /**

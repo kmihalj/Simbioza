@@ -14,8 +14,11 @@ use RuntimeException;
 use SplFileInfo;
 
 use function array_fill_keys;
+use function array_keys;
 use function array_reverse;
+use function array_values;
 use function file_get_contents;
+use function glob;
 use function is_array;
 use function is_file;
 use function is_scalar;
@@ -24,6 +27,7 @@ use function method_exists;
 use function pathinfo;
 use function preg_match;
 use function rtrim;
+use function sort;
 use function str_contains;
 use function str_replace;
 use function trim;
@@ -160,15 +164,29 @@ final readonly class ModuleLifecycleManager
         }
 
         $archive = $this->archives->create($slug, $definition['tables']);
-        $this->state->disable($slug);
-
         $ran = array_fill_keys($this->ranMigrations(), true);
-        foreach (array_reverse($definition['migrations']) as $migrationName) {
-            if (!isset($ran[$migrationName])) {
+        $ownedMigrations = [];
+        foreach (array_reverse($definition['migrations']) as $catalogMigration) {
+            $migrationName = $this->resolvedMigrationName($catalogMigration, $ran);
+            if ($migrationName === null || !isset($ran[$migrationName])) {
                 continue;
             }
 
-            $migration = $this->migration($migrationName);
+            // HR: Migraciju učitaj prije uklanjanja Composer paketa; omotač
+            //     nakon uspješnog uklanjanja više ne može autoloadati klasu modula.
+            // EN: Load the migration before removing the Composer package; its
+            //     wrapper can no longer autoload the module class afterwards.
+            $ownedMigrations[$migrationName] = $this->migration($migrationName);
+        }
+
+        // HR: Paketna pogreška mora ostaviti aktivnu shemu i stanje netaknutima.
+        // EN: A package failure must leave the active schema and state untouched.
+        if ($removePackage && $this->packages instanceof ComposerPackageManager) {
+            $this->packages->uninstall($slug);
+        }
+
+        $this->state->disable($slug);
+        foreach ($ownedMigrations as $migrationName => $migration) {
             if (method_exists($migration, 'down')) {
                 $migration->down($this->database);
             }
@@ -189,9 +207,6 @@ final readonly class ModuleLifecycleManager
         }
 
         $this->state->markRemoved($slug);
-        if ($removePackage && $this->packages instanceof ComposerPackageManager) {
-            $this->packages->uninstall($slug);
-        }
 
         return $archive;
     }
@@ -231,7 +246,12 @@ final readonly class ModuleLifecycleManager
         }
 
         $migrations = [];
-        foreach ($definition['migrations'] as $migrationName) {
+        foreach ($definition['migrations'] as $catalogMigration) {
+            $migrationName = $this->resolvedMigrationName($catalogMigration);
+            if ($migrationName === null) {
+                throw new RuntimeException('Module migration is missing: ' . $catalogMigration);
+            }
+
             $migrations[$migrationName] = $this->migration($migrationName);
         }
 
@@ -263,6 +283,44 @@ final readonly class ModuleLifecycleManager
         $this->optionalDefinition($slug);
 
         return $this->archives->all($slug);
+    }
+
+    /**
+     * HR: Primjenjuje aplikacijske migracije samo za stvarno instalirane
+     *     pakete. Isključeni modul ostaje uključen u skup jer mu je shema sačuvana.
+     * EN: Applies application migrations only for packages that are actually
+     *     installed. A disabled module remains in the set because its schema is retained.
+     *
+     * @return list<string>
+     */
+    public function migrateInstalled(): array
+    {
+        return array_values($this->database->migrator()->migrate($this->installedMigrations()));
+    }
+
+    /**
+     * HR: Vraća status migracija instaliranih paketa bez učitavanja omotača
+     *     opcionalnih paketa koji nisu prisutni u Composer instalaciji.
+     * EN: Returns migration status for installed packages without loading
+     *     wrappers belonging to optional packages absent from Composer.
+     *
+     * @return array{ran:list<string>,pending:list<string>}
+     */
+    public function installedMigrationStatus(): array
+    {
+        $migrations = $this->installedMigrations();
+        $ranLookup = array_fill_keys($this->ranMigrations(), true);
+        $ran = [];
+        $pending = [];
+        foreach (array_keys($migrations) as $name) {
+            if (isset($ranLookup[$name])) {
+                $ran[] = $name;
+            } else {
+                $pending[] = $name;
+            }
+        }
+
+        return ['ran' => $ran, 'pending' => $pending];
     }
 
     /**
@@ -319,8 +377,9 @@ final readonly class ModuleLifecycleManager
      */
     private function schemaInstalled(array $definition, array $ran): bool
     {
-        foreach ($definition['migrations'] as $migration) {
-            if (!isset($ran[$migration])) {
+        foreach ($definition['migrations'] as $catalogMigration) {
+            $migration = $this->resolvedMigrationName($catalogMigration, $ran);
+            if ($migration === null || !isset($ran[$migration])) {
                 return false;
             }
         }
@@ -344,6 +403,76 @@ final readonly class ModuleLifecycleManager
         }
 
         return $migrations;
+    }
+
+    /**
+     * HR: Učitava migracijske datoteke izdanja, ali preskače one kojima katalog
+     *     dodjeljuje paket koji nije instaliran. Time minimalna instalacija ne
+     *     pokušava requireati nepostojeći vendor kod opcionalnog modula.
+     * EN: Loads release migration files while skipping those assigned by the
+     *     catalog to a package that is not installed. This prevents a minimal
+     *     installation from requiring absent optional-module vendor code.
+     *
+     * @return array<string,MigrationInterface>
+     */
+    private function installedMigrations(): array
+    {
+        $installedPackages = $this->packages?->installedPackages();
+        $definitions = $this->catalog->definitions();
+
+        $files = glob(rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/database/migrations/*.php') ?: [];
+        sort($files, SORT_NATURAL);
+        $migrations = [];
+        foreach ($files as $path) {
+            $name = pathinfo($path, PATHINFO_FILENAME);
+            $owner = $name !== '' ? $this->catalog->slugForMigration($name) : null;
+            if ($name === '') {
+                continue;
+            }
+
+            if (
+                $owner !== null
+                && isset($definitions[$owner])
+                && !$this->packageInstalled($owner, $definitions[$owner]['package'], $installedPackages)
+            ) {
+                continue;
+            }
+
+            $migrations[$name] = $this->migration($name);
+        }
+
+        return $migrations;
+    }
+
+    /**
+     * HR: Pronalazi stvarni omotač migracije, uključujući onaj kojem je čarobnjak
+     *     pri instalaciji dodijelio novu vremensku oznaku.
+     * EN: Finds the actual migration wrapper, including one assigned a fresh
+     *     timestamp by the installation wizard.
+     *
+     * @param array<string,true> $ran
+     */
+    private function resolvedMigrationName(string $catalogMigration, array $ran = []): ?string
+    {
+        $files = glob(rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/database/migrations/*.php') ?: [];
+        $candidates = [];
+        foreach ($files as $path) {
+            $name = pathinfo($path, PATHINFO_FILENAME);
+            if ($name !== '' && $this->catalog->migrationMatches($catalogMigration, $name)) {
+                $candidates[] = $name;
+            }
+        }
+
+        sort($candidates, SORT_NATURAL);
+        if ($ran !== []) {
+            foreach (array_reverse($candidates) as $candidate) {
+                if (isset($ran[$candidate])) {
+                    return $candidate;
+                }
+            }
+        }
+
+        return $candidates !== [] ? $candidates[array_key_last($candidates)] : null;
     }
 
     /**

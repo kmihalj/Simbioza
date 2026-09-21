@@ -59,9 +59,14 @@ final readonly class ModuleDataArchive
      */
     public function create(string $slug, array $tables): string
     {
-        $directory = $this->root($slug) . '/' . date('Ymd-His') . '-' . bin2hex(random_bytes(4));
-        if (!mkdir($directory . '/tables', 0700, true) && !is_dir($directory . '/tables')) {
+        $root = $this->prepareSharedRoot($slug);
+        $directory = $root . '/' . date('Ymd-His') . '-' . bin2hex(random_bytes(4));
+        if (!mkdir($directory . '/tables', 02770, true) && !is_dir($directory . '/tables')) {
             throw new RuntimeException('Unable to create the module backup directory.');
+        }
+
+        if (!chmod($directory, 02770) || !chmod($directory . '/tables', 02770)) {
+            throw new RuntimeException('Unable to secure the shared module backup directory.');
         }
 
         $manifest = [
@@ -106,7 +111,7 @@ final readonly class ModuleDataArchive
                 fclose($stream);
             }
 
-            chmod($path, 0600);
+            chmod($path, 0660);
             $manifest['tables'][] = ['name' => $table, 'rows' => $count];
         }
 
@@ -119,7 +124,7 @@ final readonly class ModuleDataArchive
             throw new RuntimeException('Unable to write the module backup manifest.');
         }
 
-        chmod($manifestPath, 0600);
+        chmod($manifestPath, 0660);
 
         return $directory;
     }
@@ -253,5 +258,29 @@ final readonly class ModuleDataArchive
     private function root(string $slug): string
     {
         return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/module-backups/' . $slug;
+    }
+
+    /**
+     * HR: Priprema privatni backup korijen zapisiv FPM-u i CLI održavateljima
+     *     iz iste runtime grupe. Eksplicitni chmod poništava stroži process umask.
+     * EN: Prepares a private backup root writable by FPM and CLI maintainers in
+     *     the same runtime group. Explicit chmod overrides a stricter process umask.
+     */
+    private function prepareSharedRoot(string $slug): string
+    {
+        $base = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/module-backups';
+        foreach ([$base, $base . '/' . $slug] as $directory) {
+            if (!is_dir($directory)) {
+                if (!mkdir($directory, 02770) && !is_dir($directory)) {
+                    throw new RuntimeException('Unable to create the shared module backup root.');
+                }
+
+                if (!chmod($directory, 02770)) {
+                    throw new RuntimeException('Unable to secure the shared module backup root.');
+                }
+            }
+        }
+
+        return $base . '/' . $slug;
     }
 }

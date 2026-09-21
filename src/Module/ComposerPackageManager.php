@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Module;
 
 use Composer\Autoload\ClassLoader;
+use FilesystemIterator;
 use JsonException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
+use SplFileInfo;
 
 /**
  * HR: Dodaje i uklanja samo pakete iz fiksnog kataloga modula. Korisnički
@@ -21,6 +25,7 @@ final readonly class ComposerPackageManager
         private ModuleCatalog $catalog,
         private ProcessRunnerInterface $processes,
         private string $appRoot,
+        private ?ModuleStateStore $state = null,
     ) {
     }
 
@@ -127,7 +132,8 @@ final readonly class ComposerPackageManager
             return;
         }
 
-        $this->changeRequirement($definition['package'], $this->catalog->constraintFor($slug), true);
+        $constraint = $this->state?->requirementConstraint($slug) ?? $this->catalog->constraintFor($slug);
+        $this->changeRequirement($definition['package'], $constraint, true);
         if (!$this->isInstalled($slug)) {
             throw new RuntimeException('Composer completed without installing module package: ' . $slug);
         }
@@ -141,7 +147,9 @@ final readonly class ComposerPackageManager
             return;
         }
 
-        $this->changeRequirement($definition['package'], $this->catalog->constraintFor($slug), false);
+        $constraint = $this->productionRequirement($definition['package']) ?? $this->catalog->constraintFor($slug);
+        $this->state?->rememberRequirementConstraint($slug, $constraint);
+        $this->changeRequirement($definition['package'], $constraint, false);
         if ($this->isInstalled($slug)) {
             throw new RuntimeException('Composer completed without removing module package: ' . $slug);
         }
@@ -166,9 +174,20 @@ final readonly class ComposerPackageManager
     /** HR: Provjerava je li paket trajno odabran za produkciju. EN: Checks whether a package is persistently selected for production. */
     private function isProductionRequirement(string $package): bool
     {
-        $manifest = $this->readManifest();
+        return $this->productionRequirement($package) !== null;
+    }
 
-        return is_array($manifest['require'] ?? null) && isset($manifest['require'][$package]);
+    /** HR: Vraća trenutačno produkcijsko ograničenje paketa. EN: Returns the package's current production constraint. */
+    private function productionRequirement(string $package): ?string
+    {
+        $require = $this->readManifest()['require'] ?? null;
+        if (!is_array($require) || !is_string($require[$package] ?? null)) {
+            return null;
+        }
+
+        $constraint = trim($require[$package]);
+
+        return $constraint !== '' ? $constraint : null;
     }
 
     /**
@@ -315,11 +334,68 @@ final readonly class ComposerPackageManager
             '--no-ansi',
             '--optimize-autoloader',
         ];
-        $result = $this->processes->run($command, $this->appRoot);
+        $cache = $this->privateComposerCache();
+        $previousCache = getenv('COMPOSER_CACHE_DIR');
+        putenv('COMPOSER_CACHE_DIR=' . $cache);
+        try {
+            $result = $this->processes->run($command, $this->appRoot);
+        } finally {
+            if ($previousCache === false) {
+                putenv('COMPOSER_CACHE_DIR');
+            } else {
+                putenv('COMPOSER_CACHE_DIR=' . $previousCache);
+            }
+
+            $this->removePrivateComposerCache($cache);
+        }
+
         if ($result->exitCode !== 0) {
             $message = trim($result->stderr) !== '' ? trim($result->stderr) : trim($result->stdout);
             throw new RuntimeException('Composer module operation failed: ' . $message);
         }
+    }
+
+    /**
+     * HR: Za svaku paketnu radnju stvara cache u vlasništvu trenutačnog
+     *     FPM/deploy/CLI korisnika i tako izbjegava Git dubious-owner kvar.
+     * EN: Creates a per-operation cache owned by the current FPM/deploy/CLI
+     *     account, preventing Git dubious-owner failures across identities.
+     */
+    private function privateComposerCache(): string
+    {
+        $root = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/tmp';
+        if (!is_dir($root) && !mkdir($root, 0770, true) && !is_dir($root)) {
+            throw new RuntimeException('Unable to create the private Composer cache root.');
+        }
+
+        $cache = $root . '/composer-module-' . bin2hex(random_bytes(8));
+        if (!mkdir($cache, 0700)) {
+            throw new RuntimeException('Unable to create a private Composer module cache.');
+        }
+
+        return $cache;
+    }
+
+    /** HR: Uklanja samo jednokratni Composer cache ove radnje. EN: Removes only this operation's one-time Composer cache. */
+    private function removePrivateComposerCache(string $cache): void
+    {
+        if (!is_dir($cache)) {
+            return;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($cache, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        foreach ($iterator as $entry) {
+            if (!$entry instanceof SplFileInfo) {
+                continue;
+            }
+
+            $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+        }
+
+        rmdir($cache);
     }
 
     /**

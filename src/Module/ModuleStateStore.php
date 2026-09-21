@@ -16,8 +16,10 @@ use function in_array;
 use function is_array;
 use function is_file;
 use function is_string;
+use function preg_match;
 use function rename;
 use function tempnam;
+use function trim;
 use function unlink;
 use function var_export;
 
@@ -87,6 +89,30 @@ final readonly class ModuleStateStore
         ));
     }
 
+    /** HR: Vraća zapamćeno ograničenje paketa za ponovnu instalaciju. EN: Returns the remembered package constraint for reinstallation. */
+    public function requirementConstraint(string $slug): ?string
+    {
+        return $this->requirementConstraints()[$this->catalog->normalizeSlug($slug)] ?? null;
+    }
+
+    /** HR: Pamti točno ograničenje uklonjenog paketa bez promjene stanja modula. EN: Remembers a removed package's exact constraint without changing module state. */
+    public function rememberRequirementConstraint(string $slug, string $constraint): void
+    {
+        $slug = $this->catalog->normalizeSlug($slug);
+        if (!in_array($slug, $this->catalog->optionalSlugs(), true)) {
+            throw new RuntimeException('Only optional module constraints can be remembered.');
+        }
+
+        $constraint = trim($constraint);
+        if (preg_match('/\A[^\x00-\x1F\x7F]{1,128}\z/D', $constraint) !== 1) {
+            throw new RuntimeException('The module package constraint is invalid.');
+        }
+
+        $constraints = $this->requirementConstraints();
+        $constraints[$slug] = $constraint;
+        $this->write($this->enabledPackages(), $this->removedSlugs(), $constraints);
+    }
+
     /** HR: Provjerava je li modul omogućen. EN: Checks whether a module is enabled. */
     public function isEnabled(string $slug): bool
     {
@@ -143,7 +169,7 @@ final readonly class ModuleStateStore
      */
     public function initialize(array $optionalSlugs): void
     {
-        $this->write($this->catalog->packagesForSelection($optionalSlugs), []);
+        $this->write($this->catalog->packagesForSelection($optionalSlugs), [], []);
     }
 
     /**
@@ -156,7 +182,10 @@ final readonly class ModuleStateStore
     {
         $path = $this->path();
         if (!is_file($path)) {
-            return [];
+            $path = $this->legacyPath();
+            if (!is_file($path)) {
+                return [];
+            }
         }
 
         $state = require $path;
@@ -182,18 +211,36 @@ final readonly class ModuleStateStore
      *
      * @param list<string> $enabled
      * @param list<string> $removed
+     * @param array<string,string>|null $constraints
      */
-    private function write(array $enabled, array $removed): void
+    private function write(array $enabled, array $removed, ?array $constraints = null): void
     {
         $path = $this->path();
+        $directory = dirname($path);
+        if (!is_dir($directory)) {
+            if (!mkdir($directory, 02770, true) && !is_dir($directory)) {
+                throw new RuntimeException('Unable to create the module state directory.');
+            }
+
+            // HR: mkdir poštuje process umask. Eksplicitna prava nakon stvaranja
+            //     nužna su da i FPM i CLI održavatelj mogu atomski zamijeniti stanje.
+            // EN: mkdir honors the process umask. Explicit post-create permissions
+            //     are required so both FPM and the CLI maintainer can atomically replace state.
+            if (!chmod($directory, 02770)) {
+                throw new RuntimeException('Unable to secure the module state directory.');
+            }
+        }
+
         $temporary = tempnam(dirname($path), '.simbioza-modules-');
         if (!is_string($temporary)) {
             throw new RuntimeException('Unable to create a temporary module configuration file.');
         }
 
+        $constraints ??= $this->requirementConstraints();
         $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export([
             'enabled' => $this->orderedPackages($enabled),
             'removed' => array_values($removed),
+            'constraints' => $constraints,
         ], true) . ";\n";
         try {
             if (file_put_contents($temporary, $contents, LOCK_EX) === false || !chmod($temporary, 0660)) {
@@ -219,6 +266,34 @@ final readonly class ModuleStateStore
     }
 
     /**
+     * HR: Vraća samo sigurna zapamćena ograničenja opcionalnih paketa.
+     * EN: Returns only safe remembered constraints for optional packages.
+     * @return array<string,string>
+     */
+    private function requirementConstraints(): array
+    {
+        $stored = $this->read()['constraints'] ?? [];
+        if (!is_array($stored)) {
+            return [];
+        }
+
+        $allowed = array_fill_keys($this->catalog->optionalSlugs(), true);
+        $constraints = [];
+        foreach ($stored as $slug => $constraint) {
+            if (
+                is_string($slug)
+                && isset($allowed[$slug])
+                && is_string($constraint)
+                && preg_match('/\A[^\x00-\x1F\x7F]{1,128}\z/D', $constraint) === 1
+            ) {
+                $constraints[$slug] = $constraint;
+            }
+        }
+
+        return $constraints;
+    }
+
+    /**
      * HR: Vraća pakete jedinstveno i u bootstrap redoslijedu.
      * EN: Returns unique packages in bootstrap order.
      *
@@ -240,6 +315,12 @@ final readonly class ModuleStateStore
 
     /** HR: Vraća privatnu putanju konfiguracije modula. EN: Returns the private module configuration path. */
     private function path(): string
+    {
+        return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/config/modules.php';
+    }
+
+    /** HR: Čita staru putanju samo radi prijelaza. EN: Reads the legacy path only for transition. */
+    private function legacyPath(): string
     {
         return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/config/modules.php';
     }

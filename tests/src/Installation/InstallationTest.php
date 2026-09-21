@@ -694,13 +694,13 @@ PHP);
         $this->assertSame(21, $result['migration_count']);
         $this->assertSame('', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
-        $moduleState = require $paths->configDirectory() . '/modules.php';
+        $moduleState = require $paths->moduleStateConfig();
         $this->assertIsArray($moduleState);
         // HR: Web-installer prvo piše privatno; jednokratni FPM `--finalize`
         //     zatim postavlja zajedničku runtime grupu i 0660.
         // EN: The web installer writes privately first; the one-time FPM
         //     `--finalize` then applies the shared runtime group and mode 0660.
-        $this->assertSame(0600, fileperms($paths->configDirectory() . '/modules.php') & 0777);
+        $this->assertSame(0600, fileperms($paths->moduleStateConfig()) & 0777);
         $this->assertNotContains('aaieduhr/heartphrame-module-calendar', $moduleState['enabled']);
         $this->assertNotContains('aaieduhr/heartphrame-module-theme', $moduleState['enabled']);
 
@@ -738,7 +738,7 @@ PHP);
         );
         $this->assertSame(0, $exit, implode("\n", $output));
         $this->assertStringNotContainsString('Simbioza theme updated', implode("\n", $output));
-        $unchangedModuleState = require $paths->configDirectory() . '/modules.php';
+        $unchangedModuleState = require $paths->moduleStateConfig();
         $this->assertNotContains('aaieduhr/heartphrame-module-backup', $unchangedModuleState['enabled']);
         $this->assertNotContains('aaieduhr/heartphrame-module-theme', $unchangedModuleState['enabled']);
     }
