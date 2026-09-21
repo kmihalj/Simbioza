@@ -153,6 +153,9 @@ TAGS;
             '/else \{\s*installIdentities\([^;]+;\s*installHelper\(/s',
             $source,
         );
+        $this->assertStringContainsString('--quiet --collect --unit="$unit"', $source);
+        $this->assertStringContainsString('--property=ExitType=cgroup', $source);
+        $this->assertStringNotContainsString('--wait --pipe --collect', $source);
     }
 
     /**

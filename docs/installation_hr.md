@@ -157,7 +157,9 @@ putanje. Ograničeni root-owned helper prihvaća samo nasumični ID unaprijed
 provjerenog zahtjeva. Na Linuxu zatim preko systemd-a pokreće zaseban,
 neprivilegirani `simbioza-deploy` worker s ponovno uključenim
 `NoNewPrivileges`; web proces ne dobiva opću root ljusku ni izravan pristup
-Composeru.
+Composeru. Privremena jedinica prati cijelu procesnu grupu (`ExitType=cgroup`),
+pa pozadinska nadogradnja ostaje nadzirana i nakon što GUI dobije početnu
+potvrdu, sve do stvarnog završetka updatera.
 
 Provjera ne mijenja sustav:
 
@@ -432,7 +434,7 @@ php update.php
 Za određeni tag:
 
 ```bash
-php update.php --tag=0.1.77
+php update.php --tag=0.1.78
 ```
 
 Na namjenskoj FPM instalaciji naredbu pokreće prijavljeni održavatelj koji je
@@ -447,10 +449,18 @@ php update.php --check
 php update.php
 ```
 
-Ako je namjenski FPM bio podešen izdanjem 0.1.75 ili starijim, nakon prve
+Ako je namjenski FPM bio podešen izdanjem 0.1.77 ili starijim, nakon prve
 nadogradnje jednom ponovite `--finalize` iz 6. poglavlja. Time se ograničeno
-pravo helpera dopunjuje za CLI održavatelje; nakon tog jednokratnog sistemskog
-koraka buduće CLI i GUI nadogradnje ne traže `sudo`.
+pravo helpera dopunjuje za CLI održavatelje i osvježava systemd način
+pozadinske nadogradnje; nakon tog jednokratnog sistemskog koraka buduće CLI i
+GUI nadogradnje ne traže `sudo`.
+
+Ako stariji GUI ostane na stanju **Nadogradnja čeka pokretanje**, a u
+`data/logs/application-update.log` nema novog zapisa i zapisani PID više ne
+postoji, nadogradnja nije započela i aplikacijski podaci nisu mijenjani.
+Nadogradite jednom kroz CLI na 0.1.78 ili novije, zatim ponovite `--finalize`.
+Nova verzija takav zaostali status prikazuje kao neuspjel umjesto da trajno
+zaključa gumb za novi pokušaj.
 
 Na instalaciji bez namjenskog FPM-a iste naredbe pokreće Unix korisnik koji je
 vlasnik aplikacijskog koda i zapisivih postavki. Ako provjera prava ne prolazi,

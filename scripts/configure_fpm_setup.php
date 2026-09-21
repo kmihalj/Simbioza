@@ -497,8 +497,11 @@ case "$1" in
   *[!0-9a-f]*|'') exit 64 ;;
 esac
 [ "${#1}" -eq 48 ] || exit 64
-exec /usr/bin/systemd-run --quiet --wait --pipe --collect \
+unit="simbioza-setup-$1.service"
+result=__REQUEST_DIRECTORY__/"$1.result.json"
+/usr/bin/systemd-run --quiet --collect --unit="$unit" \
   --uid=simbioza-deploy --gid=deploy-simbioza \
+  --property=ExitType=cgroup \
   --property=SupplementaryGroups=run-simbioza \
   --property=ProtectSystem=full --property=ProtectHome=true \
   --property=PrivateTmp=true --property=PrivateDevices=true \
@@ -507,6 +510,23 @@ exec /usr/bin/systemd-run --quiet --wait --pipe --collect \
   --setenv=HOME=__HOME__ --setenv=COMPOSER_HOME=__HOME__/.composer \
   --setenv=PATH=/usr/local/bin:/usr/bin:/bin \
   __PHP__ __WORKER__ "$1"
+
+# HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
+# pozadinske nadogradnje. ExitType=cgroup čuva updater unutar privremene jedinice.
+# EN: The worker returns a small validated result to the web request before the
+# background update finishes. ExitType=cgroup keeps it in the transient unit.
+attempt=0
+while [ "$attempt" -lt 36000 ]; do
+  [ -f "$result" ] && exit 0
+  state=$(/usr/bin/systemctl show --property=ActiveState --value "$unit" 2>/dev/null || true)
+  case "$state" in
+    activating|active|deactivating) ;;
+    *) [ -f "$result" ] && exit 0; exit 70 ;;
+  esac
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+exit 75
 SH;
     } else {
         $helper = <<<'SH'
@@ -524,8 +544,14 @@ exec /usr/bin/sudo -n -u simbioza-deploy -- __PHP__ __WORKER__ "$1"
 SH;
     }
     $helper = str_replace(
-        ['__ROOT__', '__HOME__', '__PHP__', '__WORKER__'],
-        [escapeshellarg($root), escapeshellarg($home), escapeshellarg($php), escapeshellarg($worker)],
+        ['__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__'],
+        [
+            escapeshellarg($root),
+            escapeshellarg($root . '/data/setup-requests'),
+            escapeshellarg($home),
+            escapeshellarg($php),
+            escapeshellarg($worker),
+        ],
         $helper,
     );
     writeSystemFile('/usr/local/sbin/simbioza-setup', $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');

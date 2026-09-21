@@ -156,7 +156,9 @@ to documented runtime paths. The restricted root-owned helper accepts only the
 random ID of a prevalidated request. On Linux it then asks systemd to run a
 separate unprivileged `simbioza-deploy` worker with `NoNewPrivileges`
 re-enabled; the web process receives neither a general root shell nor direct
-Composer access.
+Composer access. The transient unit tracks the complete process group
+(`ExitType=cgroup`), so a background update remains supervised after the GUI
+receives its initial acknowledgement and until the updater actually exits.
 
 The read-only check is:
 
@@ -434,7 +436,7 @@ php update.php
 To select a tag:
 
 ```bash
-php update.php --tag=0.1.77
+php update.php --tag=0.1.78
 ```
 
 On a dedicated FPM installation, run it as the signed-in maintainer who became
@@ -449,10 +451,18 @@ php update.php --check
 php update.php
 ```
 
-If dedicated FPM was configured with release 0.1.75 or earlier, run the
+If dedicated FPM was configured with release 0.1.77 or earlier, run the
 section 6 `--finalize` command once after the first update. This extends the
-restricted helper permission to CLI maintainers; after that one-time system
-step, future CLI and GUI updates need no `sudo`.
+restricted helper permission to CLI maintainers and refreshes the systemd
+background-update mode; after that one-time system step, future CLI and GUI
+updates need no `sudo`.
+
+If an older GUI remains at **The update is queued**, while
+`data/logs/application-update.log` has no new entry and the recorded PID no
+longer exists, the update never started and application data was not changed.
+Update once through the CLI to 0.1.78 or newer, then repeat `--finalize`. The
+new release reports such a stale status as failed instead of permanently
+locking the retry button.
 
 Without dedicated FPM, run the same commands as the Unix account that owns the
 application code and writable settings. If the permissions check fails, fix

@@ -38,6 +38,11 @@ final readonly class ApplicationUpdateStatusStore
         }
 
         $pid = is_int($payload['pid'] ?? null) && $payload['pid'] > 0 ? $payload['pid'] : null;
+        if (in_array($state, ['queued', 'running'], true) && $pid !== null && !$this->processExists($pid)) {
+            $state = 'failed';
+            $pid = null;
+            $payload['message'] = 'Application update process is no longer running.';
+        }
 
         return [
             'state' => $state,
@@ -62,5 +67,28 @@ final readonly class ApplicationUpdateStatusStore
         $version = is_file($path) ? trim((string)file_get_contents($path)) : '';
 
         return preg_match('/\A(?:v)?\d+\.\d+\.\d+\z/D', $version) === 1 ? $version : '?';
+    }
+
+    /**
+     * HR: Razlikuje aktivan pozadinski updater od zapisa koji je ostao nakon
+     *     prekinutog procesa; EPERM također znači da proces drugog korisnika postoji.
+     * EN: Distinguishes a live background updater from a record left after a
+     *     terminated process; EPERM also means that another user's process exists.
+     */
+    private function processExists(int $pid): bool
+    {
+        if (PHP_OS_FAMILY === 'Linux') {
+            return is_dir('/proc/' . $pid);
+        }
+
+        if (!function_exists('posix_kill')) {
+            return true;
+        }
+
+        if (@posix_kill($pid, 0)) {
+            return true;
+        }
+
+        return function_exists('posix_get_last_error') && posix_get_last_error() === 1;
     }
 }
