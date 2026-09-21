@@ -16,12 +16,12 @@ Ova politika ne jamči rok odgovora ili popravka.
 ## Report privately / Prijavite privatno
 
 Please use [GitHub's private vulnerability reporting](https://github.com/kmihalj/Simbioza/security/advisories/new)
-or email [kmihalj@mac.com](mailto:kmihalj@mac.com).
+or email [kmihalj@me.com](mailto:kmihalj@me.com).
 Do not open a public issue or pull request containing exploit details, secrets,
 private data, or an unfixed vulnerability.
 
 Za prijavu upotrijebite [GitHubovu privatnu prijavu ranjivosti](https://github.com/kmihalj/Simbioza/security/advisories/new)
-ili pišite na [kmihalj@mac.com](mailto:kmihalj@mac.com).
+ili pišite na [kmihalj@me.com](mailto:kmihalj@me.com).
 Nemojte otvarati javni issue ili pull request s detaljima iskorištavanja,
 tajnama, privatnim podacima ili neispravljenom ranjivošću.
 

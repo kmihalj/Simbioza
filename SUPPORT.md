@@ -18,7 +18,7 @@ podršku.
 2. Search [existing issues](https://github.com/kmihalj/Simbioza/issues).
 3. If the problem is still open, [create an issue](https://github.com/kmihalj/Simbioza/issues/new)
    for a reproducible bug, documentation error, or focused feature request.
-   For private support inquiries, email [kmihalj@mac.com](mailto:kmihalj@mac.com).
+   For private support inquiries, email [kmihalj@me.com](mailto:kmihalj@me.com).
 
 ### Hrvatski
 
@@ -28,7 +28,7 @@ podršku.
 2. Pretražite [postojeće prijave](https://github.com/kmihalj/Simbioza/issues).
 3. Ako problem nije riješen, [otvorite prijavu](https://github.com/kmihalj/Simbioza/issues/new)
    za ponovljivu grešku, pogrešku u dokumentaciji ili konkretan prijedlog.
-   Za privatni upit pišite na [kmihalj@mac.com](mailto:kmihalj@mac.com).
+   Za privatni upit pišite na [kmihalj@me.com](mailto:kmihalj@me.com).
 
 For a bug, include the Simbioza release, relevant module versions, PHP version,
 database type, deployment type (FPM or non-FPM), reproduction steps, expected
