@@ -5,6 +5,9 @@ declare(strict_types=1);
 
 namespace Simbioza\Update;
 
+use App\Module\NativeProcessRunner;
+use App\Setup\SetupGateway;
+use App\Setup\SetupRequestStore;
 use JsonException;
 use RuntimeException;
 use Throwable;
@@ -100,8 +103,20 @@ final class ApplicationUpdateCommand
             'en' => 'Another update is already running.',
         ],
         'write_access' => [
-            'hr' => 'Korijen aplikacije nije zapisiv. Pokrenite: sudo php update.php',
-            'en' => 'The application root is not writable. Run: sudo php update.php',
+            'hr' => 'Korijen aplikacije nije zapisiv. Pokrenite updater kao vlasnik instalacije ili ponovno dovršite namjenski FPM Setup; ne pokrećite ga kao root.',
+            'en' => 'The application root is not writable. Run the updater as the installation owner or finalize the dedicated FPM Setup again; do not run it as root.',
+        ],
+        'delegating' => [
+            'hr' => 'Namjenska FPM instalacija: nadogradnju predajem ograničenom deploy helperu...',
+            'en' => 'Dedicated FPM installation: handing the update to the restricted deploy helper...',
+        ],
+        'delegate_timeout' => [
+            'hr' => 'Isteklo je vrijeme čekanja na pozadinsku FPM nadogradnju. Provjerite privatni zapis data/logs/application-update.log.',
+            'en' => 'Timed out while waiting for the background FPM update. Check the private data/logs/application-update.log.',
+        ],
+        'delegate_status' => [
+            'hr' => 'Pozadinska FPM nadogradnja nije vratila valjan status.',
+            'en' => 'The background FPM update did not return a valid status.',
         ],
         'current_latest' => [
             'hr' => 'Trenutačni tag: %s; zadnji dostupni tag: %s.',
@@ -242,6 +257,10 @@ final class ApplicationUpdateCommand
                 return 0;
             }
 
+            if ($this->shouldDelegateToSetupHelper()) {
+                return $this->delegateToSetupHelper($targetTag);
+            }
+
             if (!is_writable($this->appRoot)) {
                 throw new RuntimeException($this->message('write_access'));
             }
@@ -257,17 +276,39 @@ final class ApplicationUpdateCommand
             $this->write($this->message('download'));
             $this->mustRun([
                 $git,
-                '-c',
-                'advice.detachedHead=false',
-                'clone',
+                'init',
+                '--quiet',
+                $sourceDirectory,
+            ]);
+            $this->mustRun([
+                $git,
+                '-C',
+                $sourceDirectory,
+                'remote',
+                'add',
+                'origin',
+                self::REPOSITORY,
+            ]);
+            $this->mustRun([
+                $git,
+                '-C',
+                $sourceDirectory,
+                'fetch',
                 '--quiet',
                 '--depth',
                 '1',
-                '--branch',
-                $targetTag,
-                '--single-branch',
-                self::REPOSITORY,
+                'origin',
+                'refs/tags/' . $targetTag,
+            ]);
+            $this->mustRun([
+                $git,
+                '-C',
                 $sourceDirectory,
+                '-c',
+                'advice.detachedHead=false',
+                'checkout',
+                '--quiet',
+                'FETCH_HEAD',
             ]);
             $this->assertReleaseSource($sourceDirectory, $targetTag);
             $this->captureSelectedOptionalRequirements($sourceDirectory);
@@ -434,6 +475,186 @@ final class ApplicationUpdateCommand
         $composer = json_decode((string)file_get_contents($composerFile), true);
         if (!is_array($composer) || ($composer['name'] ?? null) !== 'aaieduhr/simbioza') {
             throw new RuntimeException('The downloaded release does not identify as Simbioza.');
+        }
+    }
+
+    /**
+     * HR: Prepoznaje namjensku FPM instalaciju samo kada root-owned helper
+     *     izričito cilja worker upravo ove instalacije, a CLI ne radi kao
+     *     vlasnik aplikacijskog koda.
+     * EN: Recognises a dedicated FPM installation only when the root-owned
+     *     helper explicitly targets this installation's worker and the CLI is
+     *     not already running as the application-code owner.
+     */
+    private function shouldDelegateToSetupHelper(): bool
+    {
+        if (!function_exists('posix_geteuid')) {
+            return false;
+        }
+
+        $owner = fileowner($this->appRoot);
+        if (!is_int($owner) || posix_geteuid() === $owner) {
+            return false;
+        }
+
+        $setupPath = $this->appRoot . '/config/setup.php';
+        $setup = is_file($setupPath) ? require $setupPath : null;
+        if (!is_array($setup) || !empty($setup['direct_local_testing'])) {
+            return false;
+        }
+
+        $helper = is_string($setup['helper'] ?? null) ? $setup['helper'] : '';
+
+        return self::requiresHelperDelegation(
+            posix_geteuid(),
+            $owner,
+            self::helperTargetsInstallation($helper, $this->appRoot),
+        );
+    }
+
+    /**
+     * HR: Odvaja čistu odluku o delegiranju kako bi se provjerila bez stvarnih
+     *     sistemskih korisnika: vlasnik koda radi izravno, ostali samo kroz
+     *     helper potvrđen za istu instalaciju.
+     * EN: Separates the pure delegation decision so it can be verified without
+     *     real system accounts: the code owner runs directly, while other
+     *     identities use only a helper confirmed for the same installation.
+     */
+    private static function requiresHelperDelegation(
+        int $effectiveUid,
+        int $applicationOwnerUid,
+        bool $helperTargetsInstallation,
+    ): bool {
+        return $helperTargetsInstallation && $effectiveUid !== $applicationOwnerUid;
+    }
+
+    /**
+     * HR: Provjerava da globalni helper nije konfiguriran za neku drugu
+     *     Simbioza instalaciju na istom poslužitelju.
+     * EN: Verifies that the global helper is not configured for another
+     *     Simbioza installation on the same host.
+     */
+    private static function helperTargetsInstallation(string $helper, string $appRoot): bool
+    {
+        if ($helper === '' || !is_file($helper) || !is_executable($helper) || !is_readable($helper)) {
+            return false;
+        }
+
+        $contents = file_get_contents($helper);
+
+        return is_string($contents)
+            && str_contains($contents, rtrim($appRoot, DIRECTORY_SEPARATOR) . '/scripts/setup_worker.php');
+    }
+
+    /**
+     * HR: Iz običnog administratorskog CLI-ja pokreće istu strogo dopuštenu
+     *     pozadinsku radnju kao GUI Setup i čeka njezin konačni status. Sam
+     *     CLI nikada ne dobiva vlasništvo nad release kodom ni opću root ljusku.
+     * EN: From an ordinary administrator CLI, starts the same strictly
+     *     allowlisted background action as GUI Setup and waits for its final
+     *     status. The CLI receives neither release-code ownership nor a general
+     *     root shell.
+     */
+    private function delegateToSetupHelper(string $targetTag): int
+    {
+        $autoload = $this->appRoot . '/vendor/autoload.php';
+        $setupPath = $this->appRoot . '/config/setup.php';
+        if (!is_file($autoload) || !is_file($setupPath)) {
+            throw new RuntimeException($this->message('write_access'));
+        }
+        require_once $autoload;
+        $setup = require $setupPath;
+        if (!is_array($setup)) {
+            throw new RuntimeException($this->message('write_access'));
+        }
+
+        $helper = is_string($setup['helper'] ?? null) ? $setup['helper'] : '';
+        $requestDirectory = is_string($setup['request_dir'] ?? null)
+            ? $setup['request_dir']
+            : $this->appRoot . '/data/setup-requests';
+        $requests = new SetupRequestStore($requestDirectory);
+        $gateway = new SetupGateway(
+            $requests,
+            new NativeProcessRunner(),
+            $this->appRoot,
+            $helper,
+            !empty($setup['direct_local_testing']),
+        );
+        if (!$gateway->isAvailable()) {
+            throw new RuntimeException($this->message('write_access'));
+        }
+
+        $logPath = $this->appRoot . '/data/logs/application-update.log';
+        clearstatcache(true, $logPath);
+        $logOffset = is_file($logPath) ? filesize($logPath) : 0;
+        $logOffset = is_int($logOffset) ? $logOffset : 0;
+        $this->write($this->message('delegating'));
+        $gateway->execute('application-update-start', [
+            'locale' => $this->locale,
+            'tag' => $targetTag,
+        ]);
+
+        $statusPath = $this->appRoot . '/data/application-update-status.json';
+        $deadline = time() + 3600;
+        while (time() <= $deadline) {
+            $this->drainDelegatedLog($logPath, $logOffset);
+            clearstatcache(true, $statusPath);
+            $status = is_file($statusPath)
+                ? json_decode((string)file_get_contents($statusPath), true)
+                : null;
+            $state = is_array($status) && is_string($status['state'] ?? null)
+                ? $status['state']
+                : '';
+            if ($state === 'success') {
+                $this->drainDelegatedLog($logPath, $logOffset);
+                return 0;
+            }
+            if ($state === 'failed') {
+                $this->drainDelegatedLog($logPath, $logOffset);
+                $message = is_array($status) && is_string($status['message'] ?? null)
+                    ? $status['message']
+                    : $this->message('delegate_status');
+                throw new RuntimeException($message);
+            }
+
+            usleep(250_000);
+        }
+
+        throw new RuntimeException($this->message('delegate_timeout'));
+    }
+
+    /**
+     * HR: Prikazuje samo novi dio privatnog updater loga dok ograničeni helper
+     *     obavlja posao, bez ponavljanja zapisa ranijih nadogradnji.
+     * EN: Displays only the new part of the private updater log while the
+     *     restricted helper works, without replaying earlier update logs.
+     */
+    private function drainDelegatedLog(string $path, int &$offset): void
+    {
+        clearstatcache(true, $path);
+        $size = is_file($path) ? filesize($path) : false;
+        if (!is_int($size) || $size <= $offset) {
+            if (is_int($size) && $size < $offset) {
+                $offset = 0;
+            }
+            return;
+        }
+
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            return;
+        }
+        try {
+            if (fseek($handle, $offset) !== 0) {
+                return;
+            }
+            $chunk = stream_get_contents($handle);
+            if (is_string($chunk) && $chunk !== '') {
+                fwrite(STDOUT, $chunk);
+                $offset += strlen($chunk);
+            }
+        } finally {
+            fclose($handle);
         }
     }
 

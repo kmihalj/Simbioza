@@ -43,10 +43,10 @@ composer check-platform-reqs
 ## 2. Fetch a tagged release
 
 Copy only the selected tag to the server; do not retain a `.git` directory.
-Replace `0.1.75` with the actual release being installed:
+Replace `0.1.76` with the actual release being installed:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.75 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.76 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -178,7 +178,10 @@ sudo php scripts/configure_fpm_setup.php \
 ```
 
 Log out and back in so the shell receives the new group memberships. CLI, GUI
-Setup, and updates then work without `sudo`.
+Setup, and updates then work without `sudo`. `--finalize` also installs or
+refreshes the strictly limited permission that lets members of
+`deploy-simbioza` submit CLI package operations and updates through the same
+helper.
 
 ### 6.1. SAML authentication and FPM settings
 
@@ -431,18 +434,25 @@ php update.php
 To select a tag:
 
 ```bash
-php update.php --tag=0.1.75
+php update.php --tag=0.1.76
 ```
 
 On a dedicated FPM installation, run it as the signed-in maintainer who became
 a member of `deploy-simbioza` and `run-simbioza` after initial setup and a new
 login session. Do not run the updater as `fpm-simbioza`; `sudo` is not needed:
+the updater recognises the helper belonging to this installation, delegates
+the update, and waits for its final status.
 
 ```bash
 cd /srv/simbioza
 php update.php --check
 php update.php
 ```
+
+If dedicated FPM was configured with release 0.1.75 or earlier, run the
+section 6 `--finalize` command once after the first update. This extends the
+restricted helper permission to CLI maintainers; after that one-time system
+step, future CLI and GUI updates need no `sudo`.
 
 Without dedicated FPM, run the same commands as the Unix account that owns the
 application code and writable settings. If the permissions check fails, fix

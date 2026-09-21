@@ -77,6 +77,7 @@ if ($mode === 'install') {
     fwrite(STDOUT, "Initial FPM setup completed. Finish the web installer, then run --finalize once.\n");
 } else {
     installIdentities($platform, $maintainer, deployHome($platform, $phpFpm));
+    installHelper($root, $phpFpm, deployHome($platform, $phpFpm));
     installFilesystem($platform, $root, true, $simpleSamlConfig);
     fwrite(STDOUT, "Simbioza ownership was finalized. Re-login to activate new group membership.\n");
 }
@@ -528,7 +529,8 @@ SH;
         $helper,
     );
     writeSystemFile('/usr/local/sbin/simbioza-setup', $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
-    $sudoers = 'fpm-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n";
+    $sudoers = 'fpm-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n"
+        . '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n";
     writeSystemFile('/etc/sudoers.d/simbioza-setup', $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
     runCommand(['visudo', '-cf', '/etc/sudoers.d/simbioza-setup']);
 }

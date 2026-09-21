@@ -75,16 +75,75 @@ TAGS;
     }
 
     /**
-     * HR: Savjet o detached HEAD stanju isključen je samo za dohvat taga, bez skrivanja grešaka.
-     * EN: Detached HEAD advice is disabled only for the tag clone without hiding errors.
+     * HR: FPM CLI delegira samo kada helper cilja istu instalaciju i pozivatelj
+     *     nije vlasnik koda; vlasnik i ne-FPM instalacija ostaju izravni.
+     * EN: FPM CLI delegates only when the helper targets the same installation
+     *     and the caller is not the code owner; owner and non-FPM runs remain direct.
      */
-    public function testReleaseCloneDisablesOnlyDetachedHeadAdvice(): void
+    public function testFpmUpdateDelegationIsBoundToOwnerAndInstallation(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-helper-' . bin2hex(random_bytes(6));
+        $other = $root . '-other';
+        $this->temporaryDirectories[] = $root;
+        $this->temporaryDirectories[] = $other;
+        $this->assertTrue(mkdir($root . '/scripts', 0770, true));
+        $this->assertTrue(mkdir($other . '/scripts', 0770, true));
+        file_put_contents($root . '/scripts/setup_worker.php', "<?php\n");
+        file_put_contents($other . '/scripts/setup_worker.php', "<?php\n");
+        $helper = $root . '/simbioza-setup';
+        file_put_contents(
+            $helper,
+            "#!/bin/sh\nexec /usr/bin/php " . escapeshellarg($root . '/scripts/setup_worker.php') . " \"\$1\"\n",
+        );
+        chmod($helper, 0755);
+
+        $targets = new \ReflectionMethod(ApplicationUpdateCommand::class, 'helperTargetsInstallation');
+        $requires = new \ReflectionMethod(ApplicationUpdateCommand::class, 'requiresHelperDelegation');
+        $this->assertTrue($targets->invoke(null, $helper, $root));
+        $this->assertFalse($targets->invoke(null, $helper, $other));
+        $this->assertTrue($requires->invoke(null, 501, 502, true));
+        $this->assertFalse($requires->invoke(null, 501, 501, true));
+        $this->assertFalse($requires->invoke(null, 501, 502, false));
+    }
+
+    /**
+     * HR: FPM konfigurator daje istom validirajućem helperu ograničeno pravo
+     *     i web korisniku i grupi održavatelja te ga osvježava pri finalizaciji.
+     * EN: The FPM configurator grants the same validating helper narrowly to
+     *     both the web user and maintainer group and refreshes it on finalize.
+     */
+    public function testFpmConfiguratorAuthorizesGuiAndMaintainerCli(): void
+    {
+        $source = (string)file_get_contents(dirname(__DIR__, 3) . '/scripts/configure_fpm_setup.php');
+        $this->assertStringContainsString(
+            'fpm-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *',
+            $source,
+        );
+        $this->assertStringContainsString(
+            '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *',
+            $source,
+        );
+        $this->assertMatchesRegularExpression(
+            '/else \{\s*installIdentities\([^;]+;\s*installHelper\(/s',
+            $source,
+        );
+    }
+
+    /**
+     * HR: Dohvat taga odvaja fetch i checkout pa ni anotirani tag ne proizvodi
+     *     clone upozorenje; detached HEAD savjet se gasi samo pri checkoutu.
+     * EN: Tag retrieval separates fetch and checkout so an annotated tag emits
+     *     no clone warning; detached-HEAD advice is disabled only for checkout.
+     */
+    public function testReleaseFetchHandlesAnnotatedTagsWithoutDetachedHeadAdvice(): void
     {
         $updater = (string)file_get_contents(dirname(__DIR__, 3) . '/update.php');
-        $this->assertMatchesRegularExpression(
-            '/\$this->mustRun\(\[\s*\$git,\s*\'-c\',\s*\'advice\.detachedHead=false\',\s*\'clone\',/',
+        $this->assertStringContainsString("'refs/tags/' . \$targetTag", $updater);
+        $this->assertStringContainsString(
+            "'checkout',\n                '--quiet',\n                'FETCH_HEAD'",
             $updater,
         );
+        $this->assertStringContainsString("'advice.detachedHead=false'", $updater);
         $this->assertStringNotContainsString('advice.detachedHead=true', $updater);
         $this->assertStringContainsString('2 => STDERR', $updater);
     }

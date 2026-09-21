@@ -44,10 +44,10 @@ composer check-platform-reqs
 ## 2. Dohvat označenog izdanja
 
 Na poslužitelj se kopiraju samo datoteke odabranog taga, bez trajnog `.git`
-direktorija. Zamijenite `0.1.75` stvarnim izdanjem koje instalirate:
+direktorija. Zamijenite `0.1.76` stvarnim izdanjem koje instalirate:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.75 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.76 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -178,7 +178,9 @@ sudo php scripts/configure_fpm_setup.php \
 ```
 
 Odjavite se i ponovno prijavite kako bi novo članstvo u grupama vrijedilo u
-shellu. Nakon toga CLI, GUI Setup i nadogradnje rade bez `sudo`.
+shellu. `--finalize` ujedno instalira ili osvježava strogo ograničeno pravo da
+članovi grupe `deploy-simbioza` kroz isti helper predaju CLI paketne radnje i
+nadogradnje. Nakon toga CLI, GUI Setup i nadogradnje rade bez `sudo`.
 
 ### 6.1. SAML autentikacija i FPM postavke
 
@@ -430,19 +432,25 @@ php update.php
 Za određeni tag:
 
 ```bash
-php update.php --tag=0.1.75
+php update.php --tag=0.1.76
 ```
 
 Na namjenskoj FPM instalaciji naredbu pokreće prijavljeni održavatelj koji je
 nakon početnog podešavanja i ponovne prijave član grupa `deploy-simbioza` i
 `run-simbioza`. Ne pokrećite updater kao `fpm-simbioza` i ne treba koristiti
-`sudo`:
+`sudo`: updater sam prepoznaje helper koji pripada toj instalaciji, predaje mu
+nadogradnju i čeka završni status.
 
 ```bash
 cd /srv/simbioza
 php update.php --check
 php update.php
 ```
+
+Ako je namjenski FPM bio podešen izdanjem 0.1.75 ili starijim, nakon prve
+nadogradnje jednom ponovite `--finalize` iz 6. poglavlja. Time se ograničeno
+pravo helpera dopunjuje za CLI održavatelje; nakon tog jednokratnog sistemskog
+koraka buduće CLI i GUI nadogradnje ne traže `sudo`.
 
 Na instalaciji bez namjenskog FPM-a iste naredbe pokreće Unix korisnik koji je
 vlasnik aplikacijskog koda i zapisivih postavki. Ako provjera prava ne prolazi,
