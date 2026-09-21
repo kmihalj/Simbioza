@@ -14,6 +14,7 @@ use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
+use Composer\InstalledVersions;
 use HeartPhrame\App;
 
 // HR: Isključivo CLI korak updatera nakon migracija, nikada web endpoint.
@@ -51,7 +52,8 @@ try {
         throw new RuntimeException('The enabled-module configuration is invalid.');
     }
     $persistentlyEnabledModules = $enabledModules;
-    if (!in_array($backupPackage, $enabledModules, true)) {
+    $backupInstalled = InstalledVersions::isInstalled($backupPackage);
+    if ($backupInstalled && !in_array($backupPackage, $enabledModules, true)) {
         $enabledModules[] = $backupPackage;
     }
     $runtimeApp['modules']['enabled'] = array_values(array_unique($enabledModules));
@@ -71,6 +73,13 @@ try {
     $installation = is_file($root . '/config/installation.php') ? require $root . '/config/installation.php' : [];
     if ($basePath === null && is_array($installation) && is_string($installation['base_path'] ?? null)) {
         $basePath = $installation['base_path'];
+    }
+
+    // HR: Starije instalacije nemaju `base_path`, ali već imaju kanonski javni URL e-pošte.
+    // EN: Older installations lack `base_path` but already have the canonical public e-mail URL.
+    $email = is_file($root . '/config/email.php') ? require $root . '/config/email.php' : [];
+    if ($basePath === null && is_array($email) && is_string($email['application_base_url'] ?? null)) {
+        $basePath = BundledAssetsUpdater::basePathFromApplicationUrl($email['application_base_url']);
     }
 
     if ($basePath === null) {
@@ -98,7 +107,8 @@ try {
     }
 
     $themePackage = $catalog->definitionFor('theme')['package'];
-    $themeEnabled = in_array($themePackage, $persistentlyEnabledModules, true);
+    $themeEnabled = InstalledVersions::isInstalled($themePackage)
+    && in_array($themePackage, $persistentlyEnabledModules, true);
     $guideProviders = [
         'calendar' => 'calendar-workspace',
         'comment' => 'comment-workspace',
@@ -107,7 +117,8 @@ try {
     ];
     $skippedGuideProviders = [];
     foreach ($guideProviders as $module => $provider) {
-        if (!in_array($catalog->definitionFor($module)['package'], $persistentlyEnabledModules, true)) {
+        $package = $catalog->definitionFor($module)['package'];
+        if (!InstalledVersions::isInstalled($package) || !in_array($package, $persistentlyEnabledModules, true)) {
             $skippedGuideProviders[] = $provider;
         }
     }
@@ -115,7 +126,7 @@ try {
     $themes = $themeEnabled ? $container->get(ThemeConfigRepository::class) : null;
     $updater = new BundledAssetsUpdater(
         $database,
-        $container->get(BackupManager::class),
+        $backupInstalled ? $container->get(BackupManager::class) : null,
         $repository,
         $themes,
         $themes instanceof ThemeConfigRepository

@@ -40,6 +40,15 @@ final class BundledAssetsUpdaterTest extends TestCase
         BundledAssetsUpdater::validatedBasePath('https://example.test/app');
     }
 
+    /** HR: Stara instalacija može preuzeti base path iz javnog URL-a. EN: A legacy installation can derive its base path from the public URL. */
+    public function testApplicationUrlDeterminesTheBasePath(): void
+    {
+        $this->assertSame('/hfc', BundledAssetsUpdater::basePathFromApplicationUrl(
+            'https://piko.webhop.me/hfc/',
+        ));
+        $this->assertSame('', BundledAssetsUpdater::basePathFromApplicationUrl('https://example.test/'));
+    }
+
     /** HR: Putanja se može otkriti i iz stare HTML datoteke, ne samo SQL stupca. EN: The path can also be detected from a legacy HTML file, not just a SQL column. */
     public function testLegacyFilesystemGuideDeterminesBasePath(): void
     {

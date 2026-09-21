@@ -43,10 +43,10 @@ composer check-platform-reqs
 ## 2. Fetch a tagged release
 
 Copy only the selected tag to the server; do not retain a `.git` directory.
-Replace `0.1.76` with the actual release being installed:
+Replace `0.1.77` with the actual release being installed:
 
 ```bash
-git clone --quiet --depth 1 --branch 0.1.76 --single-branch \
+git clone --quiet --depth 1 --branch 0.1.77 --single-branch \
 https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
@@ -434,7 +434,7 @@ php update.php
 To select a tag:
 
 ```bash
-php update.php --tag=0.1.76
+php update.php --tag=0.1.77
 ```
 
 On a dedicated FPM installation, run it as the signed-in maintainer who became

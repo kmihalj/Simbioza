@@ -543,7 +543,7 @@ final class ApplicationUpdateCommand
         $contents = file_get_contents($helper);
 
         return is_string($contents)
-            && str_contains($contents, rtrim($appRoot, DIRECTORY_SEPARATOR) . '/scripts/setup_worker.php');
+        && str_contains($contents, rtrim($appRoot, DIRECTORY_SEPARATOR) . '/scripts/setup_worker.php');
     }
 
     /**
@@ -570,8 +570,8 @@ final class ApplicationUpdateCommand
 
         $helper = is_string($setup['helper'] ?? null) ? $setup['helper'] : '';
         $requestDirectory = is_string($setup['request_dir'] ?? null)
-            ? $setup['request_dir']
-            : $this->appRoot . '/data/setup-requests';
+        ? $setup['request_dir']
+        : $this->appRoot . '/data/setup-requests';
         $requests = new SetupRequestStore($requestDirectory);
         $gateway = new SetupGateway(
             $requests,
@@ -600,11 +600,11 @@ final class ApplicationUpdateCommand
             $this->drainDelegatedLog($logPath, $logOffset);
             clearstatcache(true, $statusPath);
             $status = is_file($statusPath)
-                ? json_decode((string)file_get_contents($statusPath), true)
-                : null;
+            ? json_decode((string)file_get_contents($statusPath), true)
+            : null;
             $state = is_array($status) && is_string($status['state'] ?? null)
-                ? $status['state']
-                : '';
+            ? $status['state']
+            : '';
             if ($state === 'success') {
                 $this->drainDelegatedLog($logPath, $logOffset);
                 return 0;
@@ -612,8 +612,8 @@ final class ApplicationUpdateCommand
             if ($state === 'failed') {
                 $this->drainDelegatedLog($logPath, $logOffset);
                 $message = is_array($status) && is_string($status['message'] ?? null)
-                    ? $status['message']
-                    : $this->message('delegate_status');
+                ? $status['message']
+                : $this->message('delegate_status');
                 throw new RuntimeException($message);
             }
 
@@ -833,11 +833,47 @@ final class ApplicationUpdateCommand
     private function captureSelectedOptionalRequirements(string $sourceDirectory): void
     {
         $current = json_decode((string)file_get_contents($this->appRoot . '/composer.json'), true);
+        $currentLockPath = $this->appRoot . '/composer.lock';
+        $currentLock = is_file($currentLockPath)
+        ? json_decode((string)file_get_contents($currentLockPath), true)
+        : [];
+        $moduleStatePath = $this->appRoot . '/data/config/modules.php';
+        $moduleState = is_file($moduleStatePath) ? require $moduleStatePath : [];
         $release = json_decode((string)file_get_contents($sourceDirectory . '/composer.json'), true);
-        if (!is_array($current) || !is_array($release)) {
+        if (!is_array($current) || !is_array($currentLock) || !is_array($moduleState) || !is_array($release)) {
             throw new RuntimeException('Composer manifests could not be compared before update.');
         }
 
+        $this->selectedOptionalRequirements = self::selectedOptionalRequirements(
+            $current,
+            $currentLock,
+            $moduleState,
+            $release,
+        );
+    }
+
+    /**
+     * HR: Spaja tri pouzdana traga o instaliranom opcionalnom modulu: izričiti
+     *     Composer zahtjev, zaključani paket i trajno uključeno stanje. Time
+     *     nadogradnja čuva i isključeni instalirani modul te popravlja stariju
+     *     instalaciju čiji je manifest već bio sveden na obveznu jezgru.
+     * EN: Combines three reliable traces of an installed optional module: an
+     *     explicit Composer requirement, a locked package, and persistent
+     *     enabled state. This preserves disabled installed modules and repairs
+     *     older installations whose manifest was already reduced to core.
+     *
+     * @param array<array-key,mixed> $current
+     * @param array<array-key,mixed> $currentLock
+     * @param array<array-key,mixed> $moduleState
+     * @param array<array-key,mixed> $release
+     * @return array<string,string>
+     */
+    public static function selectedOptionalRequirements(
+        array $current,
+        array $currentLock,
+        array $moduleState,
+        array $release,
+    ): array {
         $currentRequire = is_array($current['require'] ?? null) ? $current['require'] : [];
         $releaseOptional = is_array($release['suggest'] ?? null) ? $release['suggest'] : [];
         $releaseExtra = is_array($release['extra'] ?? null) ? $release['extra'] : [];
@@ -845,9 +881,28 @@ final class ApplicationUpdateCommand
         $releaseConstraints = is_array($releaseSimbioza['optional-modules'] ?? null)
         ? $releaseSimbioza['optional-modules']
         : [];
+        $selectedPackages = [];
+        foreach (array_keys($currentRequire) as $package) {
+            if (is_string($package)) {
+                $selectedPackages[$package] = true;
+            }
+        }
+        foreach (['packages', 'packages-dev'] as $section) {
+            foreach (is_array($currentLock[$section] ?? null) ? $currentLock[$section] : [] as $package) {
+                if (is_array($package) && is_string($package['name'] ?? null)) {
+                    $selectedPackages[$package['name']] = true;
+                }
+            }
+        }
+        foreach (is_array($moduleState['enabled'] ?? null) ? $moduleState['enabled'] : [] as $package) {
+            if (is_string($package)) {
+                $selectedPackages[$package] = true;
+            }
+        }
+
         $selected = [];
         foreach ($releaseOptional as $package => $_description) {
-            if (!is_string($package) || !isset($currentRequire[$package])) {
+            if (!is_string($package) || !isset($selectedPackages[$package])) {
                 continue;
             }
             $constraint = $releaseConstraints[$package] ?? $currentRequire[$package];
@@ -856,7 +911,8 @@ final class ApplicationUpdateCommand
             }
         }
         ksort($selected, SORT_STRING);
-        $this->selectedOptionalRequirements = $selected;
+
+        return $selected;
     }
 
     /**

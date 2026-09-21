@@ -50,7 +50,7 @@ final readonly class BundledAssetsUpdater
     /** HR: Prima javne servise modula. EN: Receives the modules' public services. */
     public function __construct(
         private Database $database,
-        private BackupManager $backups,
+        private ?BackupManager $backups,
         private WorkspaceRepository $workspaces,
         private ?ThemeConfigRepository $themes,
         private ?ThemeArchiveService $themeArchives,
@@ -154,6 +154,12 @@ final readonly class BundledAssetsUpdater
                     $actions[] = 'Bundled-guide attachment ownership repaired; content and visibility preserved.';
                 }
             }
+
+            return array_values(array_unique($actions));
+        }
+
+        if (!$this->backups instanceof BackupManager) {
+            $actions[] = 'Bundled user-guide update skipped because the optional Backup module is not installed.';
 
             return array_values(array_unique($actions));
         }
@@ -266,14 +272,15 @@ final readonly class BundledAssetsUpdater
             $actorId,
             self::PASSPHRASE,
         );
-        $preflight = $this->backups->preflight($pagePath, $context);
+        $backups = $this->backupManager();
+        $preflight = $backups->preflight($pagePath, $context);
         if (!$preflight->isAllowed()) {
             throw new RuntimeException('Bundled guide failed preflight: ' . implode(' | ', $preflight->errors));
         }
 
         if ($pageId !== null) {
             $recoveryPassphrase = bin2hex(random_bytes(32));
-            $snapshot = $this->backups->create(new BackupExportContext(
+            $snapshot = $backups->create(new BackupExportContext(
                 new BackupScope(BackupScope::PAGE, (string)$pageId),
                 [],
                 [
@@ -287,7 +294,7 @@ final readonly class BundledAssetsUpdater
             $this->saveState($statePath, $state);
         }
 
-        $this->backups->restore($pagePath, $context);
+        $backups->restore($pagePath, $context);
         $page = $this->workspaces->findNodeBySlug($workspaceId, $definition['slug']);
         if (!is_array($page)) {
             throw new RuntimeException('The imported guide page is unavailable: ' . $definition['slug']);
@@ -301,12 +308,23 @@ final readonly class BundledAssetsUpdater
     /** HR: Provjerava paket prije vraćanja. EN: Validates the archive before restoring it. */
     private function restoreChecked(string $archive, BackupImportContext $context): void
     {
-        $result = $this->backups->preflight($archive, $context);
+        $backups = $this->backupManager();
+        $result = $backups->preflight($archive, $context);
         if (!$result->isAllowed()) {
             throw new RuntimeException('Bundled guides failed preflight: ' . implode(' | ', $result->errors));
         }
 
-        $this->backups->restore($archive, $context);
+        $backups->restore($archive, $context);
+    }
+
+    /** HR: Za operacije uputa zahtijeva instalirani opcionalni Backup servis. EN: Requires the optional Backup service for guide operations. */
+    private function backupManager(): BackupManager
+    {
+        if (!$this->backups instanceof BackupManager) {
+            throw new RuntimeException('Updating bundled guides requires the optional Backup module.');
+        }
+
+        return $this->backups;
     }
 
     /**
@@ -381,6 +399,19 @@ final readonly class BundledAssetsUpdater
         }
 
         return $value;
+    }
+
+    /** HR: Iz javnog URL-a instalacije izvodi siguran poddirektorij. EN: Derives a safe subdirectory from the installation public URL. */
+    public static function basePathFromApplicationUrl(string $url): string
+    {
+        $parts = parse_url(trim($url));
+        if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
+            throw new RuntimeException('The application base URL is invalid.');
+        }
+
+        $path = is_string($parts['path'] ?? null) ? $parts['path'] : '';
+
+        return self::validatedBasePath($path === '/' ? '' : $path);
     }
 
     /**

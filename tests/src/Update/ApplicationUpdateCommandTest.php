@@ -75,6 +75,32 @@ TAGS;
     }
 
     /**
+     * HR: Nadogradnja čuva opcionalne module iz manifesta, locka i trajnog stanja.
+     * EN: An update preserves optional modules from the manifest, lock, and persistent state.
+     */
+    public function testSelectedOptionalModulesSurviveLegacyAndDisabledStates(): void
+    {
+        $release = [
+            'suggest' => ['vendor/api' => 'API', 'vendor/audit' => 'Audit', 'vendor/theme' => 'Theme'],
+            'extra' => ['simbioza' => ['optional-modules' => [
+                'vendor/api' => '^2.0', 'vendor/audit' => '^3.0', 'vendor/theme' => '^4.0',
+            ]]],
+        ];
+        $selected = ApplicationUpdateCommand::selectedOptionalRequirements(
+            ['require' => ['vendor/api' => '^1.0']],
+            ['packages' => [['name' => 'vendor/audit']]],
+            ['enabled' => ['vendor/theme']],
+            $release,
+        );
+
+        $this->assertSame([
+            'vendor/api' => '^2.0',
+            'vendor/audit' => '^3.0',
+            'vendor/theme' => '^4.0',
+        ], $selected);
+    }
+
+    /**
      * HR: FPM CLI delegira samo kada helper cilja istu instalaciju i pozivatelj
      *     nije vlasnik koda; vlasnik i ne-FPM instalacija ostaju izravni.
      * EN: FPM CLI delegates only when the helper targets the same installation

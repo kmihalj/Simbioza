@@ -59,8 +59,8 @@ A deployed release may intentionally omit `.git` and retain its own verified
 application and compatible module tags from the installation root with:
 
 ```bash
-sudo php update.php --check
-sudo php update.php
+php update.php --check
+php update.php
 ```
 
 The complete release-install and update procedure is documented in
@@ -81,6 +81,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 - [Brand identity and theme](docs/branding_en.md)
+- [Optional-module-safe updater in 0.1.77](docs/release-0.1.77_en.md)
 - [FPM-safe CLI updater delegation in 0.1.76](docs/release-0.1.76_en.md)
 - [Effective module lifecycle and dual-mode CLI in 0.1.75](docs/release-0.1.75_en.md)
 - [FPM-safe persistent settings update in 0.1.74](docs/release-0.1.74_en.md)
