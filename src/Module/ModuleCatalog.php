@@ -271,15 +271,15 @@ final readonly class ModuleCatalog
     public function constraintFor(string $slug): string
     {
         return match ($this->normalizeSlug($slug)) {
-            'theme' => '^0.1.14',
-            'audit' => '^0.1.0',
-            'api' => '^0.1.3',
-            'email' => '^0.1.2',
-            'task' => '^0.1.4',
-            'comment' => '^0.1.2',
-            'calendar' => '^0.1.18',
-            'confluence-import' => '^0.1.32',
-            'backup' => '^0.1.5',
+            'theme' => '^0.1.15',
+            'audit' => '^0.1.4',
+            'api' => '^0.1.4',
+            'email' => '^0.1.3',
+            'task' => '^0.1.6',
+            'comment' => '^0.1.3',
+            'calendar' => '^0.1.19',
+            'confluence-import' => '^0.1.33',
+            'backup' => '^0.1.6',
             default => throw new InvalidArgumentException('The module is not an optional Composer package: ' . $slug),
         };
     }

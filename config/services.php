@@ -7,6 +7,8 @@ use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use App\Controllers\SetupController;
 use App\Localization\LanguageCommand;
 use App\Localization\LanguagePackManager;
+use App\Localization\LanguageRepository;
+use App\Localization\RepositoryLanguageManager;
 use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
 use App\Module\ModuleCommand;
@@ -53,6 +55,28 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    LanguageRepository::class => static function (ContainerInterface $container): LanguageRepository {
+        $config = $container->get(ConfigInterface::class);
+        if (!$config instanceof ConfigInterface) {
+            throw new RuntimeException('Language repository configuration is unavailable.');
+        }
+
+        return new LanguageRepository($config->getAppRootDir());
+    },
+    RepositoryLanguageManager::class => static function (ContainerInterface $container): RepositoryLanguageManager {
+        $config = $container->get(ConfigInterface::class);
+        $repository = $container->get(LanguageRepository::class);
+        $languages = $container->get(LanguagePackManager::class);
+        if (
+            !$config instanceof ConfigInterface
+            || !$repository instanceof LanguageRepository
+            || !$languages instanceof LanguagePackManager
+        ) {
+            throw new RuntimeException('Repository language services are unavailable.');
+        }
+
+        return new RepositoryLanguageManager($repository, $languages, $config->getAppRootDir());
+    },
     LanguagePackManager::class => static function (ContainerInterface $container): LanguagePackManager {
         $config = $container->get(ConfigInterface::class);
         $catalog = $container->get(ModuleCatalog::class);
@@ -64,11 +88,12 @@ $services = [
     },
     LanguageCommand::class => static function (ContainerInterface $container): LanguageCommand {
         $languages = $container->get(LanguagePackManager::class);
-        if (!$languages instanceof LanguagePackManager) {
+        $repository = $container->get(RepositoryLanguageManager::class);
+        if (!$languages instanceof LanguagePackManager || !$repository instanceof RepositoryLanguageManager) {
             throw new RuntimeException('The language-pack manager is unavailable.');
         }
 
-        return new LanguageCommand($languages);
+        return new LanguageCommand($languages, $repository);
     },
     ModuleCatalog::class => static fn(): ModuleCatalog => new ModuleCatalog(),
     ProcessRunnerInterface::class => static fn(): ProcessRunnerInterface => new NativeProcessRunner(),
@@ -202,6 +227,7 @@ $services = [
         $gateway = $container->get(SetupGateway::class);
         $requests = $container->get(SetupRequestStore::class);
         $languages = $container->get(LanguagePackManager::class);
+        $repositoryLanguages = $container->get(RepositoryLanguageManager::class);
         $componentUpdates = $container->get(ComponentUpdateService::class);
         $updates = $container->get(ApplicationUpdateStatusStore::class);
         $alerts = $container->get(AlertHandler::class);
@@ -215,6 +241,7 @@ $services = [
             || !$gateway instanceof SetupGateway
             || !$requests instanceof SetupRequestStore
             || !$languages instanceof LanguagePackManager
+            || !$repositoryLanguages instanceof RepositoryLanguageManager
             || !$componentUpdates instanceof ComponentUpdateService
             || !$updates instanceof ApplicationUpdateStatusStore
             || !$alerts instanceof AlertHandler
@@ -232,6 +259,7 @@ $services = [
             $gateway,
             $requests,
             $languages,
+            $repositoryLanguages,
             $componentUpdates,
             $updates,
             $alerts,

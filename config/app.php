@@ -88,9 +88,12 @@ $supportedLocales = is_array($installation['supported_locales'] ?? null)
     static fn(mixed $locale): bool => is_string($locale) && in_array($locale, $availableLocales, true),
 ))
 : array_values(array_intersect(['hr', 'en'], $availableLocales));
-if ($supportedLocales === [] || !in_array($primaryLocale, $supportedLocales, true)) {
-    $primaryLocale = in_array('hr', $availableLocales, true) ? 'hr' : $availableLocales[0];
-    $supportedLocales = $availableLocales;
+if ($supportedLocales === []) {
+    $supportedLocales = [in_array('hr', $availableLocales, true) ? 'hr' : $availableLocales[0]];
+}
+
+if (!in_array($primaryLocale, $supportedLocales, true)) {
+    $primaryLocale = $supportedLocales[0];
 }
 
 $timezone = is_string($installation['timezone'] ?? null)

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Localization\LanguagePackManager;
+use App\Localization\LanguageRepository;
+use App\Localization\RepositoryLanguageManager;
 use App\Module\ModuleCatalog;
 use App\Setup\SetupGateway;
 use Composer\InstalledVersions;
@@ -46,6 +49,7 @@ final readonly class InstallationWebApplication
         private InstallationRunner $runner,
         private InstallationLogger $logger,
         private ?SetupGateway $setup = null,
+        private ?LanguageRepository $languages = null,
     ) {
     }
 
@@ -202,6 +206,7 @@ final readonly class InstallationWebApplication
         try {
             $application = $this->validator->application($post);
             $session[self::SESSION_PREPARED_PACKAGES] = $this->prepareInstallerPackages($application);
+            $this->prepareInstallerLanguages($application);
             $session[self::SESSION_APPLICATION] = $application;
             $session[self::SESSION_ADMINISTRATOR] = $this->validator->administrator($post);
             $session[self::SESSION_STAGE] = 'review';
@@ -312,6 +317,35 @@ final readonly class InstallationWebApplication
         $setup->execute('packages-prepare', ['modules' => $missing]);
 
         return $missing;
+    }
+
+    /**
+     * HR: Prije završetka priprema odabrane objavljene jezike kroz helper ili zapisivi lokalni korijen.
+     * EN: Before finalization, prepares selected released locales through the helper or writable local root.
+     * @param array{supported_locales:list<string>} $application
+     */
+    private function prepareInstallerLanguages(array $application): void
+    {
+        if (!$this->languages instanceof LanguageRepository) {
+            return;
+        }
+
+        $root = $this->paths->appRoot();
+        $manager = new LanguagePackManager($root, new ModuleCatalog());
+        $installed = array_column($manager->status(), null, 'locale');
+        foreach ($application['supported_locales'] as $locale) {
+            if (in_array($locale, ['hr', 'en'], true) || isset($installed[$locale])) {
+                continue;
+            }
+
+            if ($this->installerPackageChangesAvailable() && $this->setup instanceof SetupGateway) {
+                $this->setup->execute('language-install', ['locale' => $locale]);
+            } elseif (is_writable($root . '/lang') && is_writable($root . '/config')) {
+                (new RepositoryLanguageManager($this->languages, $manager, $root))->install($locale);
+            } else {
+                throw new RuntimeException('Language installation requires the Setup helper or writable app files.');
+            }
+        }
     }
 
     /**
@@ -504,7 +538,7 @@ final readonly class InstallationWebApplication
     ): string {
         $stored = is_array($session[self::SESSION_APPLICATION] ?? null) ? $session[self::SESSION_APPLICATION] : [];
         $values = array_merge($stored, $submitted);
-        $primaryLocale = in_array($values['primary_locale'] ?? null, ['hr', 'en'], true)
+        $primaryLocale = in_array($values['primary_locale'] ?? null, array_keys($this->availableLocaleNames()), true)
         ? $this->scalarString($values['primary_locale'])
         : $locale;
         $supported = is_array($values['supported_locales'] ?? null)
@@ -563,11 +597,17 @@ final readonly class InstallationWebApplication
     /** HR: Renderira opcije jezika. EN: Renders locale options. */
     private function localeOptions(string $selected): string
     {
-        return sprintf(
-            '<option value="hr"%s>Hrvatski</option><option value="en"%s>English</option>',
-            $selected === 'hr' ? ' selected' : '',
-            $selected === 'en' ? ' selected' : '',
-        );
+        $options = '';
+        foreach ($this->availableLocaleNames() as $locale => $name) {
+            $options .= sprintf(
+                '<option value="%s"%s>%s</option>',
+                $this->escape($locale),
+                $selected === $locale ? ' selected' : '',
+                $this->escape($name),
+            );
+        }
+
+        return $options;
     }
 
     /**
@@ -578,13 +618,32 @@ final readonly class InstallationWebApplication
      */
     private function localeCheckboxes(array $selected, string $locale): string
     {
-        return sprintf(
-            '<label class="choice"><input type="checkbox" name="supported_locales[]" value="hr"%s> %s</label>'
-            . '<label class="choice"><input type="checkbox" name="supported_locales[]" value="en"%s> English</label>',
-            in_array('hr', $selected, true) ? ' checked' : '',
-            $locale === 'en' ? 'Croatian' : 'Hrvatski',
-            in_array('en', $selected, true) ? ' checked' : '',
-        );
+        $html = '';
+        foreach ($this->availableLocaleNames() as $code => $name) {
+            $html .= sprintf(
+                '<label class="choice"><input type="checkbox" name="supported_locales[]" value="%s"%s> %s</label>',
+                $this->escape($code),
+                in_array($code, $selected, true) ? ' checked' : '',
+                $this->escape($code === 'hr' && $locale === 'en' ? 'Croatian' : $name),
+            );
+        }
+
+        return $html;
+    }
+
+    /**
+     * HR: Spaja dva ugrađena jezika s objavljenim prijevodima javnog kataloga.
+     * EN: Combines the two built-in locales with released public-catalogue translations.
+     * @return array<string,string>
+     */
+    private function availableLocaleNames(): array
+    {
+        $names = ['hr' => 'Hrvatski', 'en' => 'English'];
+        foreach ($this->languages?->available() ?? [] as $code => $entry) {
+            $names[$code] = $entry['native_name'];
+        }
+
+        return $names;
     }
 
     /**

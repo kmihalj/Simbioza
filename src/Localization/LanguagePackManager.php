@@ -33,30 +33,27 @@ final readonly class LanguagePackManager
      * HR: Navodi instalirane jezične datoteke i pokrivenost u odnosu na izvorni jezik.
      * EN: Lists installed language files and their coverage against the source locale.
      *
-     * @return list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float}>
+     * @return list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float,active:bool}>
      */
-    public function status(string $sourceLocale = 'en'): array
+    public function status(string $sourceLocale = 'hr'): array
     {
         $referenceCount = count($this->catalog($sourceLocale));
         $registry = $this->languageRegistry();
-        $files = glob($this->languageDirectory() . '/*.php') ?: [];
-        sort($files, SORT_STRING);
+        $active = $this->activeLocales();
         $result = [];
-        foreach ($files as $file) {
-            $locale = pathinfo($file, PATHINFO_FILENAME);
-            if (!is_string($locale) || !$this->validLocale($locale)) {
+        foreach ($registry as $locale => $definition) {
+            if (!is_file($this->languageDirectory() . '/' . $locale . '.php')) {
                 continue;
             }
 
             $count = count($this->catalog($locale));
             $result[] = [
                 'locale' => $locale,
-                'native_name' => is_string($registry[$locale]['native_name'] ?? null)
-                    ? $registry[$locale]['native_name']
-                    : strtoupper($locale),
+                'native_name' => $definition['native_name'],
                 'keys' => $count,
                 'reference_keys' => $referenceCount,
                 'coverage' => $referenceCount === 0 ? 100.0 : min(100.0, $count * 100 / $referenceCount),
+                'active' => in_array($locale, $active, true),
             ];
         }
 
@@ -164,8 +161,12 @@ final readonly class LanguagePackManager
      *     placeholder_errors:list<string>
      * }
      */
-    public function install(string $path, bool $replace = false, bool $allowMissing = false): array
-    {
+    public function install(
+        string $path,
+        bool $replace = false,
+        bool $allowMissing = false,
+        bool $activate = true,
+    ): array {
         $validation = $this->validate($path);
         if ($validation['placeholder_errors'] !== []) {
             throw new RuntimeException(
@@ -202,9 +203,83 @@ final readonly class LanguagePackManager
             $pack['native_name'],
             basename($flagTarget),
         );
-        $this->enableLocale($pack['locale']);
+        if ($activate) {
+            $this->setActive($pack['locale'], true);
+        }
 
         return $validation;
+    }
+
+    /**
+     * HR: Uključuje ili isključuje već instalirani jezik uz barem jedan aktivni jezik.
+     * EN: Enables or disables an installed locale while keeping at least one active locale.
+     */
+    public function setActive(string $locale, bool $enabled): void
+    {
+        $locale = $this->assertLocale($locale);
+        if (
+            !isset($this->languageRegistry()[$locale])
+            || !is_file($this->languageDirectory() . '/' . $locale . '.php')
+        ) {
+            throw new RuntimeException('The language is not installed.');
+        }
+
+        $path = $this->appRoot . '/config/installation.php';
+        $configuration = is_file($path) ? require $path : [];
+        if (!is_array($configuration)) {
+            $configuration = [];
+        }
+
+        $locales = $this->activeLocales();
+        if ($enabled && !in_array($locale, $locales, true)) {
+            $locales[] = $locale;
+        }
+
+        if (!$enabled) {
+            $locales = array_values(array_diff($locales, [$locale]));
+            if ($locales === []) {
+                throw new RuntimeException('At least one language must remain active.');
+            }
+        }
+
+        $configuration['supported_locales'] = $locales;
+        if (!in_array($configuration['primary_locale'] ?? null, $locales, true)) {
+            $configuration['primary_locale'] = $locales[0];
+        }
+
+        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($configuration, true) . ";\n";
+        $this->atomicWrite($path, $contents, 0660);
+    }
+
+    /**
+     * HR: Uklanja registraciju jezika; ugrađene izvorne datoteke ostaju u kodu.
+     * EN: Removes a locale registration; bundled source files remain in the codebase.
+     */
+    public function uninstall(string $locale): void
+    {
+        $locale = $this->assertLocale($locale);
+        $registry = $this->languageRegistry();
+        if (!isset($registry[$locale])) {
+            throw new RuntimeException('The language is not installed.');
+        }
+
+        if (in_array($locale, $this->activeLocales(), true)) {
+            $this->setActive($locale, false);
+        }
+
+        unset($registry[$locale]);
+        $this->writeRegistry($registry);
+        if (!in_array($locale, ['en', 'hr'], true)) {
+            $languageFile = $this->languageDirectory() . '/' . $locale . '.php';
+            if (is_file($languageFile) && !unlink($languageFile)) {
+                throw new RuntimeException('Unable to remove the language file.');
+            }
+        }
+
+        $flag = $this->flagDirectory() . '/' . $locale . '.svg';
+        if (is_file($flag) && !unlink($flag)) {
+            throw new RuntimeException('Unable to remove the language flag.');
+        }
     }
 
     /**
@@ -337,7 +412,7 @@ final readonly class LanguagePackManager
         }
 
         $requiredNameLocales = array_values(array_unique([
-            ...array_keys($this->languageRegistry()),
+            ...array_intersect(['en', 'hr'], array_keys($this->languageRegistry())),
             $locale,
         ]));
         foreach ($requiredNameLocales as $nameLocale) {
@@ -515,6 +590,16 @@ final readonly class LanguagePackManager
             'native_name' => $nativeName,
             'flag' => $flag,
         ];
+        $this->writeRegistry($registry);
+    }
+
+    /**
+     * HR: Atomski zapisuje normalizirani registar jezika.
+     * EN: Atomically writes the normalized language registry.
+     * @param array<string,array{names:array<string,string>,native_name:string,flag:string}> $registry
+     */
+    private function writeRegistry(array $registry): void
+    {
         ksort($registry, SORT_STRING);
         $contents = "<?php\n\ndeclare(strict_types=1);\n\n"
         . "// HR: Registar jezika održava alat Simbioze.\n"
@@ -524,10 +609,11 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Dodaje jezik u privatnu instalacijsku konfiguraciju.
-     * EN: Adds the locale to private installation configuration.
+     * HR: Vraća uključene jezike iz privatne instalacijske konfiguracije.
+     * EN: Returns enabled locales from private installation configuration.
+     * @return list<string>
      */
-    private function enableLocale(string $locale): void
+    private function activeLocales(): array
     {
         $path = $this->appRoot . '/config/installation.php';
         $configuration = is_file($path) ? require $path : [];
@@ -535,20 +621,9 @@ final readonly class LanguagePackManager
             $configuration = [];
         }
 
-        $locales = is_array($configuration['supported_locales'] ?? null)
+        return is_array($configuration['supported_locales'] ?? null)
         ? array_values(array_filter($configuration['supported_locales'], is_string(...)))
         : [];
-        if (!in_array($locale, $locales, true)) {
-            $locales[] = $locale;
-        }
-
-        $configuration['supported_locales'] = $locales;
-        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($configuration, true) . ";\n";
-        // HR: FPM i deploy/CLI identiteti dijele isključivu runtime grupu.
-        //     Oba moraju moći pročitati i kasnije atomski ažurirati ovaj config.
-        // EN: The FPM and deploy/CLI identities share the exclusive runtime
-        //     group. Both must be able to read and later atomically update it.
-        $this->atomicWrite($path, $contents, 0660);
     }
 
     /**

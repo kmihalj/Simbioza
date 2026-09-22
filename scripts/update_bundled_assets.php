@@ -13,6 +13,9 @@ use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use App\Module\ModuleCatalog;
+use App\Localization\LanguagePackManager;
+use App\Localization\LanguageRepository;
+use App\Localization\RepositoryLanguageManager;
 use App\Update\BundledAssetsUpdater;
 use Composer\InstalledVersions;
 use HeartPhrame\App;
@@ -139,6 +142,21 @@ try {
     );
     foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
         echo $action . PHP_EOL;
+    }
+    // HR: Kvar repozitorija jezika ne smije blokirati uspješnu migraciju aplikacije.
+    // EN: A language-repository outage must not block a successfully migrated application.
+    try {
+        $languageManager = new RepositoryLanguageManager(
+            new LanguageRepository($root),
+            new LanguagePackManager($root, $catalog),
+            $root,
+        );
+        $updatedLanguages = $languageManager->updateInstalled();
+        if ($updatedLanguages !== []) {
+            echo 'Updated language packs: ' . implode(', ', $updatedLanguages) . PHP_EOL;
+        }
+    } catch (Throwable $languageFailure) {
+        fwrite(STDERR, 'Language-pack refresh deferred: ' . $languageFailure->getMessage() . PHP_EOL);
     }
 } finally {
     foreach (['bootstrap.php', 'backup.php', 'app.php'] as $name) {

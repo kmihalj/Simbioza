@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Localization\LanguagePackManager;
+use App\Localization\LanguageRepository;
+use App\Localization\RepositoryLanguageManager;
 use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
 use App\Module\NativeProcessRunner;
@@ -48,6 +50,12 @@ try {
         'package-install' => singlePackageOperation($packages, $catalog, $parameters, true),
         'package-uninstall' => singlePackageOperation($packages, $catalog, $parameters, false),
         'language-add' => languageOperation($catalog, $root, $requestDirectory, $parameters),
+        'language-install', 'language-enable', 'language-disable', 'language-remove' => repositoryLanguageOperation(
+            $catalog,
+            $root,
+            $action,
+            $parameters,
+        ),
         'application-update-check' => applicationUpdateCheck($runner, $root, $parameters),
         'application-update-start' => applicationUpdateStart($root, $parameters),
         default => throw new RuntimeException('Unsupported Setup worker action.'),
@@ -157,6 +165,37 @@ function languageOperation(
 }
 
 /**
+ * HR: Izvršava samo dopuštenu radnju nad jednim provjerenim jezikom.
+ * EN: Performs only an allowlisted operation on one validated locale.
+ * @param array<string,mixed> $parameters
+ */
+function repositoryLanguageOperation(ModuleCatalog $catalog, string $root, string $action, array $parameters): string
+{
+    $locale = $parameters['locale'] ?? null;
+    if (!is_string($locale) || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
+        || strlen($locale) > 32) {
+        throw new RuntimeException('Setup request contains an invalid locale.');
+    }
+    $languages = new LanguagePackManager($root, $catalog);
+    $manager = new RepositoryLanguageManager(new LanguageRepository($root), $languages, $root);
+    return match ($action) {
+        'language-install' => (function () use ($manager, $locale, $parameters): string {
+            $manager->install($locale, !empty($parameters['replace']));
+            return 'Language installed: ' . $locale;
+        })(),
+        'language-remove' => (function () use ($manager, $locale): string {
+            $manager->uninstall($locale);
+            return 'Language removed: ' . $locale;
+        })(),
+        'language-enable', 'language-disable' => (function () use ($languages, $locale, $action): string {
+            $languages->setActive($locale, $action === 'language-enable');
+            return 'Language ' . ($action === 'language-enable' ? 'enabled: ' : 'disabled: ') . $locale;
+        })(),
+        default => throw new RuntimeException('Unsupported language operation.'),
+    };
+}
+
+/**
  * HR: Izvršava samo read-only provjeru postojećeg samostalnog updatera.
  * EN: Runs only the existing standalone updater's read-only check.
  *
@@ -170,7 +209,7 @@ function applicationUpdateCheck(NativeProcessRunner $runner, string $root, array
         throw new RuntimeException(trim($result->stderr) !== '' ? trim($result->stderr) : trim($result->stdout));
     }
 
-    return trim($result->stdout) !== '' ? trim($result->stdout) : 'Update check completed.';
+    return trim($result->stdout) !== '' ? trim($result->stdout) : 'Provjera ažuriranja je dovršena.';
 }
 
 /** HR: Provjerava CLI mogućnosti potrebne sigurnom pozadinskom updateru. EN: Checks CLI capabilities required by the safe background updater. */

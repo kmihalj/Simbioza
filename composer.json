@@ -82,14 +82,14 @@
     "require": {
         "php": ">=8.2",
         "aaieduhr/heartphrame-framework": "^0.0.25",
-        "aaieduhr/heartphrame-module-auth": "^0.1.12",
-        "aaieduhr/heartphrame-module-editor-html": "^0.1.31",
-        "aaieduhr/heartphrame-module-menu": "^0.1.15",
-        "aaieduhr/heartphrame-module-notification": "^0.1.4",
-        "aaieduhr/heartphrame-module-orm": "^0.1.0",
-        "aaieduhr/simbioza-module-workspace": "^0.1.31",
-        "aaieduhr/simbioza-module-workspace-search": "^0.1.8",
-        "aaieduhr/simbioza-module-user": "^0.1.9"
+        "aaieduhr/heartphrame-module-auth": "^0.1.13",
+        "aaieduhr/heartphrame-module-editor-html": "^0.1.32",
+        "aaieduhr/heartphrame-module-menu": "^0.1.16",
+        "aaieduhr/heartphrame-module-notification": "^0.1.5",
+        "aaieduhr/heartphrame-module-orm": "^0.1.6",
+        "aaieduhr/simbioza-module-user": "^0.1.10",
+        "aaieduhr/simbioza-module-workspace": "^0.1.32",
+        "aaieduhr/simbioza-module-workspace-search": "^0.1.11"
     },
     "autoload": {
         "psr-4": {
@@ -103,8 +103,8 @@
     },
     "authors": [
         {
-            "name": "Marko Ivančić",
-            "email": "mivanci@srce.hr"
+            "name": "Krešimir Mihalj",
+            "email": "kmihalj@srce.hr"
         }
     ],
     "config": {
@@ -136,15 +136,15 @@
     "extra": {
         "simbioza": {
             "optional-modules": {
-                "aaieduhr/heartphrame-module-api": "^0.1.3",
-                "aaieduhr/heartphrame-module-audit": "^0.1.0",
-                "aaieduhr/heartphrame-module-backup": "^0.1.5",
-                "aaieduhr/heartphrame-module-calendar": "^0.1.18",
-                "aaieduhr/heartphrame-module-comment": "^0.1.2",
-                "aaieduhr/heartphrame-module-email": "^0.1.2",
-                "aaieduhr/heartphrame-module-task": "^0.1.4",
-                "aaieduhr/heartphrame-module-theme": "^0.1.14",
-                "aaieduhr/simbioza-module-confluence-import": "^0.1.32"
+                "aaieduhr/heartphrame-module-api": "^0.1.4",
+                "aaieduhr/heartphrame-module-audit": "^0.1.4",
+                "aaieduhr/heartphrame-module-backup": "^0.1.6",
+                "aaieduhr/heartphrame-module-calendar": "^0.1.19",
+                "aaieduhr/heartphrame-module-comment": "^0.1.3",
+                "aaieduhr/heartphrame-module-email": "^0.1.3",
+                "aaieduhr/heartphrame-module-task": "^0.1.6",
+                "aaieduhr/heartphrame-module-theme": "^0.1.15",
+                "aaieduhr/simbioza-module-confluence-import": "^0.1.33"
             },
             "development-tools": {
                 "phpstan/phpstan": "^2.1",

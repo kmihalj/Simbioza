@@ -35,7 +35,10 @@ final class SimbiozaBrandingTest extends TestCase
 
         $this->assertSame('Simbioza', $app['name']);
         $localization = $this->arrayValue($app, 'localization');
-        $this->assertSame('hr', $localization['locale']);
+        $locale = $localization['locale'] ?? null;
+        $this->assertIsString($locale);
+        $this->assertContains($locale, $this->arrayValue($localization, 'supported_locales'));
+        $this->assertFileExists($root . '/lang/' . $locale . '.php');
         $activeThemeId = $settings['active_theme'] ?? null;
         $this->assertIsString($activeThemeId);
         $this->assertNotSame('', trim($activeThemeId));

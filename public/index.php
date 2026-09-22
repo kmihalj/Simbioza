@@ -261,7 +261,8 @@ if (!$installationPaths->isInstalled()) {
     $accessToken = new InstallationAccessToken($installationPaths);
     $configWriter = new InstallationConfigWriter($installationPaths);
     $databaseTester = new InstallationDatabaseTester($configWriter);
-    $inputValidator = new InstallationInputValidator();
+    $languageRepository = new \App\Localization\LanguageRepository($hphAppPath);
+    $inputValidator = new InstallationInputValidator($languageRepository);
     $requirements = new InstallationRequirements($installationPaths);
     $logger = new InstallationLogger($installationPaths);
     $setupConfiguration = require $hphAppPath . '/config/setup.php';
@@ -299,6 +300,7 @@ if (!$installationPaths->isInstalled()) {
         $runner,
         $logger,
         $setupGateway,
+        $languageRepository,
     );
     $method = is_string($_SERVER['REQUEST_METHOD'] ?? null) ? $_SERVER['REQUEST_METHOD'] : 'GET';
     $requestUri = is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '/';

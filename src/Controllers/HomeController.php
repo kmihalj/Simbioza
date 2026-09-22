@@ -48,12 +48,12 @@ class HomeController
             'home/index',
             [
                 'title' => 'Simbioza',
-                'content' => 'A shared space for knowledge, collaboration, and content that grows with your community.',
+                'content' => 'Zajednički prostor za znanje, suradnju i sadržaj koji raste s vašom zajednicom.',
                 'themeHero' => [
                     'is_home' => true,
                     'eyebrow' => __('Simbioza by HeartPhrame'),
                     'title' => __('Simbioza'),
-                    'subtitle' => __('Knowledge that lives together.'),
+                    'subtitle' => __('Znanje koje živi zajedno.'),
                 ],
             ],
             true,
@@ -100,12 +100,12 @@ class HomeController
     public function about(): ResponseInterface
     {
         return $this->responseFactory->view('home/about', [
-            'title' => 'About',
+            'title' => 'O aplikaciji',
             'themeHero' => [
                 'is_home' => false,
                 'eyebrow' => __('Simbioza by HeartPhrame'),
-                'title' => __('About Simbioza'),
-                'subtitle' => __('Knowledge that lives together.'),
+                'title' => __('O Simbiozi'),
+                'subtitle' => __('Znanje koje živi zajedno.'),
             ],
         ]);
     }

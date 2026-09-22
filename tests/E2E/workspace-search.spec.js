@@ -317,7 +317,7 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     await expect(page.locator('input[name="embedded"]')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toBeVisible();
-    await expect(page.getByText(/Bez operatora unesene se riječi|Without operators, the entered words/)).toBeVisible();
+    await expect(page.getByText(/Bez operatora unesene se riječi|Without operators, the entered words|If you simply enter one or more words/)).toBeVisible();
 
     await publicScope.uncheck();
     await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();

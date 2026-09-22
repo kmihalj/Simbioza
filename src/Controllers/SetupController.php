@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use AaiEduHr\HeartPhrameModuleMenu\Service\ComponentUpdateService;
 use App\Localization\LanguagePackManager;
+use App\Localization\RepositoryLanguageManager;
 use App\Module\ModuleCatalog;
 use App\Module\ModuleLifecycleManager;
 use App\Setup\ApplicationUpdateStatusStore;
@@ -40,6 +41,7 @@ final readonly class SetupController
         private SetupGateway $gateway,
         private SetupRequestStore $requests,
         private LanguagePackManager $languages,
+        private RepositoryLanguageManager $repositoryLanguages,
         private ComponentUpdateService $componentUpdates,
         private ApplicationUpdateStatusStore $updates,
         private AlertHandler $alerts,
@@ -60,6 +62,7 @@ final readonly class SetupController
             'definitions' => $this->catalog->definitions(),
             'diagnostics' => $this->diagnostics->report(),
             'languages' => $this->languages->status(),
+            'repositoryLanguages' => $this->repositoryLanguages->status(),
             'componentUpdates' => $this->componentUpdates->status(),
             'applicationUpdate' => $this->updates->status(),
             'applicationUpdateStatusPath' => $this->applicationUpdateStatusPath(),
@@ -100,6 +103,12 @@ final readonly class SetupController
                     $diagnostics['package_changes_allowed'],
                     !empty($body['replace']),
                 );
+            } elseif (
+                in_array($action, [
+                'language-install', 'language-enable', 'language-disable', 'language-remove',
+                ], true)
+            ) {
+                $message = $this->changeLanguage($action, $body, $diagnostics);
             } else {
                 $slugValue = $body['module'] ?? '';
                 $slug = is_string($slugValue) ? strtolower(trim($slugValue)) : '';
@@ -243,6 +252,49 @@ final readonly class SetupController
             $this->requests->discardLanguagePack($file);
             throw $throwable;
         }
+    }
+
+    /**
+     * HR: Ograničava promjene jezika na katalog i potreban instalacijski način.
+     * EN: Restricts language changes to the catalogue and appropriate installation mode.
+     * @param array<string,mixed> $body
+     * @param array<string,mixed> $diagnostics
+     */
+    private function changeLanguage(string $action, array $body, array $diagnostics): string
+    {
+        $locale = $body['locale'] ?? null;
+        if (
+            !is_string($locale) || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
+            || strlen($locale) > 32
+        ) {
+            throw new RuntimeException(__('Odabran je nepoznat jezik.'));
+        }
+
+        if (
+            in_array($action, ['language-install', 'language-remove'], true)
+            && empty($diagnostics['package_changes_allowed'])
+        ) {
+            throw new RuntimeException(__('Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.'));
+        }
+
+        if (
+            in_array($action, ['language-enable', 'language-disable'], true)
+            && empty($diagnostics['state_changes_allowed'])
+        ) {
+            throw new RuntimeException(__('Promjena jezika nije dostupna zbog prava pisanja.'));
+        }
+
+        if (!empty($diagnostics['package_changes_allowed'])) {
+            return $this->gateway->execute($action, [
+                'locale' => $locale,
+                'replace' => !empty($body['replace']),
+            ]);
+        }
+
+        $this->languages->setActive($locale, $action === 'language-enable');
+        return $action === 'language-enable'
+        ? __('Jezik je uključen.')
+        : __('Jezik je isključen.');
     }
 
     /**

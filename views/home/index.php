@@ -25,21 +25,25 @@ $themeShowsHomeHero = isset($themeLayoutRenderer)
     <p class="lead">
         <a class="btn btn-primary btn-lg"
            href="<?= $this->urlGenerator->getPathFor('about') ?>"
-           role="button"><?= $this->escape(__('Discover Simbioza')) ?></a>
+           role="button"><?= $this->escape(__('Upoznaj Simbiozu')) ?></a>
     </p>
 </div>
 
 <div class="row mt-5">
     <div class="col-md-4">
-        <h2><?= $this->escape(__('Knowledge in one place')) ?></h2>
-        <p><?= $this->escape(__('Connect pages, spaces, and shared context in a clear structure.')) ?></p>
+        <h2><?= $this->escape(__('Znanje na jednom mjestu')) ?></h2>
+        <p><?= $this->escape(__('Povežite stranice, područja i zajednički kontekst u jasnu strukturu.')) ?></p>
     </div>
     <div class="col-md-4">
-        <h2><?= $this->escape(__('Collaboration without friction')) ?></h2>
-        <p><?= $this->escape(__('Create, review, and publish together with permissions that follow your team.')) ?></p>
+        <h2><?= $this->escape(__('Suradnja bez prepreka')) ?></h2>
+        <p><?= $this->escape(
+            __('Zajedno stvarajte, pregledavajte i objavljujte uz ovlasti prilagođene vašem timu.'),
+        ) ?></p>
     </div>
     <div class="col-md-4">
-        <h2><?= $this->escape(__('A space that grows')) ?></h2>
-        <p><?= $this->escape(__('Add the modules your community needs while keeping one coherent experience.')) ?></p>
+        <h2><?= $this->escape(__('Prostor koji raste')) ?></h2>
+        <p><?= $this->escape(
+            __('Dodajte module koje vaša zajednica treba, uz jedno povezano korisničko iskustvo.'),
+        ) ?></p>
     </div>
 </div>

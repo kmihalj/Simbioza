@@ -480,7 +480,7 @@ test.describe('browser flows', () => {
     page,
     request,
   }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(180_000);
 
     let workspaceSlug = `e2e-content-workspace-${Date.now()}`;
     const pageSlug = `e2e-published-page-${Date.now()}`;

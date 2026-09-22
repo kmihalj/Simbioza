@@ -837,6 +837,63 @@ PHP);
     }
 
     /**
+     * HR: Jednojezična instalacija ne zadržava nepotrebnu drugu verziju uputa.
+     * EN: A single-locale install does not retain the unnecessary second guide version.
+     */
+    public function testSingleLocaleInstallationImportsOnlySelectedGuideLanguage(): void
+    {
+        foreach (['en', 'hr'] as $locale) {
+            $root = $this->completeRoot();
+            $paths = new InstallationPaths($root);
+            $token = new InstallationAccessToken($paths);
+            $token->generate();
+            $writer = new InstallationConfigWriter($paths);
+            $runner = new InstallationRunner(
+                $paths,
+                $token,
+                $writer,
+                new InstallationDatabaseTester($writer),
+                new InstallationInputValidator(),
+                new InstallationRequirements($paths),
+                new InstallationLogger($paths),
+            );
+            $runner->run(
+                ['driver' => 'sqlite'],
+                [
+                    'name' => 'One Language',
+                    'primary_locale' => $locale,
+                    'supported_locales' => [$locale],
+                    'timezone' => 'Europe/Zagreb',
+                    'optional_modules' => [],
+                    'module_selection_present' => '1',
+                ],
+                [
+                    'login' => 'single-admin',
+                    'display_name' => 'Single Administrator',
+                    'first_name' => 'Single',
+                    'last_name' => 'Administrator',
+                    'email' => 'single.admin@example.test',
+                    'password' => 'Secure#Single987',
+                    'password_confirmation' => 'Secure#Single987',
+                ],
+            );
+            $databaseConfig = require $paths->databaseConfig();
+            $database = new Database(new Config(new Helper(), ['database' => $databaseConfig]), new Helper());
+            $workspace = $database->table(ModuleWorkspace::TABLE_WORKSPACES)->first();
+            $this->assertIsArray($workspace);
+            $names = json_decode((string)$workspace['name_translations'], true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame([$locale], array_keys($names));
+            foreach ($database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)->get() as $workflow) {
+                $this->assertSame($locale, $workflow['language_code']);
+            }
+
+            foreach ($database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get() as $version) {
+                $this->assertSame($locale, $version['language_code']);
+            }
+        }
+    }
+
+    /**
      * HR: Stvara najmanji privatni korijen za sigurnosne testove.
      * EN: Creates a minimal private root for security tests.
      */

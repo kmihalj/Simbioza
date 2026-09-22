@@ -14,9 +14,9 @@ $themeShowsInnerHero = isset($themeLayoutRenderer)
 && $themeLayoutRenderer->heroEnabled(false);
 
 $principles = [
-    'Structured knowledge without losing human context.',
-    'Collaboration supported by clear roles and permissions.',
-    'A modular foundation that adapts to each community.',
+    'Strukturirano znanje koje ne gubi ljudski kontekst.',
+    'Suradnja podržana jasnim ulogama i ovlastima.',
+    'Modularna osnova koja se prilagođava svakoj zajednici.',
 ];
 ?>
 
@@ -28,11 +28,11 @@ $principles = [
     <?php endif; ?>
     <div class="card-body">
         <p class="lead"><?= $this->escape(__(
-            'Simbioza is a shared knowledge environment for pages, spaces, collaboration, and publication.',
+            'Simbioza je zajedničko okruženje za stranice, područja, suradnju i objavu znanja.',
         )) ?></p>
         <p><?= $this->escape(__(
-            'It is powered by HeartPhrame and grows through focused modules '
-            . 'without locking the application to one workflow.',
+            'Pokreće je HeartPhrame, a raste kroz ciljane module bez vezivanja aplikacije '
+            . 'uz samo jedan način rada.',
         )) ?></p>
         <ul>
             <?php foreach ($principles as $principle) : ?>

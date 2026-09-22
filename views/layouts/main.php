@@ -246,7 +246,7 @@ if ($renderedTopMenu === '') {
     }
     $fallbackMobileLabel = is_scalar($layoutNavigationPresentation['mobile_label'] ?? null)
     ? trim((string)$layoutNavigationPresentation['mobile_label'])
-    : __('Menu');
+    : __('Meni');
     $fallbackMobileLabelHtml = (bool)($layoutNavigationPresentation['show_mobile_label'] ?? false)
     ? '<span class="me-2">' . $this->escape($fallbackMobileLabel) . '</span>'
     : '';
@@ -260,7 +260,7 @@ if ($renderedTopMenu === '') {
     $fallbackCalendarHtml = $this->urlGenerator->namedRouteExists('calendar.index')
     ? '<li class="nav-item"><a class="nav-link" href="'
     . $this->escape($this->urlGenerator->getPathFor('calendar.index')) . '">'
-    . $this->escape(__('Calendars')) . '</a></li>'
+    . $this->escape(__('Kalendari')) . '</a></li>'
     : '';
     $renderedTopMenu = '<nav class="navbar navbar-expand-' . $this->escape($fallbackBreakpoint)
     . ' navbar-dark bg-dark hph-primary-navigation"><div class="' . $this->escape($fallbackContainer) . '">'
@@ -274,13 +274,13 @@ if ($renderedTopMenu === '') {
     . '<div class="offcanvas-header"><h2 class="offcanvas-title h5" id="navbarNavLabel">'
     . $this->escape($fallbackMobileLabel)
     . '</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" '
-    . 'aria-label="' . $this->escape(__('Close')) . '"></button></div>'
+    . 'aria-label="' . $this->escape(__('Zatvori')) . '"></button></div>'
     . '<div class="offcanvas-body"><ul class="navbar-nav">'
     . '<li class="nav-item"><a class="nav-link" href="' . $this->escape($homePath) . '">'
-    . $this->escape(__('Home')) . '</a></li>'
+    . $this->escape(__('Početna')) . '</a></li>'
     . '<li class="nav-item"><a class="nav-link" href="'
     . $this->escape($this->urlGenerator->getPathFor('about')) . '">'
-    . $this->escape(__('About')) . '</a></li>'
+    . $this->escape(__('O aplikaciji')) . '</a></li>'
     . $fallbackCalendarHtml
     . '</ul>' . $fallbackAccountHtml . '</div></div></div></nav>';
 }
@@ -710,8 +710,8 @@ if (
                             data-hph-route-left-toggle
                             aria-controls="hph-route-left-menu"
                             aria-expanded="true"
-                            title="<?= $this->escape(__('Show or hide special left menu')) ?>"
-                            aria-label="<?= $this->escape(__('Show or hide special left menu')) ?>"
+                            title="<?= $this->escape(__('Prikaži ili sakrij posebni lijevi meni')) ?>"
+                            aria-label="<?= $this->escape(__('Prikaži ili sakrij posebni lijevi meni')) ?>"
                         >
                             <svg
                                 class="hph-route-left-toggle__icon"
@@ -1081,7 +1081,7 @@ if (
 
     <footer class="mt-5 pt-3 border-top text-center text-muted">
         <div class="container-fluid">
-            <p>&copy; <?= date('Y') ?> <?= __('Simbioza by HeartPhrame. All rights reserved.') ?></p>
+            <p>&copy; <?= date('Y') ?> <?= __('Simbioza by HeartPhrame. Sva prava pridržana.') ?></p>
         </div>
     </footer>
 

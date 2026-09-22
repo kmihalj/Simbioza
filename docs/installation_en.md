@@ -408,16 +408,31 @@ import reference.
 
 ```bash
 vendor/bin/hph languages list
-vendor/bin/hph languages template de \
---source=en \
---output=/tmp/de.json
-vendor/bin/hph languages validate /tmp/de.json
-vendor/bin/hph languages add /tmp/de.json
+vendor/bin/hph languages available
+vendor/bin/hph languages install de
+vendor/bin/hph languages disable de
+vendor/bin/hph languages enable de
+vendor/bin/hph languages update
+vendor/bin/hph languages remove de
 ```
 
-One pack contains every string from the application and currently installed
-modules, multilingual language names, and a safe SVG flag. German is a bundled
-example only; it is not enabled automatically. See the
+The installer lists released languages from the
+[public language repository](https://github.com/kmihalj/simbioza-languages).
+Croatian and English are preselected, but either can be deselected; at least
+one language must remain selected. In a dedicated FPM installation, Setup can
+install, enable, disable, update, and remove published languages. On a regular
+installation, use the same CLI commands shown above. The last active language
+cannot be disabled or removed. An application update checks for newer published
+revisions of installed repository packs; the `languages update` command does
+this independently.
+
+The user guides are imported in only English or only Croatian when that is the
+sole selected language. If another language is selected, both existing guide
+translations are retained until a guide translation for that language is
+available. French, Spanish, and Italian draft packs are not selectable before
+their interface strings have been translated and reviewed. One pack contains
+the application's and modules' strings, multilingual names, and a safe SVG
+flag. See the
 [localization guide](localization_en.md) for details.
 
 ## 13. Updates
@@ -473,6 +488,11 @@ configuration and data, updates tagged packages, verifies bootstrap, applies
 migrations, refreshes bundled guides and the theme, and clears caches. A
 failure before migrations rolls back automatically; after migrations start,
 maintenance remains enabled for controlled recovery.
+
+On an existing installation, do not replace `php update.php` with a standalone
+`composer update`: only the updater carries that installation's optional-module
+selection into the new release manifest. Resolving the minimal base manifest
+alone can remove optional packages from that installation.
 
 `data/update-maintenance.json` is an updater safety guard. Do not move or
 delete it until you have verified that no update process is running. The

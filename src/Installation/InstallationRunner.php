@@ -17,6 +17,9 @@ use AaiEduHr\HeartPhrameModuleTheme\ModuleTheme;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
+use App\Localization\LanguagePackManager;
+use App\Localization\LanguageRepository;
+use App\Localization\RepositoryLanguageManager;
 use App\Module\ModuleCatalog;
 use HeartPhrame\App;
 use HeartPhrame\Config\Config;
@@ -90,6 +93,7 @@ final readonly class InstallationRunner
         }
 
         $this->databaseTester->test($databaseInput);
+        $this->prepareSelectedLanguages($application['supported_locales']);
         $application['base_path'] = rtrim($basePath, '/');
         $this->configWriter->write($databaseInput, $application);
         $catalog = new ModuleCatalog();
@@ -114,6 +118,7 @@ final readonly class InstallationRunner
             $administratorId,
             $basePath,
             $enabledPackages,
+            $application['supported_locales'],
         );
         $this->writeLock($driver, $application, $themeId);
 
@@ -129,6 +134,24 @@ final readonly class InstallationRunner
             'administrator_login' => $administrator['login'],
             'workspace_slug' => $workspaceSlug,
         ];
+    }
+
+    /**
+     * HR: CLI instalacija priprema objavljene vanjske jezike kada ih web-korak nije već pripremio.
+     * EN: CLI installation prepares released external locales unless the web step already did so.
+     * @param list<string> $selected
+     */
+    private function prepareSelectedLanguages(array $selected): void
+    {
+        $root = $this->paths->appRoot();
+        $languages = new LanguagePackManager($root, new ModuleCatalog());
+        $installed = array_column($languages->status(), null, 'locale');
+        $repository = new RepositoryLanguageManager(new LanguageRepository($root), $languages, $root);
+        foreach ($selected as $locale) {
+            if (!in_array($locale, ['hr', 'en'], true) && !isset($installed[$locale])) {
+                $repository->install($locale);
+            }
+        }
     }
 
     /**
@@ -274,12 +297,14 @@ final readonly class InstallationRunner
      * to the newly created administrator.
      *
      * @param list<string> $enabledPackages
+     * @param list<string> $selectedLocales
      */
     private function importUserGuides(
         Database $database,
         int $administratorId,
         string $basePath,
         array $enabledPackages,
+        array $selectedLocales,
     ): string {
         try {
             $runtimeConfig = $this->prepareImportConfig($enabledPackages);
@@ -324,12 +349,137 @@ final readonly class InstallationRunner
             }
 
             $manager->restore($this->paths->userGuidesPackage(), $context);
+            $this->retainSelectedGuideLocales($database, $selectedLocales);
             $this->rewriteImportedUserGuidePaths($database, $basePath);
 
             return self::USER_GUIDES_WORKSPACE_SLUG;
         } finally {
             $this->removeImportConfig();
         }
+    }
+
+    /**
+     * HR: Na svježoj instalaciji zadržava samo odabrane upute; za treće jezike čuva EN i HR kao privremeni fallback.
+     * EN: On a fresh install, keeps only selected guides; third-party locales retain EN and HR as temporary fallback.
+     * @param list<string> $selected
+     */
+    private function retainSelectedGuideLocales(Database $database, array $selected): void
+    {
+        $wanted = array_values(array_intersect(['en', 'hr'], $selected));
+        if (array_diff($selected, ['en', 'hr']) !== []) {
+            $wanted = ['en', 'hr'];
+        }
+
+        if ($wanted === ['en', 'hr'] || $wanted === ['hr', 'en']) {
+            return;
+        }
+
+        $preferred = $wanted[0] ?? 'en';
+        $workspace = $database->table(\AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace::TABLE_WORKSPACES)
+            ->where('slug', '=', self::USER_GUIDES_WORKSPACE_SLUG)->first();
+        if (!is_array($workspace)) {
+            throw new RuntimeException('Imported guide workspace is missing.');
+        }
+
+        $workspaceId = (int)$workspace['id'];
+        $database->transaction(function (Database $database) use ($workspace, $workspaceId, $wanted, $preferred): void {
+            $workspaceUpdate = [];
+            foreach (['name_translations', 'description_translations'] as $field) {
+                $workspaceUpdate[$field] = $this->filteredGuideTranslations($workspace[$field] ?? null, $wanted);
+            }
+
+            $name = json_decode((string)$workspaceUpdate['name_translations'], true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($name)) {
+                throw new RuntimeException('The imported guide workspace has invalid name translations.');
+            }
+
+            if (is_string($name[$preferred] ?? null)) {
+                $workspaceUpdate['name'] = $name[$preferred];
+            }
+
+            $database->table(\AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace::TABLE_WORKSPACES)
+                ->where('id', '=', $workspaceId)->update($workspaceUpdate);
+
+            $nodes = $database->table(\AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace::TABLE_WORKSPACE_NODES)
+                ->where('workspace_id', '=', $workspaceId)->get();
+            foreach ($nodes as $node) {
+                $nodeId = (int)$node['id'];
+                $titles = $this->filteredGuideTranslations($node['title_translations'] ?? null, $wanted);
+                $titleMap = json_decode($titles, true, 512, JSON_THROW_ON_ERROR);
+                if (!is_array($titleMap)) {
+                    throw new RuntimeException('An imported guide page has invalid title translations.');
+                }
+
+                $update = ['title_translations' => $titles];
+                if (is_string($titleMap[$preferred] ?? null)) {
+                    $update['title'] = $titleMap[$preferred];
+                }
+
+                $database->table(\AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace::TABLE_WORKSPACE_NODES)
+                    ->where('id', '=', $nodeId)->update($update);
+
+                $workflows = $database
+                    ->table(\AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
+                    ->where('node_id', '=', $nodeId)->get();
+                foreach ($workflows as $workflow) {
+                    if (!in_array($workflow['language_code'] ?? null, $wanted, true)) {
+                        $database
+                            ->table(\AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
+                            ->where('id', '=', (int)$workflow['id'])->delete();
+                    }
+                }
+
+                $key = $node['document_key'] ?? null;
+                if (!is_string($key) || $key === '') {
+                    continue;
+                }
+
+                $document = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+                    ->where('document_key', '=', $key)->first();
+                if (!is_array($document)) {
+                    continue;
+                }
+
+                $versions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+                    ->where('document_id', '=', (int)$document['id'])->get();
+                $kept = [];
+                foreach ($versions as $version) {
+                    if (in_array($version['language_code'] ?? null, $wanted, true)) {
+                        $kept[] = $version;
+                    } else {
+                        $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+                            ->where('id', '=', (int)$version['id'])->delete();
+                    }
+                }
+
+                if ($kept !== []) {
+                    $latest = $kept[array_key_last($kept)];
+                    $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+                        ->where('id', '=', (int)$document['id'])->update([
+                            'default_language' => $preferred,
+                            'current_version_id' => (int)$latest['id'],
+                            'title' => (string)$latest['title'],
+                        ]);
+                }
+            }
+        });
+    }
+
+    /**
+     * HR: Smanjuje JSON mapu prijevoda samo na dopuštene jezike uputa.
+     * EN: Narrows a guide translation JSON map to the permitted locales.
+     * @param list<string> $wanted
+     */
+    private function filteredGuideTranslations(mixed $value, array $wanted): string
+    {
+        $decoded = is_string($value) && $value !== ''
+        ? json_decode($value, true, 512, JSON_THROW_ON_ERROR)
+        : [];
+        $map = is_array($decoded) ? $decoded : [];
+        return json_encode(
+            array_intersect_key($map, array_flip($wanted)),
+            JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+        );
     }
 
     /**

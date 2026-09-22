@@ -18,8 +18,6 @@ final readonly class InstallationConfigWriter
 {
     private const SUPPORTED_DRIVERS = ['sqlite', 'mysql', 'pgsql'];
 
-    private const SUPPORTED_LOCALES = ['hr', 'en', 'de'];
-
     /** HR: Inicijalizira konfiguracijske putanje. EN: Initializes configuration paths. */
     public function __construct(private InstallationPaths $paths)
     {
@@ -148,7 +146,8 @@ final readonly class InstallationConfigWriter
         : [];
         $supportedLocales = array_values(array_unique(array_filter(
             array_map(fn (mixed $locale): string => strtolower(trim($this->scalarString($locale))), $requestedLocales),
-            static fn (string $locale): bool => in_array($locale, self::SUPPORTED_LOCALES, true),
+            static fn (string $locale): bool => preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) === 1
+                && strlen($locale) <= 32,
         )));
         $timezone = trim($this->scalarString($application['timezone'] ?? 'Europe/Zagreb'));
 

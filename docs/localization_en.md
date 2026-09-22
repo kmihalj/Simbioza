@@ -1,14 +1,20 @@
 # Localization
 
-HeartPhrame provides a simple yet powerful localization system to translate
-your application into multiple languages.
+Simbioza uses Croatian as the canonical source language of its interface.
+User-facing text is written in Croatian in code and serves as the same lookup
+key in every language file. Translators may work from an English reference;
+that does not introduce a second translation step at runtime.
+Technical identifiers such as `can_view` and date-format settings stay stable
+codes because they are not interface sentences.
 
 ## Configuration
 
 The localization system is configured in your `config/app.php` file:
 
-Croatian is the site's default and fallback language. Browser detection and a
-manual language selection can still activate any supported locale.
+Croatian is the default in a standard new installation, but the installer can
+select another primary language and even omit Croatian. The selected primary
+language becomes the site's fallback; users can switch among enabled locales.
+The following snippet illustrates the usual Croatian configuration:
 
 ```php
 return [
@@ -33,11 +39,8 @@ named after the locale (e.g., `en.php`, `de.php`).
 <?php
 
 return [
-    'welcome' => 'Welcome to our application!',
-    'greet' => 'Hello, :name!',
-    'auth' => [
-        'login' => 'Please log in',
-    ],
+    'Dobro došli!' => 'Welcome!',
+    'Pozdrav, :name!' => 'Hello, :name!',
 ];
 ```
 
@@ -49,9 +52,8 @@ The `__()` and `__e()` (with escaping) helper functions are available globally
 and can be used anywhere in your application (views, controllers, etc.).
 
 ```php
-echo __('welcome');
-echo __e('greet', ['name' => 'John']);
-echo __('auth.login'); // Supports dot notation for nested arrays
+echo __('Dobro došli!');
+echo __e('Pozdrav, :name!', ['name' => 'John']);
 ```
 
 ### Placeholders
@@ -80,7 +82,7 @@ class HomeController extends AbstractController
 {
     public function index(): ResponseInterface
     {
-        $message = $this->translator->trans('welcome');
+        $message = $this->translator->trans('Dobro došli!');
         // ...
     }
 }
@@ -93,7 +95,7 @@ templates. However, using the `__()` or `__e()` helper is recommended for
 brevity.
 
 ```php
-<h1><?= __('welcome') ?></h1>
+<h1><?= __('Dobro došli!') ?></h1>
 ```
 
 ## Changing Locale at Runtime
@@ -115,30 +117,59 @@ automatically.
 
 ## Consolidated language packs
 
-Adding a locale does not require editing every module. Simbioza can collect the
-application and every bundled module key into one JSON pack:
+Adding a locale does not require editing every module. Released packs are
+listed in the [public language repository](https://github.com/kmihalj/simbioza-languages):
 
 ```bash
 vendor/bin/hph languages list
+vendor/bin/hph languages available
+vendor/bin/hph languages install de
+vendor/bin/hph languages disable de
+vendor/bin/hph languages enable de
+vendor/bin/hph languages update
+vendor/bin/hph languages remove de
+```
+
+For a new translation, Simbioza can collect the application and every
+installed module key into one JSON pack:
+
+```bash
 vendor/bin/hph languages template de --source=en --output=/tmp/de.json
 vendor/bin/hph languages validate /tmp/de.json
 vendor/bin/hph languages add /tmp/de.json
 ```
 
-Translate only values inside the JSON `translations` object. Do not change keys
-or placeholders such as `:name`, `%s`, or `{{value}}`. `validate` compares all
+JSON keys are Croatian source strings from the code, not their English
+translations. Translate only values inside `translations`. `source_locale`
+records whether the translator used English or Croatian reference text; at
+runtime, each locale is looked up directly by its Croatian key, with no
+HR → EN → target-language chain. Do not change keys or placeholders such as
+`:name`, `%s`, or `{{value}}`. `validate` compares all
 keys and placeholders with the source locale. An incomplete pack is rejected
 unless `--allow-missing` is deliberately supplied, and an existing locale is
 not overwritten without `--replace`.
 
 `add` installs one consolidated `lang/<locale>.php` file and enables the locale
 in the private installation configuration. The application-level file takes
-precedence over module translations, so the pack is complete immediately and
-the modules need no edits. A later release can add keys; create a new template,
-carry existing translations forward, translate the new values, validate it,
-and install it with `--replace`.
+precedence over module translations. Every pack must include a safe SVG flag.
+The last enabled language cannot be disabled or removed.
 
-The included German `de` locale is only a complete example pack and is not
-added or enabled automatically. It has the same key count and preserves
-placeholders. A native-language review is still recommended before publishing
-any new translation in production.
+When application or module strings change, run `php scripts/sync.php
+/path/to/Simbioza --version=YYYY.MM.DD.N` in the language repository. It writes
+only new and changed source keys to `pending/<locale>.json` and never overwrites
+translated values. Review the pending keys, update the pack, remove its pending
+file after review, run `languages validate`, and publish a newer pack revision.
+The application's next update refreshes installed repository packs whose
+published digest changed; `languages update` performs the check on demand.
+German is published with AI-assisted translations and should still receive
+native-speaker review. French, Spanish, and Italian are drafts, not installed
+automatically.
+
+### Dates and times
+
+User-facing dates and times use ICU rules for the selected interface locale:
+month names, field order, and 12/24-hour conventions therefore vary by
+language. Stored timestamps, API fields, HTML machine-readable dates, and logs
+keep their stable formats. The installation time zone determines the displayed
+local time; switching language does not alter the underlying instant. A
+Cyrillic locale such as `sr-cyrl` can be packaged in UTF-8 in the same way.

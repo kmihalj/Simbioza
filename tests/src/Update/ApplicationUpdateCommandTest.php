@@ -101,6 +101,30 @@ TAGS;
     }
 
     /**
+     * HR: Release sinkronizacija i rollback čuvaju instalirani jezik, ali ažuriraju ugrađene jezike.
+     * EN: Release sync and rollback preserve an installed locale while updating bundled locales.
+     */
+    public function testSourceSyncPreservesInstalledLanguageFilesAndRegistry(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-language-' . bin2hex(random_bytes(8));
+        mkdir($root . '/config', 0770, true);
+        $this->temporaryDirectories[] = $root;
+        file_put_contents($root . '/config/languages.php', <<<'PHP'
+<?php
+return ['en' => [], 'hr' => [], 'de' => [], 'sr-cyrl' => []];
+PHP);
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $method = new \ReflectionMethod(ApplicationUpdateCommand::class, 'sourceSyncExcludes');
+        $excludes = $method->invoke($command);
+        $this->assertContains('/config/languages.php', $excludes);
+        $this->assertContains('/lang/de.php', $excludes);
+        $this->assertContains('/lang/sr-cyrl.php', $excludes);
+        $this->assertNotContains('/lang/en.php', $excludes);
+        $this->assertNotContains('/lang/hr.php', $excludes);
+    }
+
+    /**
      * HR: Vraćanje opcionalnih modula ostavlja manifest čitljivim odvojenom FPM korisniku.
      * EN: Restoring optional modules leaves the manifest readable by a separate FPM user.
      */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Localization\LanguageRepository;
 use App\Module\ModuleCatalog;
 
 /**
@@ -15,6 +16,11 @@ final readonly class InstallationInputValidator
     private const SUPPORTED_DRIVERS = ['sqlite', 'mysql', 'pgsql'];
 
     private const SUPPORTED_LOCALES = ['hr', 'en'];
+
+    /** HR: Po želji uključuje objavljene jezike iz vanjskog kataloga. EN: Optionally includes released locales from the external catalogue. */
+    public function __construct(private ?LanguageRepository $languages = null)
+    {
+    }
 
     /**
      * HR: Provjerava i normalizira postavke baze.
@@ -99,9 +105,13 @@ final readonly class InstallationInputValidator
         ? $input['supported_locales']
         : [];
         $supportedLocales = [];
+        $availableLocales = array_values(array_unique([
+            ...self::SUPPORTED_LOCALES,
+            ...array_keys($this->languages?->available() ?? []),
+        ]));
         foreach ($requestedLocales as $locale) {
             $locale = strtolower(trim($this->scalarString($locale)));
-            if (in_array($locale, self::SUPPORTED_LOCALES, true) && !in_array($locale, $supportedLocales, true)) {
+            if (in_array($locale, $availableLocales, true) && !in_array($locale, $supportedLocales, true)) {
                 $supportedLocales[] = $locale;
             }
         }

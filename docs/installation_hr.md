@@ -406,16 +406,30 @@ import-referencu.
 
 ```bash
 vendor/bin/hph languages list
-vendor/bin/hph languages template de \
---source=en \
---output=/tmp/de.json
-vendor/bin/hph languages validate /tmp/de.json
-vendor/bin/hph languages add /tmp/de.json
+vendor/bin/hph languages available
+vendor/bin/hph languages install de
+vendor/bin/hph languages disable de
+vendor/bin/hph languages enable de
+vendor/bin/hph languages update
+vendor/bin/hph languages remove de
 ```
 
-Jedan paket sadrži sve stringove aplikacije i trenutno instaliranih modula,
-višejezične nazive jezika i sigurnu SVG zastavicu. Njemački je samo priloženi
-primjer; ne uključuje se automatski. Detalji su u
+Installer prikazuje objavljene jezike iz
+[javnog repozitorija](https://github.com/kmihalj/simbioza-languages).
+Hrvatski i engleski unaprijed su označeni, ali svaki se može odznačiti; mora
+ostati odabran barem jedan jezik. Na namjenskoj FPM instalaciji Setup može
+instalirati, uključiti, isključiti, ažurirati i ukloniti objavljene jezike. Na
+običnoj instalaciji iste se radnje obavljaju prikazanim CLI naredbama. Zadnji
+aktivni jezik nije moguće isključiti ili ukloniti. Nadogradnja aplikacije
+provjerava nove objavljene revizije instaliranih paketa; `languages update`
+to radi i samostalno.
+
+Ako je odabran samo engleski ili samo hrvatski, uvozi se samo ta jezična verzija
+korisničkih uputa. Kada je odabran i neki drugi jezik, zadržavaju se obje
+postojeće verzije uputa dok ne postoji njegov prijevod. Francuski, španjolski
+i talijanski nacrti nisu ponuđeni za instalaciju dok prijevod sučelja nije
+dovršen i pregledan. Jedan paket sadrži stringove aplikacije i modula,
+višejezične nazive i sigurnu SVG zastavicu. Detalji su u
 [uputi za lokalizaciju](localization_hr.md).
 
 ## 13. Nadogradnja
@@ -472,6 +486,11 @@ i podatke, ažurira tagirane pakete, provjerava bootstrap, primjenjuje migracije
 osvježava ugrađene upute i temu te čisti cache. Neuspjeh prije migracija vraća
 prethodno stanje; nakon početka migracija održavanje ostaje uključeno radi
 sigurnog ručnog oporavka.
+
+Na postojećoj instalaciji nemojte zamijeniti `php update.php` samostalnim
+`composer update`: samo updater prenosi njezin odabir opcionalnih modula u
+manifest novog izdanja. Samostalno razrješavanje osnovnog manifesta može
+ukloniti opcionalne pakete iz te instalacije.
 
 Datoteka `data/update-maintenance.json` dio je zaštite updatera. Ne premještajte
 je niti brišite dok ne provjerite da nema aktivnog procesa ažuriranja. Nakon

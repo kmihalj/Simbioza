@@ -1,14 +1,20 @@
 # Lokalizacija
 
-HeartPhrame pruža jednostavan i prilagodljiv sustav za prevođenje aplikacije na
-više jezika.
+Simbioza koristi hrvatski kao izvorni jezik sučelja. Tekst vidljiv korisniku
+piše se hrvatski u kodu i isti je ključ u svim jezičnim datotekama. Jezični
+paket smije biti preveden s engleskog kao radnog jezika prevoditelja, ali to
+ne dodaje drugi korak prevođenja pri prikazu.
+Tehnički identifikatori, primjerice `can_view` i oznake formata datuma,
+ostaju stabilni kodovi jer nisu tekstovi sučelja.
 
 ## Konfiguracija
 
 Lokalizacija se podešava u `config/app.php`:
 
-Hrvatski je zadani jezik sitea i jezik povratnog prikaza. Automatsko otkrivanje
-preglednika i ručni odabir i dalje mogu aktivirati bilo koji podržani jezik.
+Hrvatski je zadani jezik standardne nove instalacije, ali installer može
+odabrati drugi primarni jezik i izostaviti hrvatski. Odabrani primarni jezik
+postaje jezik povratnog prikaza, a korisnici se mogu prebacivati među uključenim
+jezicima. Sljedeći primjer prikazuje uobičajenu hrvatsku konfiguraciju:
 
 ```php
 return [
@@ -33,11 +39,8 @@ primjerice `hr.php` ili `en.php`.
 <?php
 
 return [
-    'welcome' => 'Dobro došli u našu aplikaciju!',
-    'greet' => 'Pozdrav, :name!',
-    'auth' => [
-        'login' => 'Prijavite se',
-    ],
+    'Dobro došli!' => 'Dobro došli!',
+    'Pozdrav, :name!' => 'Pozdrav, :name!',
 ];
 ```
 
@@ -49,9 +52,8 @@ Globalne pomoćne funkcije `__()` i `__e()` — druga izbjegava HTML — dostupn
 u prikazima, kontrolerima i drugim dijelovima aplikacije.
 
 ```php
-echo __('welcome');
-echo __e('greet', ['name' => 'Ivan']);
-echo __('auth.login'); // Podržana je točkasta notacija za ugniježđena polja.
+echo __('Dobro došli!');
+echo __e('Pozdrav, :name!', ['name' => 'Ivan']);
 ```
 
 ### Zamjenske vrijednosti
@@ -79,7 +81,7 @@ class HomeController extends AbstractController
 {
     public function index(): ResponseInterface
     {
-        $message = $this->translator->trans('welcome');
+        $message = $this->translator->trans('Dobro došli!');
         // ...
     }
 }
@@ -91,7 +93,7 @@ Servis `translator` dostupan je kao globalna varijabla u predlošcima prikaza.
 Zbog sažetosti se ipak preporučuju funkcije `__()` i `__e()`.
 
 ```php
-<h1><?= __('welcome') ?></h1>
+<h1><?= __('Dobro došli!') ?></h1>
 ```
 
 ## Promjena jezika tijekom izvođenja
@@ -112,16 +114,32 @@ prijevodi iz direktorija `lang` svakog modula.
 ## Objedinjeni jezični paketi
 
 Za dodavanje novog jezika nije potrebno uređivati svaki modul. Simbioza može
-skupiti ključeve glavne aplikacije i svih ugrađenih modula u jedan JSON paket:
+skupiti ključeve glavne aplikacije i svih instaliranih modula u jedan JSON
+paket. Objavljeni su paketi navedeni u
+[javnom repozitoriju jezika](https://github.com/kmihalj/simbioza-languages):
 
 ```bash
 vendor/bin/hph languages list
+vendor/bin/hph languages available
+vendor/bin/hph languages install de
+vendor/bin/hph languages disable de
+vendor/bin/hph languages enable de
+vendor/bin/hph languages update
+vendor/bin/hph languages remove de
+```
+
+Za izradu novog prijevoda:
+
+```bash
 vendor/bin/hph languages template de --source=en --output=/tmp/de.json
 vendor/bin/hph languages validate /tmp/de.json
 vendor/bin/hph languages add /tmp/de.json
 ```
 
-U JSON-u se prevode samo vrijednosti u objektu `translations`. Ne mijenjajte
+U JSON-u su ključevi hrvatski tekstovi iz koda, ne engleski prijevodi. Prevodite
+samo vrijednosti u objektu `translations`. `source_locale` označava jezik
+teksta iz kojeg prevoditelj radi (`en` ili `hr`), ali se pri prikazu traži
+izravno po hrvatskom ključu: nema slijeda HR → EN → drugi jezik. Ne mijenjajte
 ključeve ni zamjenske oznake poput `:name`, `%s` ili `{{value}}`. `validate`
 uspoređuje sve ključeve i zamjenske oznake s izvornim jezikom. Nepotpun paket se
 odbija, osim ako je svjesno zadan `--allow-missing`; postojeći jezik se ne
@@ -129,12 +147,25 @@ pregazuje bez `--replace`.
 
 `add` instalira jedan objedinjeni `lang/<jezik>.php` i dodaje jezik u privatnu
 instalacijsku konfiguraciju. Aplikacijska datoteka ima prednost pred
-pojedinačnim prijevodima modula, pa je paket odmah potpun i nakon toga module ne
-treba mijenjati. Novo izdanje ipak može dodati ključeve; tada ponovno izradite
-predložak, prenesite postojeće prijevode, prevedite nove vrijednosti, provjerite
-paket i instalirajte ga s `--replace`.
+pojedinačnim prijevodima modula. Svaki paket mora imati sigurnu SVG zastavicu.
+Zadnji uključeni jezik nije moguće isključiti ili ukloniti.
 
-Njemački `de` priložen je samo kao potpuni primjer paketa i ne dodaje se niti
-uključuje automatski. Ima jednak broj ključeva i očuvane zamjenske oznake.
-Prije produkcijske objave novoga prijevoda preporučena je završna jezična
-provjera izvornog govornika.
+Kada se promijene stringovi aplikacije ili modula, u repozitoriju jezika
+pokrenite `php scripts/sync.php /putanja/do/Simbioze --version=GGGG.MM.DD.N`.
+Alat u `pending/<jezik>.json` izdvaja samo nove i promijenjene izvorne ključeve;
+postojeći prijevod nikada ne prepisuje. Pregledajte promjene, dopunite paket,
+nakon pregleda uklonite njegovu pending datoteku, provjerite `languages
+validate` i objavite novu reviziju. Sljedeća nadogradnja aplikacije osvježava
+instalirani paket kada je objavljen novi digest; `languages update` to radi i
+na zahtjev. Njemački je objavljen s prijevodom pripremljenim uz AI i još je
+poželjan pregled izvornog govornika. Francuski, španjolski i talijanski zasad
+su samo nacrti.
+
+### Datumi i vremena
+
+Datumi i vremena vidljivi korisniku oblikuju se prema ICU pravilima jezika
+sučelja: mijenjaju se redoslijed, nazivi mjeseci i 12/24-satni prikaz. Zapisi
+u bazi, API polja, strojno čitljivi HTML datumi i tehnički logovi zadržavaju
+stabilan format. Vremenska zona instalacije određuje lokalno vrijeme prikaza;
+promjena jezika ne mijenja pohranjeni trenutak. Mogući su i UTF-8 jezici na
+ćirilici, primjerice `sr-cyrl`.

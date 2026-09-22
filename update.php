@@ -32,6 +32,7 @@ final class ApplicationUpdateCommand
         '/config/database.php',
         '/config/env.php',
         '/config/installation.php',
+        '/config/languages.php',
         '/config/email.php',
         '/config/workspace.php',
         '/config/editor-html.php',
@@ -45,6 +46,7 @@ final class ApplicationUpdateCommand
         'config/database.php',
         'config/env.php',
         'config/installation.php',
+        'config/languages.php',
         'config/email.php',
         'config/workspace.php',
         'config/editor-html.php',
@@ -829,6 +831,20 @@ final class ApplicationUpdateCommand
         $excludes = array_fill_keys(self::SOURCE_SYNC_EXCLUDES, true);
         foreach ($this->runtimeSettingsFiles() as $relativePath) {
             $excludes['/' . ltrim($relativePath, '/')] = true;
+        }
+
+        // HR: Korisnikovi jezični paketi nisu dio release arhive; čuvaj ih i pri
+        //     nadogradnji i pri rollbacku, dok se ugrađeni en/hr redovito ažuriraju.
+        // EN: User-installed packs are absent from the release archive; preserve
+        //     them during both update and rollback while refreshing bundled en/hr.
+        $registryPath = $this->appRoot . '/config/languages.php';
+        $registry = is_file($registryPath) ? require $registryPath : [];
+        foreach (is_array($registry) ? array_keys($registry) : [] as $locale) {
+            if (is_string($locale)
+                && !in_array($locale, ['en', 'hr'], true)
+                && preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) === 1) {
+                $excludes['/lang/' . $locale . '.php'] = true;
+            }
         }
 
         return array_keys($excludes);
