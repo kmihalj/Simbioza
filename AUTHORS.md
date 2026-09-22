@@ -1,15 +1,19 @@
 # Authors
 
-This project was developed by the [AAI@EduHr](https://www.aaiedu.hr/) dev team from
-[University of Zagreb University computing centre SRCE](https://www.srce.unizg.hr/).
+[Croatian version](AUTHORS_hr.md)
 
+## Simbioza and its modules
 
-## Developers
+**Krešimir Mihalj** is the author and maintainer of the Simbioza application
+and the modules developed for it. Their development should not be attributed
+to the upstream HeartPhrame Framework team.
 
-- [Marko Ivančić](mivanci@srce.hr), [SRCE](https://www.srce.unizg.hr/)
-- [AAI@EduHr Dev Team](aai@srce.hr), [SRCE](https://www.srce.unizg.hr/)
+## Upstream Framework credit
 
+The separately maintained **HeartPhrame Framework**, which Simbioza uses as a
+dependency, was developed by **Marko Ivančić** and the **AAI@EduHr development
+team** at [SRCE](https://www.srce.unizg.hr/). This credit is for the Framework,
+not for Simbioza or its modules.
 
-## Other Contributors
-
-External or occasional contributors:
+For future contributions to Simbioza, see the
+[contribution guide](CONTRIBUTING.md).

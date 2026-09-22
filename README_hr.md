@@ -192,6 +192,7 @@ a ne pristup mogućnostima Simbioze. Za dogovor ili ponudu pišite na
 
 ## Zajednica
 
-- [Podrška](SUPPORT.md)
-- [Privatna prijava sigurnosne ranjivosti](SECURITY.md)
-- [Doprinos projektu](CONTRIBUTING.md)
+- [Autori](AUTHORS_hr.md)
+- [Podrška](SUPPORT_hr.md)
+- [Privatna prijava sigurnosne ranjivosti](SECURITY_hr.md)
+- [Doprinos projektu](CONTRIBUTING_hr.md)

@@ -193,6 +193,7 @@ access to Simbioza's features. For an inquiry or estimate, contact
 
 ## Community
 
+- [Authors](AUTHORS.md)
 - [Get support](SUPPORT.md)
 - [Report a security vulnerability privately](SECURITY.md)
 - [Contribute](CONTRIBUTING.md)
