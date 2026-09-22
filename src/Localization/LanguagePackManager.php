@@ -247,7 +247,9 @@ final readonly class LanguagePackManager
             $configuration['primary_locale'] = $locales[0];
         }
 
-        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($configuration, true) . ";\n";
+        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn "
+        . $this->exportArray($configuration)
+        . ";\n";
         $this->atomicWrite($path, $contents, 0660);
     }
 
@@ -604,8 +606,36 @@ final readonly class LanguagePackManager
         $contents = "<?php\n\ndeclare(strict_types=1);\n\n"
         . "// HR: Registar jezika održava alat Simbioze.\n"
         . "// EN: Language registry maintained by the Simbioza tool.\n"
-        . 'return ' . var_export($registry, true) . ";\n";
+        . 'return ' . $this->exportArray($registry) . ";\n";
         $this->atomicWrite($this->languageRegistryPath(), $contents, 0640);
+    }
+
+    /**
+     * HR: Izvozi privatnu konfiguraciju u stabilnu PHP sintaksu kratkih polja.
+     * EN: Exports private configuration using stable PHP short-array syntax.
+     *
+     * @param array<array-key,mixed> $values
+     */
+    private function exportArray(array $values, int $depth = 0): string
+    {
+        if ($values === []) {
+            return '[]';
+        }
+
+        $indent = str_repeat('    ', $depth);
+        $itemIndent = str_repeat('    ', $depth + 1);
+        $lines = [];
+        foreach ($values as $key => $value) {
+            if (!is_array($value) && !is_scalar($value) && $value !== null) {
+                throw new RuntimeException('Language configuration contains an unsupported value.');
+            }
+
+            $exportedKey = is_int($key) ? (string)$key : var_export($key, true);
+            $exportedValue = is_array($value) ? $this->exportArray($value, $depth + 1) : var_export($value, true);
+            $lines[] = $itemIndent . $exportedKey . ' => ' . $exportedValue . ',';
+        }
+
+        return "[\n" . implode("\n", $lines) . "\n" . $indent . ']';
     }
 
     /**
@@ -621,9 +651,34 @@ final readonly class LanguagePackManager
             $configuration = [];
         }
 
-        return is_array($configuration['supported_locales'] ?? null)
+        $configured = is_array($configuration['supported_locales'] ?? null)
         ? array_values(array_filter($configuration['supported_locales'], is_string(...)))
         : [];
+        if ($configured !== []) {
+            return $configured;
+        }
+
+        // HR: Instalacija bez privatne konfiguracije već učinkovito koristi
+        //     ugrađene HR i EN jezike. Prvo uključivanje dodatnog jezika mora
+        //     zadržati te zadane jezike umjesto da ih nehotice zamijeni.
+        // EN: An installation without private configuration already effectively
+        //     uses the bundled HR and EN locales. Enabling the first additional
+        //     locale must preserve those defaults instead of replacing them.
+        $registry = $this->languageRegistry();
+        $installed = fn(string $locale): bool => isset($registry[$locale])
+            && is_file($this->languageDirectory() . '/' . $locale . '.php');
+        $defaults = array_values(array_filter(['hr', 'en'], $installed));
+        if ($defaults !== []) {
+            return $defaults;
+        }
+
+        foreach (array_keys($registry) as $locale) {
+            if (is_string($locale) && $installed($locale)) {
+                return [$locale];
+            }
+        }
+
+        return [];
     }
 
     /**

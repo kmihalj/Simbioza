@@ -96,6 +96,37 @@ PHP);
     }
 
     /**
+     * HR: Prvo uključivanje dodatnog jezika bez privatne konfiguracije čuva zadane HR i EN jezike.
+     * EN: Enabling the first extra locale without private configuration preserves default HR and EN.
+     */
+    public function testFirstAdditionalLanguagePreservesBundledDefaults(): void
+    {
+        unlink($this->root . '/config/installation.php');
+        file_put_contents($this->root . '/config/languages.php', <<<'PHP'
+<?php
+return [
+    'en' => ['names' => ['en' => 'English'], 'native_name' => 'English', 'flag' => 'en.svg'],
+    'hr' => ['names' => ['hr' => 'Hrvatski'], 'native_name' => 'Hrvatski', 'flag' => 'hr.svg'],
+];
+PHP);
+        $manager = new LanguagePackManager($this->root, new ModuleCatalog());
+        $template = $manager->createTemplate('de', 'en', $this->root . '/data/de.json');
+        $payload = json_decode((string)file_get_contents($template), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertIsArray($payload);
+        $payload['names'] = ['de' => 'Deutsch', 'en' => 'German', 'hr' => 'Njemački'];
+        $payload['native_name'] = 'Deutsch';
+        $payload['flag_svg'] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2">'
+        . '<rect width="3" height="2" fill="#000"/></svg>';
+        file_put_contents($template, json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+
+        $manager->install($template);
+
+        $configuration = require $this->root . '/config/installation.php';
+        $this->assertSame(['hr', 'en', 'de'], $configuration['supported_locales']);
+        $this->assertSame('hr', $configuration['primary_locale']);
+    }
+
+    /**
      * HR: Potvrđuje ćirilični UTF-8 jezik i zabranu isključivanja zadnjega aktivnog jezika.
      * EN: Verifies a Cyrillic UTF-8 locale and the final-active-locale guard.
      */
@@ -141,6 +172,59 @@ PHP);
         $italian = require $this->root . '/lang/it.php';
         $this->assertSame('Benvenuto, :name!', $italian['Dobro došli, :name!']);
         $this->assertArrayNotHasKey('Welcome, :name!', $italian);
+    }
+
+    /**
+     * HR: Jedan zahtjev instalira više jedinstvenih objavljenih jezika.
+     * EN: One request installs multiple unique published languages.
+     */
+    public function testRepositoryInstallsMultipleSelectedLanguages(): void
+    {
+        $manager = new LanguagePackManager($this->root, new ModuleCatalog());
+        $directory = $this->root . '/repository/packs';
+        mkdir($directory, 0770, true);
+        $definitions = [
+            'de' => ['native_name' => 'Deutsch', 'translation' => 'Willkommen, :name!'],
+            'it' => ['native_name' => 'Italiano', 'translation' => 'Benvenuto, :name!'],
+        ];
+        $manifestLanguages = [];
+        foreach ($definitions as $locale => $definition) {
+            $path = $directory . '/' . $locale . '.json';
+            $template = $manager->createTemplate($locale, 'en', $path);
+            $pack = json_decode((string)file_get_contents($template), true, 512, JSON_THROW_ON_ERROR);
+            $pack['names'] = ['en' => $definition['native_name'], $locale => $definition['native_name']];
+            $pack['native_name'] = $definition['native_name'];
+            $pack['flag_svg'] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2">'
+            . '<rect width="3" height="2" fill="#123456"/></svg>';
+            $pack['translations']['Dobro došli, :name!'] = $definition['translation'];
+            file_put_contents($path, json_encode($pack, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+            $manifestLanguages[] = [
+                'locale' => $locale,
+                'native_name' => $definition['native_name'],
+                'version' => '2026.09.22.1',
+                'file' => 'packs/' . $locale . '.json',
+                'sha256' => hash_file('sha256', $path),
+                'status' => 'released',
+            ];
+        }
+
+        $manifestPath = $this->root . '/repository/manifest.json';
+        file_put_contents($manifestPath, json_encode([
+            'format' => 'simbioza-language-catalog',
+            'version' => 1,
+            'languages' => $manifestLanguages,
+        ], JSON_THROW_ON_ERROR));
+        $repository = new RepositoryLanguageManager(
+            new LanguageRepository($this->root, 'file://' . $manifestPath),
+            $manager,
+            $this->root,
+        );
+
+        $this->assertSame(['de', 'it'], $repository->installMany(['de', 'it', 'de']));
+        $this->assertFileExists($this->root . '/lang/de.php');
+        $this->assertFileExists($this->root . '/lang/it.php');
+        $configuration = require $this->root . '/config/installation.php';
+        $this->assertSame(['en', 'de', 'it'], $configuration['supported_locales']);
     }
 
     /**

@@ -81,6 +81,18 @@ if (isset($menuRenderer) && is_object($menuRenderer) && is_callable([$menuRender
     $renderedSettingsMenu = $menuRenderer->renderSettingsMenu($settingsMenuActiveSection);
     $settingsMenu = is_string($renderedSettingsMenu) ? $renderedSettingsMenu : '';
 }
+$repositoryLanguagesByLocale = [];
+$availableRepositoryLanguages = [];
+foreach ($repositoryLanguages as $repositoryLanguage) {
+    $repositoryLanguagesByLocale[$repositoryLanguage['locale']] = $repositoryLanguage;
+    if (!$repositoryLanguage['installed']) {
+        $availableRepositoryLanguages[] = $repositoryLanguage;
+    }
+}
+usort(
+    $availableRepositoryLanguages,
+    static fn(array $left, array $right): int => strnatcasecmp($left['native_name'], $right['native_name']),
+);
 $componentUpdateUi = json_encode(
     [
         'checkingLabel' => __('Provjeravam dostupna izdanja...'),
@@ -176,6 +188,25 @@ $applicationUpdateUi = json_encode(
 
     .setup-update-progress {
         height: 1.25rem;
+    }
+
+    .setup-language-picker {
+        max-width: 44rem;
+    }
+
+    .setup-language-picker .dropdown-menu {
+        max-width: calc(100vw - 2rem);
+        width: 100%;
+    }
+
+    .setup-language-options {
+        max-height: 20rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .setup-language-option[hidden] {
+        display: none !important;
     }
 
     @media (max-width: 991.98px) {
@@ -518,11 +549,8 @@ $applicationUpdateUi = json_encode(
                     <?= $this->escape(__('Jedan jezični paket sadrži prijevode, višejezične nazive jezika i sigurnu SVG zastavicu.')) ?>
                 </p>
 
-                <div class="small text-body-secondary mb-3">
-                    <?= $this->escape(__('Objavljeni jezici iz javnog repozitorija Simbioze. Nedovršeni prijevodi nisu ponuđeni za instalaciju.')) ?>
-                </div>
-
-                <div class="table-responsive mb-4">
+                <h3 class="h6 mt-4 mb-2"><?= $this->escape(__('Instalirani jezici')) ?></h3>
+                <div class="table-responsive mb-4" data-setup-installed-languages>
                     <table class="table table-sm align-middle">
                         <thead><tr>
                             <th><?= $this->escape(__('Jezik')) ?></th>
@@ -533,67 +561,124 @@ $applicationUpdateUi = json_encode(
                             <th class="text-end"><?= $this->escape(__('Radnje')) ?></th>
                         </tr></thead>
                         <tbody>
-                        <?php foreach ($repositoryLanguages as $remote) :
-                            $language = null;
-                            foreach ($languages as $installedLanguage) {
-                                if ($installedLanguage['locale'] === $remote['locale']) {
-                                    $language = $installedLanguage;
-                                    break;
-                                }
-                            }
+                        <?php foreach ($languages as $language) :
+                            $remote = $repositoryLanguagesByLocale[$language['locale']] ?? null;
                             ?>
                             <tr>
-                                <td><code><?= $this->escape($remote['locale']) ?></code></td>
-                                <td><?= $this->escape($remote['native_name']) ?></td>
-                                <td><code><?= $this->escape($remote['version']) ?></code></td>
-                                <td><?= $language === null ? '—' : $this->escape(number_format($language['coverage'], 2)) . '%' ?></td>
+                                <td><code><?= $this->escape($language['locale']) ?></code></td>
+                                <td><?= $this->escape($language['native_name']) ?></td>
+                                <td><?= is_array($remote) && $remote['version'] !== '' ? '<code>' . $this->escape($remote['version']) . '</code>' : '—' ?></td>
+                                <td><?= $this->escape(number_format($language['coverage'], 2)) ?>%</td>
                                 <td>
-                            <?= $this->escape($language === null ? __('Nije instaliran') : ($remote['active'] ? __('Uključen') : __('Isključen'))) ?>
-                            <?php if ($remote['update_available']) :
+                            <?= $this->escape($language['active'] ? __('Uključen') : __('Isključen')) ?>
+                            <?php if (is_array($remote) && $remote['update_available']) :
                                 ?><span class="badge text-bg-warning"><?= $this->escape(__('Dostupna nadogradnja')) ?></span><?php
                             endif; ?>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-inline-flex flex-wrap justify-content-end gap-1">
-                            <?php if ($language === null && $diagnostics['package_changes_allowed']) : ?>
-                                            <form method="post" action="<?= $this->escape($actionPath) ?>">
-                                <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
-                                                <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($remote['locale']) ?>">
-                                                <button class="btn btn-sm btn-primary"><?= $this->escape(__('Instaliraj')) ?></button>
-                                            </form>
-                            <?php elseif ($language !== null) : ?>
-                                <?php if ($remote['update_available'] && $diagnostics['package_changes_allowed']) : ?>
+                            <?php if (is_array($remote) && $remote['update_available'] && $diagnostics['package_changes_allowed']) : ?>
                                                 <form method="post" action="<?= $this->escape($actionPath) ?>">
-                                    <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
-                                                    <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($remote['locale']) ?>"><input type="hidden" name="replace" value="1">
+                                <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
+                                                    <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>"><input type="hidden" name="replace" value="1">
                                                     <button class="btn btn-sm btn-outline-primary"><?= $this->escape(__('Ažuriraj')) ?></button>
                                                 </form>
-                                <?php endif; ?>
-                                <?php if ($diagnostics['state_changes_allowed']) : ?>
+                            <?php endif; ?>
+                            <?php if ($diagnostics['state_changes_allowed']) : ?>
                                                 <form method="post" action="<?= $this->escape($actionPath) ?>">
-                                    <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
-                                                    <input type="hidden" name="action" value="<?= $remote['active'] ? 'language-disable' : 'language-enable' ?>"><input type="hidden" name="locale" value="<?= $this->escape($remote['locale']) ?>">
-                                                    <button class="btn btn-sm btn-outline-secondary"><?= $this->escape($remote['active'] ? __('Isključi') : __('Uključi')) ?></button>
+                                <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
+                                                    <input type="hidden" name="action" value="<?= $language['active'] ? 'language-disable' : 'language-enable' ?>"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>">
+                                                    <button class="btn btn-sm btn-outline-secondary"><?= $this->escape($language['active'] ? __('Isključi') : __('Uključi')) ?></button>
                                                 </form>
-                                <?php endif; ?>
-                                <?php if ($diagnostics['package_changes_allowed']) : ?>
+                            <?php endif; ?>
+                            <?php if ($diagnostics['package_changes_allowed']) : ?>
                                                 <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm(<?= $this->escape(json_encode(__('Deinstalirati jezik?'), JSON_THROW_ON_ERROR)) ?>)">
-                                    <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
-                                                    <input type="hidden" name="action" value="language-remove"><input type="hidden" name="locale" value="<?= $this->escape($remote['locale']) ?>">
+                                <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
+                                                    <input type="hidden" name="action" value="language-remove"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>">
                                                     <button class="btn btn-sm btn-outline-danger"><?= $this->escape(__('Deinstaliraj')) ?></button>
                                                 </form>
-                                <?php endif; ?>
                             <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                        <?php if ($repositoryLanguages === []) : ?>
-                            <tr><td colspan="6" class="text-body-secondary"><?= $this->escape(__('Katalog jezika trenutačno nije dostupan; instalirani jezici ostaju aktivni.')) ?></td></tr>
+                        <?php if ($languages === []) : ?>
+                            <tr><td colspan="6" class="text-body-secondary"><?= $this->escape(__('Nema instaliranih jezika.')) ?></td></tr>
                         <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
+
+                <h3 class="h6 mb-2"><?= $this->escape(__('Dostupni jezici')) ?></h3>
+                <p class="small text-body-secondary mb-3">
+                    <?= $this->escape(__('Objavljeni jezici iz javnog repozitorija Simbioze. Odaberite jedan ili više jezika za zajedničku instalaciju.')) ?>
+                </p>
+
+                <?php if ($availableRepositoryLanguages !== [] && $diagnostics['package_changes_allowed']) : ?>
+                    <form method="post" action="<?= $this->escape($actionPath) ?>" class="d-flex flex-column flex-lg-row align-items-lg-end gap-3 mb-4" data-setup-language-install-form>
+                    <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
+                        <input type="hidden" name="action" value="language-install-selected">
+                        <div
+                            class="dropdown setup-language-picker flex-grow-1"
+                            data-setup-language-picker
+                            data-default-label="<?= $this->escape(__('Odaberite jezike')) ?>"
+                            data-selected-label="<?= $this->escape(__('Odabrano jezika: %d')) ?>"
+                        >
+                            <label class="form-label" for="setup-language-picker-toggle"><?= $this->escape(__('Jezici za instalaciju')) ?></label>
+                            <button
+                                id="setup-language-picker-toggle"
+                                class="form-select text-start d-flex align-items-center justify-content-between"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false"
+                            >
+                                <span data-setup-language-picker-label><?= $this->escape(__('Odaberite jezike')) ?></span>
+                                <span class="badge text-bg-primary ms-2" data-setup-language-picker-count>0</span>
+                            </button>
+                            <div class="dropdown-menu p-3 shadow" data-setup-language-picker-menu>
+                                <input
+                                    class="form-control form-control-sm mb-2"
+                                    id="setup-language-picker-search"
+                                    type="search"
+                                    placeholder="<?= $this->escape(__('Pretraži dostupne jezike')) ?>"
+                                    aria-label="<?= $this->escape(__('Pretraži dostupne jezike')) ?>"
+                                    autocomplete="off"
+                                    data-setup-language-search
+                                >
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-setup-language-select-visible><?= $this->escape(__('Odaberi prikazane')) ?></button>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-setup-language-clear><?= $this->escape(__('Poništi odabir')) ?></button>
+                                </div>
+                                <div class="setup-language-options border rounded" data-setup-language-options>
+                    <?php foreach ($availableRepositoryLanguages as $remote) :
+                        $searchText = mb_strtolower($remote['locale'] . ' ' . $remote['native_name']);
+                        ?>
+                                    <div class="form-check px-5 py-2 border-bottom setup-language-option" data-setup-language-option data-search-text="<?= $this->escape($searchText) ?>">
+                                        <input class="form-check-input" id="setup-language-<?= $this->escape($remote['locale']) ?>" type="checkbox" name="locales[]" value="<?= $this->escape($remote['locale']) ?>">
+                                        <label class="form-check-label d-flex justify-content-between gap-3 w-100" for="setup-language-<?= $this->escape($remote['locale']) ?>">
+                                            <span><span class="fw-semibold"><?= $this->escape($remote['native_name']) ?></span> <code><?= $this->escape($remote['locale']) ?></code></span>
+                                            <code class="text-nowrap"><?= $this->escape($remote['version']) ?></code>
+                                        </label>
+                                    </div>
+                    <?php endforeach; ?>
+                                </div>
+                                <div class="small text-body-secondary py-2 d-none" data-setup-language-empty><?= $this->escape(__('Nema jezika koji odgovaraju pretrazi.')) ?></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary text-nowrap" type="submit" disabled data-setup-language-install-selected><?= $this->escape(__('Instaliraj odabrane jezike')) ?></button>
+                    </form>
+                <?php elseif ($availableRepositoryLanguages === []) : ?>
+                    <div class="text-body-secondary mb-4">
+                    <?= $this->escape($repositoryLanguages === [] ? __('Katalog jezika trenutačno nije dostupan; instalirani jezici ostaju aktivni.') : __('Svi dostupni jezici već su instalirani.')) ?>
+                    </div>
+                <?php else : ?>
+                    <div class="rounded bg-body-tertiary p-3 mb-4">
+                        <div class="fw-semibold mb-2"><?= $this->escape(__('Instalacija jezika kroz CLI')) ?></div>
+                        <code class="d-block user-select-all text-break">vendor/bin/hph languages available</code>
+                        <code class="d-block user-select-all text-break">vendor/bin/hph languages install &lt;locale&gt;</code>
+                    </div>
+                <?php endif; ?>
 
                 <?php if ($diagnostics['package_changes_allowed']) : ?>
                     <form method="post" action="<?= $this->escape($actionPath) ?>" enctype="multipart/form-data" class="row g-3 align-items-end">
@@ -672,6 +757,83 @@ $applicationUpdateUi = json_encode(
 <script>
 (function () {
     'use strict';
+
+    const languagePicker = document.querySelector('[data-setup-language-picker]');
+    if (languagePicker instanceof HTMLElement) {
+        const search = languagePicker.querySelector('[data-setup-language-search]');
+        const options = Array.from(languagePicker.querySelectorAll('[data-setup-language-option]'));
+        const checkboxes = options
+            .map((option) => option.querySelector('input[type="checkbox"]'))
+            .filter((checkbox) => checkbox instanceof HTMLInputElement);
+        const count = languagePicker.querySelector('[data-setup-language-picker-count]');
+        const label = languagePicker.querySelector('[data-setup-language-picker-label]');
+        const empty = languagePicker.querySelector('[data-setup-language-empty]');
+        const selectVisible = languagePicker.querySelector('[data-setup-language-select-visible]');
+        const clear = languagePicker.querySelector('[data-setup-language-clear]');
+        const form = languagePicker.closest('form');
+        const submit = form instanceof HTMLFormElement
+            ? form.querySelector('[data-setup-language-install-selected]')
+            : null;
+
+        const updateSelection = function () {
+            const selected = checkboxes.filter((checkbox) => checkbox.checked).length;
+            if (count instanceof HTMLElement) {
+                count.textContent = String(selected);
+            }
+            if (label instanceof HTMLElement) {
+                const template = selected === 0
+                    ? languagePicker.dataset.defaultLabel || ''
+                    : languagePicker.dataset.selectedLabel || '%d';
+                label.textContent = template.replace('%d', String(selected));
+            }
+            if (submit instanceof HTMLButtonElement) {
+                submit.disabled = selected === 0;
+            }
+        };
+
+        const filterOptions = function () {
+            const query = search instanceof HTMLInputElement
+                ? search.value.trim().toLocaleLowerCase()
+                : '';
+            let visible = 0;
+            options.forEach(function (option) {
+                const matches = query === '' || (option.dataset.searchText || '').includes(query);
+                option.hidden = !matches;
+                if (matches) {
+                    visible += 1;
+                }
+            });
+            if (empty instanceof HTMLElement) {
+                empty.classList.toggle('d-none', visible !== 0);
+            }
+        };
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener('change', updateSelection);
+        });
+        if (search instanceof HTMLInputElement) {
+            search.addEventListener('input', filterOptions);
+        }
+        if (selectVisible instanceof HTMLButtonElement) {
+            selectVisible.addEventListener('click', function () {
+                options.forEach(function (option) {
+                    const checkbox = option.querySelector('input[type="checkbox"]');
+                    if (!option.hidden && checkbox instanceof HTMLInputElement) {
+                        checkbox.checked = true;
+                    }
+                });
+                updateSelection();
+            });
+        }
+        if (clear instanceof HTMLButtonElement) {
+            clear.addEventListener('click', function () {
+                checkboxes.forEach(function (checkbox) { checkbox.checked = false; });
+                updateSelection();
+            });
+        }
+        updateSelection();
+        filterOptions();
+    }
 
     const panel = document.querySelector('[data-setup-component-updates]');
     if (!(panel instanceof HTMLElement)) {

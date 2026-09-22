@@ -148,7 +148,10 @@ pregazuje bez `--replace`.
 `add` instalira jedan objedinjeni `lang/<jezik>.php` i dodaje jezik u privatnu
 instalacijsku konfiguraciju. Aplikacijska datoteka ima prednost pred
 pojedinačnim prijevodima modula. Svaki paket mora imati sigurnu SVG zastavicu.
-Zadnji uključeni jezik nije moguće isključiti ili ukloniti.
+Zadnji uključeni jezik nije moguće isključiti ili ukloniti. U GUI Setupu
+instalirani jezici ostaju u tablici, a objavljeni neinstalirani jezici nalaze se
+u pretraživom višestrukom odabiru. Više označenih jezika instalira se jednim
+ograničenim Setup zahtjevom.
 
 Kada se promijene stringovi aplikacije ili modula, u repozitoriju jezika
 pokrenite `php scripts/sync.php /putanja/do/Simbioze --version=GGGG.MM.DD.N`.
@@ -158,8 +161,8 @@ nakon pregleda uklonite njegovu pending datoteku, provjerite `languages
 validate` i objavite novu reviziju. Sljedeća nadogradnja aplikacije osvježava
 instalirani paket kada je objavljen novi digest; `languages update` to radi i
 na zahtjev. Njemački je objavljen s prijevodom pripremljenim uz AI i još je
-poželjan pregled izvornog govornika. Francuski, španjolski i talijanski zasad
-su samo nacrti.
+poželjan pregled izvornog govornika. Objavljeni francuski, španjolski i
+talijanski prijevodi također su pripremljeni uz AI agenta ChatGPT/Codex.
 
 ### Datumi i vremena
 

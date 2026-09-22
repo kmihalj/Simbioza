@@ -109,6 +109,8 @@ final readonly class SetupController
                 ], true)
             ) {
                 $message = $this->changeLanguage($action, $body, $diagnostics);
+            } elseif ($action === 'language-install-selected') {
+                $message = $this->installLanguages($body, $diagnostics);
             } else {
                 $slugValue = $body['module'] ?? '';
                 $slug = is_string($slugValue) ? strtolower(trim($slugValue)) : '';
@@ -295,6 +297,40 @@ final readonly class SetupController
         return $action === 'language-enable'
         ? __('Jezik je uključen.')
         : __('Jezik je isključen.');
+    }
+
+    /**
+     * HR: Provjerava višestruki odabir i instalira ga jednim Setup zahtjevom.
+     * EN: Validates a multi-selection and installs it through one Setup request.
+     *
+     * @param array<string,mixed> $body
+     * @param array<string,mixed> $diagnostics
+     */
+    private function installLanguages(array $body, array $diagnostics): string
+    {
+        $this->assertPackageChangesAllowed(!empty($diagnostics['package_changes_allowed']));
+        $requested = $body['locales'] ?? null;
+        if (!is_array($requested) || $requested === [] || count($requested) > 512) {
+            throw new RuntimeException(__('Odaberite barem jedan dostupan jezik.'));
+        }
+
+        $locales = [];
+        foreach ($requested as $locale) {
+            if (
+                !is_string($locale)
+                || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
+                || strlen($locale) > 32
+            ) {
+                throw new RuntimeException(__('Odabran je nepoznat jezik.'));
+            }
+
+            $locales[$locale] = true;
+        }
+
+        $installed = array_keys($locales);
+        $this->gateway->execute('language-install-many', ['locales' => $installed]);
+
+        return sprintf(__('Instalirano je %d jezičnih paketa.'), count($installed));
     }
 
     /**

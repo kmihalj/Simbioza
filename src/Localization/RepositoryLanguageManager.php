@@ -104,6 +104,43 @@ final readonly class RepositoryLanguageManager
     }
 
     /**
+     * HR: Instalira više objavljenih jezika jednim ograničenim Setup zahtjevom.
+     * EN: Installs multiple published languages through one constrained Setup request.
+     *
+     * @param list<string> $locales
+     * @return list<string>
+     */
+    public function installMany(array $locales, bool $replace = false): array
+    {
+        $available = $this->repository->available();
+        $validated = [];
+        foreach ($locales as $locale) {
+            if (
+                !is_string($locale)
+                || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
+                || strlen($locale) > 32
+                || !isset($available[$locale])
+            ) {
+                throw new RuntimeException('Jezik nije objavljen u katalogu.');
+            }
+
+            $validated[$locale] = true;
+        }
+
+        if ($validated === []) {
+            throw new RuntimeException('Potrebno je odabrati barem jedan jezik.');
+        }
+
+        $installed = [];
+        foreach (array_keys($validated) as $locale) {
+            $this->install($locale, $replace);
+            $installed[] = $locale;
+        }
+
+        return $installed;
+    }
+
+    /**
      * HR: Osvježava samo ranije instalirane pakete kada repozitorij objavi novi digest.
      * EN: Refreshes only previously installed packs when the repository publishes a new digest.
      * @return list<string>

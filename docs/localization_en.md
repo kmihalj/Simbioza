@@ -152,7 +152,10 @@ not overwritten without `--replace`.
 `add` installs one consolidated `lang/<locale>.php` file and enables the locale
 in the private installation configuration. The application-level file takes
 precedence over module translations. Every pack must include a safe SVG flag.
-The last enabled language cannot be disabled or removed.
+The last enabled language cannot be disabled or removed. In GUI Setup,
+installed languages remain in the table and published languages not yet
+installed appear in a searchable multi-select control. One constrained Setup
+request installs all selected languages.
 
 When application or module strings change, run `php scripts/sync.php
 /path/to/Simbioza --version=YYYY.MM.DD.N` in the language repository. It writes
@@ -162,8 +165,8 @@ file after review, run `languages validate`, and publish a newer pack revision.
 The application's next update refreshes installed repository packs whose
 published digest changed; `languages update` performs the check on demand.
 German is published with AI-assisted translations and should still receive
-native-speaker review. French, Spanish, and Italian are drafts, not installed
-automatically.
+native-speaker review. The published French, Spanish, and Italian translations
+were also prepared with the ChatGPT/Codex AI agent.
 
 ### Dates and times
 

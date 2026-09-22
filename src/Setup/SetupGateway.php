@@ -43,6 +43,7 @@ final readonly class SetupGateway
             'package-uninstall',
             'language-add',
             'language-install',
+            'language-install-many',
             'language-enable',
             'language-disable',
             'language-remove',

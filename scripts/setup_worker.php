@@ -56,6 +56,7 @@ try {
             $action,
             $parameters,
         ),
+        'language-install-many' => repositoryLanguageBatchInstall($catalog, $root, $parameters),
         'application-update-check' => applicationUpdateCheck($runner, $root, $parameters),
         'application-update-start' => applicationUpdateStart($root, $parameters),
         default => throw new RuntimeException('Unsupported Setup worker action.'),
@@ -193,6 +194,39 @@ function repositoryLanguageOperation(ModuleCatalog $catalog, string $root, strin
         })(),
         default => throw new RuntimeException('Unsupported language operation.'),
     };
+}
+
+/**
+ * HR: Instalira ograničen skup jedinstvenih jezika iz objavljenog kataloga.
+ * EN: Installs a bounded set of unique languages from the published catalogue.
+ *
+ * @param array<string,mixed> $parameters
+ */
+function repositoryLanguageBatchInstall(ModuleCatalog $catalog, string $root, array $parameters): string
+{
+    $requested = $parameters['locales'] ?? null;
+    if (!is_array($requested) || $requested === [] || count($requested) > 512) {
+        throw new RuntimeException('Odaberite između jednog i 512 jezika.');
+    }
+
+    $locales = [];
+    foreach ($requested as $locale) {
+        if (
+            !is_string($locale)
+            || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
+            || strlen($locale) > 32
+        ) {
+            throw new RuntimeException('Setup zahtjev sadrži neispravnu oznaku jezika.');
+        }
+
+        $locales[$locale] = true;
+    }
+
+    $languages = new LanguagePackManager($root, $catalog);
+    $manager = new RepositoryLanguageManager(new LanguageRepository($root), $languages, $root);
+    $installed = $manager->installMany(array_keys($locales));
+
+    return 'Instalirani jezici: ' . implode(', ', $installed);
 }
 
 /**

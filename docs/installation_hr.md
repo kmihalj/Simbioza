@@ -418,17 +418,20 @@ Installer prikazuje objavljene jezike iz
 [javnog repozitorija](https://github.com/kmihalj/simbioza-languages).
 Hrvatski i engleski unaprijed su označeni, ali svaki se može odznačiti; mora
 ostati odabran barem jedan jezik. Na namjenskoj FPM instalaciji Setup može
-instalirati, uključiti, isključiti, ažurirati i ukloniti objavljene jezike. Na
-običnoj instalaciji iste se radnje obavljaju prikazanim CLI naredbama. Zadnji
+instalirati, uključiti, isključiti, ažurirati i ukloniti objavljene jezike.
+Instalirani jezici prikazani su u tablici, a dostupni su u pretraživom
+višestrukom odabiru ispod nje; označite više jezika i instalirajte ih jednom
+radnjom. Takav prikaz ostaje pregledan i kada katalog sadrži stotine jezika.
+Na običnoj instalaciji iste se radnje obavljaju prikazanim CLI naredbama. Zadnji
 aktivni jezik nije moguće isključiti ili ukloniti. Nadogradnja aplikacije
 provjerava nove objavljene revizije instaliranih paketa; `languages update`
 to radi i samostalno.
 
 Ako je odabran samo engleski ili samo hrvatski, uvozi se samo ta jezična verzija
 korisničkih uputa. Kada je odabran i neki drugi jezik, zadržavaju se obje
-postojeće verzije uputa dok ne postoji njegov prijevod. Francuski, španjolski
-i talijanski nacrti nisu ponuđeni za instalaciju dok prijevod sučelja nije
-dovršen i pregledan. Jedan paket sadrži stringove aplikacije i modula,
+postojeće verzije uputa dok ne postoji njegov prijevod. Objavljeni njemački,
+francuski, španjolski i talijanski prijevodi pripremljeni su uz pomoć AI agenta
+ChatGPT/Codex. Jedan paket sadrži stringove aplikacije i modula,
 višejezične nazive i sigurnu SVG zastavicu. Detalji su u
 [uputi za lokalizaciju](localization_hr.md).
 

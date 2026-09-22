@@ -154,6 +154,32 @@ test.describe('browser flows', () => {
 
   test('Setup checks releases and presents module versions in responsive rows', async ({ page }) => {
     await login(page, adminLogin, adminPassword);
+    const setupProject = process.env.HPH_E2E_PROJECT;
+    expect(setupProject).toBeTruthy();
+    const languageCatalogPath = join(setupProject, 'data/cache/language-catalog.json');
+    const previousLanguageCatalog = await readFile(languageCatalogPath, 'utf8').catch(() => null);
+    const languageDefinitions = [
+      ['de', 'Deutsch'],
+      ['en', 'English'],
+      ['es', 'español'],
+      ['fr', 'français'],
+      ['hr', 'Hrvatski'],
+      ['it', 'italiano'],
+      ['zz-e2e-alpha', 'E2E Test Language Alpha'],
+      ['zz-e2e-beta', 'E2E Test Language Beta'],
+    ];
+    await writeFile(languageCatalogPath, JSON.stringify({
+      format: 'simbioza-language-catalog',
+      version: 1,
+      languages: languageDefinitions.map(([locale, nativeName], index) => ({
+        locale,
+        native_name: nativeName,
+        version: `2026.09.22.${index + 1}`,
+        file: `packs/${locale}.json`,
+        sha256: String(index + 1).repeat(64).slice(0, 64),
+        status: 'released',
+      })),
+    }));
     await page.route('**/settings/check-updates/status', async (route) => {
       await route.fulfill({
         status: 200,
@@ -183,7 +209,16 @@ test.describe('browser flows', () => {
         }),
       });
     });
-    const response = await page.goto('/settings/setup');
+    let response;
+    try {
+      response = await page.goto('/settings/setup');
+    } finally {
+      if (previousLanguageCatalog === null) {
+        await rm(languageCatalogPath, { force: true });
+      } else {
+        await writeFile(languageCatalogPath, previousLanguageCatalog);
+      }
+    }
 
     expect(response?.status()).toBe(200);
     const updateStatus = await page.evaluate(async () => {
@@ -203,6 +238,31 @@ test.describe('browser flows', () => {
     }));
     await expect(page.locator('[data-setup-update-overlay]')).toBeHidden();
     await expect(page.locator('[data-setup-update-progress]')).toHaveAttribute('role', 'progressbar');
+    const installedLanguages = page.locator('[data-setup-installed-languages]');
+    await expect(installedLanguages).toContainText('English');
+    await expect(installedLanguages).toContainText('Hrvatski');
+    await expect(installedLanguages).not.toContainText('E2E Test Language Alpha');
+    const languagePicker = page.locator('[data-setup-language-picker]');
+    if (await languagePicker.count() === 1) {
+      await expect(languagePicker).toBeVisible();
+      await languagePicker.locator('[data-bs-toggle="dropdown"]').click();
+      expect(await languagePicker.locator('[data-setup-language-option]').count()).toBeGreaterThanOrEqual(2);
+      const languageSearch = languagePicker.locator('[data-setup-language-search]');
+      await languageSearch.fill('test language alpha');
+      await expect(languagePicker.locator('[data-setup-language-option]:visible')).toHaveCount(1);
+      await languagePicker.locator('input[value="zz-e2e-alpha"]').check();
+      await languageSearch.fill('');
+      await languagePicker.locator('input[value="zz-e2e-beta"]').check();
+      await expect(languagePicker.locator('[data-setup-language-picker-count]')).toHaveText('2');
+      await expect(page.locator('[data-setup-language-install-selected]')).toBeEnabled();
+      await languageSearch.fill('nema-takvog-jezika');
+      await expect(languagePicker.locator('[data-setup-language-empty]')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(languagePicker.locator('[data-setup-language-picker-menu]')).toBeHidden();
+    } else {
+      await expect(page.getByText(/Install languages through CLI|Instalacija jezika kroz CLI/)).toBeVisible();
+      await expect(page.getByText('vendor/bin/hph languages install <locale>', { exact: true })).toBeVisible();
+    }
     const moduleTable = page.locator('.setup-modules-grid[role="table"]');
     await expect(moduleTable).toBeVisible();
     await expect(moduleTable.getByRole('columnheader', { name: /^(Module|Modul)$/i })).toBeVisible();
@@ -1276,13 +1336,13 @@ test.describe('browser flows', () => {
         exact: true,
       })).toBeVisible();
       /*
-       * HR: Čista instalacija uključuje samo hrvatski i engleski. Njemački
-       *     paket ostaje primjer koji administrator naknadno instalira.
-       * EN: A clean installation enables Croatian and English only. The
-       *     German pack remains an example installed later by an administrator.
+       * HR: Izvoz nudi sve stvarno instalirane jezike, uz obavezne početne HR i EN.
+       * EN: Export offers every actually installed language, including the required initial HR and EN.
        */
-      await expect(offlinePage.locator('[data-export-language] option')).toHaveCount(2);
-      await expect(offlinePage.locator('[data-export-language] option[value="de"]')).toHaveCount(0);
+      const exportLanguages = offlinePage.locator('[data-export-language] option');
+      expect(await exportLanguages.count()).toBeGreaterThanOrEqual(2);
+      await expect(offlinePage.locator('[data-export-language] option[value="hr"]')).toHaveCount(1);
+      await expect(offlinePage.locator('[data-export-language] option[value="en"]')).toHaveCount(1);
       const offlineLogo = offlinePage.locator('.hph-site-header__logo:visible');
       const offlineHeroVisual = offlinePage.locator('.hph-hero__visual img:visible');
       await expect(offlineLogo).toBeVisible();
