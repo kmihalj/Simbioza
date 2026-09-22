@@ -4,22 +4,72 @@
 
 > Knowledge that lives together.
 
-Simbioza is an open-source, self-hosted **wiki/CMS hybrid** for teams that need
-to keep knowledge useful as it grows. It combines the ease of writing and
-connecting wiki pages with the structure, navigation, and publishing controls
-of a content management system. Use it for documentation, procedures, user
-guides, and shared knowledge bases while keeping control of your own data.
+Simbioza is an open-source, self-hosted **wiki/CMS hybrid** for building a
+knowledge base that people can actually maintain and use. A wiki makes it easy
+to create and connect information; a CMS brings structure, presentation, and
+control over what is published. Simbioza brings both into one application for
+internal documentation, procedures, user guides, project knowledge, and public
+information sites. Your content and installation remain under your control.
 
-## What you can do with it
+![A public Simbioza Workspace in English, showing its page tree, article, and table of contents](docs/readme-screenshots/workspace-en.png)
 
-- Organize pages into areas, link related content, and find information with
-  search.
-- Collaborate on content with role-based editing and publishing permissions.
-- Keep files alongside pages, with uploader details and attachment version
-  history.
-- Add only the capabilities you need through modules, including comments,
-  notifications, calendars, themes, audit logs, and backups. An optional
-  Confluence importer helps move existing content into Simbioza.
+*A public User Guides Workspace, with its page tree, article, and table of contents.*
+
+## Knowledge has a place to live
+
+Organize content into **Workspaces**: each can have its own address, page tree,
+members, permissions, navigation, and visual identity. Teams can work in a
+shared Workspace, while restricted or personal Workspaces keep other material
+in the right hands. Pages, links, breadcrumbs, and Workspace Search help readers
+find their way through growing collections of information.
+
+Authors can prepare drafts, request review, and publish when content is ready.
+Readers continue to see the last published version while new work is in
+progress. Editing and publishing are governed by roles and inherited
+permissions, including page-level restrictions. Files belong alongside the
+pages that explain them; their uploader, time, and current version are visible,
+while authorized editors can inspect and download earlier versions.
+
+## More than plain text
+
+The full-featured visual **HTML Editor** supports formatted content, images, media,
+tables, and document versions. It also provides reusable, dynamic elements:
+include another page, build charts and timelines, or arrange content in tabs,
+accordions, cards, and dropdowns. With the relevant modules enabled, pages can
+also contain live calendars, tasks, and Workspace-aware search and page tables.
+These elements are part of the same editor and obey the same access and
+publication rules as the surrounding page.
+
+Simbioza is **multilingual** in both its interface and its content. A page can
+have language-specific versions and publication states; readers select their
+language, while a configurable fallback keeps content accessible when a
+translation is not yet available. New interface languages can be added with a
+consolidated language pack instead of changing every module separately.
+
+## Make it yours, without fragmenting the experience
+
+Customize the site theme, light and dark appearance, header, and menus. A
+Workspace manager can give their Workspace its own theme and special top or
+side menus without changing the rest of the site. The page tree and document
+outline can be tuned to suit the content. Navigation, permissions, the editor,
+search, and notifications then work together rather than feeling like separate
+tools.
+
+Simbioza is modular beneath that unified experience. Install the capabilities
+your site needs and add optional ones later:
+
+- **Content and discovery:** Workspace, Workspace Search, HTML Editor, Task,
+  and Comment.
+- **People and communication:** Auth, Simbioza User, Notification, and E-mail.
+- **Presentation and planning:** Menu, Theme, and Calendar.
+- **Integration and operations:** API, Audit, Backup, and ORM.
+
+For example, a review request can notify publishers in the application and,
+when E-mail is enabled, by mail; Backup can include the data of installed
+modules; and the API exposes permitted content without bypassing its access
+rules. The optional Confluence importer can bring existing pages and
+attachments into Workspaces. Modules extend the same application without
+forcing every installation to use every feature.
 
 Start with the [installation guide](docs/installation_en.md) or explore the
 [documentation](docs/index_en.md). The interface and guides are also available
@@ -33,10 +83,7 @@ Framework is consumed from its tagged `v0.0.25` release and is not developed
 as part of this repository.
 
 Every HeartPhrame module requires `aaieduhr/heartphrame-framework:^0.0.25`.
-Simbioza currently integrates ORM, Menu, Theme, Auth, E-mail, Notification,
-HTML Editor, Task, Comment, Workspace, Workspace Search, Calendar, API, Backup,
-Audit, and Simbioza User. Required module order
-and optional capabilities are listed in
+Required module order and optional capabilities are listed in
 [the dependency matrix](docs/module-dependencies_en.md).
 
 The smallest verified installations are Framework only, Framework + Theme,
@@ -118,15 +165,13 @@ with a visible progress bar. Images are processed in bounded batches so a large
 site never holds one HTTP request open for the entire collection; source files
 remain unchanged.
 
-## Enabled modules
+## Personal preferences and module integration
 
-Simbioza integrates API, Audit, Auth, Backup, Calendar, Comment, HTML Editor,
-E-mail, Menu, Notification, ORM, Simbioza User, Task, Theme, Workspace, and Workspace Search. Simbioza User adds
-following, notification delivery rules, and restricted personal Workspaces created
-at first sign-in under an administrator-controlled policy. It also provides a
-personal light/dark/automatic/system choice only while the global Theme policy
-is automatic. Modules keep ownership of their
-domain rules; the application composes them and supplies deployment settings.
+Simbioza User adds following, notification delivery rules, and restricted
+personal Workspaces created at first sign-in under an administrator-controlled
+policy. It also provides a personal light/dark/automatic/system choice while
+the global Theme policy is automatic. Modules keep ownership of their domain
+rules; the application composes them and supplies deployment settings.
 
 ## Licence
 
