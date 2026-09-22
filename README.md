@@ -178,6 +178,19 @@ rules; the application composes them and supplies deployment settings.
 This work is published under the
 [European Union Public Licence (EUPL) v1.2](LICENSE).
 
+## Donations and professional services
+
+Simbioza and its modules are open source. All features are available to
+everyone under their applicable open-source licences: there is no paid edition
+and no functionality unlocked by a donation. Voluntary donations help sustain
+development; a funding link will be added when a payment channel is available.
+
+If you need hands-on help, on-site installation and configuration, migration
+of content and data from existing systems, and custom modules or integrations
+are available as paid work by agreement. The fee is for the work, not for
+access to Simbioza's features. For an inquiry or estimate, contact
+[kmihalj@me.com](mailto:kmihalj@me.com).
+
 ## Community
 
 - [Get support](SUPPORT.md)

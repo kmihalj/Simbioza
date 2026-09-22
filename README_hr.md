@@ -177,6 +177,19 @@ pravila, a aplikacija ih povezuje i daje postavke instalacije.
 Ovaj rad objavljen je pod
 [Javnom licencijom Europske unije (EUPL) v1.2](LICENSE).
 
+## Donacije i profesionalne usluge
+
+Simbioza i njezini moduli otvorenog su koda. Sve mogućnosti dostupne su svima
+pod pripadajućim licencijama otvorenog koda: nema plaćenog izdanja ni funkcija
+koje se otključavaju donacijom. Dobrovoljne donacije pomažu održati razvoj;
+poveznica za donacije bit će dodana kada kanal za uplatu bude dostupan.
+
+Ako vam treba praktična pomoć, instalacija i podešavanje na lokaciji korisnika,
+prijenos sadržaja i podataka iz postojećih sustava te izrada prilagođenih
+modula ili integracija mogu se ugovoriti kao plaćene usluge. Naplaćuje se rad,
+a ne pristup mogućnostima Simbioze. Za dogovor ili ponudu pišite na
+[kmihalj@me.com](mailto:kmihalj@me.com).
+
 ## Zajednica
 
 - [Podrška](SUPPORT.md)
