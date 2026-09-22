@@ -335,6 +335,7 @@ final class ApplicationUpdateCommand
 
             $this->progress('sync', 35, $this->message('sync'));
             $this->syncSource($rsync, $sourceDirectory);
+            $this->normalizeReleaseTreeMetadata($sourceDirectory);
             $this->restoreSelectedOptionalRequirements();
             $this->restoreRuntimeSettings();
             $this->appendMissingMenuSettings($sourceDirectory);
@@ -736,6 +737,102 @@ final class ApplicationUpdateCommand
         $command[] = rtrim($sourceDirectory, '/') . '/';
         $command[] = rtrim($this->appRoot, '/') . '/';
         $this->mustRun($command);
+    }
+
+    /**
+     * HR: Nove datoteke izdanja čini čitljivima FPM procesu i direktorije
+     *     prohodnima, bez širenja prava pisanja i bez diranja trajnih postavki.
+     *     To poništava samo read/execute dio restriktivnog umaska sigurnog helpera.
+     * EN: Makes new release files readable and directories traversable by the
+     *     FPM process without widening write permissions or touching persistent
+     *     settings. This only offsets the read/execute effect of the helper's
+     *     restrictive umask.
+     */
+    private function normalizeReleaseTreeMetadata(string $sourceDirectory): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $sourceRoot = rtrim($sourceDirectory, DIRECTORY_SEPARATOR);
+        $excludes = $this->sourceSyncExcludes();
+        $directoryIterator = new \RecursiveDirectoryIterator(
+            $sourceRoot,
+            \FilesystemIterator::SKIP_DOTS,
+        );
+        $filteredIterator = new \RecursiveCallbackFilterIterator(
+            $directoryIterator,
+            function (\SplFileInfo $item) use ($sourceRoot, $excludes): bool {
+                if ($item->isLink()) {
+                    return false;
+                }
+                $relativePath = str_replace(
+                    DIRECTORY_SEPARATOR,
+                    '/',
+                    substr($item->getPathname(), strlen($sourceRoot) + 1),
+                );
+                return !$this->isSourceSyncExcluded($relativePath, $excludes);
+            },
+        );
+        $iterator = new \RecursiveIteratorIterator(
+            $filteredIterator,
+            \RecursiveIteratorIterator::SELF_FIRST,
+        );
+
+        foreach ($iterator as $item) {
+            if (!$item instanceof \SplFileInfo || $item->isLink()) {
+                continue;
+            }
+
+            $relativePath = str_replace(
+                DIRECTORY_SEPARATOR,
+                '/',
+                substr($item->getPathname(), strlen($sourceRoot) + 1),
+            );
+            $destination = $this->appRoot . '/' . $relativePath;
+            if (is_link($destination) || (!is_file($destination) && !is_dir($destination))) {
+                continue;
+            }
+
+            $permissions = @fileperms($destination);
+            if (!is_int($permissions)) {
+                throw new RuntimeException('Unable to read release path permissions: ' . $relativePath);
+            }
+            $mode = $permissions & 07777;
+            $required = is_dir($destination) ? 0005 : 0004;
+            if (($mode & $required) === $required) {
+                continue;
+            }
+            if (!@chmod($destination, $mode | $required)) {
+                throw new RuntimeException('Unable to make release path web-readable: ' . $relativePath);
+            }
+        }
+    }
+
+    /**
+     * HR: Primjenjuje ista apsolutna rsync izuzeća na jednu relativnu putanju.
+     * EN: Applies the same absolute rsync exclusions to one relative path.
+     *
+     * @param list<string> $excludes
+     */
+    private function isSourceSyncExcluded(string $relativePath, array $excludes): bool
+    {
+        $candidate = '/' . ltrim($relativePath, '/');
+        foreach ($excludes as $exclude) {
+            $normalized = '/' . ltrim($exclude, '/');
+            if (str_ends_with($normalized, '/')) {
+                $directory = rtrim($normalized, '/');
+                if ($candidate === $directory || str_starts_with($candidate, $directory . '/')) {
+                    return true;
+                }
+                continue;
+            }
+            if ($candidate === $normalized) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

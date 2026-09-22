@@ -42,6 +42,58 @@ final class BundledAssetsUpdaterTest extends TestCase
         }
     }
 
+    /**
+     * HR: Završni korak izdanja popravlja novi kod koji je stariji FPM updater
+     *     stvorio uz umask 0007, ali ne mijenja privatne postavke ni podatke.
+     * EN: Release finalization repairs new code created by an older FPM updater
+     *     under umask 0007 without changing private settings or data.
+     */
+    public function testReleaseTreeBecomesReadableWhilePrivatePathsRemainPrivate(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
+        }
+
+        $directory = sys_get_temp_dir() . '/simbioza-release-permissions-' . bin2hex(random_bytes(8));
+        $this->assertTrue(mkdir($directory . '/src/Localization', 0770, true));
+        $this->assertTrue(mkdir($directory . '/config', 0770, true));
+        $this->assertTrue(mkdir($directory . '/data/private', 0770, true));
+        $this->assertTrue(mkdir($directory . '/resources/config/theme', 0770, true));
+        file_put_contents($directory . '/composer.json', "{}\n");
+        file_put_contents($directory . '/src/Localization/NewService.php', "<?php\n");
+        file_put_contents($directory . '/config/database.php', "<?php return [];\n");
+        file_put_contents($directory . '/data/private/secret', "secret\n");
+        file_put_contents($directory . '/resources/config/theme/settings.json', "{}\n");
+        chmod($directory . '/composer.json', 0660);
+        chmod($directory . '/src/Localization/NewService.php', 0660);
+        chmod($directory . '/config/database.php', 0600);
+        chmod($directory . '/data/private/secret', 0600);
+        chmod($directory . '/resources/config/theme/settings.json', 0600);
+
+        try {
+            BundledAssetsUpdater::normalizeReleaseTreeMetadata($directory);
+
+            $this->assertSame(0664, fileperms($directory . '/composer.json') & 07777);
+            $this->assertSame(0664, fileperms($directory . '/src/Localization/NewService.php') & 07777);
+            $this->assertSame(0600, fileperms($directory . '/config/database.php') & 07777);
+            $this->assertSame(0600, fileperms($directory . '/data/private/secret') & 07777);
+            $this->assertSame(
+                0600,
+                fileperms($directory . '/resources/config/theme/settings.json') & 07777,
+            );
+        } finally {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($iterator as $item) {
+                $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+            }
+
+            rmdir($directory);
+        }
+    }
+
     /** HR: Upute otkrivaju stvarni root ili poddirektorij. EN: Guides identify the actual root or subdirectory. */
     public function testOldGuideLinksDetermineTheBasePath(): void
     {

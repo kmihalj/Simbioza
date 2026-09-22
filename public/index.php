@@ -6,11 +6,20 @@
 
 declare(strict_types=1);
 
+// HR: Namjenski FPM može posluživati public/ kroz zasebnu web-putanju. Korijen
+//     aplikacije zato odredi prije zaštite nadogradnje, bez učitavanja autoloadera.
+// EN: A dedicated FPM pool may serve public/ through a separate web path. Resolve
+//     the application root before the update guard without loading the autoloader.
+$configuredAppPath = getenv('HPH_APP_PATH');
+$hphAppPath = is_string($configuredAppPath) && trim($configuredAppPath) !== ''
+? rtrim($configuredAppPath, DIRECTORY_SEPARATOR)
+: dirname(__DIR__);
+
 // HR: Samostalni updater uključuje ovu statičnu zaštitu prije autoloadera kako HTTP zahtjev
 //     nikada ne bi pokrenuo djelomično ažuriran kod ili vendor direktorij.
 // EN: The standalone updater enables this static guard before the autoloader so an HTTP request
 //     never executes partially updated application code or a partially updated vendor directory.
-$updateMaintenanceFile = dirname(__DIR__) . '/data/update-maintenance.json';
+$updateMaintenanceFile = $hphAppPath . '/data/update-maintenance.json';
 if (is_file($updateMaintenanceFile)) {
     // HR: Statusna putanja radi bez autoloadera i tijekom zamjene koda. Vraća
     //     samo ograničene podatke potrebne već otvorenom progress prikazu.
@@ -22,7 +31,7 @@ if (is_file($updateMaintenanceFile)) {
         rtrim($requestPath, '/'),
         '/settings/setup/application-update-status',
     )) {
-        $statusPath = dirname(__DIR__) . '/data/application-update-status.json';
+        $statusPath = $hphAppPath . '/data/application-update-status.json';
         $statusPayload = is_file($statusPath)
             ? json_decode((string)file_get_contents($statusPath), true)
             : null;
@@ -34,7 +43,7 @@ if (is_file($updateMaintenanceFile)) {
         $progress = is_int($statusPayload['progress'] ?? null)
             ? max(0, min(100, $statusPayload['progress']))
             : null;
-        $versionPath = dirname(__DIR__) . '/VERSION';
+        $versionPath = $hphAppPath . '/VERSION';
         $currentVersion = is_file($versionPath) ? trim((string)file_get_contents($versionPath)) : '?';
         $safeStatus = [
             'ok' => true,
@@ -217,11 +226,6 @@ use App\Setup\SetupGateway;
 use App\Setup\SetupRequestStore;
 use HeartPhrame\App;
 use HeartPhrame\CodeBook\EnvKeyEnum;
-
-$configuredAppPath = getenv('HPH_APP_PATH');
-$hphAppPath = is_string($configuredAppPath) && trim($configuredAppPath) !== ''
-? $configuredAppPath
-: dirname(__DIR__);
 
 // Autoload
 require_once $hphAppPath . implode(DIRECTORY_SEPARATOR, ['', 'vendor', 'autoload.php']);

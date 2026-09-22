@@ -30,6 +30,7 @@ if (PHP_SAPI !== 'cli') {
 $root = dirname(__DIR__);
 require $root . '/vendor/autoload.php';
 BundledAssetsUpdater::normalizeComposerManifestMetadata($root);
+BundledAssetsUpdater::normalizeReleaseTreeMetadata($root);
 $runtime = $root . '/data/.bundled-assets-runtime-' . bin2hex(random_bytes(8));
 if (!mkdir($runtime, 0700)) {
     throw new RuntimeException('The bundled-asset runtime cannot be created.');

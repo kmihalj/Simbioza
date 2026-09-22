@@ -417,6 +417,82 @@ final readonly class BundledAssetsUpdater
         clearstatcache(true, $path);
     }
 
+    /**
+     * HR: Završni korak novog izdanja čini release stablo čitljivim FPM-u čak
+     *     kada je nadogradnju pokrenula starija verzija updatera. Privatni data,
+     *     config i administratorski resource zapisi ostaju potpuno netaknuti.
+     * EN: New-release finalization makes the release tree FPM-readable even when
+     *     an older updater started the upgrade. Private data, config, and
+     *     administrator-managed resource records remain completely untouched.
+     */
+    public static function normalizeReleaseTreeMetadata(string $root): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $root = rtrim($root, DIRECTORY_SEPARATOR);
+        if (!is_dir($root)) {
+            throw new RuntimeException('The application root is unavailable.');
+        }
+
+        $paths = [new \SplFileInfo($root)];
+        $directoryIterator = new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS);
+        $filteredIterator = new \RecursiveCallbackFilterIterator(
+            $directoryIterator,
+            static function (\SplFileInfo $item) use ($root): bool {
+                if ($item->isLink()) {
+                    return false;
+                }
+
+                $relativePath = str_replace(
+                    DIRECTORY_SEPARATOR,
+                    '/',
+                    substr($item->getPathname(), strlen($root) + 1),
+                );
+                return !self::isPrivateReleasePath($relativePath);
+            },
+        );
+        $iterator = new \RecursiveIteratorIterator($filteredIterator, \RecursiveIteratorIterator::SELF_FIRST);
+        foreach ($iterator as $item) {
+            if (!$item instanceof \SplFileInfo || $item->isLink()) {
+                continue;
+            }
+
+            $paths[] = $item;
+        }
+
+        foreach ($paths as $item) {
+            $path = $item->getPathname();
+            $permissions = @fileperms($path);
+            if (!is_int($permissions)) {
+                throw new RuntimeException('Release path permissions cannot be read: ' . $path);
+            }
+
+            $mode = $permissions & 07777;
+            $required = $item->isDir() ? 0005 : 0004;
+            if (($mode & $required) === $required) {
+                continue;
+            }
+
+            if (!@chmod($path, $mode | $required)) {
+                throw new RuntimeException('Release path cannot be made web-readable: ' . $path);
+            }
+        }
+    }
+
+    /** HR: Prepoznaje trajne privatne putanje. EN: Recognizes persistent private paths. */
+    private static function isPrivateReleasePath(string $relativePath): bool
+    {
+        foreach (['.git', 'config', 'data', 'vendor', 'resources/config'] as $directory) {
+            if ($relativePath === $directory || str_starts_with($relativePath, $directory . '/')) {
+                return true;
+            }
+        }
+
+        return in_array($relativePath, ['composer.local.json', 'composer.local.lock'], true);
+    }
+
     /** HR: Odbija neispravni base path. EN: Rejects an invalid base path. */
     public static function validatedBasePath(string $value): string
     {

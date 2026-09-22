@@ -335,9 +335,12 @@ PHP);
         $this->assertStringContainsString('role="progressbar"', $frontController);
         $this->assertStringContainsString('window.setTimeout(poll, 750)', $frontController);
         $maintenancePosition = strpos($frontController, '$updateMaintenanceFile');
+        $configuredRootPosition = strpos($frontController, '$configuredAppPath = getenv(\'HPH_APP_PATH\');');
         $autoloadPosition = strpos($frontController, 'require_once $hphAppPath');
         $this->assertIsInt($maintenancePosition);
+        $this->assertIsInt($configuredRootPosition);
         $this->assertIsInt($autoloadPosition);
+        $this->assertLessThan($maintenancePosition, $configuredRootPosition);
         $this->assertLessThan($autoloadPosition, $maintenancePosition);
     }
 
@@ -427,6 +430,67 @@ PHP);
         $this->assertSame(0775, fileperms($root . '/vendor/package') & 07777);
         $this->assertSame(0664, fileperms($root . '/vendor/autoload.php') & 07777);
         $this->assertSame(0774, fileperms($root . '/vendor/package/bin/tool') & 07777);
+    }
+
+    /**
+     * HR: Restriktivni FPM umask ne smije nove datoteke izdanja ostaviti
+     *     nečitljivima web procesu niti proširiti prava privatnih postavki.
+     * EN: A restrictive FPM umask must not leave new release files unreadable
+     *     by the web process or widen private-setting permissions.
+     */
+    public function testReleaseTreeBecomesWebReadableWithoutChangingPrivateSettings(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Windows uses inherited NTFS ACLs instead of POSIX modes.');
+        }
+
+        $root = sys_get_temp_dir() . '/simbioza-update-release-metadata-' . bin2hex(random_bytes(6));
+        $source = $root . '-source';
+        $this->temporaryDirectories[] = $root;
+        $this->temporaryDirectories[] = $source;
+        foreach ([$root, $source] as $directory) {
+            $this->assertTrue(mkdir($directory . '/src/Localization', 0770, true));
+            $this->assertTrue(mkdir($directory . '/config', 0770, true));
+        }
+
+        file_put_contents($source . '/src/Localization/NewLanguageService.php', "<?php\n");
+        chmod($source . '/src/Localization/NewLanguageService.php', 0660);
+        chmod($source . '/src', 0770);
+        chmod($source . '/src/Localization', 0770);
+        file_put_contents($source . '/config/workspace.php', "<?php return [];\n");
+        file_put_contents($root . '/config/workspace.php', "<?php return ['private' => true];\n");
+        chmod($root . '/config/workspace.php', 0600);
+
+        $rsync = '/usr/bin/rsync';
+        if (!is_executable($rsync)) {
+            $this->markTestSkipped('rsync is not available at /usr/bin/rsync.');
+        }
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $sync = new \ReflectionMethod($command, 'syncSource');
+        $normalize = new \ReflectionMethod($command, 'normalizeReleaseTreeMetadata');
+        $previousUmask = umask(0007);
+        try {
+            $sync->invoke($command, $rsync, $source);
+            clearstatcache(true, $root . '/src/Localization/NewLanguageService.php');
+            $this->assertSame(0660, fileperms($root . '/src/Localization/NewLanguageService.php') & 07777);
+            clearstatcache(true, $root . '/src/Localization');
+            $directoryModeBeforeNormalization = fileperms($root . '/src/Localization') & 07777;
+            $normalize->invoke($command, $source);
+        } finally {
+            umask($previousUmask);
+        }
+
+        clearstatcache(true, $root . '/src/Localization/NewLanguageService.php');
+        clearstatcache(true, $root . '/src/Localization');
+        clearstatcache(true, $root . '/config/workspace.php');
+        $this->assertSame(0664, fileperms($root . '/src/Localization/NewLanguageService.php') & 07777);
+        $this->assertSame(
+            $directoryModeBeforeNormalization | 0005,
+            fileperms($root . '/src/Localization') & 07777,
+        );
+        $this->assertSame(0600, fileperms($root . '/config/workspace.php') & 07777);
+        $this->assertSame("<?php return ['private' => true];\n", file_get_contents($root . '/config/workspace.php'));
     }
 
     /**
