@@ -8,6 +8,8 @@ return [
   'Administracija' => 'Administration',
   'Ažuriraj' => 'Update',
   'Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.' => 'Installing and removing languages requires dedicated FPM or the CLI.',
+  'Jezični paket je instaliran.' => 'The language pack has been installed.',
+  'Jezični paket je uklonjen.' => 'The language pack has been removed.',
   'Jezik je isključen.' => 'The language has been disabled.',
   'Jezik je uključen.' => 'The language has been enabled.',
   'Kalendari' => 'Calendars',

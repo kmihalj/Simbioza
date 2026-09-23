@@ -8,6 +8,8 @@ return [
   'Administracija' => 'Administracija',
   'Ažuriraj' => 'Ažuriraj',
   'Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.' => 'Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.',
+  'Jezični paket je instaliran.' => 'Jezični paket je instaliran.',
+  'Jezični paket je uklonjen.' => 'Jezični paket je uklonjen.',
   'Jezik je isključen.' => 'Jezik je isključen.',
   'Jezik je uključen.' => 'Jezik je uključen.',
   'Kalendari' => 'Kalendari',

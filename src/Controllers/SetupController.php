@@ -249,7 +249,8 @@ final readonly class SetupController
         $file = $this->requests->storeLanguagePack($upload);
         try {
             $this->languages->validate($this->requests->languagePackPath($file));
-            return $this->gateway->execute('language-add', ['file' => $file, 'replace' => $replace]);
+            $this->gateway->execute('language-add', ['file' => $file, 'replace' => $replace]);
+            return __('Jezični paket je instaliran.');
         } catch (Throwable $throwable) {
             $this->requests->discardLanguagePack($file);
             throw $throwable;
@@ -287,16 +288,25 @@ final readonly class SetupController
         }
 
         if (!empty($diagnostics['package_changes_allowed'])) {
-            return $this->gateway->execute($action, [
+            $this->gateway->execute($action, [
                 'locale' => $locale,
                 'replace' => !empty($body['replace']),
             ]);
+        } else {
+            $this->languages->setActive($locale, $action === 'language-enable');
         }
 
-        $this->languages->setActive($locale, $action === 'language-enable');
-        return $action === 'language-enable'
-        ? __('Jezik je uključen.')
-        : __('Jezik je isključen.');
+        // HR: Worker vraća tehničku poruku na engleskom. Za promjenu stanja
+        //     GUI uvijek prikazuje kanonski hrvatski ključ kroz aktivni prevoditelj.
+        // EN: The worker returns a technical English message. For state changes,
+        //     the GUI always resolves the canonical Croatian key through the active translator.
+        return match ($action) {
+            'language-install' => __('Jezični paket je instaliran.'),
+            'language-enable' => __('Jezik je uključen.'),
+            'language-disable' => __('Jezik je isključen.'),
+            'language-remove' => __('Jezični paket je uklonjen.'),
+            default => throw new RuntimeException(__('Odabrana Setup radnja nije dopuštena.')),
+        };
     }
 
     /**
