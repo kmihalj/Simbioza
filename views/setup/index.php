@@ -22,7 +22,6 @@ declare(strict_types=1);
  */
 
 $localeValue = isset($locale) && is_string($locale) ? strtolower($locale) : 'hr';
-$english = str_starts_with($localeValue, 'en');
 $statusLabels = [
     'enabled' => __('Uključen'),
     'disabled' => __('Isključen'),
@@ -303,7 +302,7 @@ $applicationUpdateUi = json_encode(
                             <tbody>
                             <?php foreach ($diagnostics['checks'] as $check) : ?>
                                 <tr>
-                                    <td><?= $this->escape($english ? $check['label_en'] : $check['label_hr']) ?></td>
+                                    <td><?= $this->escape(__($check['label_hr'])) ?></td>
                                     <td>
                                         <span class="badge <?= $check['passed'] ? 'text-bg-success' : 'text-bg-danger' ?>">
                                 <?= $this->escape($check['passed'] ? __('U redu') : __('Potrebna dorada')) ?>
@@ -422,7 +421,7 @@ $applicationUpdateUi = json_encode(
                     <div role="rowgroup">
                         <?php foreach ($modules as $module) :
                             $definition = $definitions[$module['slug']] ?? ['dependencies' => []];
-                            $label = $english ? $module['label_en'] : $module['label_hr'];
+                            $label = __($module['label_hr']);
                             $command = 'vendor/bin/hph modules add ' . $module['slug'];
                             $component = $componentsByPackage[$module['package']] ?? null;
                             $installedVersion = $module['package_installed']
@@ -686,7 +685,16 @@ $applicationUpdateUi = json_encode(
                         <input type="hidden" name="action" value="language-add">
                         <div class="col-12 col-lg-7">
                             <label class="form-label" for="setup-language-pack"><?= $this->escape(__('JSON jezični paket')) ?></label>
-                            <input class="form-control" id="setup-language-pack" type="file" name="language_pack" accept="application/json,.json" required>
+                            <div class="input-group">
+                                <input class="visually-hidden" id="setup-language-pack" type="file" name="language_pack" accept="application/json,.json" required data-localized-file-input>
+                                <label class="btn btn-outline-secondary" for="setup-language-pack"><?= $this->escape(__('Odaberi datoteku')) ?></label>
+                                <span
+                                    class="form-control text-truncate"
+                                    data-localized-file-name
+                                    data-empty-label="<?= $this->escape(__('Nijedna datoteka nije odabrana')) ?>"
+                                    aria-live="polite"
+                                ><?= $this->escape(__('Nijedna datoteka nije odabrana')) ?></span>
+                            </div>
                         </div>
                         <div class="col-12 col-sm-auto">
                             <div class="form-check">
@@ -701,7 +709,7 @@ $applicationUpdateUi = json_encode(
                 <?php else : ?>
                     <div class="rounded bg-body-tertiary p-3">
                         <div class="fw-semibold mb-2"><?= $this->escape(__('Dodavanje kroz CLI')) ?></div>
-                        <code class="d-block user-select-all text-break">vendor/bin/hph languages add /putanja/jezik.json</code>
+                        <code class="d-block user-select-all text-break">vendor/bin/hph languages add &lt;language-pack.json&gt;</code>
                         <div class="small text-body-secondary mt-2">
                     <?= $this->escape(__('Predložak za prijevod izradite naredbom:')) ?>
                             <code class="user-select-all">vendor/bin/hph languages template de --source=en</code>
@@ -757,6 +765,25 @@ $applicationUpdateUi = json_encode(
 <script>
 (function () {
     'use strict';
+
+    document.querySelectorAll('[data-localized-file-input]').forEach(function (input) {
+        if (!(input instanceof HTMLInputElement)) {
+            return;
+        }
+        const container = input.closest('.input-group');
+        const filename = container instanceof HTMLElement
+            ? container.querySelector('[data-localized-file-name]')
+            : null;
+        if (!(filename instanceof HTMLElement)) {
+            return;
+        }
+        input.addEventListener('change', function () {
+            const selected = Array.from(input.files || []).map((file) => file.name);
+            filename.textContent = selected.length > 0
+                ? selected.join(', ')
+                : filename.dataset.emptyLabel || '';
+        });
+    });
 
     const languagePicker = document.querySelector('[data-setup-language-picker]');
     if (languagePicker instanceof HTMLElement) {

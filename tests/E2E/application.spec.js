@@ -265,10 +265,22 @@ test.describe('browser flows', () => {
     }
     const moduleTable = page.locator('.setup-modules-grid[role="table"]');
     await expect(moduleTable).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Modules and checks', exact: true })).toBeVisible();
     await expect(moduleTable.getByRole('columnheader', { name: /^(Module|Modul)$/i })).toBeVisible();
     await expect(moduleTable.getByRole('columnheader', { name: /^(Version|Verzija)$/i })).toBeVisible();
     await expect(moduleTable.getByRole('columnheader', { name: /^(Actions|Radnje)$/i })).toBeVisible();
     await expect.poll(() => moduleTable.locator('.setup-module-row').count()).toBeGreaterThan(5);
+    await expect(moduleTable.getByText('ORM and database', { exact: true })).toBeVisible();
+    await expect(moduleTable.getByText('Authentication and authorization', { exact: true })).toBeVisible();
+    await expect(moduleTable.getByText('ORM i baza', { exact: true })).toHaveCount(0);
+    await expect(moduleTable.getByText('Autentikacija i ovlasti', { exact: true })).toHaveCount(0);
+    const languagePackInput = page.locator('#setup-language-pack');
+    if (await languagePackInput.count() === 1) {
+      await expect(languagePackInput).toHaveClass(/visually-hidden/);
+      await expect(page.getByText('Choose file', { exact: true })).toBeVisible();
+      await expect(page.getByText('No file selected', { exact: true })).toBeVisible();
+    }
+    await expect(page.locator('input[type="file"]:visible')).toHaveCount(0);
     await expect(page.locator('[data-setup-application-update]')).toContainText('9.9.9');
     const menuModule = moduleTable.locator('[data-component-package="aaieduhr/heartphrame-module-menu"]');
     await expect(menuModule.locator('[data-component-installed-version]')).toHaveText('0.1.12');

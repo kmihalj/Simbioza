@@ -3,7 +3,7 @@
         "id": "context.workspace.qa.sportska.redakcija",
         "label": {
             "hr": "Sportska redakcija",
-            "en": "Sportska redakcija"
+            "en": "Sports newsroom"
         },
         "order": 10,
         "enabled": true,

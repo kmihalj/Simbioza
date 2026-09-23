@@ -78,7 +78,7 @@ test.describe('complete Backup workflow', () => {
     await expect(latestJob).toBeVisible();
     await expect(latestJob.locator('[data-backup-download]')).toHaveCount(0);
     await expect(latestJob.locator('td').first()).toHaveText(
-      /(?:\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/,
+      /(?:[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)|\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/,
     );
     const jobsResponse = await page.request.get('/settings/backups/jobs', {
       headers: { Accept: 'application/json' },
@@ -102,12 +102,12 @@ test.describe('complete Backup workflow', () => {
     const hrJobs = await (await page.request.get('/settings/backups/jobs')).json();
     expect(hrJobs.timezone).toBe('Europe/Zagreb');
     expect(hrJobs.jobs[0].created_at_display).toMatch(
-      /^\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}$/,
+      /^\d{1,2}\. [\p{L}.]+ \d{4}\. \d{2}:\d{2}:\d{2}$/u,
     );
     await page.goto(`/locale/en?next=${encodeURIComponent('/settings/backups')}`);
     const enJobs = await (await page.request.get('/settings/backups/jobs')).json();
     expect(enJobs.jobs[0].created_at_display).toMatch(
-      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
+      /^[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)$/,
     );
 
     /*
