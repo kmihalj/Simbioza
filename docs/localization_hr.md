@@ -148,6 +148,10 @@ pregazuje bez `--replace`.
 `add` instalira jedan objedinjeni `lang/<jezik>.php` i dodaje jezik u privatnu
 instalacijsku konfiguraciju. Aplikacijska datoteka ima prednost pred
 pojedinačnim prijevodima modula. Svaki paket mora imati sigurnu SVG zastavicu.
+Instalirani paket u aplikacijski registar lokalizacije dodaje i izvorni naziv
+jezika te zastavicu. Zato je izbornik jezika potpun i kada instalacija zadrži
+stariji privatni `config/menu.php`; izričito zadani nazivi i putanje iz te
+datoteke i dalje imaju prednost kao prilagodbe.
 Zadnji uključeni jezik nije moguće isključiti ili ukloniti. U GUI Setupu
 instalirani jezici ostaju u tablici, a objavljeni neinstalirani jezici nalaze se
 u pretraživom višestrukom odabiru. Više označenih jezika instalira se jednim

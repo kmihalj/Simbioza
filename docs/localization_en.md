@@ -152,6 +152,10 @@ not overwritten without `--replace`.
 `add` installs one consolidated `lang/<locale>.php` file and enables the locale
 in the private installation configuration. The application-level file takes
 precedence over module translations. Every pack must include a safe SVG flag.
+The installed pack also supplies its native display name and flag to the
+application localization registry. The language selector therefore remains
+complete when an installation preserves an older private `config/menu.php`;
+explicit labels and paths in that file still take precedence as overrides.
 The last enabled language cannot be disabled or removed. In GUI Setup,
 installed languages remain in the table and published languages not yet
 installed appear in a searchable multi-select control. One constrained Setup

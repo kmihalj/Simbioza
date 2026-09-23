@@ -37,7 +37,16 @@ final class SimbiozaBrandingTest extends TestCase
         $localization = $this->arrayValue($app, 'localization');
         $locale = $localization['locale'] ?? null;
         $this->assertIsString($locale);
-        $this->assertContains($locale, $this->arrayValue($localization, 'supported_locales'));
+        $supportedLocales = $this->arrayValue($localization, 'supported_locales');
+        $this->assertContains($locale, $supportedLocales);
+        $localeLabels = $this->arrayValue($localization, 'locale_labels');
+        foreach ($supportedLocales as $supportedLocale) {
+            $this->assertIsString($supportedLocale);
+            $this->assertIsString($localeLabels[$supportedLocale] ?? null);
+            $this->assertNotSame('', trim($localeLabels[$supportedLocale]));
+        }
+
+        $this->assertSame($root . '/config/../data/languages/flags', $localization['flags_dir'] ?? null);
         $this->assertFileExists($root . '/lang/' . $locale . '.php');
         $activeThemeId = $settings['active_theme'] ?? null;
         $this->assertIsString($activeThemeId);

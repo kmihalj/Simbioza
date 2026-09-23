@@ -84,7 +84,7 @@
         "aaieduhr/heartphrame-framework": "^0.0.25",
         "aaieduhr/heartphrame-module-auth": "^0.1.13",
         "aaieduhr/heartphrame-module-editor-html": "^0.1.32",
-        "aaieduhr/heartphrame-module-menu": "^0.1.16",
+        "aaieduhr/heartphrame-module-menu": "^0.1.17",
         "aaieduhr/heartphrame-module-notification": "^0.1.5",
         "aaieduhr/heartphrame-module-orm": "^0.1.6",
         "aaieduhr/simbioza-module-user": "^0.1.10",

@@ -67,13 +67,19 @@ $primaryLocale = is_string($installation['primary_locale'] ?? null)
 $languageRegistryFile = __DIR__ . '/languages.php';
 $languageRegistry = is_file($languageRegistryFile) ? require $languageRegistryFile : [];
 $availableLocales = [];
-foreach (is_array($languageRegistry) ? array_keys($languageRegistry) : [] as $locale) {
+$localeLabels = [];
+foreach (is_array($languageRegistry) ? $languageRegistry : [] as $locale => $definition) {
     if (
         is_string($locale)
         && preg_match('/\A[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*\z/D', $locale) === 1
         && is_file(__DIR__ . '/../lang/' . $locale . '.php')
     ) {
-        $availableLocales[] = strtolower($locale);
+        $normalizedLocale = strtolower($locale);
+        $availableLocales[] = $normalizedLocale;
+        $nativeName = is_array($definition) ? ($definition['native_name'] ?? null) : null;
+        if (is_string($nativeName) && trim($nativeName) !== '') {
+            $localeLabels[$normalizedLocale] = trim($nativeName);
+        }
     }
 }
 
@@ -110,6 +116,8 @@ return [
         'locale' => $primaryLocale,
         'fallback_locale' => $primaryLocale,
         'supported_locales' => $supportedLocales,
+        'locale_labels' => $localeLabels,
+        'flags_dir' => __DIR__ . '/../data/languages/flags',
         // HR: Čista instalacija poštuje odabrani primarni jezik; korisnik ga
         //     i dalje može ručno promijeniti među dostupnim jezicima.
         // EN: A fresh installation honors its selected primary locale; users
