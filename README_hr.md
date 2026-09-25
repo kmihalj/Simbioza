@@ -181,8 +181,8 @@ Ovaj rad objavljen je pod
 
 Simbioza i njezini moduli otvorenog su koda. Sve mogućnosti dostupne su svima
 pod pripadajućim licencijama otvorenog koda: nema plaćenog izdanja ni funkcija
-koje se otključavaju donacijom. Dobrovoljne donacije pomažu održati razvoj;
-poveznica za donacije bit će dodana kada kanal za uplatu bude dostupan.
+koje se otključavaju donacijom. Dobrovoljne donacije putem
+[GitHub Sponsors](https://github.com/sponsors/kmihalj) pomažu održati razvoj.
 
 Ako vam treba praktična pomoć, instalacija i podešavanje na lokaciji korisnika,
 prijenos sadržaja i podataka iz postojećih sustava te izrada prilagođenih

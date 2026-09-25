@@ -182,8 +182,8 @@ This work is published under the
 
 Simbioza and its modules are open source. All features are available to
 everyone under their applicable open-source licences: there is no paid edition
-and no functionality unlocked by a donation. Voluntary donations help sustain
-development; a funding link will be added when a payment channel is available.
+and no functionality unlocked by a donation. Voluntary donations through
+[GitHub Sponsors](https://github.com/sponsors/kmihalj) help sustain development.
 
 If you need hands-on help, on-site installation and configuration, migration
 of content and data from existing systems, and custom modules or integrations
