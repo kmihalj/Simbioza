@@ -145,6 +145,14 @@ instalacije prikazuje pregled. Ako namjenski pomoćni program radi, odabrani
 opcionalni paketi instaliraju se kroz GUI. Tema je preporučena, ali nije
 obvezna.
 
+Ako svjesno ne koristite namjenski pomoćni program, prije nastavka obrasca
+kao deploy korisnik pripremite odabrane opcionalne pakete naredbom
+`php scripts/installation_packages.php prepare --modules=theme,calendar` i
+dodatne jezike naredbom
+`php scripts/installation_languages.php prepare --locales=de,es,fr,it`.
+Popise prilagodite stvarnom odabiru i osvježite instalacijski obrazac. Bez
+pomoćnog programa kasnije GUI upravljanje paketima i jezicima nije dostupno.
+
 Nakon instalacije prijavite se kao administrator. U **Postavke → Setup i
 moduli** provjerite da su namjenski pool, pomoćni program i radna prava u
 redu. Čarobnjak uvozi korisničke upute na odabranim jezicima.

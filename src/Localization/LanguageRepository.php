@@ -41,7 +41,23 @@ final readonly class LanguageRepository
                 $raw = $this->fetch($this->manifestUrl, 262144);
                 $directory = dirname($cache);
                 if (is_dir($directory) || mkdir($directory, 0770, true)) {
-                    file_put_contents($cache, $raw, LOCK_EX);
+                    // HR: FPM i deploy korisnik smiju zamijeniti predmemoriju bez
+                    //     preuzimanja vlasništva nad datotekom drugog korisnika.
+                    // EN: FPM and deploy users may replace the cache without
+                    //     taking ownership of each other's existing file.
+                    $temporary = tempnam($directory, '.language-catalog-');
+                    if (is_string($temporary)) {
+                        try {
+                            if (file_put_contents($temporary, $raw, LOCK_EX) !== false) {
+                                chmod($temporary, 0660);
+                                rename($temporary, $cache);
+                            }
+                        } finally {
+                            if (is_file($temporary)) {
+                                unlink($temporary);
+                            }
+                        }
+                    }
                 }
             } catch (RuntimeException) {
                 $raw = is_file($cache) ? file_get_contents($cache) : null;

@@ -88,7 +88,7 @@
         "aaieduhr/heartphrame-framework": "^0.0.25",
         "aaieduhr/heartphrame-module-auth": "^0.1.14",
         "aaieduhr/heartphrame-module-editor-html": "^0.1.35",
-        "aaieduhr/heartphrame-module-menu": "^0.1.22",
+        "aaieduhr/heartphrame-module-menu": "^0.1.23",
         "aaieduhr/heartphrame-module-notification": "^0.1.6",
         "aaieduhr/heartphrame-module-orm": "^0.1.7",
         "aaieduhr/simbioza-module-user": "^0.1.11",
@@ -141,7 +141,7 @@
     "extra": {
         "simbioza": {
             "optional-modules": {
-                "aaieduhr/heartphrame-module-accessibility": "^0.1.1",
+                "aaieduhr/heartphrame-module-accessibility": "^0.1.2",
                 "aaieduhr/heartphrame-module-api": "^0.1.6",
                 "aaieduhr/heartphrame-module-audit": "^0.1.5",
                 "aaieduhr/heartphrame-module-backup": "^0.1.8",

@@ -99,8 +99,16 @@ final readonly class InstallationRunner
         $catalog = new ModuleCatalog();
         $enabledPackages = $catalog->packagesForSelection($application['optional_modules']);
         [$config, $database] = $this->runtime();
-        $appliedMigrations = $this->migrate($database, $enabledPackages);
         $themePackage = $catalog->definitionFor('theme')['package'];
+        // HR: Provjera mora prethoditi migracijama jer inače neuspjeli uvoz teme
+        //     ostavlja shemu u bazi koju idući pokušaj više ne prihvaća kao praznu.
+        // EN: Check before migrations, or a failed theme import leaves a schema
+        //     that the next installation attempt no longer accepts as empty.
+        if (in_array($themePackage, $enabledPackages, true)) {
+            $this->assertThemeStorageWritable($config);
+        }
+
+        $appliedMigrations = $this->migrate($database, $enabledPackages);
         $themeId = '';
         if (in_array($themePackage, $enabledPackages, true)) {
             $this->prepareThemeStorage();
@@ -244,6 +252,35 @@ final readonly class InstallationRunner
         }
 
         return $themeId;
+    }
+
+    /**
+     * HR: Provjerava trajne datoteke teme prije nepovratnih migracija baze.
+     * EN: Checks persistent theme files before irreversible database migrations.
+     */
+    private function assertThemeStorageWritable(Config $config): void
+    {
+        $directory = $this->paths->themeConfigDirectory();
+        if (!is_dir($directory) || !is_writable($directory)) {
+            throw new RuntimeException('The theme configuration directory is not writable.');
+        }
+
+        foreach (['themes.json', 'settings.json'] as $file) {
+            $path = $directory . DIRECTORY_SEPARATOR . $file;
+            if (is_file($path) && !is_writable($path)) {
+                throw new RuntimeException('The theme configuration file is not writable: ' . $file);
+            }
+        }
+
+        $moduleFile = (new ReflectionClass(ModuleTheme::class))->getFileName();
+        if (!is_string($moduleFile)) {
+            throw new RuntimeException('The Theme module path could not be resolved.');
+        }
+
+        $repository = new ThemeConfigRepository($config, dirname($moduleFile, 2));
+        if (!is_writable($repository->themesDirectoryPath())) {
+            throw new RuntimeException('The theme asset directory is not writable.');
+        }
     }
 
     /**

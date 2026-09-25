@@ -206,7 +206,16 @@ final readonly class InstallationWebApplication
         try {
             $application = $this->validator->application($post);
             $session[self::SESSION_PREPARED_PACKAGES] = $this->prepareInstallerPackages($application);
-            $this->prepareInstallerLanguages($application);
+            try {
+                $this->prepareInstallerLanguages($application);
+            } catch (Throwable $throwable) {
+                $this->logger->error('Selected language packs could not be prepared.', $throwable);
+                $session[self::SESSION_STAGE] = 'application';
+                unset($session[self::SESSION_ADMINISTRATOR]);
+
+                return $this->renderStage($session, $installerPath, ['language_prepare'], $post);
+            }
+
             $session[self::SESSION_APPLICATION] = $application;
             $session[self::SESSION_ADMINISTRATOR] = $this->validator->administrator($post);
             $session[self::SESSION_STAGE] = 'review';
@@ -1234,6 +1243,14 @@ final readonly class InstallationWebApplication
                 . 'pokušajte ponovno.',
                 'en' => 'Selected modules cannot be prepared in the browser. Run '
                 . '`php scripts/installation_packages.php prepare --modules=...`, reload the installer, and try again.',
+            ],
+            'language_prepare' => [
+                'hr' => 'Odabrane jezike nije moguće pripremiti. Provjerite jesu li paketi objavljeni i potpuni, '
+                . 'ili kao deploy korisnik pokrenite `php scripts/installation_languages.php prepare '
+                . '--locales=de,es,fr,it`, pa osvježite instalacijski obrazac.',
+                'en' => 'Selected languages could not be prepared. Check that their packs are published and complete, '
+                . 'or run `php scripts/installation_languages.php prepare --locales=de,es,fr,it` as the deploy user, '
+                . 'then reload the installer.',
             ],
             'installation_failed' => [
                 'hr' => 'Instalacija nije dovršena. Tehnički detalji zapisani su u privatni log; ništa povjerljivo '

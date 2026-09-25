@@ -262,6 +262,97 @@ final class InstallationTest extends TestCase
         $this->assertSame('requirements', $session['stage']);
     }
 
+    /**
+     * HR: Instalacija može dovršiti deploy-pripremljenu konfiguraciju bez
+     *     zamjene njezina vlasništva u sticky FPM direktoriju.
+     * EN: Installation can finish deploy-prepared configuration without
+     *     replacing its ownership in a sticky FPM directory.
+     */
+    public function testExistingInstallationConfigWritePreservesMetadata(): void
+    {
+        $root = $this->completeRoot();
+        $path = $root . '/config/installation.php';
+        file_put_contents($path, "<?php return ['supported_locales' => ['hr']];\n");
+        chmod($path, 0660);
+        clearstatcache(true, $path);
+        $inode = fileinode($path);
+        $owner = fileowner($path);
+        $group = filegroup($path);
+
+        $writer = new InstallationConfigWriter(new InstallationPaths($root));
+        $write = new \ReflectionMethod($writer, 'writeExistingConfigPreservingMetadata');
+        $contents = "<?php return ['supported_locales' => ['hr', 'en']];\n";
+        $write->invoke($writer, $path, $contents);
+
+        clearstatcache(true, $path);
+        $this->assertSame($contents, file_get_contents($path));
+        $this->assertSame($inode, fileinode($path));
+        $this->assertSame($owner, fileowner($path));
+        $this->assertSame($group, filegroup($path));
+        $this->assertSame(0660, fileperms($path) & 0777);
+    }
+
+    /**
+     * HR: Nedostupna datoteka teme zaustavlja instalaciju prije izrade sheme.
+     * EN: An unwritable theme file stops installation before schema creation.
+     */
+    public function testThemeWritePreflightPrecedesDatabaseMigrations(): void
+    {
+        $root = $this->completeRoot();
+        $themeFile = $root . '/resources/config/theme/themes.json';
+        $this->assertTrue(chmod($themeFile, 0444));
+        $paths = new InstallationPaths($root);
+        $writer = new InstallationConfigWriter($paths);
+        $runner = new InstallationRunner(
+            $paths,
+            new InstallationAccessToken($paths),
+            $writer,
+            new InstallationDatabaseTester($writer),
+            new InstallationInputValidator(),
+            new InstallationRequirements($paths),
+            new InstallationLogger($paths),
+        );
+
+        try {
+            $runner->run(
+                ['driver' => 'sqlite'],
+                [
+                    'name' => 'Theme preflight',
+                    'primary_locale' => 'hr',
+                    'supported_locales' => ['hr', 'en'],
+                    'timezone' => 'Europe/Zagreb',
+                    'optional_modules' => ['theme'],
+                    'module_selection_present' => '1',
+                ],
+                [
+                    'login' => 'preflight-admin',
+                    'display_name' => 'Preflight Administrator',
+                    'first_name' => 'Preflight',
+                    'last_name' => 'Administrator',
+                    'email' => 'preflight@example.test',
+                    'password' => 'Strong#Check987',
+                    'password_confirmation' => 'Strong#Check987',
+                ],
+            );
+            $this->fail('The unwritable theme file must stop the installation.');
+        } catch (RuntimeException $runtimeException) {
+            $this->assertStringContainsString(
+                'theme configuration file is not writable',
+                $runtimeException->getMessage(),
+            );
+            $databaseFile = $root . '/data/simbioza.sqlite';
+            if (is_file($databaseFile)) {
+                $database = new \PDO('sqlite:' . $databaseFile);
+                $this->assertSame(
+                    0,
+                    (int)$database->query("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table'")->fetchColumn(),
+                );
+            }
+        } finally {
+            chmod($themeFile, 0660);
+        }
+    }
+
     /** HR: Pokreće stvarnu čistu SQLite instalaciju s migracijama, računom, temom i lockom. EN: Runs a real clean SQLite install. */
     public function testRunnerPerformsCompleteSqliteInstallation(): void
     {

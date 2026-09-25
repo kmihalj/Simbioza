@@ -217,13 +217,58 @@ final readonly class InstallationConfigWriter
                 throw new \RuntimeException('The installation configuration permissions could not be secured.');
             }
 
-            if (!rename($temporaryPath, $path)) {
-                throw new \RuntimeException('An installation configuration file could not be activated.');
+            if (!@rename($temporaryPath, $path)) {
+                // HR: U FPM instalaciji deploy korisnik može pripremiti jezike
+                //     prije GUI čarobnjaka. Sticky config direktorij tada ne
+                //     dopušta FPM-u zamjenu njegove datoteke; zapisujemo u
+                //     postojeći inode pod lockom i čuvamo vlasništvo/prava.
+                // EN: In FPM installs the deploy user may prepare languages
+                //     before the GUI wizard. A sticky config directory then
+                //     blocks FPM from replacing that file; use a locked
+                //     in-place write and preserve its owner and permissions.
+                $this->writeExistingConfigPreservingMetadata($path, $contents);
             }
         } finally {
             if (is_file($temporaryPath)) {
                 unlink($temporaryPath);
             }
+        }
+    }
+
+    /** HR: Sigurno zapisuje postojeću konfiguraciju. EN: Safely writes an existing configuration file. */
+    private function writeExistingConfigPreservingMetadata(string $path, string $contents): void
+    {
+        if (!is_file($path) || is_link($path) || !is_writable($path)) {
+            throw new \RuntimeException('An installation configuration file could not be activated.');
+        }
+
+        $handle = @fopen($path, 'r+b');
+        if ($handle === false) {
+            throw new \RuntimeException('An installation configuration file could not be opened.');
+        }
+
+        try {
+            if (!flock($handle, LOCK_EX) || !ftruncate($handle, 0) || fseek($handle, 0) !== 0) {
+                throw new \RuntimeException('An installation configuration file could not be locked.');
+            }
+
+            $offset = 0;
+            $length = strlen($contents);
+            while ($offset < $length) {
+                $written = fwrite($handle, substr($contents, $offset));
+                if ($written === false || $written === 0) {
+                    throw new \RuntimeException('An installation configuration file could not be written.');
+                }
+
+                $offset += $written;
+            }
+
+            if (!fflush($handle)) {
+                throw new \RuntimeException('An installation configuration file could not be flushed.');
+            }
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
         }
     }
 

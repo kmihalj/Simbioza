@@ -143,6 +143,14 @@ zone, first administrator, and optional modules, then shows a review before
 installation. With the dedicated helper working, selected optional packages
 are installed through the GUI. Theme is recommended, but not mandatory.
 
+If you intentionally omit the dedicated helper, prepare the selected optional
+packages as the deploy user with
+`php scripts/installation_packages.php prepare --modules=theme,calendar` and
+additional languages with
+`php scripts/installation_languages.php prepare --locales=de,es,fr,it` before
+continuing. Match both lists to your selections and reload the installer.
+Without the helper, later GUI package and language management is unavailable.
+
 After installation, sign in as the administrator. In **Settings → Setup and
 modules**, verify that the dedicated pool, helper, and runtime permissions are
 all reported as ready. The wizard imports the selected user-guide languages.

@@ -71,6 +71,42 @@ PHP);
     }
 
     /**
+     * HR: Deploy osvježava katalog čak i kada je staru datoteku stvorio FPM.
+     * EN: Deploy refreshes a catalogue even when FPM created the old file.
+     */
+    public function testRepositoryRefreshReplacesReadOnlyCacheFile(): void
+    {
+        $directory = $this->root . '/repository';
+        $this->assertTrue(mkdir($directory, 0770, true));
+        $manifest = $directory . '/manifest.json';
+        $contents = json_encode([
+            'format' => 'simbioza-language-catalog',
+            'version' => 1,
+            'languages' => [[
+                'locale' => 'de',
+                'native_name' => 'Deutsch',
+                'version' => '2026.09.25.1',
+                'file' => 'packs/de.json',
+                'sha256' => str_repeat('a', 64),
+                'status' => 'released',
+            ]],
+        ], JSON_THROW_ON_ERROR);
+        file_put_contents($manifest, $contents);
+
+        $cacheDirectory = $this->root . '/data/cache';
+        $this->assertTrue(mkdir($cacheDirectory, 0770, true));
+        $cache = $cacheDirectory . '/language-catalog.json';
+        file_put_contents($cache, '{"old":true}');
+        chmod($cache, 0444);
+
+        $repository = new LanguageRepository($this->root, 'file://' . $manifest);
+        $this->assertSame('2026.09.25.1', $repository->available(true)['de']['version']);
+        $this->assertSame($contents, file_get_contents($cache));
+        clearstatcache(true, $cache);
+        $this->assertSame(0660, fileperms($cache) & 0777);
+    }
+
+    /**
      * HR: Dodani jezik ostavlja privatnu instalacijsku konfiguraciju zapisivu
      *     vlasniku i isključivoj runtime grupi.
      * EN: An added locale leaves private installation configuration writable
