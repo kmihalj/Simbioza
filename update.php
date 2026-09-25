@@ -1191,36 +1191,7 @@ final class ApplicationUpdateCommand
             throw new RuntimeException('Menu settings must contain a JSON list during update.');
         }
 
-        $existingIds = [];
-        $lastOrder = 0;
-        foreach ($current as $entry) {
-            if (!is_array($entry)) {
-                continue;
-            }
-            if (is_string($entry['id'] ?? null) && trim($entry['id']) !== '') {
-                $existingIds[$entry['id']] = true;
-            }
-            if (is_numeric($entry['order'] ?? null)) {
-                $lastOrder = max($lastOrder, (int)$entry['order']);
-            }
-        }
-
-        $added = 0;
-        foreach ($release as $entry) {
-            if (!is_array($entry) || !is_string($entry['id'] ?? null) || trim($entry['id']) === '') {
-                continue;
-            }
-            $id = $entry['id'];
-            if (isset($existingIds[$id])) {
-                continue;
-            }
-
-            $lastOrder += 10;
-            $entry['order'] = $lastOrder;
-            $current[] = $entry;
-            $existingIds[$id] = true;
-            ++$added;
-        }
+        $added = $this->appendMissingMenuEntries($current, $release);
         if ($added === 0) {
             return 0;
         }
@@ -1234,6 +1205,67 @@ final class ApplicationUpdateCommand
             $encoded,
             'Updated menu settings could not be written.',
         );
+
+        return $added;
+    }
+
+    /**
+     * HR: Rekurzivno dodaje nedostajuće stavke unutar postojećih grupa bez
+     *     mijenjanja korisničkih oznaka, redoslijeda i stanja postojećih stavki.
+     * EN: Recursively appends missing items inside existing groups while
+     *     preserving user labels, order, and state on existing items.
+     *
+     * @param array<int, mixed> $current
+     * @param array<int, mixed> $release
+     */
+    private function appendMissingMenuEntries(array &$current, array $release): int
+    {
+        $existingIds = [];
+        $lastOrder = 0;
+        foreach ($current as $index => $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            if (is_string($entry['id'] ?? null) && trim($entry['id']) !== '') {
+                $existingIds[$entry['id']] = $index;
+            }
+            if (is_numeric($entry['order'] ?? null)) {
+                $lastOrder = max($lastOrder, (int)$entry['order']);
+            }
+        }
+
+        $added = 0;
+        foreach ($release as $entry) {
+            if (!is_array($entry) || !is_string($entry['id'] ?? null) || trim($entry['id']) === '') {
+                continue;
+            }
+            $id = $entry['id'];
+            if (array_key_exists($id, $existingIds)) {
+                $index = $existingIds[$id];
+                $currentEntry = $current[$index];
+                $releaseChildren = $entry['children'] ?? null;
+                if (!is_array($currentEntry) || !is_array($releaseChildren) || $releaseChildren === []) {
+                    continue;
+                }
+                if (!array_is_list($releaseChildren)) {
+                    throw new RuntimeException('Release menu children must contain a JSON list during update: ' . $id);
+                }
+                $children = $currentEntry['children'] ?? [];
+                if (!is_array($children) || !array_is_list($children)) {
+                    throw new RuntimeException('Existing menu children must contain a JSON list during update: ' . $id);
+                }
+                $added += $this->appendMissingMenuEntries($children, $releaseChildren);
+                $currentEntry['children'] = $children;
+                $current[$index] = $currentEntry;
+                continue;
+            }
+
+            $lastOrder += 10;
+            $entry['order'] = $lastOrder;
+            $current[] = $entry;
+            $existingIds[$id] = array_key_last($current);
+            ++$added;
+        }
 
         return $added;
     }

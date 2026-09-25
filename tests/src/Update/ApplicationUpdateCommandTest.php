@@ -712,10 +712,24 @@ PHP);
         $current = [
             ['id' => 'menu', 'order' => 25, 'enabled' => false, 'custom' => 'keep'],
             ['id' => 'auth', 'order' => 70, 'enabled' => true],
+            [
+                'id' => 'setup',
+                'order' => 75,
+                'enabled' => false,
+                'children' => [['id' => 'setup.index', 'order' => 30, 'label' => 'My modules']],
+            ],
         ];
         $release = [
             ['id' => 'menu', 'order' => 10, 'enabled' => true, 'custom' => 'replace'],
-            ['id' => 'setup', 'order' => 5, 'enabled' => true],
+            [
+                'id' => 'setup',
+                'order' => 5,
+                'enabled' => true,
+                'children' => [
+                    ['id' => 'setup.index', 'order' => 10, 'label' => 'Modules'],
+                    ['id' => 'accessibility.settings', 'order' => 20, 'label' => 'Accessibility'],
+                ],
+            ],
             ['id' => 'future-module', 'order' => 15, 'enabled' => true],
         ];
         file_put_contents(
@@ -746,9 +760,13 @@ PHP);
         $this->assertSame($current[0], $stored[0]);
         $this->assertSame($current[1], $stored[1]);
         $this->assertSame('setup', $stored[2]['id']);
-        $this->assertSame(80, $stored[2]['order']);
+        $this->assertSame(75, $stored[2]['order']);
+        $this->assertFalse($stored[2]['enabled']);
+        $this->assertSame($current[2]['children'][0], $stored[2]['children'][0]);
+        $this->assertSame('accessibility.settings', $stored[2]['children'][1]['id']);
+        $this->assertSame(40, $stored[2]['children'][1]['order']);
         $this->assertSame('future-module', $stored[3]['id']);
-        $this->assertSame(90, $stored[3]['order']);
+        $this->assertSame(85, $stored[3]['order']);
         clearstatcache(true, $root . '/resources/config/menu/settings.json');
         $this->assertSame($originalInode, fileinode($root . '/resources/config/menu/settings.json'));
         $this->assertSame($originalOwner, fileowner($root . '/resources/config/menu/settings.json'));
