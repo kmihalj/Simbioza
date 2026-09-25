@@ -1,0 +1,9 @@
+# Simbioza 0.1.90
+
+Ovo izdanje uvodi opcionalni HeartPhrame modul Pristupačnost i nastavlja dorade temeljnog sučelja Simbioze i njezinih modula. Widget nudi osobne prilagodbe čitanja i prikaza spremljene u pregledniku. Radi bez Teme, Izbornika i Bootstrapa; kada Tema postoji, izborne palete mogu prilagoditi njezine semantičke boje bez promjene spremljene teme. Modul ne ovisi o postojećim modulima i nakon nadogradnje aplikacije može se instalirati i uključiti kroz Setup.
+
+U aplikaciji i modulima poboljšani su rad tipkovnicom, oznake i statusne poruke u Setupu, Backupu, Kalendaru, administraciji API-ja, izbornicima, komentarima, zadacima, obavijestima, pretraživanju, područjima, HTML editoru i uvozu iz Confluencea. Editor provjerava semantiku autorskih slika, naslova, tablica i poveznica. Poznate pretvorbe iz Confluencea čuvaju smislene veze zaglavlja tablica; uvezeni sadržaj ne prepisuje se automatski niti mu se izmišljaju opisi. Dopunjeni engleski i hrvatski izvorni nizovi objavljuju se kroz katalog jezika.
+
+Ovo **nije izjava o WCAG sukladnosti**. Automatske provjere obuhvatile su reprezentativne stranice i stanja, ne svaki postupak, proizvoljnu temu ili autorski dokument. Ostaju stvarno povećanje preglednika na 200/400 %, kontrast nad gradijentima i prilagođenim temama, VoiceOver/Safari, NVDA i korisnička provjera. Widget dopunjuje pristupačan temelj; sam ne može popraviti nepristupačan izvorni sadržaj. Trenutačni opseg opisan je u [planu provedbe](accessibility-implementation-plan_hr.md) i dokumentu o ograničenjima modula.
+
+Izdanje ne donosi nove migracije baze. Postojeće postavke aplikacije, instalirani jezici, stanje modula i autorski sadržaj ostaju podaci instalacije. Opcionalni modul ne uključuje se samim time što je nadogradnjom postao dostupan. Aplikaciju treba nadograditi podržanim GUI ili CLI postupkom, a zatim po želji instalirati i uključiti Pristupačnost u Setupu.

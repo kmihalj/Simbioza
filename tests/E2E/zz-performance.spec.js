@@ -375,6 +375,8 @@ test('page creation, publication, and public rendering stay inside measured SQL 
      *     plus the runtime for independently sticky header and navigation;
      *     88 KiB remains a firm guard against accidentally embedding large content.
      */
-    responseBytes: 88 * 1024,
+    // HR: Opcionalni panel dodaje oko 4 KiB HTML-a svakoj javnoj stranici.
+    // EN: The optional panel adds about 4 KiB of HTML to each public page.
+    responseBytes: 96 * 1024,
   });
 });

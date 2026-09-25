@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   apiHeaders,
   e2eEnvironment,
@@ -14,6 +17,9 @@ test.describe('complete Backup workflow', () => {
   test('administrator creates, uploads, preflights, and restores a full-site archive', async ({ page }, testInfo) => {
     test.setTimeout(180_000);
     const passphrase = 'Simbioza-E2E-backup-2026!';
+    const project = process.env.HPH_E2E_PROJECT;
+    expect(project).toBeTruthy();
+    const applicationSource = await readFile(join(project, 'config/app.php'), 'utf8');
 
     await login(page, adminLogin, adminPassword);
     const response = await page.goto('/settings/backups');
@@ -50,6 +56,17 @@ test.describe('complete Backup workflow', () => {
     await restoreAccordion.locator(':scope > summary').click();
     await expect(createAccordion).not.toHaveAttribute('open', '');
     await expect(restoreAccordion).toHaveAttribute('open', '');
+    // HR: Pogreška bez arhiva ne pokreće posao; poruka ne nestaje tijekom čitanja.
+    // EN: Missing archives start no job; the error remains available while reading.
+    await page.locator('#backup-upload').focus();
+    await page.locator('#backup-upload').press('Enter');
+    await expect(page.locator('#backup-toast')).toContainText(/Choose a backup archive|Odaberite backup arhiv/i);
+    await expect(page.locator('#backup-upload')).toBeFocused();
+    await page.waitForTimeout(6500);
+    await expect(page.locator('#backup-toast')).toBeVisible();
+    await page.locator('#backup-toast button').focus();
+    await page.locator('#backup-toast button').press('Enter');
+    await expect(page.locator('#backup-upload')).toBeFocused();
     await createAccordion.locator(':scope > summary').click();
     await expect(createAccordion).toHaveAttribute('open', '');
     await expect(restoreAccordion).not.toHaveAttribute('open', '');
@@ -76,6 +93,10 @@ test.describe('complete Backup workflow', () => {
     );
     const latestJob = page.locator('#backup-jobs-body tr').first();
     await expect(latestJob).toBeVisible();
+    const deleteJobButton = latestJob.locator('[data-backup-delete]');
+    await deleteJobButton.focus();
+    await page.waitForTimeout(5500);
+    await expect(deleteJobButton).toBeFocused();
     await expect(latestJob.locator('[data-backup-download]')).toHaveCount(0);
     await expect(latestJob.locator('td').first()).toHaveText(
       /(?:[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)|\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/,
@@ -126,6 +147,7 @@ test.describe('complete Backup workflow', () => {
     await page.locator('#backup-passphrase').fill(passphrase);
     await page.locator('#backup-upload').click();
     await expect(page.locator('#backup-preflight')).toBeEnabled({ timeout: 60_000 });
+    await expect(page.locator('#backup-upload-progress').locator('..')).toHaveAttribute('aria-valuenow', '100');
     await expect(page.locator('#backup-result')).toContainText('providers');
 
     await page.locator('#backup-conflict').selectOption('replace');
@@ -158,6 +180,53 @@ test.describe('complete Backup workflow', () => {
     await expect(themeEditor.locator('[data-theme-hero-visual-top]')).toHaveValue('-64');
     await expect(themeEditor.locator('[data-theme-hero-visual-right]')).toHaveValue('24');
     await expect(themeEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
+
+    /*
+     * HR: Povrat podataka ne smije pretvoriti dinamički bootstrap u statički.
+     *     GUI i CLI moraju i dalje stvarno isključiti te ponovno učitati temu.
+     * EN: Data restoration must not flatten the dynamic bootstrap. Both GUI
+     *     and CLI must still genuinely unload and reload the Theme module.
+     */
+    expect(await readFile(join(project, 'config/app.php'), 'utf8')).toBe(applicationSource);
+    const cliModule = (action) => execFileSync('php', ['vendor/bin/hph', 'modules', action, 'theme'], {
+      cwd: project,
+      env: { ...process.env, HPH_APP_PATH: project, HPH_CONFIG_PATH: join(project, 'config') },
+    });
+    try {
+      await page.goto('/settings/setup');
+      const themeForm = (action) => page.locator('form')
+        .filter({ has: page.locator('input[name="module"][value="theme"]') })
+        .filter({ has: page.locator(`input[name="action"][value="${action}"]`) });
+      await Promise.all([
+        page.waitForResponse((response) => response.request().method() === 'POST'
+          && new URL(response.url()).pathname === '/settings/setup'),
+        themeForm('disable').getByRole('button').click(),
+      ]);
+      await page.goto('/settings/setup');
+      await expect(page.locator('.hph-site-header')).toHaveCount(0);
+      await expect(page.locator('a[href$="/settings/theme"]')).toHaveCount(0);
+      await expect(themeForm('enable').getByRole('button')).toBeVisible();
+      await Promise.all([
+        page.waitForResponse((response) => response.request().method() === 'POST'
+          && new URL(response.url()).pathname === '/settings/setup'),
+        themeForm('enable').getByRole('button').click(),
+      ]);
+      await page.goto('/settings/setup');
+      await expect(page.locator('.hph-site-header')).toBeVisible();
+      await expect(page.locator('a[href$="/settings/theme"]').first()).toBeVisible();
+      cliModule('disable');
+      await page.goto('/calendars');
+      await expect(page.locator('.hph-site-header')).toHaveCount(0);
+      const skip = page.getByRole('link', { name: /Skip to main content|Prijeđi na glavni sadržaj/i });
+      await page.keyboard.press('Tab');
+      await expect(skip).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#main-content')).toBeFocused();
+    } finally {
+      cliModule('enable');
+    }
+    await page.goto('/calendars');
+    await expect(page.locator('.hph-site-header')).toBeVisible();
   });
 
   test('administrator copies one complete Workspace and rebuilds its search index', async ({ page }, testInfo) => {

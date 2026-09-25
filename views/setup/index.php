@@ -178,7 +178,16 @@ $applicationUpdateUi = json_encode(
         overflow-y: auto;
         padding: 1rem;
         z-index: 2000;
+        border: 0;
+        max-width: none;
+        max-height: none;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        color: inherit;
     }
+
+    .setup-update-overlay[open] { display: flex; }
 
     .setup-update-dialog {
         max-width: 44rem;
@@ -269,7 +278,7 @@ $applicationUpdateUi = json_encode(
         <aside class="col-12 col-xl-3"><?= $settingsMenu ?></aside>
     <?php endif; ?>
 
-    <main class="col-12 <?= $settingsMenu !== '' ? 'col-xl-9' : '' ?>">
+    <div class="col-12 <?= $settingsMenu !== '' ? 'col-xl-9' : '' ?>">
         <section class="card shadow-sm mb-4">
             <div class="card-body">
                 <h1 class="h3 mb-2"><?= $this->escape($title) ?></h1>
@@ -356,6 +365,9 @@ $applicationUpdateUi = json_encode(
                                 <?= $this->escape(__('Provjeravam dostupna izdanja...')) ?>
                             <?php endif; ?>
                         </div>
+                        <button class="btn btn-outline-primary mt-3" type="button" data-setup-update-open hidden>
+                            <?= $this->escape(__('Napredak nadogradnje')) ?>
+                        </button>
                         <?php if ($applicationUpdate['started_at'] !== null) : ?>
                             <div class="small text-body-secondary mt-2">
                             <?= $this->escape(__('Pokrenuto:')) ?> <?= $this->escape($formatTimestamp($applicationUpdate['started_at'])) ?>
@@ -435,7 +447,7 @@ $applicationUpdateUi = json_encode(
                             ? $component['latest_version']
                             : null;
                             ?>
-                        <article
+                        <div
                             class="setup-module-row"
                             role="row"
                             data-component-package="<?= $this->escape($module['package']) ?>"
@@ -534,7 +546,7 @@ $applicationUpdateUi = json_encode(
                                     </div>
                             <?php endif; ?>
                                 </div>
-                        </article>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -718,16 +730,14 @@ $applicationUpdateUi = json_encode(
                 <?php endif; ?>
             </div>
         </section>
-    </main>
+    </div>
 </div>
-<div
-    class="setup-update-overlay position-fixed align-items-center justify-content-center <?= $updateRunning ? 'd-flex' : 'd-none' ?>"
+<dialog
+    class="setup-update-overlay position-fixed align-items-center justify-content-center"
     data-setup-update-overlay
     data-initial-progress="<?= $applicationUpdate['progress'] === null ? '' : $this->escape((string)$applicationUpdate['progress']) ?>"
     data-initial-stage="<?= $this->escape($applicationUpdate['stage']) ?>"
     data-started-at="<?= $this->escape($applicationUpdate['started_at'] ?? '') ?>"
-    role="dialog"
-    aria-modal="true"
     aria-labelledby="setup-update-title"
     aria-describedby="setup-update-stage"
 >
@@ -736,7 +746,7 @@ $applicationUpdateUi = json_encode(
             <div class="d-flex align-items-center gap-3 mb-3">
                 <div class="spinner-border text-primary" data-setup-update-spinner aria-hidden="true"></div>
                 <div>
-                    <h2 class="h3 mb-1" id="setup-update-title"><?= $this->escape(__('Nadogradnja aplikacije je u tijeku')) ?></h2>
+                    <h2 class="h3 mb-1" id="setup-update-title" tabindex="-1" autofocus><?= $this->escape(__('Nadogradnja aplikacije je u tijeku')) ?></h2>
                     <div class="text-body-secondary"><?= $this->escape(__('Updater radi u pozadini. Ovaj prikaz možete ostaviti otvoren.')) ?></div>
                 </div>
             </div>
@@ -759,9 +769,10 @@ $applicationUpdateUi = json_encode(
             <div class="text-end mt-4 d-none" data-setup-update-actions>
                 <button class="btn btn-primary" type="button" data-setup-update-reload><?= $this->escape(__('Osvježi prikaz')) ?></button>
             </div>
+            <div class="text-end mt-3"><button class="btn btn-outline-secondary" type="button" data-setup-update-close><?= $this->escape(__('Zatvori')) ?></button></div>
         </div>
     </div>
-</div>
+</dialog>
 <script>
 (function () {
     'use strict';
@@ -884,6 +895,7 @@ $applicationUpdateUi = json_encode(
     const updateForm = document.querySelector('[data-setup-application-update-form]');
     const updateOverlay = document.querySelector('[data-setup-update-overlay]');
     const updateStage = document.querySelector('[data-setup-update-stage]');
+    const updateTitle = document.querySelector('#setup-update-title');
     const updateProgress = document.querySelector('[data-setup-update-progress]');
     const updateProgressBar = document.querySelector('[data-setup-update-progress-bar]');
     const updatePercent = document.querySelector('[data-setup-update-percent]');
@@ -892,12 +904,46 @@ $applicationUpdateUi = json_encode(
     const updateError = document.querySelector('[data-setup-update-error]');
     const updateActions = document.querySelector('[data-setup-update-actions]');
     const updateReload = document.querySelector('[data-setup-update-reload]');
+    const updateOpen = document.querySelector('[data-setup-update-open]');
+    const updateClose = document.querySelector('[data-setup-update-close]');
     const initialStartedAt = updateOverlay instanceof HTMLElement && updateOverlay.dataset.startedAt !== ''
         ? Date.parse(updateOverlay.dataset.startedAt || '')
         : Date.now();
     let updateStartedAt = Number.isFinite(initialStartedAt) ? initialStartedAt : Date.now();
     let updatePolling = false;
     let updateElapsedTimer = null;
+    let updateDialogShown = false;
+
+    // HR: Nativni dijalog upravlja fokusom i neaktivnom pozadinom; zatvaranje ne prekida updater.
+    // EN: The native dialog manages focus and inert background; closing never cancels the updater.
+    const openUpdateDialog = function () {
+        if (updateOverlay instanceof HTMLDialogElement && !updateOverlay.open) {
+            updateOverlay.showModal();
+            document.body.classList.add('overflow-hidden');
+        }
+    };
+    if (updateOpen instanceof HTMLButtonElement) updateOpen.addEventListener('click', openUpdateDialog);
+    if (updateClose instanceof HTMLButtonElement) {
+        updateClose.addEventListener('click', () => updateOverlay.close());
+    }
+    if (updateOverlay instanceof HTMLDialogElement) {
+        // HR: Zadržavamo Tab u dijalogu i kada preglednik na kraju nudi adresnu traku.
+        // EN: Keep Tab inside the dialog even when the browser offers its address bar at the end.
+        updateOverlay.addEventListener('keydown', (event) => {
+            if (event.key !== 'Tab') return;
+            const buttons = Array.from(updateOverlay.querySelectorAll('button:not([disabled])'))
+                .filter((button) => button.getClientRects().length > 0);
+            const index = buttons.indexOf(document.activeElement);
+            if (buttons.length > 0 && ((event.shiftKey && index <= 0) || (!event.shiftKey && index === buttons.length - 1))) {
+                event.preventDefault();
+                buttons[event.shiftKey ? buttons.length - 1 : 0].focus();
+            }
+        });
+        updateOverlay.addEventListener('close', () => {
+            document.body.classList.remove('overflow-hidden');
+            if (updateOpen instanceof HTMLButtonElement) updateOpen.focus();
+        });
+    }
 
     const formatElapsed = function () {
         if (!(updateElapsed instanceof HTMLElement)) {
@@ -934,11 +980,17 @@ $applicationUpdateUi = json_encode(
             }
         }
 
-        updateOverlay.classList.remove('d-none');
-        updateOverlay.classList.add('d-flex');
-        document.body.classList.add('overflow-hidden');
+        if (updateOpen instanceof HTMLButtonElement) updateOpen.hidden = false;
+        if (!updateDialogShown) {
+            updateDialogShown = true;
+            openUpdateDialog();
+        }
+        document.body.classList.toggle('overflow-hidden', updateOverlay.open);
         if (updateStage instanceof HTMLElement) {
             updateStage.textContent = state === 'success' ? updateUi.successLabel : stageLabel(stage);
+        }
+        if (updateTitle instanceof HTMLElement && (state === 'failed' || state === 'success')) {
+            updateTitle.textContent = stageLabel(state === 'success' ? 'complete' : 'failed');
         }
         if (updateProgressBar instanceof HTMLElement) {
             const displayProgress = numericProgress === null ? 12 : numericProgress;

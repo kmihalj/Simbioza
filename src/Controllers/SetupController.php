@@ -79,6 +79,58 @@ final readonly class SetupController
     }
 
     /**
+     * HR: Administratorska stranica ostaje dostupna i kad opcionalni modul nije učitan.
+     * EN: The admin page remains available even when the optional module is not loaded.
+     */
+    public function accessibility(): ResponseInterface
+    {
+        $module = null;
+        foreach ($this->modules->status() as $candidate) {
+            if ($candidate['slug'] === 'accessibility') {
+                $module = $candidate;
+                break;
+            }
+        }
+
+        return $this->responses->view('setup/accessibility', [
+            'title' => __('Pristupačnost'),
+            'module' => $module,
+            'stateChangesAllowed' => $this->diagnostics->report()['state_changes_allowed'],
+            'actionPath' => $this->accessibilityPath(),
+            'settingsMenuActiveSection' => 'setup',
+            'themeHero' => [
+                'is_home' => false,
+                'title' => __('Pristupačnost'),
+            ],
+        ]);
+    }
+
+    /**
+     * HR: Mijenja isključivo stanje modula pristupačnosti, uz postojeću CSRF i admin zaštitu.
+     * EN: Changes only accessibility module state under the existing CSRF and admin guards.
+     */
+    public function changeAccessibility(ServerRequestInterface $request): ResponseInterface
+    {
+        try {
+            $action = $this->body($request)['action'] ?? null;
+            if (!is_string($action) || !in_array($action, ['enable', 'disable'], true)) {
+                throw new RuntimeException(__('Odabrana Setup radnja nije dopuštena.'));
+            }
+
+            $message = $this->changeState(
+                'accessibility',
+                $action === 'enable',
+                $this->diagnostics->report()['state_changes_allowed'],
+            );
+            $this->alerts->add(new Alert($message, AlertLevelEnum::Success));
+        } catch (Throwable $throwable) {
+            $this->alerts->add(new Alert($throwable->getMessage(), AlertLevelEnum::Danger));
+        }
+
+        return $this->responses->redirect($this->accessibilityPath());
+    }
+
+    /**
      * HR: Izvršava samo dopuštenu radnju; paketne promjene prolaze kroz helper,
      *     a enable/disable ostaju dostupni bez FPM-a ako je stanje zapisivo.
      * EN: Executes only an allowed action; package changes use the helper, while
@@ -398,6 +450,14 @@ final readonly class SetupController
         return $this->urls->namedRouteExists('setup.index')
         ? $this->urls->getPathFor('setup.index')
         : '/settings/setup';
+    }
+
+    /** HR: Vraća putanju stalne administracijske sklopke. EN: Returns the permanent admin toggle path. */
+    private function accessibilityPath(): string
+    {
+        return $this->urls->namedRouteExists('accessibility.settings')
+        ? $this->urls->getPathFor('accessibility.settings')
+        : '/settings/accessibility';
     }
 
     /**

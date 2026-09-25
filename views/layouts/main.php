@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @var ?\AaiEduHr\HeartPhrameModuleMenu\Service\MenuRenderer $menuRenderer
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeRenderer $themeRenderer
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeLayoutRenderer $themeLayoutRenderer
+ * @var ?\AaiEduHr\HeartPhrameModuleAccessibility\Service\AccessibilityRenderer $accessibilityRenderer
  * @var array<string, mixed>|false|null $themeHero
  * @var string|null $userThemeMode
  */
@@ -180,6 +181,15 @@ if ($layoutThemeEnabled) {
         $candidate = $themeLayoutRenderer->navigationPlacement();
         $layoutNavigationPlacement = is_string($candidate) ? $candidate : 'standalone';
     }
+}
+
+/*
+ * HR: Osnovna navigacija tipkovnicom ne ovisi o opcionalnoj temi ni njenim postavkama.
+ * EN: Baseline keyboard navigation does not depend on the optional theme or its settings.
+ */
+if ($layoutSkipLinkHtml === '') {
+    $layoutSkipLinkHtml = '<a class="simbioza-skip-link" href="#main-content">'
+    . $this->escape(__('Prijeđi na glavni sadržaj')) . '</a>';
 }
 
 $renderedTopMenu = '';
@@ -438,7 +448,35 @@ if (
     }
     ?>
 
+    <?php
+    // HR: Opcionalni modul izričito zauzima head slot, bez prepisivanja rasporeda.
+    // EN: The optional module explicitly uses the head slot without rewriting the layout.
+    if (isset($accessibilityRenderer)) {
+        echo $accessibilityRenderer->renderHead(); // phpcs:ignore
+    }
+    ?>
+
     <style>
+        <?php if (str_contains($layoutSkipLinkHtml, 'class="simbioza-skip-link"')) : ?>
+        /* HR: Rezervni prečac ostaje čitljiv bez Theme modula i u prisilnim bojama.
+           EN: The fallback skip link remains readable without Theme and in forced colors. */
+        .simbioza-skip-link {
+            background: #fff;
+            color: #000;
+            left: .5rem;
+            max-width: calc(100vw - 1rem);
+            padding: .65rem 1rem;
+            position: fixed;
+            top: .5rem;
+            transform: translateY(-160%);
+            z-index: 1200;
+        }
+        .simbioza-skip-link:focus {
+            outline: 3px solid currentColor;
+            outline-offset: 2px;
+            transform: none;
+        }
+        <?php endif; ?>
         body {
             padding-top: 0;
             padding-bottom: 2rem;
@@ -656,6 +694,7 @@ if (
 
     <main
         id="main-content"
+        tabindex="-1"
         class="<?= $this->escape($layoutMainClasses) ?>"
         <?= $layoutTitleContext === 'application' && $renderedRouteLeftMenu === ''
         ? 'data-hph-content-title-scope'
@@ -1084,6 +1123,14 @@ if (
             <p>&copy; <?= date('Y') ?> <?= __('Simbioza by HeartPhrame. Sva prava pridržana.') ?></p>
         </div>
     </footer>
+
+    <?php
+    // HR: Panel je izvan glavnog sadržaja i postoji samo dok je modul uključen.
+    // EN: The panel is outside main content and exists only while the module is enabled.
+    if (isset($accessibilityRenderer)) {
+        echo $accessibilityRenderer->renderPanel(); // phpcs:ignore
+    }
+    ?>
 
     <script>
         (() => {

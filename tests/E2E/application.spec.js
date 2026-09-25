@@ -109,6 +109,33 @@ test.describe('browser flows', () => {
     });
     expect(mobileContentGeometry.contentOverlap).toBeGreaterThanOrEqual(120);
     expect(mobileContentGeometry.contentClearance).toBeGreaterThanOrEqual(16);
+
+    // HR: Prijavljeno zaglavlje ne smije širiti dokument na 320 CSS piksela.
+    // EN: The authenticated header must not widen the document at 320 CSS pixels.
+    await login(page, adminLogin, adminPassword);
+    await page.setViewportSize({ width: 320, height: 844 });
+    for (const colorScheme of ['light', 'dark']) {
+      await page.emulateMedia({ colorScheme });
+      await page.goto('/calendars');
+      const toggle = page.locator('.hph-site-header__control--account [data-bs-toggle="dropdown"]');
+      await expect(toggle).toHaveAccessibleName(/E2E Administrator/);
+      const geometry = await toggle.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const badge = element.querySelector('.badge')?.getBoundingClientRect();
+        return {
+          width: document.documentElement.scrollWidth,
+          viewport: document.documentElement.clientWidth,
+          badgeContained: !badge || (badge.left >= box.left && badge.right <= box.right),
+        };
+      });
+      expect(geometry.width).toBeLessThanOrEqual(geometry.viewport);
+      expect(geometry.badgeContained).toBe(true);
+      await toggle.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('link', { name: /Log out|Odjava/i })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(toggle).toBeFocused();
+    }
   });
 
   test('sticky language selector stays above overlapping hero content', async ({ page }) => {
@@ -364,6 +391,29 @@ test.describe('browser flows', () => {
       await expect(updateOverlay.locator('[data-setup-update-stage]')).toContainText(
         /existing theme configuration|konfiguraciju postojećih tema/i,
       );
+      /* HR: Nativni modal čuva fokus; zatvaranje prikaza ne prekida pozadinski posao.
+       * EN: The native modal contains focus; dismissing the view never cancels the job. */
+      await expect(page.locator('#setup-update-title')).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.locator('[data-setup-update-close]')).toBeFocused();
+      await page.keyboard.press('Tab');
+      expect(await updateOverlay.evaluate((dialog) => dialog.contains(document.activeElement))).toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(updateOverlay).not.toBeVisible();
+      await expect(page.locator('[data-setup-update-open]')).toBeFocused();
+      await page.waitForTimeout(1000);
+      await expect(updateOverlay).not.toBeVisible();
+      await page.locator('[data-setup-update-open]').press('Enter');
+      await expect(updateOverlay).toBeVisible();
+      await writeFile(updateStatusPath, JSON.stringify({
+        state: 'failed', stage: 'failed', progress: null,
+        started_at: new Date().toISOString(), finished_at: new Date().toISOString(), pid: null, message: '',
+      }));
+      await expect(page.locator('[data-setup-update-error]')).toBeVisible();
+      await expect(page.locator('[data-setup-update-reload]')).toBeVisible();
+      await expect(updateOverlay.locator('[data-setup-update-progress]')).not.toHaveAttribute('aria-valuenow');
+      await page.keyboard.press('Tab');
+      await expect(page.locator('[data-setup-update-reload]')).toBeFocused();
     } finally {
       await rm(updateStatusPath, { force: true });
     }
@@ -1026,17 +1076,17 @@ test.describe('browser flows', () => {
     await expect(page.locator('#workspace-shorts-display-options')).toHaveClass(/\bshow\b/);
     await expect(page.getByLabel(/Displayed levels|Prikazane razine/i)).toHaveValue('2');
     await expect(page.getByLabel(/Number of articles|Broj članaka/i)).toHaveValue('10');
-    await expect(page.getByLabel(/Order|Redoslijed/i)).toHaveValue('newest');
+    await expect(page.locator('#workspace-shorts-order')).toHaveValue('newest');
     await page.getByLabel(/Displayed levels|Prikazane razine/i).selectOption('all');
     await page.getByLabel(/Number of articles|Broj članaka/i).selectOption('5');
-    await page.getByLabel(/Order|Redoslijed/i).selectOption('title_asc');
+    await page.locator('#workspace-shorts-order').selectOption('title_asc');
     await page.getByRole('button', { name: /Apply|Show|Prikaži/i }).click();
     await expect(page).toHaveURL((url) => url.searchParams.get('depth') === 'all'
       && url.searchParams.get('limit') === '5'
       && url.searchParams.get('order') === 'title_asc');
     await expect(page.getByLabel(/Displayed levels|Prikazane razine/i)).toHaveValue('all');
     await expect(page.getByLabel(/Number of articles|Broj članaka/i)).toHaveValue('5');
-    await expect(page.getByLabel(/Order|Redoslijed/i)).toHaveValue('title_asc');
+    await expect(page.locator('#workspace-shorts-order')).toHaveValue('title_asc');
 
     const croatianShorts = `/workspace/${workspaceSlug}/shorts?lang=en&tree=0&options=0`;
     await page.goto(`/locale/hr?next=${encodeURIComponent(croatianShorts)}`);

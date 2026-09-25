@@ -403,7 +403,8 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
          * HR: Config granica se validira prije predaje generičkom provideru.
          * EN: The config boundary is validated before passing it to the generic provider.
          *
-         * @var list<array{key:string,path:string,include_keys?:list<string>,sensitive?:bool}> $providerFiles
+         * @var list<array{key:string,path:string,include_keys?:list<string>,sensitive?:bool,
+         *     restore_targets?:list<array{path:string,key_map:array<string,string>}>}> $providerFiles
          */
         $providerFiles = [];
         if (is_array($files)) {
@@ -430,12 +431,42 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
                     $normalizedKeys[] = $includeKey;
                 }
 
-                $providerFiles[] = [
+                $providerFile = [
                     'key' => $definition['key'],
                     'path' => $definition['path'],
                     'include_keys' => $normalizedKeys,
                     'sensitive' => (bool)($definition['sensitive'] ?? false),
                 ];
+                if (array_key_exists('restore_targets', $definition)) {
+                    if (!is_array($definition['restore_targets']) || $definition['restore_targets'] === []) {
+                        throw new RuntimeException('Application backup restore targets must be a nonempty list.');
+                    }
+
+                    $targets = [];
+                    foreach ($definition['restore_targets'] as $target) {
+                        if (
+                            !is_array($target) || !is_string($target['path'] ?? null)
+                            || !is_array($target['key_map'] ?? null)
+                        ) {
+                            throw new RuntimeException('Invalid application backup restore target.');
+                        }
+
+                        $keyMap = [];
+                        foreach ($target['key_map'] as $sourceKey => $targetKey) {
+                            if (!is_string($sourceKey) || !is_string($targetKey)) {
+                                throw new RuntimeException('Application backup mapping keys must be strings.');
+                            }
+
+                            $keyMap[$sourceKey] = $targetKey;
+                        }
+
+                        $targets[] = ['path' => $target['path'], 'key_map' => $keyMap];
+                    }
+
+                    $providerFile['restore_targets'] = $targets;
+                }
+
+                $providerFiles[] = $providerFile;
             }
         }
 

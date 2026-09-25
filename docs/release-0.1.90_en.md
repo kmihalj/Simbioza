@@ -1,0 +1,9 @@
+# Simbioza 0.1.90
+
+This release introduces the optional HeartPhrame Accessibility module and continues the underlying accessibility work across Simbioza and its modules. The widget offers browser-local reading and display preferences. It works without Theme, Menu, or Bootstrap; when Theme is present, optional color palettes can adapt its semantic colors without changing the saved theme. The module is independent of the existing modules and can be installed and enabled through Setup after the application update.
+
+The application and module changes improve keyboard operation, labels and status messages in Setup, Backup, Calendar, API administration, menus, comments, tasks, notifications, search, workspaces, the HTML editor, and Confluence import. The editor checks author-created image, heading, table, and link semantics. Known Confluence conversions preserve meaningful table headers; imported content is not automatically rewritten or given invented descriptions. Updated English and Croatian source strings are published through the language catalog.
+
+This is **not a WCAG conformance declaration**. Automated checks covered representative pages and states, not every workflow, custom theme, or authored document. Real 200/400% browser zoom, gradient and custom-theme contrast, VoiceOver/Safari, NVDA, and user testing remain open. The widget supplements an accessible baseline; it cannot repair inaccessible source content by itself. See the [implementation plan](accessibility-implementation-plan_en.md) and the module's limitations document for the current scope.
+
+There are no new database migrations in this release. Existing application settings, installed languages, module state, and authored content remain instance data. The optional module does not silently become active merely because an update makes it available. Update the application through the supported GUI or CLI updater, then install and enable Accessibility in Setup if wanted.

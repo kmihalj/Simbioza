@@ -11,6 +11,34 @@ internih modula iz linije `^0.1.0`. Repozitoriji modula i Simbioza ne spremaju
 `composer update --with-all-dependencies`, dohvaća najnovije kompatibilne tagove
 i zatim pokreće puni `composer on-commit`.
 
+## Pravilo označenih verzija
+
+Prije provjere ili izdanja provjeriti `composer.json` i stvarno instalirane
+pakete **svakog modula**. Ažurna Simbioza ne ažurira zasebne direktorije `vendor`
+u kojima se razvijaju pojedini moduli. Postojeća lokalna lock datoteka uz
+`composer install` ponovno koristi ranije odabrane verzije.
+
+Najnoviji kompatibilni objavljeni tag postaviti kao donju granicu svake obavezne
+modulne ovisnosti i razvojne integracije. U tom modulu zatim pokrenuti
+`composer update --with-all-dependencies`, `composer validate --strict`,
+`composer check-platform-reqs` i puni `composer on-commit`. Pregledati i
+`composer outdated --direct`. Koristi se `minimum-stability: stable`; razvojne
+grane pripadaju samo izričito izoliranim lokalnim integracijskim instalacijama.
+Opcionalne integracije moraju ostati opcionalne.
+
+Tag ne birati samo prema najvećem broju: nekoliko repozitorija ima povijesne
+tagove `1.x`, starije od aktualne linije `0.1.x`. Provjeriti kompatibilnu liniju,
+referencu koda i povijest izdanja. Repozitorij Frameworka ne uređuje se niti se
+ručno krpa njegova instalirana kopija; koristi se tag koji objavi održavatelj.
+
+Nove glavne verzije vanjskih paketa zahtijevaju zasebnu provjeru kompatibilnosti.
+Trenutačna testna matrica s podrškom za PHP 8.2 zadržava PHPUnit
+`^10.5.65 || ^11.5.56` i PHP_CodeSniffer `^3.13.6`; Slevomat `^8.22.1` odabire
+zadnje kompatibilno izdanje jer novija izdanja zahtijevaju PHP_CodeSniffer 4.
+Donje granice PHPStana i Rectora su `^2.2.15` i `^2.6.7`. To su granice
+kompatibilnosti, ne tvrdnja da ne postoje novije glavne verzije. Ponovno ih
+provjeriti prije svakog izdanja.
+
 ## Brzi pregled
 
 | Modul | Obavezno | Opcionalne integracije |
@@ -19,9 +47,9 @@ i zatim pokreće puni `composer on-commit`.
 | `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth i Menu za administratorski GUI; poslovni moduli prijavljuju vlastite providere |
 | `module-auth` | Framework, ORM | API, Menu, Notification |
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu i Theme samo za GUI |
-| `module-menu` | Framework | Auth |
+| `module-menu` | Framework, ORM | Auth |
 | `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth (0.1.11+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
+| `module-calendar` | Framework, Auth (0.1.13+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
 | `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.1.4+ ako je instaliran), Menu, Theme, Calendar, Workspace, Task, Comment |
 | `module-email` | Framework, Auth, ORM | — |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |

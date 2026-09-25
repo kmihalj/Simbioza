@@ -11,6 +11,33 @@ commit `composer.lock`; CI runs `composer update --with-all-dependencies` on
 every run, resolves the latest compatible tags, and then executes the complete
 `composer on-commit` suite.
 
+## Tagged-version policy
+
+Check both `composer.json` and the installed packages of **each module** before
+testing or releasing it. An up-to-date Simbioza installation does not update the
+separate `vendor` directories used to develop individual modules. An existing
+local lock file makes `composer install` reuse older resolutions.
+
+Use the newest compatible published tag as the minimum constraint for each
+required module and development integration, then run `composer update
+--with-all-dependencies`, `composer validate --strict`,
+`composer check-platform-reqs` and the complete `composer on-commit` suite in
+that module. Inspect `composer outdated --direct` too. Dependencies use
+`minimum-stability: stable`; development branches belong only in explicitly
+isolated local integration fixtures. Keep optional integrations optional.
+
+Do not select a tag solely by its numeric size: several repositories retain
+historical `1.x` tags predating the current `0.1.x` line. Confirm the compatible
+line, source reference and release history. Do not edit the Framework repository
+or patch its installed code; consume its maintainer's published tag.
+
+Third-party major upgrades require their own compatibility review. The current
+PHP 8.2-compatible test matrix retains PHPUnit `^10.5.65 || ^11.5.56` and
+PHP_CodeSniffer `^3.13.6`; Slevomat `^8.22.1` resolves to the last compatible
+release because newer Slevomat releases require PHP_CodeSniffer 4. PHPStan and
+Rector have minimums `^2.2.15` and `^2.6.7`. These are compatibility constraints,
+not a claim that no newer major releases exist. Recheck them before each release.
+
 ## Quick reference
 
 | Module | Required | Optional integrations |
@@ -19,9 +46,9 @@ every run, resolves the latest compatible tags, and then executes the complete
 | `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth and Menu for the administrator GUI; business modules register their own providers |
 | `module-auth` | Framework, ORM | API, Menu, Notification |
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu and Theme for the GUI only |
-| `module-menu` | Framework | Auth |
+| `module-menu` | Framework, ORM | Auth |
 | `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth (0.1.11+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
+| `module-calendar` | Framework, Auth (0.1.13+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
 | `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.1.4+ when installed), Menu, Theme, Calendar, Workspace, Task, Comment |
 | `module-email` | Framework, Auth, ORM | — |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |

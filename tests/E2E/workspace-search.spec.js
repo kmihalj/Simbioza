@@ -453,7 +453,10 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
       )),
       page.getByRole('button', { name: /Ponovno izgradi indeks|Rebuild index/ }).click(),
     ]);
-    await expect(page.getByRole('alert')).toContainText(/Indeks je obnovljen|Index rebuilt/);
+    // HR: Potvrda uspjeha nenametljivi je status, a ne hitno upozorenje.
+    // EN: A success confirmation is a polite status, not an urgent alert.
+    await expect(page.getByRole('status')).toContainText(/Indeks je obnovljen|Index rebuilt/);
+    await expect(page.getByRole('status')).toHaveAttribute('aria-live', 'polite');
 
     await expect(workspacePicker).toHaveAttribute('data-workspace-lookup-ready', '1');
     await workspacePicker.locator('[data-workspace-lookup-toggle]').click();
@@ -469,6 +472,6 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
       )),
       page.getByRole('button', { name: /Ponovno izgradi indeks|Rebuild index/ }).click(),
     ]);
-    await expect(page.getByRole('alert')).toContainText(/Indeks je obnovljen|Index rebuilt/);
+    await expect(page.getByRole('status')).toContainText(/Indeks je obnovljen|Index rebuilt/);
   });
 });

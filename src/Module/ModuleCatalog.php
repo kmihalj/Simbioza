@@ -220,6 +220,14 @@ final readonly class ModuleCatalog
                 ['20260813100000_install_backup_schema'],
                 ['backup_jobs', 'backup_uploads'],
             ),
+            // HR: Opcionalni modul osobnih prilagodbi ne stvara tablice.
+            // EN: The optional personal-adjustments module does not create tables.
+            'accessibility' => $this->definition(
+                'aaieduhr/heartphrame-module-accessibility',
+                'Pristupačnost',
+                'Accessibility',
+                optional: true,
+            ),
         ];
     }
 

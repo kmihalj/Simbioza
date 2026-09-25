@@ -381,6 +381,66 @@ test.describe('module browser surfaces', () => {
     await expect(page).toHaveURL((url) => url.pathname === `/calendars/view/${created.uuid}`);
   });
 
+  // HR: Kombinirano polje radi tipkovnicom, najavljuje stanje i poništava zakašnjele odgovore.
+  // EN: The combobox supports keyboard selection, announces state and cancels late responses.
+  test('API owner picker exposes selection, pagination and request cancellation', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/auth/api-keys');
+    const input = page.getByRole('combobox', { name: 'Key owner' });
+    const options = page.locator('#api-key-owner-results [role="option"]');
+    const status = page.locator('[data-api-owner-status]');
+    await input.fill('E2E');
+    await expect(options.first()).toBeVisible();
+    await input.press('ArrowDown');
+    await expect(input).toHaveAttribute('aria-activedescendant', await options.first().getAttribute('id'));
+    await expect(options.first()).toHaveAttribute('aria-selected', 'true');
+    await expect(options.first()).toHaveAttribute('tabindex', '-1');
+    const selectedLabel = await options.first().innerText();
+    await input.press('Enter');
+    await expect(input).toHaveValue(selectedLabel);
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await expect(input).not.toHaveAttribute('aria-activedescendant', /.+/);
+    await expect(page.locator('[data-api-owner-id]')).not.toHaveValue('');
+
+    // HR: Ograničeni lažni odgovor ne stvara korisnike ni ključeve u bazi.
+    // EN: Bounded mock responses create neither users nor keys in the database.
+    await page.route('**/settings/auth/api-keys/users?**', async (route) => {
+      const second = new URL(route.request().url()).searchParams.get('page') === '2';
+      await route.fulfill({ json: { items: [{ id: second ? 902 : 901, label: second ? 'Second test owner' : 'First test owner' }], hasMore: !second } });
+    });
+    await input.fill('test owner');
+    await expect(options).toHaveText(['First test owner']);
+    const more = page.locator('[data-api-owner-more]');
+    await input.press('Tab');
+    await expect(more).toBeFocused();
+    await more.press('Enter');
+    await expect(options).toHaveText(['First test owner', 'Second test owner']);
+    await expect(input).toBeFocused();
+    await expect(status).toContainText('2');
+    await page.unroute('**/settings/auth/api-keys/users?**');
+
+    let entered;
+    let release;
+    const arrived = new Promise((resolve) => { entered = resolve; });
+    const gate = new Promise((resolve) => { release = resolve; });
+    await page.route('**/settings/auth/api-keys/users?**', async (route) => {
+      entered();
+      await gate;
+      await route.fulfill({ json: { items: [{ id: 903, label: 'Late owner' }], hasMore: false } }).catch(() => {});
+    });
+    await input.fill('late owner');
+    await arrived;
+    await expect(status).toHaveText('Loading...');
+    const aborted = page.waitForEvent('requestfailed', (request) => request.url().includes('/api-keys/users?'));
+    await input.press('Escape');
+    release();
+    await aborted;
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await expect(status).toBeEmpty();
+    await expect(page.locator('#api-key-owner-results')).toHaveAttribute('aria-busy', 'false');
+  });
+
   test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page, request }) => {
     test.setTimeout(90_000);
     const editorPath = await createEditorSurface(request, adminApiToken, 'surface-editor');
@@ -415,6 +475,9 @@ test.describe('module browser surfaces', () => {
       '/settings/editor-html/documents/deleted',
       '/notifications',
       '/settings/email',
+      '/settings/logs/audit',
+      '/settings/logs/technical',
+      '/settings/workspace-search',
       '/calendars',
       '/calendar/profile',
       '/settings/calendar',
@@ -424,6 +487,9 @@ test.describe('module browser surfaces', () => {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.locator('body'), route).not.toContainText(/Internal Server Error|Fatal error/i);
+      // HR: Djelomični prikazi ne smiju dodavati ugniježđeni glavni orijentir.
+      // EN: Partial views must not add a nested main landmark.
+      await expect(page.getByRole('main'), route).toHaveCount(1);
     }
 
     /*
@@ -1782,8 +1848,10 @@ test.describe('module browser surfaces', () => {
     const comment = page.locator('article').filter({ hasText: 'E2E moderated comment' });
     await comment.getByRole('button', { name: 'Like', exact: true }).click();
     await expect(comment.getByRole('button', { name: 'Like', exact: true })).toContainText('1');
+    await expect(comment.getByRole('button', { name: 'Like', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(comment.getByRole('button', { name: 'Like', exact: true })).toBeFocused();
     await comment.getByRole('button', { name: 'Report inappropriate comment' }).click();
-    await expect(page.locator('[role="status"]')).toContainText(/reported|prijavljen/i);
+    await expect(page.locator('.document-comment-toast[role="status"]')).toContainText(/reported|prijavljen/i);
     await page.goto('/auth/logout');
 
     await login(page, adminLogin, adminPassword);
@@ -1822,6 +1890,7 @@ test.describe('module browser surfaces', () => {
     page.once('dialog', (dialog) => dialog.accept());
     await moderated.getByRole('button', { name: 'Delete comment' }).click();
     await expect(page.getByText('E2E moderated comment', { exact: true })).toHaveCount(0);
+    await expect(page.locator('#document-comments-title')).toBeFocused();
   });
 
   test('E-mail settings persist and a failed local SMTP test remains observable in the outbox', async ({ page }) => {

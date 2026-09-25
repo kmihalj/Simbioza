@@ -26,6 +26,46 @@ async function openToolbarMenu(page, name) {
   await page.getByRole('button', { name, exact: true }).click();
 }
 
+// HR: Autor odlučuje o svrsi slike; provjera i spremljeni HTML moraju zadržati istu semantiku.
+// EN: The author decides the image purpose; checks and saved HTML must retain the same semantics.
+async function verifyAccessibleContent(page) {
+  const sourceToggle = page.locator('[data-editor-html-source-toggle]');
+  const source = page.locator('[data-editor-html-source]');
+  const imagePath = '/theme/assets/library/simbioza/icon-adriatic-light.png';
+  expect((await page.request.get(imagePath)).ok()).toBe(true);
+  await sourceToggle.click();
+  await source.fill(await source.inputValue()
+    + '<h2>Accessible content</h2>'
+    + `<span class="figure"><img id="e2e-decorative" src="${imagePath}" width="64" height="64" alt=""></span>`
+    + `<span class="figure"><img id="e2e-informative" src="${imagePath}" width="64" height="64" alt=""></span>`
+    + `<p><a href="/"><img src="${imagePath}" width="32" height="32" alt="Simbioza home"></a></p>`
+    + '<table><tr><th id="e2e-table-heading" scope="col">Heading</th></tr>'
+    + '<tr><td headers="missing-e2e-header">Value</td></tr></table>');
+  await sourceToggle.click();
+  await page.locator('[data-editor-html-check]').click();
+  const findings = page.locator('.editor-html-check-toast').last();
+  await expect(findings.getByText('An image has no alternative text.', { exact: true })).toHaveCount(2);
+  await expect(findings).not.toContainText('A link has no readable text.');
+  await expect(findings).not.toContainText('The document has no H1 heading in the content.');
+  await expect(findings).toContainText('A table cell refers to an invalid header.');
+  await findings.getByRole('button', { name: 'Close', exact: true }).click();
+
+  await page.locator('[data-editor-html-surface] #e2e-decorative').click({ button: 'right' });
+  await page.locator('[data-editor-html-media-menu] [data-editor-html-media-action="image-decorative"]').click();
+  await page.locator('[data-editor-html-surface] #e2e-informative').click({ button: 'right' });
+  page.once('dialog', (dialog) => dialog.accept('Simbioza logo'));
+  await page.locator('[data-editor-html-media-menu] [data-editor-html-media-action="image-alt"]').click();
+  await sourceToggle.click();
+  await expect(source).toHaveValue(/data-editor-html-decorative="1"/);
+  await source.fill((await source.inputValue()).replace('headers="missing-e2e-header"', 'headers="e2e-table-heading"'));
+  await sourceToggle.click();
+  await page.locator('[data-editor-html-check]').click();
+  await expect(findings).toBeVisible();
+  await expect(findings).not.toContainText('An image has no alternative text.');
+  await expect(findings).not.toContainText('A table cell refers to an invalid header.');
+  await findings.getByRole('button', { name: 'Close', exact: true }).click();
+}
+
 test('cards, tabs, accordion and chart 3D remain directly editable and render canonically', async ({ page }) => {
   test.setTimeout(90_000);
   const suffix = Date.now();
@@ -147,12 +187,19 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   await chartModal.locator('[data-editor-html-chart-save]').click();
   await expect(chartModal).toBeHidden();
 
+  await verifyAccessibleContent(page);
+
   await submitFormAndExpectPost(
     page,
     page.getByRole('button', { name: 'Save and publish' }),
     '/editor-html/save',
   );
   await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/${pageSlug}`);
+  await expect(page.locator('.editor-html-view-content #e2e-decorative')).toHaveAttribute('alt', '');
+  await expect(page.locator('.editor-html-view-content #e2e-decorative'))
+    .toHaveAttribute('data-editor-html-decorative', '1');
+  await expect(page.locator('.editor-html-view-content #e2e-informative')).toHaveAttribute('alt', 'Simbioza logo');
+  await expect(page.locator('.editor-html-view-content td[headers="e2e-table-heading"]')).toHaveText('Value');
   const renderedCard = page.locator('.editor-html-view-content > .card').filter({
     has: page.getByText('Editable card header', { exact: true }),
   });
@@ -160,6 +207,26 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   await expect(renderedCard.locator(':scope > .card-body')).toHaveText('Editable card body');
 
   const renderedTabs = page.locator('[data-editor-html-tabs="1"]');
+  // HR: Veze naslova/panela i tipkovnica ostaju valjane nakon spremanja.
+  // EN: Tab/panel associations and keyboard behavior survive saving.
+  await expect(page.getByRole('main')).toHaveCount(1);
+  const tabButtons = renderedTabs.getByRole('tab');
+  const panels = renderedTabs.locator('[role="tabpanel"]');
+  for (let i = 0; i < 3; i += 1) {
+    await expect(tabButtons.nth(i)).toHaveAttribute('aria-controls', await panels.nth(i).getAttribute('id'));
+    await expect(panels.nth(i)).toHaveAttribute('aria-labelledby', await tabButtons.nth(i).getAttribute('id'));
+  }
+  await tabButtons.first().focus();
+  await tabButtons.first().press('ArrowRight');
+  await expect(tabButtons.nth(1)).toBeFocused();
+  await expect(tabButtons.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect(tabButtons.first()).toHaveAttribute('tabindex', '-1');
+  await tabButtons.nth(1).press('End');
+  await expect(tabButtons.last()).toBeFocused();
+  await tabButtons.last().press('Home');
+  await expect(tabButtons.first()).toBeFocused();
+  await tabButtons.first().press('Tab');
+  await expect(panels.first()).toBeFocused();
   await expect(renderedTabs.locator('[role="tabpanel"]').nth(0)).toBeVisible();
   await renderedTabs.locator('[role="tab"]').nth(1).click();
   await expect(renderedTabs.locator('[role="tabpanel"]').nth(1)).toBeVisible();
@@ -167,7 +234,8 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
 
   const renderedAccordion = page.locator('[data-editor-html-accordion="1"]');
   await expect(renderedAccordion.locator(':scope > details').nth(0)).not.toHaveAttribute('open', '');
-  await renderedAccordion.locator(':scope > details').nth(0).locator('summary').click();
+  await renderedAccordion.locator(':scope > details').nth(0).locator('summary').focus();
+  await page.keyboard.press('Enter');
   await expect(renderedAccordion.locator(':scope > details').nth(0)).toHaveAttribute('open', '');
   await renderedAccordion.locator(':scope > details').nth(1).locator('summary').click();
   await expect(renderedAccordion.locator(':scope > details').nth(0)).toHaveAttribute('open', '');

@@ -2,6 +2,18 @@
 
 declare(strict_types=1);
 
+// HR: CLI i web ne dijele OPcache. Runtime podaci moraju biti svježi čak i
+//     bez provjere vremenskih oznaka; ne poništavamo predmemoriju koda aplikacije.
+// EN: CLI and web do not share OPcache. Runtime data must be fresh even without
+//     timestamp validation; the application code cache is left untouched.
+foreach (['installation.php', 'languages.php', 'modules.php', '../data/config/modules.php'] as $runtimeFile) {
+    $runtimePath = __DIR__ . '/' . $runtimeFile;
+    clearstatcache(true, $runtimePath);
+    if (is_file($runtimePath) && function_exists('opcache_invalidate')) {
+        opcache_invalidate($runtimePath, true);
+    }
+}
+
 $installationFile = __DIR__ . '/installation.php';
 $installation = is_file($installationFile) ? require $installationFile : [];
 if (!is_array($installation)) {
@@ -39,6 +51,7 @@ $allowedModules = [
     'aaieduhr/heartphrame-module-calendar',
     'aaieduhr/simbioza-module-confluence-import',
     'aaieduhr/heartphrame-module-backup',
+    'aaieduhr/heartphrame-module-accessibility',
 ];
 $legacyInstalledModules = [];
 if (!array_key_exists('enabled', $moduleState) && is_file(__DIR__ . '/../data/installation.lock')) {
@@ -122,7 +135,7 @@ return [
         //     i dalje može ručno promijeniti među dostupnim jezicima.
         // EN: A fresh installation honors its selected primary locale; users
         //     can still switch manually among the enabled locales.
-        'detect_browser_locale' => $installation === [],
+        'detect_browser_locale' => (bool)($installation['detect_browser_locale'] ?? ($installation === [])),
         'translations_dir' => __DIR__ . '/../lang',
     ],
 
@@ -150,7 +163,9 @@ return [
 
     // Session configuration
     'session' => [
-        'options' => [
+        // HR: Vraćanje kopije sprema samo dopuštene prenosive opcije sesije.
+        // EN: Backup restore stores only allowlisted portable session options.
+        'options' => array_replace([
             'use_cookies' => 1,
             'cookie_secure' => 1,
             'cookie_httponly' => 1,
@@ -161,7 +176,10 @@ return [
             // EN: The Auth module enforces the shorter administrator-configured login duration.
             'gc_maxlifetime' => 31536000,
             'cookie_lifetime' => 0,
-        ],
+        ], array_intersect_key(
+            is_array($installation['session_options'] ?? null) ? $installation['session_options'] : [],
+            array_flip(['gc_maxlifetime', 'cookie_lifetime', 'cookie_secure', 'cookie_httponly', 'cookie_samesite']),
+        )),
         // List of route prefixes for which the session will not be started by the StartSessionMiddleware.
         'excluded_routes' => [
             '/sample/route/prefix', // All routes that start with this prefix will be excluded.

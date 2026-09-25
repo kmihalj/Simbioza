@@ -74,6 +74,12 @@ jobs:
       - name: Run quality and test suite / Pokreni provjere i testove
         run: COMPOSER=composer.ci.json composer on-commit
 
+      # HR: Root izvodi samo test na privremenim datotekama ovog izoliranog runnera.
+      # EN: Root runs only the test against temporary files on this isolated runner.
+      - name: Verify cross-user ownership / Provjeri vlasništvo između korisnika
+        if: matrix.php == '8.5'
+        run: sudo -n "$(command -v php)" scripts/verify_root_asset_permissions.php
+
   clean-install-sqlite:
     name: Clean module matrix / Čista matrica modula
     if: github.ref_type != 'tag'

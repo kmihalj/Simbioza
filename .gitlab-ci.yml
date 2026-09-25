@@ -23,6 +23,9 @@ stages:
     - php scripts/build_ci_composer.php
     - COMPOSER=composer.ci.json composer update --with-all-dependencies --no-interaction --no-progress --no-ansi --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - COMPOSER=composer.ci.json composer on-commit
+    # HR: Kontejner mora stvarno izvršiti privilegirani test; preskakanje je greška.
+    # EN: The container must actually run the privileged test; skipping is a failure.
+    - php scripts/verify_root_asset_permissions.php
   coverage: '/^\s*Lines:\s*\d+.\d+\%/'
   artifacts:
     when: always

@@ -31,6 +31,16 @@ async function confluenceArchive() {
   const calendar = join(directory, 'source-calendar.ics');
   const archive = join(directory, 'tiny-space.xml.zip');
 
+  // HR: Dva poznata HTML makroa provjeravaju veze zaglavlja nakon cijelog uvoza.
+  // EN: Two known HTML macros check header associations after the complete import.
+  const tableMacro = '<ac:structured-macro ac:name="html"><ac:plain-text-body><![CDATA['
+    + '<table><caption>Imported accessible table</caption><tr><th id="year" scope="col">2026</th>'
+    + '<th id="month" headers="year" scope="col">September</th></tr>'
+    + '<tr><td headers="year month">Imported cell</td><td>Other cell</td></tr></table>'
+    + ']]></ac:plain-text-body></ac:structured-macro>';
+  const tableMacrosXml = (tableMacro + tableMacro).replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
   await writeFile(descriptor, [
     'exportType=space',
     'spaceKey=TINY',
@@ -68,7 +78,7 @@ async function confluenceArchive() {
   <object class="Attachment" package="com.atlassian.confluence.pages"><id name="id">201</id><property name="containerContent"><id>101</id></property><property name="space"><id>1</id></property><property name="title">sample.bin</property><property name="version">1</property><property name="contentStatus">current</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201a</id><property name="content"><id>201</id></property><property name="name">MEDIA_TYPE</property><property name="stringValue">application/octet-stream</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201b</id><property name="content"><id>201</id></property><property name="name">FILESIZE</property><property name="longValue">23</property></object>
-</hibernate-generic>`);
+</hibernate-generic>`.replace('&lt;p&gt;Imported home body.', `${tableMacrosXml}&lt;p&gt;Imported home body.`));
 
   execFileSync('php', [
     '-r',
@@ -105,6 +115,15 @@ test('administrator imports a Confluence space while ACL and private files remai
     expect(response?.status()).toBe(200);
     await expect(page.locator('body')).not.toContainText(/Internal Server Error|Fatal error/i);
 
+    // HR: Lokalizirani nativni birač ima jedinstven naziv i vidljiv fokus.
+    // EN: The localized native picker has an unambiguous name and visible focus.
+    const fileInput = page.locator('#confluence-import-file');
+    await expect(fileInput).toHaveAccessibleName('Confluence XML ZIP archive Choose file');
+    await fileInput.focus();
+    expect(await page.locator('#confluence-import-file-choice').evaluate((label) => (
+      getComputedStyle(label).outlineStyle
+    ))).toBe('solid');
+
     await page.locator('#confluence-import-file').setInputFiles(fixture.archive);
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/settings/confluence-import' && url.searchParams.has('job')),
@@ -122,14 +141,24 @@ test('administrator imports a Confluence space while ACL and private files remai
     await page.locator('details.confluence-import-mapping').first().locator('summary').click();
     const identity = page.locator('[data-identity-map="u1"]');
     const identityPicker = identity.locator('xpath=..');
+    const identityToggle = identityPicker.locator('[data-identity-picker-toggle]');
+    await expect(identityToggle).toHaveAccessibleName(/Target user|Ciljni korisnik/);
     await identityPicker.locator('[data-identity-picker-toggle]').click();
     await identityPicker.locator('[data-identity-picker-search]').fill('E2E');
     const adminResult = identityPicker.locator('[data-identity-picker-results] button').filter({
       hasText: 'Administrator E2E',
     });
     await expect(adminResult).toBeVisible();
-    await adminResult.click();
+    await adminResult.focus();
+    await adminResult.press('Enter');
+    await expect(identityToggle).toBeFocused();
+    await expect(identityToggle).toHaveAttribute('aria-expanded', 'false');
     await expect(identity).not.toHaveValue('');
+    await identityToggle.press('Enter');
+    await expect(identityPicker.getByRole('searchbox')).toBeFocused();
+    await identityPicker.getByRole('searchbox').press('Escape');
+    await expect(identityToggle).toBeFocused();
+    await expect(identityPicker.locator('[data-identity-picker-panel]')).toBeHidden();
 
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#confluence-import-run').click();
@@ -160,6 +189,22 @@ test('administrator imports a Confluence space while ACL and private files remai
 
     await page.goto(`/workspace/${workspaceSlug}/imported-home?lang=en`);
     await expect(page.locator('body')).toContainText('Imported home body.');
+    const importedTables = page.getByRole('table', { name: 'Imported accessible table', exact: true });
+    await expect(importedTables).toHaveCount(2);
+    const headerIds = [];
+    for (const table of await importedTables.all()) {
+      const year = table.getByRole('columnheader', { name: '2026', exact: true });
+      const month = table.getByRole('columnheader', { name: 'September', exact: true });
+      const yearId = await year.getAttribute('id');
+      const monthId = await month.getAttribute('id');
+      expect(yearId).toMatch(/^import-table-[a-f0-9]{24}-1$/);
+      expect(monthId).toMatch(/^import-table-[a-f0-9]{24}-2$/);
+      await expect(month).toHaveAttribute('headers', yearId);
+      await expect(table.getByRole('cell', { name: 'Imported cell', exact: true }))
+        .toHaveAttribute('headers', `${yearId} ${monthId}`);
+      headerIds.push(yearId, monthId);
+    }
+    expect(new Set(headerIds).size).toBe(4);
     const firstLevelTreeNode = page.locator(
       '#workspace-page-tree [data-workspace-tree-level="1"]',
     ).first();
@@ -180,9 +225,24 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(reportTask).not.toBeChecked();
     const stateResponse = page.waitForResponse((response) => response.request().method() === 'POST'
       && new URL(response.url()).pathname === '/tasks/state');
-    const [stateSaved] = await Promise.all([stateResponse, reportTask.check()]);
+    await reportTask.focus();
+    const [stateSaved] = await Promise.all([stateResponse, reportTask.press('Space')]);
     expect(stateSaved.status()).toBe(200);
     await expect(reportTask).toBeChecked();
+    await expect(reportTask).toBeFocused();
+    // HR: Neuspjelo spremanje vraća stanje i zadržava fokus; poruka se ručno zatvara.
+    // EN: Failed saves restore state and retain focus; the message is explicitly dismissed.
+    await page.route('**/tasks/state', (route) => route.fulfill({
+      status: 500, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'E2E task failure' }),
+    }));
+    await reportTask.press('Space');
+    await expect(page.getByRole('alert')).toContainText('E2E task failure');
+    await expect(reportTask).toBeChecked();
+    await expect(reportTask).toBeFocused();
+    await page.locator('.editor-task-toast-close').focus();
+    await page.locator('.editor-task-toast-close').press('Enter');
+    await expect(reportTask).toBeFocused();
+    await page.unroute('**/tasks/state');
     await page.reload();
     await expect(reportTask).toBeChecked();
     const childLink = page.locator(`a[href*="/workspace/${workspaceSlug}/${shortenedChildSlug}"]`).first();

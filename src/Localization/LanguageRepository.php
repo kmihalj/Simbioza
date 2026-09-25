@@ -137,12 +137,56 @@ final readonly class LanguageRepository
             throw new RuntimeException('The requested language download limit is invalid.');
         }
 
+        // HR: macOS mod_php radi u Apacheovu forkiranom procesu. Mrežni PHP
+        //     stream ondje može srušiti proces tijekom sustavnog DNS poziva;
+        //     zaseban curl proces zadržava isti TLS i veličinski limit.
+        // EN: macOS mod_php runs in a forked Apache process. A PHP network
+        //     stream can crash it during system DNS resolution; a separate curl
+        //     process preserves the same TLS and size limits.
+        if (PHP_OS_FAMILY === 'Darwin' && PHP_SAPI === 'apache2handler' && str_starts_with($url, 'https://')) {
+            return $this->fetchWithSystemCurl($url, $limit);
+        }
+
         $context = stream_context_create([
             'http' => ['timeout' => 5, 'follow_location' => 0, 'ignore_errors' => false],
             'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
         ]);
         $contents = @file_get_contents($url, false, $context, 0, $limit + 1);
         if (!is_string($contents) || $contents === '' || strlen($contents) > $limit) {
+            throw new RuntimeException('Unable to fetch the language catalogue or pack safely.');
+        }
+
+        return $contents;
+    }
+
+    /**
+     * HR: Na macOS Apacheu izdvojeno dohvaća javni HTTPS sadržaj bez ljuske.
+     * EN: Fetches public HTTPS content out of process on macOS Apache, without a shell.
+     */
+    private function fetchWithSystemCurl(string $url, int $limit): string
+    {
+        $command = [
+            '/usr/bin/curl', '--silent', '--fail', '--max-time', '5',
+            '--max-filesize', (string)$limit, '--proto', '=https', $url,
+        ];
+        $process = proc_open($command, [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['file', '/dev/null', 'w'],
+        ], $pipes);
+        if (!is_resource($process)) {
+            throw new RuntimeException('Unable to start the language catalogue fetch.');
+        }
+
+        fclose($pipes[0]);
+        $contents = stream_get_contents($pipes[1], $limit + 1);
+        fclose($pipes[1]);
+        if (!is_string($contents) || strlen($contents) > $limit) {
+            proc_terminate($process);
+        }
+
+        $exitCode = proc_close($process);
+        if (!is_string($contents) || $contents === '' || strlen($contents) > $limit || $exitCode !== 0) {
             throw new RuntimeException('Unable to fetch the language catalogue or pack safely.');
         }
 

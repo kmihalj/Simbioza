@@ -26,6 +26,7 @@ use RuntimeException;
 use Throwable;
 
 const MATRIX_MODULE_ORDER = [
+    'aaieduhr/heartphrame-module-accessibility',
     'aaieduhr/heartphrame-module-orm',
     'aaieduhr/heartphrame-module-menu',
     'aaieduhr/heartphrame-module-theme',
@@ -47,6 +48,7 @@ const MATRIX_MODULE_ORDER = [
 
 const MATRIX_CASES = [
     'framework' => [],
+    'accessibility' => ['aaieduhr/heartphrame-module-accessibility'],
     'theme' => ['aaieduhr/heartphrame-module-theme'],
     'menu' => ['aaieduhr/heartphrame-module-menu'],
     'theme-menu' => [
@@ -89,6 +91,7 @@ const MATRIX_MIGRATION_COMMANDS = [
 ];
 
 const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
+    'aaieduhr/heartphrame-module-accessibility' => 'heartphrame-module-accessibility',
     'aaieduhr/heartphrame-module-api' => 'heartphrame-module-api',
     'aaieduhr/heartphrame-module-auth' => 'heartphrame-module-auth',
     'aaieduhr/heartphrame-module-audit' => 'heartphrame-module-audit',

@@ -34,6 +34,31 @@ return [
                 'session.options.cookie_samesite',
                 'modules.enabled',
             ],
+            // HR: app.php ostaje dinamičan; i stare arhive vraćaju samo podatke
+            //     u autoritativna spremišta instalacije i stanja modula.
+            // EN: Keep app.php dynamic; even old archives restore data only
+            //     into the authoritative installation and module-state stores.
+            'restore_targets' => [
+                [
+                    'path' => __DIR__ . '/installation.php',
+                    'key_map' => [
+                        'name' => 'name',
+                        'localization.locale' => 'primary_locale',
+                        'localization.supported_locales' => 'supported_locales',
+                        'localization.detect_browser_locale' => 'detect_browser_locale',
+                        'timezone' => 'timezone',
+                        'session.options.gc_maxlifetime' => 'session_options.gc_maxlifetime',
+                        'session.options.cookie_lifetime' => 'session_options.cookie_lifetime',
+                        'session.options.cookie_secure' => 'session_options.cookie_secure',
+                        'session.options.cookie_httponly' => 'session_options.cookie_httponly',
+                        'session.options.cookie_samesite' => 'session_options.cookie_samesite',
+                    ],
+                ],
+                [
+                    'path' => __DIR__ . '/../data/config/modules.php',
+                    'key_map' => ['modules.enabled' => 'enabled'],
+                ],
+            ],
         ],
         [
             'key' => 'api-policy',

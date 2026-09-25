@@ -181,11 +181,19 @@ final readonly class ModuleStateStore
     private function read(): array
     {
         $path = $this->path();
+        clearstatcache(true, $path);
         if (!is_file($path)) {
             $path = $this->legacyPath();
+            clearstatcache(true, $path);
             if (!is_file($path)) {
                 return [];
             }
+        }
+
+        // HR: Promjena iz CLI-ja ne može poništiti OPcache drugog web procesa.
+        // EN: A CLI change cannot invalidate the OPcache of another web process.
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($path, true);
         }
 
         $state = require $path;

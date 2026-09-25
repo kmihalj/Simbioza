@@ -29,4 +29,20 @@ return [
         [],
     ),
     new Route(HttpMethodsEnum::POST, '/settings/setup', [SetupController::class, 'change'], 'setup.change', []),
+    // HR: Administratorska sklopka ostaje u aplikaciji i kada je opcionalni modul isključen.
+    // EN: The administrator toggle stays in the application while the optional module is disabled.
+    new Route(
+        HttpMethodsEnum::GET,
+        '/settings/accessibility',
+        [SetupController::class, 'accessibility'],
+        'accessibility.settings',
+        [],
+    ),
+    new Route(
+        HttpMethodsEnum::POST,
+        '/settings/accessibility',
+        [SetupController::class, 'changeAccessibility'],
+        'accessibility.settings.change',
+        [],
+    ),
 ];
