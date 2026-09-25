@@ -1,7 +1,7 @@
 # Dokumentacija Simbioze (HR)
 
 Ovo je dokumentacija aplikacije Simbioza za zajedničko znanje i njezinih uključenih
-HeartPhrame modula. Framework se koristi s uzvodne grane `main`; ne razvija se u ovom
+HeartPhrame modula. Framework se koristi iz označenog uzvodnog izdanja; ne razvija se u ovom
 repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
@@ -31,7 +31,9 @@ Predloženi put za napredne korisnike:
 
 ## Početak
 
-- [Instalacija](installation_hr.md)
+- [Pregled instalacije](installation_hr.md)
+- [Instalacija s namjenskim PHP-FPM-om](installation_fpm_hr.md)
+- [Instalacija s Apache mod_php modulom](installation_mod_php_hr.md)
 - [Zapis šest čistih instalacija i screenshotovi](installation-lab_hr.md)
 - [Ovisnosti modula](module-dependencies_hr.md)
 - [Konfiguracija baze](database_hr.md)

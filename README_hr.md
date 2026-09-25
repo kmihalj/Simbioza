@@ -1,6 +1,6 @@
 # Simbioza
 
-[English version](README.md)
+[Engleska verzija](README.md)
 
 > Znanje koje živi zajedno.
 
@@ -134,7 +134,7 @@ php update.php
 ```
 
 Cijeli postupak release instalacije i nadogradnje opisan je u
-[uputama za instalaciju](docs/installation_hr.md#11-nadogradnja-release-instalacije).
+[uputama za instalaciju](docs/installation_hr.md).
 Nakon početnog podešavanja redovna nadogradnja ne zahtijeva `sudo`; uputa
 opisuje zasebne postupke za FPM i instalacije bez FPM-a.
 
@@ -148,6 +148,8 @@ zaseban [engleski indeks](docs/index_en.md).
 - Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
 - [Planiranje sastanaka i isporučene upute u izdanju 0.1.68](docs/release-0.1.68_hr.md)
 - [Instalacija](docs/installation_hr.md)
+- [Instalacija s namjenskim PHP-FPM-om](docs/installation_fpm_hr.md)
+- [Instalacija s Apache mod_php modulom](docs/installation_mod_php_hr.md)
 - [Zapis šest čistih instalacija i screenshotovi](docs/installation-lab_hr.md)
 - [Ovisnosti modula](docs/module-dependencies_hr.md)
 - [Konfiguracija baze](docs/database_hr.md)

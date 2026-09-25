@@ -1,7 +1,7 @@
 # Simbioza documentation (EN)
 
 This is the documentation for the Simbioza collaborative knowledge application and its
-enabled HeartPhrame modules. The Framework is consumed from upstream `main`; it
+enabled HeartPhrame modules. The Framework is consumed from a tagged upstream release; it
 is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
@@ -31,7 +31,9 @@ Suggested path for advanced users:
 
 ## Getting started
 
-- [Installation](installation_en.md)
+- [Installation overview](installation_en.md)
+- [Dedicated PHP-FPM installation](installation_fpm_en.md)
+- [Apache mod_php installation](installation_mod_php_en.md)
 - [Six clean installations and screenshots](installation-lab_en.md)
 - [Module dependencies](module-dependencies_en.md)
 - [Database configuration](database_en.md)

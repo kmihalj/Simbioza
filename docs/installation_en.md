@@ -1,313 +1,80 @@
-# Installing and maintaining Simbioza
+# Install and maintain Simbioza
 
-[Hrvatska verzija](installation_hr.md)
+[Croatian version](installation_hr.md)
 
-Install Simbioza from a tagged release. The initial package contains only the
-required core; optional modules are added during or after installation. The
-**Theme** module is recommended and selected by default, but can be deselected.
+Choose the PHP mode **before** configuring the web server. Follow one complete
+path rather than mixing directives or permissions from different modes:
 
-Two operating modes are supported:
+| PHP mode | Web server | Initial graphical installer | Later GUI package/update actions |
+|---|---|---|---|
+| [Dedicated PHP-FPM](installation_fpm_en.md) | Apache or Nginx | Yes; selected optional packages can be installed in the wizard | Yes, after the dedicated setup and permission checks pass |
+| [Apache mod_php](installation_mod_php_en.md) | Apache only | Yes; optional packages must first be prepared in the CLI | No; use the CLI for package operations and application updates |
 
-- with a dedicated PHP-FPM pool, an administrator can install, remove, enable,
-  and disable modules, add languages, and update the application from the GUI;
-- without the dedicated pool, package operations use the CLI, while the GUI can
-  still enable or disable modules that are already installed.
+The initial browser wizard is **not** FPM-only. In either mode it configures
+the site, database, languages, administrator, and selected modules. What
+differs is whether the web process can request installation of missing
+Composer packages and later upgrades. For a new installation, dedicated FPM
+is recommended. Nginx does not support Apache's `mod_php`.
 
-Routine use and maintenance do not need `sudo`. It is used once to create the
-isolated system identities, FPM service, and strictly restricted helper.
+## Before choosing a PHP mode
 
-## 1. Requirements
+### 1. Check the host
 
-- Linux or macOS;
-- PHP 8.2 or newer;
-- Composer 2 and Git;
-- Apache 2.4 or Nginx;
-- an empty SQLite, MySQL, or PostgreSQL database;
-- HTTPS for every publicly reachable installation.
-
-Required PHP extensions:
+Use Linux or macOS, PHP 8.2 or newer, Composer 2, Git, Apache 2.4 or Nginx,
+and HTTPS for any public site. The PHP process used by the web server must
+have the same required extensions as CLI PHP:
 
 ```text
 ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip
 ```
 
-Install the matching PDO extension as well: `pdo_sqlite`, `pdo_mysql`, or
-`pdo_pgsql`. Verify the environment with:
+Install the PDO extension matching your database: `pdo_sqlite`, `pdo_mysql`,
+or `pdo_pgsql`. Check the CLI with `php -v` and `php -m`; also verify the
+**web** PHP handler and extensions for the mode you choose. A working CLI
+does not prove that Apache or FPM runs the same PHP build.
+
+### 2. Fetch a tagged release
+
+Install a tagged release into a directory **without** a `.git` checkout.
+Choose the current stable tag on the [release page](https://github.com/kmihalj/Simbioza/releases)
+and replace `0.1.91` below if a newer one exists:
 
 ```bash
-php -v
-php -m
-composer check-platform-reqs
-```
-
-## 2. Fetch a tagged release
-
-Copy only the selected tag to the server; do not retain a `.git` directory.
-Replace `0.1.77` with the actual release being installed:
-
-```bash
-git clone --quiet --depth 1 --branch 0.1.77 --single-branch \
-https://github.com/kmihalj/Simbioza.git /tmp/simbioza-release
+SIMBIOZA_TAG=0.1.91
+SIMBIOZA_FETCH_DIR="$(mktemp -d)"
+git clone --quiet --depth 1 --branch "$SIMBIOZA_TAG" --single-branch \
+  https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/release"
 mkdir -p /srv/simbioza
-rsync --archive --exclude=.git/ /tmp/simbioza-release/ /srv/simbioza/
+rsync --archive --exclude=.git/ "$SIMBIOZA_FETCH_DIR/release/" /srv/simbioza/
 cd /srv/simbioza
 composer update --with-all-dependencies --optimize-autoloader
 composer check-platform-reqs
 ```
 
-Simbioza production installations use tagged packages. Do not use `--no-dev`:
-development dependencies are not part of the production manifest, and local
-source packages are linked only in a development environment.
+Use the same shell account that will own and maintain the release. On macOS,
+replace `/srv/simbioza` with a path on an ownership-enforcing local volume,
+for example `/Users/Shared/Simbioza/simbioza`. The application manifest uses
+tagged packages; do not substitute local development modules or `--no-dev`.
+The required base includes Framework, ORM, Menu, Auth, Notification, HTML
+Editor, Workspace, Workspace Search, and Simbioza User. Other modules can be
+selected during or after installation.
 
-The required core contains Framework, ORM, Menu, Auth, Notification, HTML
-Editor, Workspace, Workspace Search, and Simbioza User. API, Task, Theme,
-Audit, E-mail, Comment, Calendar, Confluence Import, and Backup are installed
-only when selected or added later.
-
-## 3. Document root and basic permissions
-
-The document root must be `public/`. Never expose `config/`, `data/`,
-migrations, or bundled guide packages to the web.
+Only `public/` may be exposed to the web. Never expose `config/`, `data/`,
+Composer files, migrations, or bundled guides as the document root. Prepare
+the runtime paths:
 
 ```bash
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
-chmod 750 config data resources/config/menu resources/config/theme
 ```
 
-Do not use `chmod 777`. The dedicated tool in section 6 applies precise owners
-and permissions. Without it, the PHP process must be able to read the
-application and write to `data/`, dynamic files in `config/`,
-`resources/config/menu/`, and `resources/config/theme/`.
+Do not use `chmod 777`. The dedicated FPM setup applies its own precise
+ownership; the mod_php guide explains its narrower writable paths.
 
-## 4. Apache
+### 3. Prepare an empty database
 
-Minimal VirtualHost:
-
-```apache
-<VirtualHost *:443>
-ServerName simbioza.example.org
-DocumentRoot /srv/simbioza/public
-
-<Directory /srv/simbioza/public>
-Options -Indexes +FollowSymLinks
-AllowOverride FileInfo Options
-Require all granted
-</Directory>
-
-<FilesMatch ".+\.php$">
-SetHandler "proxy:fcgi://127.0.0.1:9075"
-</FilesMatch>
-
-SSLEngine on
-# Add the organization's certificate and private key here.
-</VirtualHost>
-```
-
-Enable `rewrite`, `proxy`, `proxy_fcgi`, TLS, and the matching FastCGI
-configuration. Port `9075` listens only on `127.0.0.1` and must not be exposed
-to the network.
-
-## 5. Nginx
-
-```nginx
-server {
-listen 443 ssl http2;
-server_name simbioza.example.org;
-root /srv/simbioza/public;
-index index.php;
-
-location / {
-try_files $uri $uri/ /index.php?$query_string;
-}
-
-location ~ \.php$ {
-try_files $uri =404;
-include fastcgi_params;
-fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-fastcgi_pass 127.0.0.1:9075;
-}
-
-location ~ /\. {
-deny all;
-}
-}
-```
-
-## 6. Recommended dedicated FPM and secure GUI Setup
-
-On Debian, first install the PHP-FPM version matching CLI PHP and the `acl`
-package used for separate read access to the private SAML configuration. Then run this
-once from the release directory:
-
-```bash
-cd /srv/simbioza
-sudo php scripts/configure_fpm_setup.php \
---install \
---app-root=/srv/simbioza \
---maintainer=LOGIN
-```
-
-The tool creates locked `fpm-simbioza` and `simbioza-deploy` accounts and
-separate `app-simbioza`, `deploy-simbioza`, and `run-simbioza` groups. It adds
-the maintainer to the deploy and runtime groups. The web process cannot modify
-the whole code tree. On Linux the pool runs in its own systemd service with
-`ProtectSystem=strict`, a read-only application-code bind, and writes limited
-to documented runtime paths. The restricted root-owned helper accepts only the
-random ID of a prevalidated request. On Linux it then asks systemd to run a
-separate unprivileged `simbioza-deploy` worker with `NoNewPrivileges`
-re-enabled; the web process receives neither a general root shell nor direct
-Composer access. The transient unit tracks the complete process group
-(`ExitType=cgroup`), so a background update remains supervised after the GUI
-receives its initial acknowledgement and until the updater actually exits.
-
-The read-only check is:
-
-```bash
-php scripts/configure_fpm_setup.php \
---check \
---app-root=/srv/simbioza \
---maintainer=LOGIN
-```
-
-After completing the web installer, harden the newly created runtime files
-once:
-
-```bash
-sudo php scripts/configure_fpm_setup.php \
---finalize \
---app-root=/srv/simbioza \
---maintainer=LOGIN
-```
-
-Log out and back in so the shell receives the new group memberships. CLI, GUI
-Setup, and updates then work without `sudo`. `--finalize` also installs or
-refreshes the strictly limited permission that lets members of
-`deploy-simbioza` submit CLI package operations and updates through the same
-helper.
-
-### 6.1. SAML authentication and FPM settings
-
-When an installation uses SimpleSAMLphp, the application and its
-SimpleSAMLphp endpoint must run through the **same** dedicated FPM pool. Moving
-only Simbioza to FPM while leaving the shared `/simplesaml` endpoint on a
-different PHP handler breaks session continuity when `store.type = phpsession`.
-
-The system SimpleSAMLphp code remains shared, while every Simbioza installation
-has private settings and runtime data. Prepare, for example:
-
-```text
-/srv/simbioza/data/saml/config/config.php
-/srv/simbioza/data/saml/config/authsources.php
-/srv/simbioza/data/saml/cert/
-/srv/simbioza/data/saml-runtime/cache/
-/srv/simbioza/data/saml-runtime/data/
-/srv/simbioza/data/sessions/
-```
-
-The private `config.php` needs unique `secretsalt`, `assets.salt`, admin
-password, cookie names, and cookie path. Never copy shared salts, the shared
-admin password, or SP private keys. For an installation below `/simbioza/`,
-the relevant settings look like this:
-
-```php
-'baseurlpath' => 'https://simbioza.example.org/simbioza/simplesaml/',
-'cachedir' => '/srv/simbioza/data/saml-runtime/cache',
-'datadir' => '/srv/simbioza/data/saml-runtime/data',
-'certdir' => '/srv/simbioza/data/saml/cert',
-'metadatadir' => '/usr/share/simplesamlphp-aai/metadata',
-'store.type' => 'phpsession',
-'session.phpsession.savepath' => '/srv/simbioza/data/sessions',
-'session.phpsession.cookiename' => 'SimpleSAMLSimbioza',
-'session.cookie.name' => 'SimpleSAMLSimbiozaStore',
-'session.cookie.path' => '/simbioza/',
-```
-
-Pass the private directory to both initial setup and final hardening. The tool
-validates it, exposes it only to the Simbioza pool, and keeps it writable by
-the deploy account but read-only for FPM:
-
-```bash
-sudo php scripts/configure_fpm_setup.php \
---install \
---app-root=/srv/simbioza \
---maintainer=LOGIN \
---simplesaml-config-dir=/srv/simbioza/data/saml/config
-
-sudo php scripts/configure_fpm_setup.php \
---finalize \
---app-root=/srv/simbioza \
---maintainer=LOGIN \
---simplesaml-config-dir=/srv/simbioza/data/saml/config
-```
-
-On Apache, route the application-specific SAML PHP endpoint to the same
-`127.0.0.1:9075` pool before general PHP rules:
-
-```apache
-ProxyPassMatch "^/simbioza/simplesaml/(.+?[.]php)(/.*)?$" \
-"fcgi://127.0.0.1:9075/usr/share/simplesamlphp-aai/public/$1$2"
-Alias /simbioza/simplesaml "/usr/share/simplesamlphp-aai/public/"
-
-<Directory "/usr/share/simplesamlphp-aai/public">
-Options -Indexes
-AllowOverride None
-Require all granted
-</Directory>
-```
-
-Register the new application-specific EntityID, ACS, and SLO URLs below
-`/simbioza/simplesaml/` in the AAI/proxy registry. On an existing installation,
-keep the old endpoint active until the new records are registered and
-propagated; only then switch sign-in and verify the complete browser sign-in
-and sign-out flow. The `auth_source` may remain `default-sp`, and the
-application continues to load the shared SimpleSAMLphp package autoloader.
-
-For the AAI `default-sp` source, register the following new values (replace the
-domain and base path with those of the real installation):
-
-| Field | New value |
-|---|---|
-| **EntityID** | `https://simbioza.example.org/simbioza/simplesaml/module.php/saml/sp/metadata.php/default-sp` |
-| **AssertionConsumerService URL** | `https://simbioza.example.org/simbioza/simplesaml/module.php/saml/sp/saml2-acs.php/default-sp` |
-| **SingleLogoutService URL** | `https://simbioza.example.org/simbioza/simplesaml/module.php/saml/sp/saml2-logout.php/default-sp` |
-
-If `proxy-sp` is also used, register the same URL set ending in `/proxy-sp`
-instead of `/default-sp`. The matching `authsources.php` entry must contain the
-same EntityID registered for that source. Changing the PHP handler without
-registering these values breaks the IdP return and logout even when the
-Simbioza landing page itself still opens normally.
-
-## 7. Installation without dedicated FPM
-
-The web installer never runs Composer from an ordinary web process. Prepare
-the packages you intend to select before opening the wizard. With no argument,
-the recommended Theme is prepared:
-
-```bash
-php scripts/installation_packages.php prepare
-```
-
-For a custom selection:
-
-```bash
-php scripts/installation_packages.php prepare \
---modules=theme,calendar,email
-```
-
-After the web installation succeeds, remove only the transient Backup package
-that was needed to import the bundled guides:
-
-```bash
-php scripts/installation_packages.php cleanup
-```
-
-An explicitly selected Backup module remains installed.
-
-## 8. Empty database
-
-SQLite needs no server; the installer creates `data/simbioza.sqlite`. For
-MySQL or PostgreSQL, create an empty database and a dedicated application user
-without global administrative privileges.
+SQLite needs no database service. Select it in the installer and Simbioza
+creates `data/simbioza.sqlite`. For MySQL or PostgreSQL, create an **empty**
+database and a dedicated application user without global privileges.
 
 MySQL example:
 
@@ -324,87 +91,49 @@ createuser --pwprompt --no-superuser --no-createdb --no-createrole simbioza
 createdb --owner=simbioza --encoding=UTF8 simbioza
 ```
 
-## 9. Web installer
+Now continue with **either** the [FPM steps](installation_fpm_en.md) **or**
+the [Apache mod_php steps](installation_mod_php_en.md). Both guides include
+their own web-server configuration, installer, final checks, and applicable
+permissions. Do not run the dedicated FPM setup tool for a second installation
+on the same host until its fixed-instance limitation has been resolved.
 
-Create the one-time address:
+## After installation
 
-```bash
-bin/simbioza install:prepare \
---base-url=https://simbioza.example.org
-```
+### Modules
 
-Include a subdirectory in the base URL when applicable:
-
-```bash
-bin/simbioza install:prepare \
---base-url=https://simbioza.example.org/simbioza
-```
-
-Open the token address in a private browser window. Do not send it by e-mail,
-chat, ticket, or screenshot. The token is consumed on the first valid visit.
-
-The wizard covers:
-
-1. PHP, extension, path, and package checks;
-2. connection to an empty database;
-3. application name, languages, time zone, and first administrator;
-4. optional-module selection;
-5. a password-free review and the actual installation.
-
-Theme is recommended and selected by default. If retained, the bundled
-Simbioza theme is imported and activated. The bilingual **User guides**
-workspace is always imported; pages for optional modules are imported only
-when their module is available.
-
-## 10. Setup after sign-in
-
-An administrator opens **Settings → Setup and modules**. Diagnostics show the
-actual FPM mode, helper availability, owner, group, and mode of each relevant
-path.
-
-When every required FPM check passes, the GUI supports:
-
-- installing and uninstalling an optional module;
-- enabling and disabling an installed module;
-- restoring NDJSON-backed data or performing a fresh reinstall;
-- adding a validated JSON language pack;
-- checking and starting a complete application update.
-
-Without dedicated FPM, the GUI offers only safe state changes for existing
-modules and displays the exact CLI command for every unavailable package
-operation.
-
-## 11. Module CLI
+The administrator opens **Settings → Setup and modules**. On dedicated FPM,
+the GUI can install, remove, enable, or disable optional modules when all
+environment checks pass. On mod_php, the GUI can enable or disable modules
+that are already installed; for package changes use the CLI. The CLI commands
+are the same in both modes:
 
 ```bash
 vendor/bin/hph modules list
 vendor/bin/hph modules add calendar --fresh
 vendor/bin/hph modules disable calendar
 vendor/bin/hph modules enable calendar
-vendor/bin/hph modules remove calendar --yes
 vendor/bin/hph modules backups calendar
+vendor/bin/hph modules remove calendar --yes
 vendor/bin/hph modules add calendar --restore
+vendor/bin/hph modules migrate-status
 ```
 
-The same commands are used in both installation modes. On a correctly
-configured FPM installation, CLI Composer package add/remove automatically
-uses the same restricted deploy helper as the GUI; the signed-in maintainer
-runs `enable`, `disable`, and migrations directly. Without dedicated FPM, the
-installation owner performs package operations. Routine work needs no `sudo`
-in either mode.
+Disabling retains the package, tables, and data but stops loading the module's
+routes, services, menus, and tables on subsequent requests. Removing first
+creates an NDJSON backup under `data/module-backups/`, then removes the
+module's migrations, tables, and package. Re-adding requires an explicit fresh
+start or restore. Required modules cannot be removed; dependencies are
+checked. Already imported Confluence pages remain usable without the import
+module, but removal is blocked while unresolved temporary import references
+remain.
 
-On the next request, `disable` stops loading the module manifest, routes,
-services, menu entries, and tables, while retaining its package, tables, and
-data. `remove` first creates an NDJSON backup in `data/module-backups/`, then
-removes the module migrations, tables, and Composer package. On a later add,
-choose `--restore` or `--fresh`. A required module cannot be removed, and
-dependencies are checked before every change.
+### Languages
 
-Confluence Import is not needed for normal display of already imported pages.
-Removal still stops if any content version contains an unresolved temporary
-import reference.
-
-## 12. Adding a language
+The installer reads published languages from the
+[language repository](https://github.com/kmihalj/simbioza-languages).
+Croatian and English are preselected, but either can be deselected as long as
+at least one language remains. An administrator may manage published packs in
+the dedicated FPM GUI; otherwise use:
 
 ```bash
 vendor/bin/hph languages list
@@ -416,52 +145,20 @@ vendor/bin/hph languages update
 vendor/bin/hph languages remove de
 ```
 
-The installer lists released languages from the
-[public language repository](https://github.com/kmihalj/simbioza-languages).
-Croatian and English are preselected, but either can be deselected; at least
-one language must remain selected. In a dedicated FPM installation, Setup can
-install, enable, disable, update, and remove published languages. Installed
-languages remain in the table, while available languages appear in a searchable
-multi-select control below it; select several languages and install them in one
-operation. This layout remains usable when the catalogue contains hundreds of
-languages. On a regular installation, use the same CLI commands shown above. The last active language
-cannot be disabled or removed. An application update checks for newer published
-revisions of installed repository packs; the `languages update` command does
-this independently.
+`languages update` checks installed packs independently of an application
+release. The last active language cannot be disabled or removed. The wizard
+imports the English and/or Croatian user guides selected at installation;
+other interface languages can be installed without requiring translated
+guides to exist yet.
 
-The user guides are imported in only English or only Croatian when that is the
-sole selected language. If another language is selected, both existing guide
-translations are retained until a guide translation for that language is
-available. The published German, French, Spanish, and Italian translations were
-prepared with the ChatGPT/Codex AI agent. One pack contains
-the application's and modules' strings, multilingual names, and a safe SVG
-flag. See the
-[localization guide](localization_en.md) for details.
+### Application updates
 
-## 13. Updates
-
-In dedicated FPM mode, updates can be checked and started from GUI Setup. The
-background job then runs as the restricted `simbioza-deploy` account, while
-the FPM process receives no write access to application code.
-
-The same CLI works in both installation modes:
-
-```bash
-php update.php --check
-php update.php
-```
-
-To select a tag:
-
-```bash
-php update.php --tag=0.1.78
-```
-
-On a dedicated FPM installation, run it as the signed-in maintainer who became
-a member of `deploy-simbioza` and `run-simbioza` after initial setup and a new
-login session. Do not run the updater as `fpm-simbioza`; `sudo` is not needed:
-the updater recognises the helper belonging to this installation, delegates
-the update, and waits for its final status.
+On a correctly configured dedicated FPM installation, the administrator may
+check and start an update in GUI Setup. The actual job runs as the restricted
+deployment account, not as the web process. The signed-in Unix maintainer can
+also run the CLI after receiving deploy and runtime group membership and
+signing in to a new shell session. On mod_php, the Unix code owner uses the
+CLI. Neither routine requires root:
 
 ```bash
 cd /srv/simbioza
@@ -469,112 +166,24 @@ php update.php --check
 php update.php
 ```
 
-If dedicated FPM was configured with release 0.1.77 or earlier, run the
-section 6 `--finalize` command once after the first update. This extends the
-restricted helper permission to CLI maintainers and refreshes the systemd
-background-update mode; after that one-time system step, future CLI and GUI
-updates need no `sudo`.
+To request a specific published tag, use `php update.php --tag=<TAG>`. The
+updater backs up code, enables maintenance, preserves private configuration
+and data, resolves the installed optional modules, installs compatible tagged
+packages, checks bootstrap, applies migrations, refreshes guides and the
+theme, and clears caches. Do **not** replace it with a standalone
+`composer update` on an existing installation: that could drop optional
+packages from the installation's selected set.
 
-If an older GUI remains at **The update is queued**, while
-`data/logs/application-update.log` has no new entry and the recorded PID no
-longer exists, the update never started and application data was not changed.
-Update once through the CLI to 0.1.78 or newer, then repeat `--finalize`. The
-new release reports such a stale status as failed instead of permanently
-locking the retry button.
+A failure **before** migrations automatically restores code and Composer
+packages. Once migrations have started, maintenance deliberately remains on
+for controlled recovery. `data/update-maintenance.json` is a safety guard:
+never move or delete it until you have proved that no update process is still
+running and inspected the log and backup path. Confirm the final updater
+status, zero pending migrations, and real sign-in/content flows after every
+update. Back up the database, settings, uploaded files, and themes separately.
 
-Without dedicated FPM, run the same commands as the Unix account that owns the
-application code and writable settings. If the permissions check fails, fix
-ownership once; do not routinely run the web application or updater as `root`.
-
-The updater backs up code, enables maintenance, preserves private
-configuration and data, updates tagged packages, verifies bootstrap, applies
-migrations, refreshes bundled guides and the theme, and clears caches. A
-failure before migrations rolls back automatically; after migrations start,
-maintenance remains enabled for controlled recovery.
-
-On an existing installation, do not replace `php update.php` with a standalone
-`composer update`: only the updater carries that installation's optional-module
-selection into the new release manifest. Resolving the minimal base manifest
-alone can remove optional packages from that installation.
-
-`data/update-maintenance.json` is an updater safety guard. Do not move or
-delete it until you have verified that no update process is running. The
-updater removes it after success or a safe automatic rollback. After a failure
-that occurred once migrations had started, it deliberately keeps the guard in
-place and prints the backup path for controlled recovery.
-
-On the first update of a legacy installation, the updater extracts the current
-module state from the static `config/app.php` or legacy `config/modules.php`
-into persistent `data/config/modules.php`, then installs the new dynamic
-configuration. The selection remains unchanged, GUI and CLI can both use an
-atomic replacement of the same file, and FPM still cannot modify release
-configuration.
-
-The existing administrator-managed settings menu remains untouched. When a new
-release provides settings for a new module or feature, the updater appends only
-the missing entries at the end without changing existing labels, order, or
-enabled state.
-
-For a coordinated release, publish tags for every changed module first, then
-publish the main Simbioza tag that references them.
-
-## 14. macOS specifics
-
-For a local or internal macOS server, install Homebrew PHP, Composer, Git, and
-Apache:
-
-```bash
-brew install php composer git httpd
-brew_prefix="$(brew --prefix)"
-php_fpm="$brew_prefix/sbin/php-fpm"
-```
-
-Homebrew normally uses `/opt/homebrew` on Apple Silicon and `/usr/local` on
-Intel. The setup tool detects the prefix from the actual `php-fpm` binary and
-stores its isolated configuration and runtime directory under that prefix.
-
-Place the application on a filesystem where macOS enforces ownership, for
-example `/Users/Shared/Simbioza/simbioza`. An external volume mounted with
-`noowners` is unsuitable: `chown` can appear to succeed while user isolation
-is not enforced. Every parent directory must permit traversal by the dedicated
-FPM user.
-
-```bash
-sudo php scripts/configure_fpm_setup.php \
---install \
---app-root=/Users/Shared/Simbioza/simbioza \
---maintainer="$USER" \
---php-fpm="$php_fpm"
-```
-
-The tool creates the system launchd service `hr.simbioza.php-fpm`. Homebrew
-Apache must load `mod_proxy` and `mod_proxy_fcgi`, use `public/` as its
-DocumentRoot, and forward PHP to `127.0.0.1:9075` as shown in section 4.
-
-After the web installation:
-
-```bash
-sudo php scripts/configure_fpm_setup.php \
---finalize \
---app-root=/Users/Shared/Simbioza/simbioza \
---maintainer="$USER" \
---php-fpm="$php_fpm"
-```
-
-Sign in to the macOS session again. Further GUI and CLI maintenance does not
-require `sudo`.
-
-## 15. Final verification
-
-```bash
-php scripts/configure_fpm_setup.php \
---check \
---app-root=/srv/simbioza \
---maintainer=LOGIN
-vendor/bin/hph modules migrate-status
-composer check-platform-reqs
-```
-
-Expect zero pending migrations, HTTP 200 for sign-in and home, and 404 for the
-locked `/install`. Verify backups of the database, `config/`, user files, and
-themes. Never include confidential values in a bug report.
+Older dedicated FPM installations configured with release 0.1.77 or earlier
+need the FPM guide's `--finalize` step once after updating so that CLI
+maintainers and background updates receive the current restricted helper
+rules. Avoid routine `sudo php update.php` and never run the updater as the
+web/FPM account.

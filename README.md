@@ -1,6 +1,6 @@
 # Simbioza
 
-[Hrvatska verzija](README_hr.md)
+[Croatian version](README_hr.md)
 
 > Knowledge that lives together.
 
@@ -131,8 +131,8 @@ php update.php --check
 php update.php
 ```
 
-The complete release-install and update procedure is documented in
-[Installing Simbioza](docs/installation_en.md#11-updating-a-release-installation).
+The FPM and Apache mod_php installation paths, including GUI and CLI update
+procedures, are documented in [Installing Simbioza](docs/installation_en.md).
 
 Application configuration, migrations, module order, and API integration are
 described in the [English documentation](docs/index_en.md). The Croatian
@@ -143,6 +143,8 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Dedicated PHP-FPM installation](docs/installation_fpm_en.md)
+- [Apache mod_php installation](docs/installation_mod_php_en.md)
 - [Six clean installations and screenshots](docs/installation-lab_en.md)
 - [Module dependencies](docs/module-dependencies_en.md)
 - [Database configuration](docs/database_en.md)
