@@ -171,6 +171,13 @@ $applicationUpdateUi = json_encode(
         overflow-wrap: anywhere;
     }
 
+    .setup-module-status .badge {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        text-align: start;
+        white-space: normal;
+    }
+
     .setup-update-overlay {
         backdrop-filter: blur(0.35rem);
         background: color-mix(in srgb, var(--bs-body-bg) 88%, transparent);
@@ -483,7 +490,7 @@ $applicationUpdateUi = json_encode(
                                         <code data-component-latest-version><?= $this->escape($latestVersion ?? '') ?></code>
                                     </div>
                                 </div>
-                                <div class="setup-module-cell" role="cell" data-label="<?= $this->escape(__('Stanje')) ?>">
+                                <div class="setup-module-cell setup-module-status" role="cell" data-label="<?= $this->escape(__('Stanje')) ?>">
                                     <span class="badge <?= $module['enabled'] ? 'text-bg-success' : 'text-bg-light' ?>">
                             <?= $this->escape($statusLabels[$module['state']] ?? $module['state']) ?>
                                     </span>

@@ -211,6 +211,15 @@ final class ComposerPackageManagerTest extends TestCase
             public function run(array $command, string $workingDirectory): CommandResult
             {
                 $this->command = $command;
+                $module = $this->root . '/vendor/aaieduhr/heartphrame-module-accessibility';
+                mkdir($module . '/src', 0770, true);
+                chmod($module, 02770);
+                chmod($module . '/src', 02770);
+                file_put_contents($module . '/src/ModuleAccessibility.php', "<?php\n");
+                chmod($module . '/src/ModuleAccessibility.php', 0660);
+                mkdir($module . '/.git', 0700);
+                file_put_contents($module . '/.git/config', "[core]\n");
+                chmod($module . '/.git/config', 0600);
                 file_put_contents(
                     $this->root . '/vendor/composer/installed.json',
                     json_encode(['packages' => [[
@@ -238,6 +247,12 @@ final class ComposerPackageManagerTest extends TestCase
         $this->assertContains('update', $runner->command);
         $this->assertContains($package, $runner->command);
         $this->assertTrue($manager->isInstalled('accessibility'));
+        $module = $this->root . '/vendor/aaieduhr/heartphrame-module-accessibility';
+        $this->assertSame(0005, fileperms($module) & 0005);
+        $this->assertSame(0005, fileperms($module . '/src') & 0005);
+        $this->assertSame(0004, fileperms($module . '/src/ModuleAccessibility.php') & 0004);
+        $this->assertSame(0, fileperms($module . '/src/ModuleAccessibility.php') & 0002);
+        $this->assertSame(0, fileperms($module . '/.git/config') & 0004);
     }
 
     /** HR: Svaki opcionalni modul mora imati izdano ograničenje. EN: Every optional module must have a release constraint. */

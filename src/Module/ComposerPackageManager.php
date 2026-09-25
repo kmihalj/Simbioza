@@ -7,6 +7,7 @@ namespace App\Module;
 use Composer\Autoload\ClassLoader;
 use FilesystemIterator;
 use JsonException;
+use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -352,6 +353,61 @@ final readonly class ComposerPackageManager
         if ($result->exitCode !== 0) {
             $message = trim($result->stderr) !== '' ? trim($result->stderr) : trim($result->stdout);
             throw new RuntimeException('Composer module operation failed: ' . $message);
+        }
+
+        $this->normalizeVendorReadAccess();
+    }
+
+    /**
+     * HR: Sigurni FPM helper koristi umask 0007. Nakon Composerove promjene
+     *     kod paketa mora ostati čitljiv FPM-u, ali `.git` metapodaci i prava
+     *     pisanja ne smiju postati javni.
+     * EN: The restricted FPM helper uses umask 0007. After a Composer change,
+     *     package code must remain readable by FPM, without exposing `.git`
+     *     metadata or widening write permissions.
+     */
+    private function normalizeVendorReadAccess(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $vendor = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/vendor';
+        if (!is_dir($vendor)) {
+            throw new RuntimeException('Composer vendor directory is unavailable after module operation.');
+        }
+
+        $directory = new RecursiveDirectoryIterator($vendor, FilesystemIterator::SKIP_DOTS);
+        $filtered = new RecursiveCallbackFilterIterator(
+            $directory,
+            static fn(SplFileInfo $item): bool => $item->getFilename() !== '.git',
+        );
+        $paths = new RecursiveIteratorIterator($filtered, RecursiveIteratorIterator::SELF_FIRST);
+        $this->makeVendorPathReadable(new SplFileInfo($vendor));
+        foreach ($paths as $path) {
+            if ($path instanceof SplFileInfo) {
+                $this->makeVendorPathReadable($path);
+            }
+        }
+    }
+
+    /** HR: Dodaje samo čitanje/prolaz za ostale korisnike. EN: Adds only other-user read/traverse permission. */
+    private function makeVendorPathReadable(SplFileInfo $item): void
+    {
+        if ($item->isLink()) {
+            return;
+        }
+
+        $path = $item->getPathname();
+        $permissions = @fileperms($path);
+        if (!is_int($permissions)) {
+            throw new RuntimeException('Unable to read Composer path permissions: ' . $path);
+        }
+
+        $mode = $permissions & 07777;
+        $required = $item->isDir() ? 0005 : 0004;
+        if (($mode & $required) !== $required && !@chmod($path, $mode | $required)) {
+            throw new RuntimeException('Unable to make Composer path web-readable: ' . $path);
         }
     }
 
