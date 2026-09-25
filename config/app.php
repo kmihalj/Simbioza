@@ -131,11 +131,11 @@ return [
         'supported_locales' => $supportedLocales,
         'locale_labels' => $localeLabels,
         'flags_dir' => __DIR__ . '/../data/languages/flags',
-        // HR: Čista instalacija poštuje odabrani primarni jezik; korisnik ga
-        //     i dalje može ručno promijeniti među dostupnim jezicima.
-        // EN: A fresh installation honors its selected primary locale; users
-        //     can still switch manually among the enabled locales.
-        'detect_browser_locale' => (bool)($installation['detect_browser_locale'] ?? ($installation === [])),
+        // HR: Preglednikov jezik vrijedi samo bez zapamćenog ručnog odabira;
+        //     nepodržan jezik pada na zadani jezik aplikacije.
+        // EN: Browser language applies only without a remembered manual choice;
+        //     an unsupported language falls back to the application default.
+        'detect_browser_locale' => (bool)($installation['detect_browser_locale'] ?? true),
         'translations_dir' => __DIR__ . '/../lang',
     ],
 

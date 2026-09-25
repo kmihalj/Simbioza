@@ -130,7 +130,15 @@ test('representative read paths remain inside measured SQL budgets', async ({ re
    *     so the measurement checks steady state rather than the one-time audit
    *     write following a real restore.
    */
-  const warmup = await request.get('/api/v1/me', { headers: apiHeaders(adminApiToken) });
+  // HR: Zagrijavanje mora imati isti mjerni kontekst kao sljedeći označeni GET;
+  //     inače se jednokratni zapis uporabe ključa može pojaviti tek u mjerenju.
+  // EN: Warm up under the same measurement context as the next marked GET;
+  //     otherwise the one-off key-usage audit can first appear in the measurement.
+  const warmup = await request.get('/api/v1/me', {
+    headers: apiHeaders(adminApiToken, {
+      'X-HPH-Performance-Run': `warmup-current-user-${Date.now()}`,
+    }),
+  });
   expect(warmup.status()).toBe(200);
     await expectQueryBudget(
       request,

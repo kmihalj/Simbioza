@@ -27,6 +27,17 @@ return [
 ];
 ```
 
+With `detect_browser_locale` enabled (the default when an installation does
+not override it), the first enabled language matching the browser's
+`Accept-Language` preference is selected. Regional preferences such as `fr-CH`
+can use the installed `fr` pack. If none matches, the application's primary
+language remains the default. A language chosen explicitly in the menu takes
+precedence and is remembered in this browser for one year. The preference
+cookie is limited to the application's base path, so `/demo` and `/hfc` do not
+change one another's language. Clearing site cookies restores browser-language
+detection. An installation may explicitly set `detect_browser_locale` to
+`false` to always start from its primary language until the user chooses one.
+
 ## Language Files
 
 Language files are simple PHP files that return an array of translations.

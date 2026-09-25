@@ -27,6 +27,17 @@ return [
 ];
 ```
 
+Kad je `detect_browser_locale` uključen (zadano ako instalacija to ne
+promijeni), bira se prvi uključeni jezik koji odgovara preferencijama
+preglednika iz zaglavlja `Accept-Language`. Regionalna oznaka poput `fr-CH`
+može koristiti instalirani paket `fr`. Ako odgovarajući paket ne postoji,
+ostaje primarni jezik aplikacije. Ručni izbor u izborniku ima prednost i u
+ovom se pregledniku pamti godinu dana. Kolačić vrijedi samo za putanju
+pojedine instalacije, pa `/demo` i `/hfc` ne mijenjaju jezik jedan drugome.
+Brisanje kolačića stranice ponovno uključuje automatski odabir. Instalacija
+može izričito postaviti `detect_browser_locale` na `false` ako uvijek želi
+početi primarnim jezikom dok ga korisnik ne promijeni.
+
 ## Jezične datoteke
 
 Jezične datoteke su PHP datoteke koje vraćaju polje prijevoda. Nalaze se u

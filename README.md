@@ -151,6 +151,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 - [Brand identity and theme](docs/branding_en.md)
+- [Release 0.1.97: safe concurrent editing and remembered language](docs/release-0.1.97_en.md)
 - [Release 0.1.96: optional settings follow module installation](docs/release-0.1.96_en.md)
 - [Release 0.1.95: reliable optional settings and installer checks](docs/release-0.1.95_en.md)
 - [Optional-module-safe updater in 0.1.77](docs/release-0.1.77_en.md)
