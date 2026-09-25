@@ -144,6 +144,7 @@ zaseban [engleski indeks](docs/index_en.md).
 
 ## Dokumentacija
 
+- [Izdanje 0.1.96: postavke prate instalaciju modula](docs/release-0.1.96_hr.md)
 - [Izdanje 0.1.95: pouzdane postavke modula i provjere instalacije](docs/release-0.1.95_hr.md)
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
 - Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)

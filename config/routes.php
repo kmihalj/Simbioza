@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 use App\Controllers\HomeController;
 use App\Controllers\SetupController;
+use App\Module\OptionalModuleRoutes;
 use HeartPhrame\CodeBook\HttpMethodsEnum;
 use HeartPhrame\Middleware\SampleMiddleware;
 use HeartPhrame\Routing\Route;
 
-return [
+$routes = [
     // Array format: [method, path, handler, name, [middleware]]
     ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
 
@@ -29,20 +30,28 @@ return [
         [],
     ),
     new Route(HttpMethodsEnum::POST, '/settings/setup', [SetupController::class, 'change'], 'setup.change', []),
-    // HR: Administratorska sklopka ostaje u aplikaciji i kada je opcionalni modul isključen.
-    // EN: The administrator toggle stays in the application while the optional module is disabled.
-    new Route(
-        HttpMethodsEnum::GET,
-        '/settings/accessibility',
-        [SetupController::class, 'accessibility'],
-        'accessibility.settings',
-        [],
-    ),
-    new Route(
-        HttpMethodsEnum::POST,
-        '/settings/accessibility',
-        [SetupController::class, 'changeAccessibility'],
-        'accessibility.settings.change',
-        [],
-    ),
+];
+
+// HR: Postavke dodatka ostaju dostupne kada je instaliran, čak i ako je isključen.
+//     Uklonjen paket ne smije ostaviti rutu ni stavku izbornika.
+// EN: Extension settings remain available while installed, even if disabled.
+//     A removed package must leave neither a route nor a visible menu entry.
+return [
+    ...$routes,
+    ...OptionalModuleRoutes::whenInstalled('aaieduhr/heartphrame-module-accessibility', [
+        new Route(
+            HttpMethodsEnum::GET,
+            '/settings/accessibility',
+            [SetupController::class, 'accessibility'],
+            'accessibility.settings',
+            [],
+        ),
+        new Route(
+            HttpMethodsEnum::POST,
+            '/settings/accessibility',
+            [SetupController::class, 'changeAccessibility'],
+            'accessibility.settings.change',
+            [],
+        ),
+    ]),
 ];

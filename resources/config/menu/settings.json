@@ -761,20 +761,6 @@
                 "order": 10,
                 "enabled": true,
                 "children": []
-            },
-            {
-                "id": "accessibility.settings",
-                "label": {
-                    "hr": "Pristupačnost",
-                    "en": "Accessibility"
-                },
-                "translation_key": "Pristupačnost",
-                "route": "accessibility.settings",
-                "url": null,
-                "query": [],
-                "order": 20,
-                "enabled": true,
-                "children": []
             }
         ]
     }
