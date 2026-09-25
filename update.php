@@ -730,6 +730,9 @@ final class ApplicationUpdateCommand
             '--no-owner',
             '--no-group',
             '--no-perms',
+            // HR: Grupno zapisivi FPM direktoriji ne dopuštaju deploy korisniku utimensat.
+            // EN: Group-writable FPM directories do not let the deploy user set mtimes.
+            '--omit-dir-times',
         ];
         foreach ($this->sourceSyncExcludes() as $exclude) {
             $command[] = '--exclude=' . $exclude;
@@ -1721,6 +1724,9 @@ final class ApplicationUpdateCommand
             '--no-owner',
             '--no-group',
             '--no-perms',
+            // HR: I povratak mora poštovati vlasništvo trajnih FPM direktorija.
+            // EN: Rollback must also respect ownership of persistent FPM directories.
+            '--omit-dir-times',
         ];
         foreach ($this->sourceSyncExcludes() as $exclude) {
             $command[] = '--exclude=' . $exclude;

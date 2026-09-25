@@ -313,6 +313,9 @@ PHP);
         $this->assertStringContainsString("'--no-owner'", $updater);
         $this->assertStringContainsString("'--no-group'", $updater);
         $this->assertStringContainsString("'--no-perms'", $updater);
+        // HR: Sinkronizacija i povratak ne smiju mijenjati mtime tuđih FPM direktorija.
+        // EN: Sync and rollback must not set mtimes on FPM-owned directories.
+        $this->assertSame(2, substr_count($updater, "'--omit-dir-times'"));
         $this->assertStringContainsString("'/resources/config/theme/'", $updater);
         $this->assertStringContainsString('captureRuntimeSettings', $updater);
         $this->assertStringContainsString('restoreRuntimeSettings', $updater);
