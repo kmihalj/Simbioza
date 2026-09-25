@@ -189,6 +189,78 @@ final class ComposerPackageManagerTest extends TestCase
     }
 
     /**
+     * HR: GUI instalacija novog opcionalnog modula mora uzeti ograničenje iz
+     *     manifesta izdanja, a ne iz ručno održavanog zastarjelog popisa.
+     * EN: GUI installation of a new optional module must use the release
+     *     manifest constraint rather than a stale hand-maintained list.
+     */
+    public function testInstallsAccessibilityUsingReleaseManifestConstraint(): void
+    {
+        $package = 'aaieduhr/heartphrame-module-accessibility';
+        $this->writeInstalledMetadata([]);
+        $runner = new class ($this->root, $package) implements ProcessRunnerInterface {
+            /** HR: Pamti Composer naredbu. EN: Records the Composer command. */
+            public array $command = [];
+
+            /** HR: Prima izolirani korijen i paket. EN: Receives the isolated root and package. */
+            public function __construct(private readonly string $root, private readonly string $package)
+            {
+            }
+
+            /** HR: Oponaša uspješnu instalaciju paketa. EN: Simulates a successful package installation. */
+            public function run(array $command, string $workingDirectory): CommandResult
+            {
+                $this->command = $command;
+                file_put_contents(
+                    $this->root . '/vendor/composer/installed.json',
+                    json_encode(['packages' => [[
+                        'name' => $this->package,
+                        'version' => '0.1.1',
+                        'type' => 'heartphrame-module',
+                    ]]], JSON_THROW_ON_ERROR) . "\n",
+                );
+
+                return new CommandResult(0, '', '');
+            }
+        };
+
+        $catalog = new ModuleCatalog();
+        $manager = new ComposerPackageManager($catalog, $runner, $this->root);
+        $manager->install('accessibility');
+
+        $manifest = json_decode(
+            (string)file_get_contents($this->root . '/composer.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertSame($catalog->constraintFor('accessibility'), $manifest['require'][$package]);
+        $this->assertContains('update', $runner->command);
+        $this->assertContains($package, $runner->command);
+        $this->assertTrue($manager->isInstalled('accessibility'));
+    }
+
+    /** HR: Svaki opcionalni modul mora imati izdano ograničenje. EN: Every optional module must have a release constraint. */
+    public function testEveryOptionalModuleHasReleaseConstraint(): void
+    {
+        $catalog = new ModuleCatalog();
+        $release = json_decode(
+            (string)file_get_contents(dirname(__DIR__, 3) . '/composer.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        foreach ($catalog->optionalSlugs() as $slug) {
+            $definition = $catalog->definitionFor($slug);
+            $this->assertSame(
+                $release['extra']['simbioza']['optional-modules'][$definition['package']],
+                $catalog->constraintFor($slug),
+                $slug,
+            );
+        }
+    }
+
+    /**
      * HR: Zapisuje valjani minimalni `installed.php` za zadane pakete.
      * EN: Writes valid minimal `installed.php` metadata for the requested packages.
      *

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Module;
 
 use InvalidArgumentException;
+use JsonException;
+use RuntimeException;
 
 use function array_filter;
 use function array_keys;
@@ -275,21 +277,43 @@ final readonly class ModuleCatalog
         ));
     }
 
-    /** HR: Vraća zaključano Composer ograničenje paketa iz kataloga. EN: Returns a catalog-pinned Composer package constraint. */
+    /**
+     * HR: Čita ograničenje opcionalnog paketa iz manifesta izdanja; tako GUI i
+     *     CLI koriste isti tag bez zasebnog popisa koji može zastarjeti.
+     * EN: Reads an optional package constraint from the release manifest so
+     *     GUI and CLI use the same tag without a separately drifting list.
+     */
     public function constraintFor(string $slug): string
     {
-        return match ($this->normalizeSlug($slug)) {
-            'theme' => '^0.1.15',
-            'audit' => '^0.1.4',
-            'api' => '^0.1.4',
-            'email' => '^0.1.3',
-            'task' => '^0.1.6',
-            'comment' => '^0.1.3',
-            'calendar' => '^0.1.19',
-            'confluence-import' => '^0.1.33',
-            'backup' => '^0.1.6',
-            default => throw new InvalidArgumentException('The module is not an optional Composer package: ' . $slug),
-        };
+        $definition = $this->definitionFor($slug);
+        if (!$definition['optional']) {
+            throw new InvalidArgumentException('The module is not an optional Composer package: ' . $slug);
+        }
+
+        try {
+            $manifest = json_decode(
+                (string)file_get_contents(dirname(__DIR__, 2) . '/composer.json'),
+                true,
+                512,
+                JSON_THROW_ON_ERROR,
+            );
+        } catch (JsonException $jsonException) {
+            throw new RuntimeException('The release Composer manifest is invalid.', 0, $jsonException);
+        }
+
+        if (!is_array($manifest)) {
+            throw new RuntimeException('The release Composer manifest is invalid.');
+        }
+
+        $extra = $manifest['extra'] ?? null;
+        $simbioza = is_array($extra) ? ($extra['simbioza'] ?? null) : null;
+        $optionalModules = is_array($simbioza) ? ($simbioza['optional-modules'] ?? null) : null;
+        $constraint = is_array($optionalModules) ? ($optionalModules[$definition['package']] ?? null) : null;
+        if (!is_string($constraint) || trim($constraint) === '') {
+            throw new RuntimeException('The release has no Composer constraint for optional module: ' . $slug);
+        }
+
+        return $constraint;
     }
 
     /**
