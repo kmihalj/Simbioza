@@ -11,6 +11,10 @@ kontrolu nad objavljenim sadržajem. Simbioza spaja oboje u jednu aplikaciju za
 internu dokumentaciju, postupke, korisničke upute, projektno znanje i javne
 informacijske stranice. Instalacija i podaci ostaju pod vašom kontrolom.
 
+**Isprobajte Simbiozu:** Posjetite [javni demo](https://piko.webhop.me/demo/),
+istražite aplikaciju i isprobajte je s objavljenim demo računima. Promjene na
+demu poništavaju se svakih pet sati.
+
 ![Javno područje Simbioze na hrvatskom sa stablom stranica, člankom i kazalom](docs/readme-screenshots/workspace-hr.png)
 
 *Javno područje Korisničke upute sa stablom stranica, člankom i kazalom.*

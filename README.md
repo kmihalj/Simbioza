@@ -11,6 +11,10 @@ control over what is published. Simbioza brings both into one application for
 internal documentation, procedures, user guides, project knowledge, and public
 information sites. Your content and installation remain under your control.
 
+**Try Simbioza:** Visit the [public demo](https://piko.webhop.me/demo/) to explore
+the application and try it with the published demo accounts. Demo changes are
+reset every five hours.
+
 ![A public Simbioza Workspace in English, showing its page tree, article, and table of contents](docs/readme-screenshots/workspace-en.png)
 
 *A public User Guides Workspace, with its page tree, article, and table of contents.*
