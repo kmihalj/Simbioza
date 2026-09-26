@@ -73,6 +73,43 @@ final class AppTest extends TestCase
     }
 
     /**
+     * HR: Lokalna zaštita ulazi prije postavki, a pogrešna klasa mora srušiti zatvoren bootstrap.
+     * EN: Local protection precedes the settings gate, while a missing class must fail boot closed.
+     */
+    public function testLocalMiddlewareOrderAndFailClosedConfiguration(): void
+    {
+        $directory = sys_get_temp_dir() . '/simbioza-local-middleware-' . bin2hex(random_bytes(6));
+        $this->assertTrue(mkdir($directory, 0700));
+        try {
+            $this->assertTrue(copy(dirname(__DIR__, 3) . '/config/middleware.php', $directory . '/middleware.php'));
+            file_put_contents(
+                $directory . '/middleware.local.php',
+                '<?php return [' . \HeartPhrame\Middleware\StartSessionMiddleware::class . '::class];',
+            );
+            $middleware = require $directory . '/middleware.php';
+            $this->assertCount(
+                2,
+                array_filter(
+                    $middleware,
+                    static fn(mixed $item): bool => $item === \HeartPhrame\Middleware\StartSessionMiddleware::class,
+                ),
+            );
+            $this->assertLessThan(
+                array_search(RequireSettingsAdminWhenAuthEnabledMiddleware::class, $middleware, true),
+                array_search(\HeartPhrame\Middleware\StartSessionMiddleware::class, $middleware, true),
+            );
+
+            file_put_contents($directory . '/middleware.local.php', '<?php return ["Missing\\DemoGuard"];');
+            $this->expectException(\RuntimeException::class);
+            require $directory . '/middleware.php';
+        } finally {
+            @unlink($directory . '/middleware.local.php');
+            @unlink($directory . '/middleware.php');
+            rmdir($directory);
+        }
+    }
+
+    /**
      * HR: Integrirani testovi ne smiju ovisiti o brzini baze i pogoditi
      *     produkcijski API limit dok dijele jedan administratorski ključ.
      * EN: Integrated tests must not depend on database speed and hit the

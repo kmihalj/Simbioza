@@ -337,6 +337,7 @@ final class ApplicationUpdateCommand
             $this->syncSource($rsync, $sourceDirectory);
             $this->normalizeReleaseTreeMetadata($sourceDirectory);
             $this->restoreSelectedOptionalRequirements();
+            $this->restoreLocalComposerRequirements();
             $this->restoreRuntimeSettings();
             $this->appendMissingMenuSettings($sourceDirectory);
             $this->progress('configuration', 42, $this->message('theme_config'));
@@ -940,9 +941,11 @@ final class ApplicationUpdateCommand
         $registryPath = $this->appRoot . '/config/languages.php';
         $registry = is_file($registryPath) ? require $registryPath : [];
         foreach (is_array($registry) ? array_keys($registry) : [] as $locale) {
-            if (is_string($locale)
+            if (
+                is_string($locale)
                 && !in_array($locale, ['en', 'hr'], true)
-                && preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) === 1) {
+                && preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) === 1
+            ) {
                 $excludes['/lang/' . $locale . '.php'] = true;
             }
         }
@@ -1079,6 +1082,99 @@ final class ApplicationUpdateCommand
             @unlink($temporary);
             throw new RuntimeException('Selected optional modules could not be restored to composer.json.');
         }
+    }
+
+    /**
+     * HR: Izričite lokalne path pakete vraća nakon zamjene javnog manifesta.
+     *     Ne prepisuje zahtjeve izdanja niti izlaže pakete javnom katalogu.
+     * EN: Restores explicit local path packages after replacing the public manifest.
+     *     It neither overrides release requirements nor exposes packages in the public catalog.
+     */
+    private function restoreLocalComposerRequirements(): void
+    {
+        $localPath = $this->appRoot . '/composer.local.json';
+        if (!is_file($localPath)) {
+            return;
+        }
+        $manifestPath = $this->appRoot . '/composer.json';
+        $manifest = json_decode((string)file_get_contents($manifestPath), true);
+        $local = json_decode((string)file_get_contents($localPath), true);
+        if (!is_array($manifest) || !is_array($local)) {
+            throw new RuntimeException('Local Composer configuration is invalid.');
+        }
+        $merged = self::mergeLocalComposerRequirements($manifest, $local);
+        $encoded = json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
+        $temporary = $this->appRoot . '/.simbioza-update-composer-local-' . bin2hex(random_bytes(8));
+        if (
+            file_put_contents($temporary, $encoded, LOCK_EX) === false
+            || (PHP_OS_FAMILY !== 'Windows' && !chmod($temporary, 0664))
+            || !rename($temporary, $manifestPath)
+        ) {
+            @unlink($temporary);
+            throw new RuntimeException('Local Composer packages could not be restored.');
+        }
+    }
+
+    /**
+     * HR: Dopušta samo lokalne path repozitorije i nove zahtjeve; release ovisnosti ostaju mjerodavne.
+     * EN: Allows only local path repositories and new requirements; release dependencies remain authoritative.
+     *
+     * @param array<array-key,mixed> $manifest
+     * @param array<array-key,mixed> $local
+     * @return array<array-key,mixed>
+     */
+    public static function mergeLocalComposerRequirements(array $manifest, array $local): array
+    {
+        foreach (array_keys($manifest) as $key) {
+            if (!is_string($key)) {
+                throw new RuntimeException('Release Composer manifest must be an object.');
+            }
+        }
+
+        if (
+            array_diff(array_keys($local), ['repositories', 'require']) !== []
+            || !is_array($local['repositories'] ?? null)
+            || !is_array($local['require'] ?? null)
+        ) {
+            throw new RuntimeException('Local Composer configuration may contain only repositories and require.');
+        }
+        $repositories = [];
+        foreach ($local['repositories'] as $repository) {
+            $options = is_array($repository) ? ($repository['options'] ?? null) : null;
+            if (
+                !is_array($repository)
+                || ($repository['type'] ?? null) !== 'path'
+                || !is_string($repository['url'] ?? null)
+                || !str_starts_with($repository['url'], '/')
+                || !is_dir($repository['url'])
+                || !is_array($options)
+                || ($options['symlink'] ?? null) !== false
+            ) {
+                throw new RuntimeException('Only existing absolute local Composer path repositories are allowed.');
+            }
+            $repositories[] = $repository;
+        }
+        $requirements = is_array($manifest['require'] ?? null) ? $manifest['require'] : [];
+        foreach ($local['require'] as $package => $constraint) {
+            if (
+                !is_string($package)
+                || preg_match('/\A[a-z0-9][a-z0-9_.-]*\/[a-z0-9][a-z0-9_.-]*\z/D', $package) !== 1
+                || !is_string($constraint)
+                || trim($constraint) === ''
+                || array_key_exists($package, $requirements)
+            ) {
+                throw new RuntimeException('Local Composer requirements must not override release packages.');
+            }
+            $requirements[$package] = $constraint;
+        }
+        ksort($requirements, SORT_STRING);
+        $manifest['require'] = $requirements;
+        $manifest['repositories'] = array_values(array_merge(
+            $repositories,
+            is_array($manifest['repositories'] ?? null) ? $manifest['repositories'] : [],
+        ));
+
+        return $manifest;
     }
 
     /**

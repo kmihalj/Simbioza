@@ -12,6 +12,29 @@ $middleware = [
     \HeartPhrame\Middleware\DeferredModuleLoaderMiddleware::class,
 ];
 
+// HR: Privatni middleware jedne instalacije ide prije administratorske provjere;
+//     pogrešna konfiguracija ruši zatvoren sustav umjesto da ukine zaštitu.
+// EN: Installation-private middleware runs before the admin gate; invalid
+//     configuration fails closed instead of silently dropping protection.
+$localMiddlewareFile = __DIR__ . '/middleware.local.php';
+if (is_file($localMiddlewareFile)) {
+    $localMiddleware = require $localMiddlewareFile;
+    if (!is_array($localMiddleware)) {
+        throw new RuntimeException('Local middleware configuration must return an array.');
+    }
+
+    foreach ($localMiddleware as $middlewareClass) {
+        if (
+            !is_string($middlewareClass)
+            || !is_subclass_of($middlewareClass, \Psr\Http\Server\MiddlewareInterface::class)
+        ) {
+            throw new RuntimeException('Invalid local middleware class.');
+        }
+
+        $middleware[] = $middlewareClass;
+    }
+}
+
 // HR: Ponovna settings provjera nakon odgođenih modula primjenjuje Simbioza
 //     admin elevaciju, ali minimalne instalacije smiju raditi bez Menu modula.
 // EN: Rechecking settings after deferred modules applies the Simbioza admin

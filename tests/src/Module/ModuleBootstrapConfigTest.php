@@ -121,6 +121,13 @@ PHP;
         $this->assertSame('Europe/Paris', $disabledConfiguration['timezone']);
         $this->assertSame(123, $disabledConfiguration['session']['options']['cookie_lifetime']);
         $this->assertSame('HEARTPHRAME_SESSION', $disabledConfiguration['session']['options']['name']);
+
+        file_put_contents($configDirectory . '/installation.php', "<?php return [
+            'primary_locale' => 'en', 'supported_locales' => ['hr', 'en'],
+            'session_name' => 'SIMBIOZA_DEMO_SESSION',
+        ];\n");
+        $isolatedSessionConfiguration = require $configDirectory . '/app.php';
+        $this->assertSame('SIMBIOZA_DEMO_SESSION', $isolatedSessionConfiguration['session']['options']['name']);
         $this->assertNotContains(
             'aaieduhr/heartphrame-module-theme',
             $disabledConfiguration['modules']['enabled'],
@@ -144,6 +151,12 @@ PHP;
             'aaieduhr/heartphrame-module-theme',
             $enabledConfiguration['modules']['enabled'],
         );
+
+        // HR: Lokalni privatni paket nije u javnom opcionalnom katalogu.
+        // EN: An installation-private package is not in the public optional catalog.
+        file_put_contents($configDirectory . '/modules.local.php', "<?php return ['local/simbioza-module-demo'];\n");
+        $localConfiguration = require $configDirectory . '/app.php';
+        $this->assertContains('local/simbioza-module-demo', $localConfiguration['modules']['enabled']);
     }
 
     /**

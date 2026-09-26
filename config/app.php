@@ -71,6 +71,28 @@ $enabledModules = is_array($moduleState['enabled'] ?? null)
 ]))
 : ($legacyInstalledModules !== [] ? $legacyInstalledModules : $defaultEnabledModules);
 
+// HR: Privatni paketi jedne instalacije nisu dio javnog kataloga ni stanja GUI-ja.
+//     Lokalni popis je administratorska konfiguracija koju updater čuva.
+// EN: Installation-private packages are outside the public catalog and GUI state.
+//     The local list is administrator configuration preserved by the updater.
+$localModulesFile = __DIR__ . '/modules.local.php';
+if (is_file($localModulesFile)) {
+    $localModules = require $localModulesFile;
+    if (!is_array($localModules)) {
+        throw new RuntimeException('Local modules configuration must return an array.');
+    }
+
+    foreach ($localModules as $package) {
+        if (!is_string($package) || preg_match('/\A[a-z0-9][a-z0-9_.-]*\/[a-z0-9][a-z0-9_.-]*\z/D', $package) !== 1) {
+            throw new RuntimeException('Invalid local module package name.');
+        }
+
+        $enabledModules[] = $package;
+    }
+
+    $enabledModules = array_values(array_unique($enabledModules));
+}
+
 $applicationName = is_string($installation['name'] ?? null) && trim($installation['name']) !== ''
 ? trim($installation['name'])
 : 'Simbioza';
@@ -119,6 +141,13 @@ $timezone = is_string($installation['timezone'] ?? null)
 && in_array($installation['timezone'], timezone_identifiers_list(), true)
 ? $installation['timezone']
 : 'Europe/Zagreb';
+
+// HR: Instalacije na istoj domeni mogu imati različita imena sesijskih kolačića.
+// EN: Installations on one domain may use distinct session cookie names.
+$sessionName = is_string($installation['session_name'] ?? null)
+&& preg_match('/\A[A-Za-z][A-Za-z0-9_]{0,63}\z/D', $installation['session_name']) === 1
+? $installation['session_name']
+: 'HEARTPHRAME_SESSION';
 
 return [
     // Application name
@@ -171,7 +200,7 @@ return [
             'cookie_httponly' => 1,
             'cookie_samesite' => 'Lax',
             'use_only_cookies' => 1,
-            'name' => 'HEARTPHRAME_SESSION',
+            'name' => $sessionName,
             // HR: Auth modul primjenjuje kraće, administratorski podesivo trajanje prijave.
             // EN: The Auth module enforces the shorter administrator-configured login duration.
             'gc_maxlifetime' => 31536000,

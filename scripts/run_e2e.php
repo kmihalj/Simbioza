@@ -173,18 +173,18 @@ function configureE2eApplication(string $projectDirectory): void
     }
 
     // HR: Testna aplikacija mora zadržati dinamički app.php kako bi browser
-    //     stvarno dokazao enable/disable životni ciklus. Mijenjaju se samo dvije
-    //     lokalne HTTP session vrijednosti, ne rezultat učitavanja konfiguracije.
+    //     stvarno dokazao enable/disable životni ciklus. Mijenja se samo lokalni
+    //     secure-cookie uvjet; ime sesije ide kroz trajnu instalacijsku postavku.
     // EN: The test application must keep dynamic app.php so the browser genuinely
-    //     proves the enable/disable lifecycle. Only two local HTTP session values
-    //     are changed, not the evaluated configuration result.
+    //     proves the enable/disable lifecycle. Only the local secure-cookie flag
+    //     changes here; the session name uses the installation override.
     $configSource = str_replace(
-        ["'cookie_secure' => 1,", "'name' => 'HEARTPHRAME_SESSION',"],
-        ["'cookie_secure' => 0,", "'name' => 'HEARTPHRAME_E2E_SESSION',"],
+        "'cookie_secure' => 1,",
+        "'cookie_secure' => 0,",
         $configSource,
         $replacementCount,
     );
-    if ($replacementCount !== 2 || file_put_contents($configPath, $configSource) === false) {
+    if ($replacementCount !== 1 || file_put_contents($configPath, $configSource) === false) {
         throw new RuntimeException('E2E session configuration could not be prepared.');
     }
 
@@ -196,6 +196,7 @@ function configureE2eApplication(string $projectDirectory): void
     $installation['name'] = 'Simbioza E2E';
     $installation['primary_locale'] = 'en';
     $installation['supported_locales'] = ['hr', 'en'];
+    $installation['session_name'] = 'HEARTPHRAME_E2E_SESSION';
     writeMatrixPhpConfig($installationPath, $installation);
 
     $apiConfigPath = $projectDirectory . '/config/api.php';

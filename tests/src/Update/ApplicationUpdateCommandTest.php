@@ -75,6 +75,78 @@ TAGS;
     }
 
     /**
+     * HR: Lokalni demo-paket ostaje izvan javnog kataloga i ne smije zamijeniti ovisnost izdanja.
+     * EN: A local demo package stays outside the public catalog and cannot replace a release dependency.
+     */
+    public function testLocalComposerRequirementsAreMergedWithoutOverridingRelease(): void
+    {
+        $release = [
+            'require' => ['aaieduhr/heartphrame-framework' => '^0.0.25'],
+            'repositories' => [['type' => 'vcs', 'url' => 'https://example.invalid/framework.git']],
+        ];
+        $local = [
+            'repositories' => [[
+                'type' => 'path', 'url' => sys_get_temp_dir(), 'options' => ['symlink' => false],
+            ]],
+            'require' => ['local/simbioza-module-demo' => '0.1.0'],
+        ];
+        $merged = ApplicationUpdateCommand::mergeLocalComposerRequirements($release, $local);
+
+        $this->assertSame('^0.0.25', $merged['require']['aaieduhr/heartphrame-framework']);
+        $this->assertSame('0.1.0', $merged['require']['local/simbioza-module-demo']);
+        $this->assertSame('path', $merged['repositories'][0]['type']);
+        $this->assertSame('vcs', $merged['repositories'][1]['type']);
+        $this->assertArrayNotHasKey('local/simbioza-module-demo', $release['require']);
+
+        $local['require'] = ['aaieduhr/heartphrame-framework' => '0.0.1'];
+        $this->expectException(\RuntimeException::class);
+        ApplicationUpdateCommand::mergeLocalComposerRequirements($release, $local);
+    }
+
+    /** HR: Udaljeni privatni kod ne smije se prikriti kao lokalni path paket. EN: Remote private code cannot masquerade as a local path package. */
+    public function testLocalComposerOverrideRejectsRemoteRepository(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        ApplicationUpdateCommand::mergeLocalComposerRequirements(['require' => []], [
+            'repositories' => [[
+                'type' => 'vcs', 'url' => 'https://example.invalid/demo.git',
+            ]],
+            'require' => ['local/simbioza-module-demo' => '0.1.0'],
+        ]);
+    }
+
+    /** HR: Stvarni korak updatera vraća privatni paket i čitljive dozvole manifesta. EN: The updater step restores the private package and a web-readable manifest. */
+    public function testLocalComposerRestorePreservesPrivatePackageOnDisk(): void
+    {
+        $root = sys_get_temp_dir() . '/simbioza-update-private-package-' . bin2hex(random_bytes(6));
+        $this->temporaryDirectories[] = $root;
+        $this->assertTrue(mkdir($root, 0770, true));
+        file_put_contents($root . '/composer.json', json_encode([
+            'require' => ['aaieduhr/heartphrame-framework' => '^0.0.25'],
+        ], JSON_THROW_ON_ERROR));
+        file_put_contents($root . '/composer.local.json', json_encode([
+            'repositories' => [[
+                'type' => 'path', 'url' => $root, 'options' => ['symlink' => false],
+            ]],
+            'require' => ['local/simbioza-module-demo' => '0.1.0'],
+        ], JSON_THROW_ON_ERROR));
+
+        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
+        $restore = new \ReflectionMethod($command, 'restoreLocalComposerRequirements');
+        $previousUmask = umask(0007);
+        try {
+            $restore->invoke($command);
+        } finally {
+            umask($previousUmask);
+        }
+
+        $manifest = json_decode((string)file_get_contents($root . '/composer.json'), true);
+        $this->assertSame('0.1.0', $manifest['require']['local/simbioza-module-demo'] ?? null);
+        $this->assertSame('^0.0.25', $manifest['require']['aaieduhr/heartphrame-framework'] ?? null);
+        $this->assertSame(0664, fileperms($root . '/composer.json') & 07777);
+    }
+
+    /**
      * HR: Nadogradnja čuva opcionalne module iz manifesta, locka i trajnog stanja.
      * EN: An update preserves optional modules from the manifest, lock, and persistent state.
      */
