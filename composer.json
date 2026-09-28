@@ -87,12 +87,12 @@
         "php": ">=8.2",
         "aaieduhr/heartphrame-framework": "^0.0.25",
         "aaieduhr/heartphrame-module-auth": "^0.1.14",
-        "aaieduhr/heartphrame-module-editor-html": "^0.1.36",
+        "aaieduhr/heartphrame-module-editor-html": "^0.1.37",
         "aaieduhr/heartphrame-module-menu": "^0.1.25",
         "aaieduhr/heartphrame-module-notification": "^0.1.6",
         "aaieduhr/heartphrame-module-orm": "^0.1.7",
         "aaieduhr/simbioza-module-user": "^0.1.11",
-        "aaieduhr/simbioza-module-workspace": "^0.1.35",
+        "aaieduhr/simbioza-module-workspace": "^0.1.37",
         "aaieduhr/simbioza-module-workspace-search": "^0.1.12"
     },
     "autoload": {
@@ -150,7 +150,7 @@
                 "aaieduhr/heartphrame-module-email": "^0.1.4",
                 "aaieduhr/heartphrame-module-task": "^0.1.8",
                 "aaieduhr/heartphrame-module-theme": "^0.1.17",
-                "aaieduhr/simbioza-module-confluence-import": "^0.1.35"
+                "aaieduhr/simbioza-module-confluence-import": "^0.1.37"
             },
             "development-tools": {
                 "phpstan/phpstan": "^2.1",

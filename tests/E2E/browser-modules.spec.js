@@ -1649,7 +1649,9 @@ test.describe('module browser surfaces', () => {
       await picker.locator('[data-workspace-lookup-search]').fill(query);
       await picker
         .locator('[data-workspace-lookup-list]')
-        .getByRole('button', { name: label, exact: true })
+        // HR: Objedinjeni EN paket mijenja samo velika slova u „All Workspaces”.
+        // EN: The consolidated EN pack changes only the casing of “All Workspaces”.
+        .getByRole('button', { name: new RegExp(`^${label}$`, 'i') })
         .click();
     };
     const chooseHomepagePage = async (audience, label, query) => {

@@ -672,7 +672,9 @@ test.describe('browser flows', () => {
         await expect(action).not.toHaveClass(/btn-outline-secondary/);
       }
     }
-    const viewAction = page.getByRole('link', { name: 'View', exact: true });
+    // HR: Objedinjeni EN paket može nazvati istu radnju „Preview” umjesto „View”.
+    // EN: The consolidated EN pack may label the same action “Preview” rather than “View”.
+    const viewAction = page.getByRole('link', { name: /^(View|Preview)$/ });
     await expect(viewAction).toHaveClass(/btn-secondary/);
     await expect(viewAction).not.toHaveClass(/btn-outline-secondary/);
 
@@ -860,7 +862,7 @@ test.describe('browser flows', () => {
       && url.searchParams.get('saved') === '1');
     await expect(page.getByText('Shared draft', { exact: true })).toBeVisible();
 
-    await page.getByRole('link', { name: 'View', exact: true }).click();
+    await page.getByRole('link', { name: /^(View|Preview)$/ }).click();
     await expect(page.getByRole('heading', { name: firstPublishedBody, exact: true })).toBeVisible();
     await expect(page.getByText(secondDraftBody, { exact: true })).toHaveCount(0);
 

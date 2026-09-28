@@ -148,6 +148,7 @@ zaseban [engleski indeks](docs/index_en.md).
 
 ## Dokumentacija
 
+- [Izdanje 0.2.0: nastavivo trajno brisanje područja](docs/release-0.2.0_hr.md)
 - [Izdanje 0.1.99: podrška za privatne module instalacije](docs/release-0.1.99_hr.md)
 - [Izdanje 0.1.98: sigurna nadogradnja i povratak za FPM](docs/release-0.1.98_hr.md)
 - [Izdanje 0.1.97: sigurno istodobno uređivanje i zapamćeni jezik](docs/release-0.1.97_hr.md)

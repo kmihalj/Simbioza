@@ -18,6 +18,8 @@
  *   php scripts/run_e2e.php --local
  *   php scripts/run_e2e.php --local --database=mysql
  *   php scripts/run_e2e.php --headed --keep
+ *   php scripts/run_e2e.php --local --spec=workspace-purge.spec.js
+ *   php scripts/run_e2e.php --local --grep=workspace
  */
 
 declare(strict_types=1);
@@ -45,16 +47,24 @@ const E2E_USER_PASSWORD = 'E2eUser!2026';
  * HR: Čita jednostavne E2E CLI zastavice.
  * EN: Reads the simple E2E CLI flags.
  *
- * @return array{database:string,local:bool,headed:bool,keep:bool}
+ * @return array{database:string,local:bool,headed:bool,keep:bool,spec:string,grep:string}
  */
 function e2eOptions(): array
 {
-    $options = getopt('', ['database:', 'local', 'headed', 'keep']);
+    $options = getopt('', ['database:', 'local', 'headed', 'keep', 'spec:', 'grep:']);
     $database = is_string($options['database'] ?? null)
     ? strtolower(trim($options['database']))
     : 'sqlite';
     if (!in_array($database, ['sqlite', 'mysql', 'mariadb', 'pgsql'], true)) {
         throw new RuntimeException('Unsupported E2E database: ' . $database);
+    }
+    $spec = is_string($options['spec'] ?? null) ? trim($options['spec']) : '';
+    if ($spec !== '' && preg_match('/\A[a-z0-9-]+\.spec\.js\z/D', $spec) !== 1) {
+        throw new RuntimeException('Unsupported E2E spec: ' . $spec);
+    }
+    $grep = is_string($options['grep'] ?? null) ? trim($options['grep']) : '';
+    if (strlen($grep) > 200) {
+        throw new RuntimeException('E2E grep pattern is too long.');
     }
 
     return [
@@ -62,6 +72,8 @@ function e2eOptions(): array
         'local' => array_key_exists('local', $options),
         'headed' => array_key_exists('headed', $options),
         'keep' => array_key_exists('keep', $options),
+        'spec' => $spec,
+        'grep' => $grep,
     ];
 }
 
@@ -567,6 +579,12 @@ function runEndToEndSuite(): int
         ];
         if ($options['headed']) {
             $command[] = '--headed';
+        }
+        if ($options['spec'] !== '') {
+            $command[] = 'tests/E2E/' . $options['spec'];
+        }
+        if ($options['grep'] !== '') {
+            $command[] = '--grep=' . $options['grep'];
         }
 
         fwrite(
