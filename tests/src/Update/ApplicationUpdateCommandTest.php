@@ -274,16 +274,18 @@ PHP);
     {
         $source = (string)file_get_contents(dirname(__DIR__, 3) . '/scripts/configure_fpm_setup.php');
         $this->assertStringContainsString(
-            'fpm-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *',
+            "FPM_USER . ' ALL=(root) NOPASSWD: ' . FPM_HELPER",
             $source,
         );
         $this->assertStringContainsString(
-            '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *',
+            "'%' . FPM_DEPLOY_GROUP . ' ALL=(root) NOPASSWD: ' . FPM_HELPER",
             $source,
         );
-        $this->assertStringContainsString("'/usr/local/sbin/simbioza-setup',\n        'invalid',", $source);
+        $this->assertStringContainsString("FPM_HELPER,\n        'invalid',", $source);
         $this->assertStringContainsString("return \$probe['code'] === 64;", $source);
         $this->assertStringContainsString("'data/config'", $source);
+        $this->assertStringContainsString('assertInstanceNotReused($platform, $root, $phpFpm);', $source);
+        $this->assertStringContainsString("'env[SIMBIOZA_SETUP_HELPER] = ' . FPM_HELPER", $source);
         $this->assertMatchesRegularExpression(
             '/else \{\s*installIdentities\([^;]+;\s*installHelper\(/s',
             $source,
@@ -291,6 +293,31 @@ PHP);
         $this->assertStringContainsString('--quiet --collect --unit="$unit"', $source);
         $this->assertStringContainsString('--property=ExitType=cgroup', $source);
         $this->assertStringNotContainsString('--wait --pipe --collect', $source);
+    }
+
+    /**
+     * HR: Prazna oznaka instance ne smije tiho vratiti zadana sistemska imena.
+     * EN: An empty instance must not silently fall back to legacy system names.
+     */
+    public function testFpmConfiguratorRejectsEmptyInstance(): void
+    {
+        $script = dirname(__DIR__, 3) . '/scripts/configure_fpm_setup.php';
+        $command = [PHP_BINARY, $script, '--check', '--instance=', '--app-root=' . dirname(__DIR__, 3)];
+        $pipes = [];
+        $process = proc_open($command, [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ], $pipes);
+        $this->assertIsResource($process);
+        fclose($pipes[0]);
+        $stdout = stream_get_contents($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $this->assertSame(2, proc_close($process));
+        $this->assertSame('', $stdout);
+        $this->assertStringContainsString('Use --instance', (string)$stderr);
     }
 
     /**

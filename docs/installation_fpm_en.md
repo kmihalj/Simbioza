@@ -7,11 +7,11 @@ creates a dedicated PHP process and a restricted deployment helper. The initial
 installation, optional package management, language management, and application
 updates can then be initiated in the browser. The maintainer can also use the CLI.
 
-**One installation per host with the current setup helper:**
-`configure_fpm_setup.php` currently uses fixed system account, helper, service,
-and configuration names. Do not run `--install` for a second Simbioza site on a
-host where it has already configured one; that would replace the first site's
-FPM configuration. This limitation does not affect a single installation.
+**Multiple installations on one host:** omit `--instance` only for the original
+default names. For every additional site, set a unique lowercase `--instance`
+name (1–12 characters) and a distinct loopback `--listen` port. The tool then
+uses separate system users, groups, helper, configuration, and service, and
+refuses to reuse an existing instance name for a different application root.
 
 ## 1. Prepare the release and database
 
@@ -49,6 +49,11 @@ php scripts/configure_fpm_setup.php --check \
   --maintainer="$USER" --php-fpm="$(brew --prefix)/sbin/php-fpm"
 ```
 
+For a second site, repeat both commands with matching options, for example
+`--instance=second --listen=127.0.0.1:9076`. Use the same two options again
+with `--finalize` in step 5. Do not accidentally omit them: the unsuffixed
+default instance is a different system service.
+
 The check is read-only. The default pool listens on `127.0.0.1:9075`; keep
 that port local to the server. The tool gives the FPM account write access to
 runtime data, not to the whole release, and installs a narrowly restricted
@@ -71,6 +76,7 @@ for this site to the dedicated pool; do not route them through `mod_php`.
 <VirtualHost *:443>
     ServerName simbioza.example.org
     DocumentRoot /srv/simbioza/public
+    ProxyTimeout 900
 
     <Directory /srv/simbioza/public>
         Options -Indexes +FollowSymLinks
@@ -116,6 +122,7 @@ server {
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_pass 127.0.0.1:9075;
+        fastcgi_read_timeout 900s;
     }
 
     location ~ /\. {
@@ -125,7 +132,11 @@ server {
 ```
 
 Test the Nginx configuration before reloading. The FPM listener must not be
-reachable from an untrusted network.
+reachable from an untrusted network. Package preparation through the graphical
+installer can take several minutes; the 900-second Apache/Nginx gateway wait
+prevents a default 60-second 504 while the restricted worker is still running.
+Adjust any additional upstream reverse-proxy timeout accordingly, but do not
+disable the FPM or web-server request limits for unrelated sites.
 
 ## 4. Run the graphical installer
 

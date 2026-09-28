@@ -14,7 +14,7 @@ if (PHP_SAPI !== 'cli') {
 
 $options = getopt('', [
     'check', 'install', 'finalize', 'app-root:', 'maintainer:', 'listen::', 'php-fpm::',
-    'simplesaml-config-dir:', 'help',
+    'simplesaml-config-dir:', 'instance:', 'help',
 ]);
 if (isset($options['help'])) {
     fwrite(STDOUT, <<<'HELP'
@@ -25,6 +25,8 @@ Simbioza dedicated PHP-FPM setup / Namjenski PHP-FPM za Simbiozu
     --simplesaml-config-dir=/srv/simbioza/data/saml/config
   sudo php scripts/configure_fpm_setup.php --finalize --app-root=/srv/simbioza --maintainer=LOGIN
   php scripts/configure_fpm_setup.php --check --app-root=/srv/simbioza --maintainer=LOGIN
+  sudo php scripts/configure_fpm_setup.php --install --instance=example \
+    --listen=127.0.0.1:9077 --app-root=/srv/simbioza-example --maintainer=LOGIN
 
 `--install` creates isolated accounts, groups, FPM configuration, the strictly
 allowlisted Setup helper, and temporary initial-installer permissions.
@@ -32,9 +34,41 @@ allowlisted Setup helper, and temporary initial-installer permissions.
 inside data/. The application and its SimpleSAMLphp endpoint must use this
 same FPM pool; the tool never copies shared secrets or changes SAML registry.
 `--finalize` hardens ownership after the web installer has completed.
+`--instance` assigns separate users, groups, helper, and FPM service to another
+installation on the same host. Omit it for the original default names.
 HELP . PHP_EOL);
     exit(0);
 }
+
+// HR: Prazna oznaka zadržava sva dosadašnja sistemska imena; posebna oznaka
+//     izolira više instalacija na istom računalu bez prepisivanja prve.
+// EN: An empty instance keeps all legacy system names; a named instance
+//     isolates multiple installations on one host without overwriting the first.
+$instance = trim((string)($options['instance'] ?? ''));
+$instanceWasRequested = in_array('--instance', $argv, true);
+foreach ($argv as $argument) {
+    if (str_starts_with($argument, '--instance=')) {
+        $instanceWasRequested = true;
+        break;
+    }
+}
+if (($instanceWasRequested && $instance === '')
+    || ($instance !== '' && preg_match('/\A[a-z][a-z0-9-]{0,11}\z/D', $instance) !== 1)) {
+    fail('Use --instance with 1-12 lowercase letters, digits, or hyphens, starting with a letter.');
+}
+$suffix = $instance === '' ? '' : '-' . $instance;
+define('FPM_INSTANCE_SUFFIX', $suffix);
+define('FPM_APP_GROUP', 'app-simbioza' . $suffix);
+define('FPM_DEPLOY_GROUP', 'deploy-simbioza' . $suffix);
+define('FPM_RUNTIME_GROUP', 'run-simbioza' . $suffix);
+define('FPM_USER', 'fpm-simbioza' . $suffix);
+define('FPM_DEPLOY_USER', 'simbioza-deploy' . $suffix);
+define('FPM_HELPER', '/usr/local/sbin/simbioza-setup' . $suffix);
+define('FPM_SUDOERS', '/etc/sudoers.d/simbioza-setup' . $suffix);
+define('FPM_CONFIG_NAME', 'simbioza' . $suffix);
+define('FPM_SERVICE_LABEL', 'hr.simbioza' . $suffix . '.php-fpm');
+define('FPM_SYSTEMD_SERVICE', 'php-fpm-simbioza' . $suffix . '.service');
+define('FPM_SYSTEMD_RUN', 'php-fpm-simbioza' . $suffix);
 
 $mode = isset($options['install']) ? 'install' : (isset($options['finalize']) ? 'finalize' : 'check');
 $root = realpath((string)($options['app-root'] ?? dirname(__DIR__)));
@@ -68,6 +102,8 @@ if ($mode === 'check') {
 if (!function_exists('posix_geteuid') || posix_geteuid() !== 0) {
     fail('Run --' . $mode . ' once as root. Normal maintenance does not require root afterwards.');
 }
+
+assertInstanceNotReused($platform, $root, $phpFpm);
 
 if ($mode === 'install') {
     installIdentities($platform, $maintainer, deployHome($platform, $phpFpm));
@@ -149,10 +185,10 @@ function simpleSamlConfigDirectory(mixed $value, string $root): ?string
 function deployHome(string $platform, string $phpFpm): string
 {
     if ($platform !== 'darwin') {
-        return '/var/lib/simbioza-deploy';
+        return '/var/lib/' . FPM_DEPLOY_USER;
     }
 
-    return darwinPrefix($phpFpm) . '/var/simbioza-deploy';
+    return darwinPrefix($phpFpm) . '/var/' . FPM_DEPLOY_USER;
 }
 
 /**
@@ -162,6 +198,33 @@ function deployHome(string $platform, string $phpFpm): string
 function darwinPrefix(string $phpFpm): string
 {
     return str_starts_with($phpFpm, '/usr/local/') ? '/usr/local' : '/opt/homebrew';
+}
+
+/**
+ * HR: Prije promjene sistemskih računa odbija oznaku instance koja već pripada
+ *     drugoj instalaciji; ponavljanje na istoj putanji ostaje dopušteno.
+ * EN: Before touching system accounts, rejects an instance label already
+ *     assigned to another installation; rerunning for the same path remains safe.
+ */
+function assertInstanceNotReused(string $platform, string $root, string $phpFpm): void
+{
+    $worker = $root . '/scripts/setup_worker.php';
+    if (is_file(FPM_HELPER)) {
+        $helper = file_get_contents(FPM_HELPER);
+        if (!is_string($helper) || !str_contains($helper, escapeshellarg($worker))) {
+            fail('This FPM instance helper already belongs to another installation. Choose a different --instance.');
+        }
+    }
+
+    $config = $platform === 'darwin'
+        ? darwinPrefix($phpFpm) . '/etc/' . FPM_CONFIG_NAME . '/pool.conf'
+        : '/etc/php/' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '/' . FPM_SYSTEMD_RUN . '/php-fpm.conf';
+    if (is_file($config)) {
+        $contents = file_get_contents($config);
+        if (!is_string($contents) || !str_contains($contents, 'env[HPH_APP_PATH] = ' . $root)) {
+            fail('This FPM instance pool already belongs to another installation. Choose a different --instance.');
+        }
+    }
 }
 
 /**
@@ -203,21 +266,21 @@ function runCommand(array $command, bool $allowFailure = false): array
 /** HR: Stvara potrebne korisnike, odvojene grupe i članstva. EN: Creates required users, separated groups, and memberships. */
 function installIdentities(string $platform, string $maintainer, string $deployHome): void
 {
-    foreach (['app-simbioza', 'deploy-simbioza', 'run-simbioza'] as $group) {
+    foreach ([FPM_APP_GROUP, FPM_DEPLOY_GROUP, FPM_RUNTIME_GROUP] as $group) {
         ensureGroup($platform, $group);
     }
-    ensureUser($platform, 'fpm-simbioza', 'app-simbioza', '/var/empty');
+    ensureUser($platform, FPM_USER, FPM_APP_GROUP, '/var/empty');
     ensureUser(
         $platform,
-        'simbioza-deploy',
-        'deploy-simbioza',
+        FPM_DEPLOY_USER,
+        FPM_DEPLOY_GROUP,
         $deployHome,
     );
-    foreach (['fpm-simbioza', 'simbioza-deploy', $maintainer] as $user) {
-        ensureMembership($platform, $user, 'run-simbioza');
+    foreach ([FPM_USER, FPM_DEPLOY_USER, $maintainer] as $user) {
+        ensureMembership($platform, $user, FPM_RUNTIME_GROUP);
     }
-    ensureMembership($platform, 'simbioza-deploy', 'deploy-simbioza');
-    ensureMembership($platform, $maintainer, 'deploy-simbioza');
+    ensureMembership($platform, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP);
+    ensureMembership($platform, $maintainer, FPM_DEPLOY_GROUP);
 }
 
 /** HR: Idempotentno stvara sistemsku grupu. EN: Idempotently creates a system group. */
@@ -325,7 +388,7 @@ function installFilesystem(
     //     i world-read bit, ali ga ne može mijenjati.
     // EN: Only the deploy group writes code. FPM reads it through the read-only
     //     systemd bind and world-read bit, but cannot modify it.
-    applyTree($root, 'simbioza-deploy', 'deploy-simbioza', 02775, 0664, ['data']);
+    applyTree($root, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP, 02775, 0664, ['data']);
     foreach (
         ['data', 'data/cache', 'data/config', 'data/logs', 'data/tmp', 'data/sessions', 'data/setup-requests']
         as $relative
@@ -335,10 +398,10 @@ function installFilesystem(
             throw new RuntimeException('Unable to create runtime directory: ' . $path);
         }
     }
-    applyTree($root . '/data', 'fpm-simbioza', 'run-simbioza', 02770, 0660);
+    applyTree($root . '/data', FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660);
     if ($simpleSamlConfig !== null) {
-        applyTree($simpleSamlConfig, 'simbioza-deploy', 'deploy-simbioza', 02750, 0640);
-        grantReadOnlyGroupAccess($platform, $simpleSamlConfig, 'app-simbioza');
+        applyTree($simpleSamlConfig, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP, 02750, 0640);
+        grantReadOnlyGroupAccess($platform, $simpleSamlConfig, FPM_APP_GROUP);
     }
 
     $runtimeFiles = [
@@ -348,7 +411,7 @@ function installFilesystem(
     foreach ($runtimeFiles as $relative) {
         $path = $root . '/' . $relative;
         if (is_file($path)) {
-            applyMetadata($path, 'fpm-simbioza', 'run-simbioza', 0660);
+            applyMetadata($path, FPM_USER, FPM_RUNTIME_GROUP, 0660);
         }
     }
 
@@ -358,7 +421,7 @@ function installFilesystem(
     foreach ($mutableDirectories as $relative) {
         $path = $root . '/' . $relative;
         if (is_dir($path)) {
-            applyTree($path, 'fpm-simbioza', 'run-simbioza', 02770, 0660);
+            applyTree($path, FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660);
         }
     }
 
@@ -369,11 +432,11 @@ function installFilesystem(
     //     runtime files. It cannot replace deploy-owned release configuration
     //     even though both kinds of files share the directory.
     $configDirectory = $root . '/config';
-    applyMetadata($configDirectory, 'simbioza-deploy', 'run-simbioza', 03770);
+    applyMetadata($configDirectory, FPM_DEPLOY_USER, FPM_RUNTIME_GROUP, 03770);
     foreach ($runtimeFiles as $relative) {
         $path = $root . '/' . $relative;
         if (is_file($path)) {
-            applyMetadata($path, 'fpm-simbioza', 'run-simbioza', 0660);
+            applyMetadata($path, FPM_USER, FPM_RUNTIME_GROUP, 0660);
         }
     }
 }
@@ -391,7 +454,7 @@ function grantReadOnlyGroupAccess(string $platform, string $root, string $group)
         //     čita privatni config. Kod aplikacije i dalje nije zapisiv FPM-u.
         // EN: On development macOS the deploy account remains the owner and
         //     the FPM group reads private config. FPM still cannot write code.
-        applyTree($root, 'simbioza-deploy', $group, 02750, 0640);
+        applyTree($root, FPM_DEPLOY_USER, $group, 02750, 0640);
         return;
     }
 
@@ -500,12 +563,12 @@ case "$1" in
   *[!0-9a-f]*|'') exit 64 ;;
 esac
 [ "${#1}" -eq 48 ] || exit 64
-unit="simbioza-setup-$1.service"
+unit="__SETUP_UNIT_PREFIX__-$1.service"
 result=__REQUEST_DIRECTORY__/"$1.result.json"
 /usr/bin/systemd-run --quiet --collect --unit="$unit" \
-  --uid=simbioza-deploy --gid=deploy-simbioza \
+  --uid=__DEPLOY_USER__ --gid=__DEPLOY_GROUP__ \
   --property=ExitType=cgroup \
-  --property=SupplementaryGroups=run-simbioza \
+  --property=SupplementaryGroups=__RUNTIME_GROUP__ \
   --property=ProtectSystem=full --property=ProtectHome=true \
   --property=PrivateTmp=true --property=PrivateDevices=true \
   --property=NoNewPrivileges=true --property=UMask=0007 \
@@ -543,25 +606,32 @@ esac
 export HOME=__HOME__
 export COMPOSER_HOME="$HOME/.composer"
 export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
-exec /usr/bin/sudo -n -u simbioza-deploy -- __PHP__ __WORKER__ "$1"
+exec /usr/bin/sudo -n -u __DEPLOY_USER__ -- __PHP__ __WORKER__ "$1"
 SH;
     }
     $helper = str_replace(
-        ['__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__'],
+        [
+            '__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__',
+            '__DEPLOY_USER__', '__DEPLOY_GROUP__', '__RUNTIME_GROUP__', '__SETUP_UNIT_PREFIX__',
+        ],
         [
             escapeshellarg($root),
             escapeshellarg($root . '/data/setup-requests'),
             escapeshellarg($home),
             escapeshellarg($php),
             escapeshellarg($worker),
+            FPM_DEPLOY_USER,
+            FPM_DEPLOY_GROUP,
+            FPM_RUNTIME_GROUP,
+            'simbioza-setup' . FPM_INSTANCE_SUFFIX,
         ],
         $helper,
     );
-    writeSystemFile('/usr/local/sbin/simbioza-setup', $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
-    $sudoers = 'fpm-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n"
-    . '%deploy-simbioza ALL=(root) NOPASSWD: /usr/local/sbin/simbioza-setup *' . "\n";
-    writeSystemFile('/etc/sudoers.d/simbioza-setup', $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
-    runCommand(['visudo', '-cf', '/etc/sudoers.d/simbioza-setup']);
+    writeSystemFile(FPM_HELPER, $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
+    $sudoers = FPM_USER . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n"
+    . '%' . FPM_DEPLOY_GROUP . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n";
+    writeSystemFile(FPM_SUDOERS, $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
+    runCommand(['visudo', '-cf', FPM_SUDOERS]);
 }
 
 /** HR: Instalira platformsku konfiguraciju namjenskog FPM poola. EN: Installs the platform-specific dedicated FPM pool configuration. */
@@ -576,12 +646,12 @@ function installFpm(
     prepareFpmLogFiles($root);
     if ($platform === 'linux') {
         $version = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
-        $baseDirectory = '/etc/php/' . $version . '/fpm-simbioza';
+        $baseDirectory = '/etc/php/' . $version . '/' . FPM_SYSTEMD_RUN;
         if (!is_dir('/etc/php/' . $version . '/fpm')) {
             throw new RuntimeException('Install the php' . $version . '-fpm package before running this tool.');
         }
         $configuration = "[global]\n"
-        . "pid = /run/php-fpm-simbioza/php-fpm.pid\n"
+        . 'pid = /run/' . FPM_SYSTEMD_RUN . "/php-fpm.pid\n"
         . 'error_log = ' . $root . "/data/logs/php-fpm.log\n"
         . "daemonize = no\n\n"
         . $pool;
@@ -594,13 +664,13 @@ function installFpm(
             $root . '/config',
             $root . '/resources/config/menu',
             $root . '/resources/config/theme',
-            '/run/php-fpm-simbioza',
+            '/run/' . FPM_SYSTEMD_RUN,
         ];
         $unit = "[Unit]\nDescription=Isolated PHP-FPM for Simbioza\nAfter=network.target\n\n"
         . "[Service]\nType=notify\n"
         . 'ExecStart=' . $phpFpm . ' --nodaemonize --fpm-config ' . $configurationPath . "\n"
         . "ExecReload=/bin/kill -USR2 \$MAINPID\nRestart=on-failure\n"
-        . "RuntimeDirectory=php-fpm-simbioza\nRuntimeDirectoryMode=0755\nUMask=0007\n"
+        . 'RuntimeDirectory=' . FPM_SYSTEMD_RUN . "\nRuntimeDirectoryMode=0755\nUMask=0007\n"
         . "ProtectSystem=strict\nProtectHome=true\nPrivateTmp=true\nPrivateDevices=true\n"
             // HR: FPM smije preko jednog root-owned helpera zatražiti od
             //     systemd-a zaseban worker. Worker ponovno uključuje
@@ -617,26 +687,26 @@ function installFpm(
         . "MemoryHigh=768M\nMemoryMax=1G\nTasksMax=64\n\n"
         . "[Install]\nWantedBy=multi-user.target\n";
         writeSystemFile(
-            '/etc/systemd/system/php-fpm-simbioza.service',
+            '/etc/systemd/system/' . FPM_SYSTEMD_SERVICE,
             $unit,
             0644,
             'root',
             'root',
         );
         runCommand(['systemctl', 'daemon-reload']);
-        runCommand(['systemctl', 'enable', '--now', 'php-fpm-simbioza.service']);
-        runCommand(['systemctl', 'restart', 'php-fpm-simbioza.service']);
+        runCommand(['systemctl', 'enable', '--now', FPM_SYSTEMD_SERVICE]);
+        runCommand(['systemctl', 'restart', FPM_SYSTEMD_SERVICE]);
         return;
     }
 
     $prefix = darwinPrefix($phpFpm);
-    $configurationDirectory = $prefix . '/etc/simbioza';
-    $runDirectory = $prefix . '/var/run/simbioza';
+    $configurationDirectory = $prefix . '/etc/' . FPM_CONFIG_NAME;
+    $runDirectory = $prefix . '/var/run/' . FPM_CONFIG_NAME;
     foreach ([$configurationDirectory, $runDirectory] as $directory) {
         if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
             throw new RuntimeException('Unable to create ' . $directory);
         }
-        applyMetadata($directory, 'fpm-simbioza', 'run-simbioza', 0750);
+        applyMetadata($directory, FPM_USER, FPM_RUNTIME_GROUP, 0750);
     }
     writeSystemFile($configurationDirectory . '/pool.conf', $pool, 0644, 'root', 'wheel');
     $global = "[global]\n"
@@ -657,8 +727,8 @@ function installFpm(
     . '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
     . '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n"
     . '<plist version="1.0"><dict>'
-    . '<key>Label</key><string>hr.simbioza.php-fpm</string>'
-    . '<key>UserName</key><string>fpm-simbioza</string>'
+    . '<key>Label</key><string>' . FPM_SERVICE_LABEL . '</string>'
+    . '<key>UserName</key><string>' . FPM_USER . '</string>'
     . '<key>ProgramArguments</key><array><string>' . htmlspecialchars($phpFpm, ENT_XML1) . '</string>'
     . '<string>--nodaemonize</string><string>--fpm-config</string>'
     . '<string>' . htmlspecialchars($configurationDirectory . '/php-fpm.conf', ENT_XML1) . '</string></array>'
@@ -666,9 +736,9 @@ function installFpm(
     . '<key>StandardOutPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
     . '<key>StandardErrorPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
     . '</dict></plist>' . "\n";
-    $plistPath = '/Library/LaunchDaemons/hr.simbioza.php-fpm.plist';
+    $plistPath = '/Library/LaunchDaemons/' . FPM_SERVICE_LABEL . '.plist';
     writeSystemFile($plistPath, $plist, 0644, 'root', 'wheel');
-    runCommand(['launchctl', 'bootout', 'system/' . 'hr.simbioza.php-fpm'], true);
+    runCommand(['launchctl', 'bootout', 'system/' . FPM_SERVICE_LABEL], true);
     // HR: launchd na macOS-u može kratko zadržati upravo uklonjenu oznaku.
     //     Ponovni install zato kontrolirano pričeka samo taj prijelaz.
     // EN: launchd on macOS can briefly retain the just-removed label. A
@@ -703,7 +773,7 @@ function prepareFpmLogFiles(string $root): void
         if (!is_file($path) && !touch($path)) {
             throw new RuntimeException('Unable to create FPM log: ' . $path);
         }
-        applyMetadata($path, 'fpm-simbioza', 'run-simbioza', 0660);
+        applyMetadata($path, FPM_USER, FPM_RUNTIME_GROUP, 0660);
     }
 }
 
@@ -720,11 +790,11 @@ function systemdQuote(string $path): string
 /** HR: Gradi zaključani pool s jasnom aplikacijskom oznakom. EN: Builds a locked-down pool with an explicit application marker. */
 function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $simpleSamlConfig): string
 {
-    $identity = $includeIdentity ? "user = fpm-simbioza\ngroup = app-simbioza\n" : '';
+    $identity = $includeIdentity ? 'user = ' . FPM_USER . "\ngroup = " . FPM_APP_GROUP . "\n" : '';
     $simpleSamlEnvironment = $simpleSamlConfig === null
     ? ''
     : 'env[SIMPLESAMLPHP_CONFIG_DIR] = ' . $simpleSamlConfig . "\n";
-    return "[simbioza]\n"
+    return '[' . FPM_CONFIG_NAME . "]\n"
     . $identity
     . 'listen = ' . $listen . "\n"
     . "listen.allowed_clients = 127.0.0.1\n"
@@ -740,6 +810,7 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
     . "clear_env = yes\ncatch_workers_output = yes\ndecorate_workers_output = no\n"
     . "security.limit_extensions = .php\n"
     . "env[SIMBIOZA_SETUP_POOL] = 1\n"
+    . 'env[SIMBIOZA_SETUP_HELPER] = ' . FPM_HELPER . "\n"
     . 'env[HPH_APP_PATH] = ' . $root . "\n"
     . $simpleSamlEnvironment
     . 'env[TMPDIR] = ' . $root . "/data/tmp\n"
@@ -791,7 +862,7 @@ function writeSystemFile(string $path, string $contents, int $mode, string $owne
  */
 function sudoersRuleAvailable(): bool
 {
-    if (is_file('/etc/sudoers.d/simbioza-setup')) {
+    if (is_file(FPM_SUDOERS)) {
         return true;
     }
 
@@ -804,7 +875,7 @@ function sudoersRuleAvailable(): bool
         '-n',
         '-u',
         'root',
-        '/usr/local/sbin/simbioza-setup',
+        FPM_HELPER,
         'invalid',
     ], true);
 
@@ -821,11 +892,11 @@ function printChecks(
     ?string $simpleSamlConfig,
 ): void {
     $checks = [
-        ['FPM user', identityExists($platform, 'fpm-simbioza', false)],
-        ['Deploy user', identityExists($platform, 'simbioza-deploy', false)],
-        ['Maintainer deploy group', membershipExists($platform, $maintainer, 'deploy-simbioza')],
-        ['Maintainer runtime group', membershipExists($platform, $maintainer, 'run-simbioza')],
-        ['Setup helper', is_file('/usr/local/sbin/simbioza-setup') && is_executable('/usr/local/sbin/simbioza-setup')],
+        ['FPM user', identityExists($platform, FPM_USER, false)],
+        ['Deploy user', identityExists($platform, FPM_DEPLOY_USER, false)],
+        ['Maintainer deploy group', membershipExists($platform, $maintainer, FPM_DEPLOY_GROUP)],
+        ['Maintainer runtime group', membershipExists($platform, $maintainer, FPM_RUNTIME_GROUP)],
+        ['Setup helper', is_file(FPM_HELPER) && is_executable(FPM_HELPER)],
         ['Sudoers rule', sudoersRuleAvailable()],
         ['Application readable', is_readable($root . '/public/index.php')],
         ['Runtime data writable', is_writable($root . '/data')],

@@ -8,11 +8,11 @@ održavanje. Početna instalacija, upravljanje opcionalnim paketima i jezicima
 te nadogradnja aplikacije tada se mogu pokrenuti iz preglednika. Održavatelj
 može koristiti i CLI.
 
-**Trenutačno jedna instalacija po poslužitelju s ovim alatom:**
-`configure_fpm_setup.php` koristi fiksna imena sistemskih računa, pomoćnog
-programa, servisa i konfiguracije. Nemojte pokrenuti `--install` za drugu
-Simbiozu na računalu na kojem je alat već podesio prvu: time biste prepisali
-FPM konfiguraciju prve instalacije. Ograničenje ne smeta jednoj instalaciji.
+**Više instalacija na jednom poslužitelju:** izostavite `--instance` samo za
+izvorna zadana imena. Svakoj dodatnoj instalaciji dajte jedinstvenu oznaku
+`--instance` malim slovima (1–12 znakova) i različita lokalna vrata `--listen`.
+Alat tada stvara zasebne račune, grupe, pomoćni program, konfiguraciju i
+servis te odbija ponovno korištenje iste oznake za drugi direktorij aplikacije.
 
 ## 1. Pripremite izdanje i bazu
 
@@ -50,6 +50,10 @@ php scripts/configure_fpm_setup.php --check \
   --maintainer="$USER" --php-fpm="$(brew --prefix)/sbin/php-fpm"
 ```
 
+Za drugu instalaciju ponovite obje naredbe s istim dodatnim opcijama, npr.
+`--instance=druga --listen=127.0.0.1:9076`. Iste opcije zatim navedite uz
+`--finalize` u 5. koraku. Njihovo izostavljanje odabire drugi, zadani servis.
+
 Provjera ništa ne mijenja. Zadani pool sluša na `127.0.0.1:9075`; ta vrata
 smiju biti dostupna samo lokalno. Alat daje FPM računu pravo pisanja po
 radnim podacima, ali ne i po cijelom izdanju, te postavlja strogo ograničeni
@@ -72,6 +76,7 @@ ove instalacije usmjerite u namjenski pool, a ne kroz `mod_php`.
 <VirtualHost *:443>
     ServerName simbioza.example.org
     DocumentRoot /srv/simbioza/public
+    ProxyTimeout 900
 
     <Directory /srv/simbioza/public>
         Options -Indexes +FollowSymLinks
@@ -117,6 +122,7 @@ server {
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_pass 127.0.0.1:9075;
+        fastcgi_read_timeout 900s;
     }
 
     location ~ /\. {
@@ -126,7 +132,10 @@ server {
 ```
 
 Provjerite Nginx konfiguraciju prije ponovnog učitavanja. FPM port ne smije
-biti dostupan nepouzdanoj mreži.
+biti dostupan nepouzdanoj mreži. Priprema paketa kroz grafički instaler može
+trajati nekoliko minuta; čekanje od 900 sekundi sprječava zadanu pogrešku 504
+nakon 60 sekundi dok ograničeni radnik još radi. Uskladite i čekanje svakog
+dodatnog posredničkog proxyja, ali ne ukidajte ograničenja drugim siteovima.
 
 ## 4. Provedite grafičku instalaciju
 

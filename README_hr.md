@@ -148,6 +148,7 @@ zaseban [engleski indeks](docs/index_en.md).
 
 ## Dokumentacija
 
+- [Izdanje 0.2.3: pouzdano postavljanje više FPM instalacija i instalacijske upute](docs/release-0.2.3_hr.md)
 - [Izdanje 0.2.2: oporavak importa i ispravak rasporeda dokumenta](docs/release-0.2.2_hr.md)
 - [Izdanje 0.2.1: pouzdaniji uvoz velikih Confluence arhiva](docs/release-0.2.1_hr.md)
 - [Izdanje 0.2.0: nastavivo trajno brisanje područja](docs/release-0.2.0_hr.md)

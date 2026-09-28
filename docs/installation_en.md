@@ -37,10 +37,10 @@ does not prove that Apache or FPM runs the same PHP build.
 
 Install a tagged release into a directory **without** a `.git` checkout.
 Choose the current stable tag on the [release page](https://github.com/kmihalj/Simbioza/releases)
-and replace `0.1.91` below if a newer one exists:
+and replace `0.2.3` below if a newer one exists:
 
 ```bash
-SIMBIOZA_TAG=0.1.91
+SIMBIOZA_TAG=0.2.3
 SIMBIOZA_FETCH_DIR="$(mktemp -d)"
 git clone --quiet --depth 1 --branch "$SIMBIOZA_TAG" --single-branch \
   https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/release"
@@ -94,8 +94,9 @@ createdb --owner=simbioza --encoding=UTF8 simbioza
 Now continue with **either** the [FPM steps](installation_fpm_en.md) **or**
 the [Apache mod_php steps](installation_mod_php_en.md). Both guides include
 their own web-server configuration, installer, final checks, and applicable
-permissions. Do not run the dedicated FPM setup tool for a second installation
-on the same host until its fixed-instance limitation has been resolved.
+permissions. For multiple isolated FPM installations on one host, give each
+installation a unique `--instance` name and `--listen` port as shown in the FPM
+guide. The setup tool refuses to reuse an instance name for a different root.
 
 ## After installation
 

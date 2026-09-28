@@ -38,10 +38,10 @@ ili FPM izvršavaju istu PHP verziju.
 
 Označeno izdanje instalirajte u direktorij **bez** `.git` direktorija.
 Odaberite aktualni stabilni tag na [stranici izdanja](https://github.com/kmihalj/Simbioza/releases)
-i zamijenite `0.1.91` ako je dostupno novije izdanje:
+i zamijenite `0.2.3` ako je dostupno novije izdanje:
 
 ```bash
-SIMBIOZA_TAG=0.1.91
+SIMBIOZA_TAG=0.2.3
 SIMBIOZA_FETCH_DIR="$(mktemp -d)"
 git clone --quiet --depth 1 --branch "$SIMBIOZA_TAG" --single-branch \
   https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/release"
@@ -95,8 +95,9 @@ createdb --owner=simbioza --encoding=UTF8 simbioza
 Nastavite **ili** [FPM postupkom](installation_fpm_hr.md) **ili**
 [Apache mod_php postupkom](installation_mod_php_hr.md). Svaki sadrži vlastitu
 konfiguraciju web-poslužitelja, instaler, završnu provjeru i odgovarajuća
-prava. Dok se ne ukloni ograničenje fiksnih imena, nemojte pokretati namjenski
-FPM alat za drugu instalaciju na istom računalu.
+prava. Za više izoliranih FPM instalacija na istom računalu svakoj zadajte
+zasebnu oznaku `--instance` i vrata `--listen`, kao u FPM uputi. Alat odbija
+ponovnu uporabu iste oznake za drugi direktorij aplikacije.
 
 ## Nakon instalacije
 

@@ -21,6 +21,30 @@ podesite vlasništvo ili ACL samo za te putanje; cijelo izdanje ne smije biti
 zapisivo web-procesu i ne koristite `chmod 777`. Korijenski web direktorij je
 `public/`, nikada direktorij izdanja.
 
+Na macOS-u ovo podesite **prije** otvaranja čarobnjaka. Ako Apache radi pod
+drugom grupom, zamijenite `_www`. Nasljedni ACL za održavatelja važan je jer
+čarobnjak stvara privatne datoteke s pravima `0600` koje kasnije CLI
+nadogradnje moraju moći čitati.
+
+```bash
+cd /srv/simbioza
+MAINTAINER="$(id -un)"
+sudo chgrp -R _www config data resources/config/menu resources/config/theme
+chmod 3770 config
+chmod 2770 resources/config/menu resources/config/theme
+chmod -R g+rwX data resources/config/menu resources/config/theme
+sudo chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" config
+sudo find data resources/config/menu resources/config/theme -type d -exec chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" {} +
+```
+
+Na macOS-u umjesto `/srv/simbioza` koristite stvarnu putanju izdanja. Na
+Linuxu podesite odgovarajući uski ACL i zadani ACL pomoću `setfacl` te nakon
+instalacije provjerite može li održavatelj čitati svaku nastalu privatnu
+datoteku; maska POSIX ACL-a može ograničiti pristup datoteci izričito stvorenoj
+s pravima `0600`. Nemojte to rješavati javnim otvaranjem prava datoteke.
+Instaler i CLI moraju imati pristup radnim putanjama, a `vendor/` ostaje
+nedostupan za pisanje web-procesu.
+
 ## 2. Potvrdite da Apache doista izvršava mod_php
 
 Verzija CLI PHP-a sama po sebi ne dokazuje koji PHP koristi Apache. Provjerite

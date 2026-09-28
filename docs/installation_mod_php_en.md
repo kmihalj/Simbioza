@@ -21,6 +21,28 @@ ACLs for these exact paths on your system; do not make the whole release
 web-writable and do not use `chmod 777`. The document root is `public/`, never
 the release directory.
 
+On macOS, do this **before** opening the wizard. Replace `_www` if Apache runs
+under another group. The maintainer's inherited ACL is important: the wizard
+creates private `0600` files which must remain readable to later CLI updates.
+
+```bash
+cd /srv/simbioza
+MAINTAINER="$(id -un)"
+sudo chgrp -R _www config data resources/config/menu resources/config/theme
+chmod 3770 config
+chmod 2770 resources/config/menu resources/config/theme
+chmod -R g+rwX data resources/config/menu resources/config/theme
+sudo chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" config
+sudo find data resources/config/menu resources/config/theme -type d -exec chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" {} +
+```
+
+Use the actual release path rather than `/srv/simbioza` on macOS. On Linux,
+configure the equivalent narrow write and default ACLs with `setfacl`, and
+verify the maintainer can read each generated private file after installation;
+POSIX ACL masks can restrict access when a file is explicitly created `0600`.
+Do not change its public mode to fix that. The installer and CLI must both
+retain access to the runtime paths, while `vendor/` remains web-read-only.
+
 ## 2. Confirm that Apache actually runs mod_php
 
 The CLI PHP version alone is not proof that Apache uses the same PHP. Inspect
