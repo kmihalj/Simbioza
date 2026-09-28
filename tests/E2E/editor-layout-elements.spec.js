@@ -248,4 +248,21 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   await expect(page.locator('.editor-html-chart-svg .editor-html-chart-legend')).toHaveCount(1);
   await expect(page.locator('.editor-html-chart-svg .editor-html-chart-background'))
     .toHaveAttribute('fill', '#f0f4f8');
+
+  // HR: Prazan Confluence redak i sljedeći Bootstrap grid ne smiju prekriti akcije dokumenta.
+  // EN: An empty Confluence row followed by a Bootstrap grid must not overlap document actions.
+  await page.locator('.editor-html-view-content').evaluate((content) => {
+    content.innerHTML = '<div class="w-100"><div class="row g-3"></div>'
+      + '<div class="row g-3"><div class="col-12 col-lg-6">'
+      + '<section class="card">Imported card</section></div></div></div>';
+  });
+  const documentSpacing = await page.evaluate(() => {
+    const actions = document.querySelector('.editor-html-view-actions');
+    const card = document.querySelector('.editor-html-view-content .card');
+    return {
+      actionsBottom: actions?.getBoundingClientRect().bottom ?? 0,
+      cardTop: card?.getBoundingClientRect().top ?? 0,
+    };
+  });
+  expect(documentSpacing.cardTop).toBeGreaterThanOrEqual(documentSpacing.actionsBottom + 8);
 });

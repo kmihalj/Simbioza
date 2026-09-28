@@ -155,6 +155,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 - [Brand identity and theme](docs/branding_en.md)
+- [Release 0.2.2: import recovery and document layout fixes](docs/release-0.2.2_en.md)
 - [Release 0.2.1: reliable large Confluence imports](docs/release-0.2.1_en.md)
 - [Release 0.2.0: resumable permanent Workspace deletion](docs/release-0.2.0_en.md)
 - [Release 0.1.99: installation-private module support](docs/release-0.1.99_en.md)
