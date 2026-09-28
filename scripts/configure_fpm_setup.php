@@ -818,7 +818,13 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
     . 'php_admin_value[session.save_path] = ' . $root . "/data/sessions\n"
     . 'php_admin_value[upload_tmp_dir] = ' . $root . "/data/tmp\n"
     . 'php_admin_value[sys_temp_dir] = ' . $root . "/data/tmp\n"
-    . "php_admin_value[max_execution_time] = 0\n"
+        // HR: Na nekim PHP-FPM izdanjima vrijednost 0 ipak prekida zahtjev
+        //     nakon 60 sekundi. Eksplicitnih 900 s pokriva GUI instalaciju,
+        //     dok zasebni Setup worker ostaje ograničen dopuštenim radnjama.
+        // EN: Some PHP-FPM builds still terminate a request after 60 seconds
+        //     when this value is 0. An explicit 900 s covers GUI installation;
+        //     the separate Setup worker remains restricted to allowed actions.
+    . "php_admin_value[max_execution_time] = 900\n"
         // HR: Dinamičke config datoteke mijenjaju se atomskim renameom kroz
         //     Setup GUI. Namjenski pool mora ih provjeriti u svakom zahtjevu.
         // EN: Setup GUI changes dynamic config files through atomic renames.

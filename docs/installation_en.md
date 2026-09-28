@@ -37,13 +37,18 @@ does not prove that Apache or FPM runs the same PHP build.
 
 Install a tagged release into a directory **without** a `.git` checkout.
 Choose the current stable tag on the [release page](https://github.com/kmihalj/Simbioza/releases)
-and replace `0.2.3` below if a newer one exists:
+and replace `0.2.4` below if a newer one exists:
 
 ```bash
-SIMBIOZA_TAG=0.2.3
+SIMBIOZA_TAG=0.2.4
 SIMBIOZA_FETCH_DIR="$(mktemp -d)"
-git clone --quiet --depth 1 --branch "$SIMBIOZA_TAG" --single-branch \
-  https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/release"
+mkdir "$SIMBIOZA_FETCH_DIR/release"
+git -C "$SIMBIOZA_FETCH_DIR/release" init -q
+git -C "$SIMBIOZA_FETCH_DIR/release" remote add origin \
+  https://github.com/kmihalj/Simbioza.git
+git -C "$SIMBIOZA_FETCH_DIR/release" fetch --quiet --depth 1 origin \
+  "refs/tags/$SIMBIOZA_TAG:refs/tags/$SIMBIOZA_TAG"
+git -C "$SIMBIOZA_FETCH_DIR/release" -c advice.detachedHead=false checkout --quiet "$SIMBIOZA_TAG"
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ "$SIMBIOZA_FETCH_DIR/release/" /srv/simbioza/
 cd /srv/simbioza

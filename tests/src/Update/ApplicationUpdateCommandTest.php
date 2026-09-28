@@ -286,6 +286,7 @@ PHP);
         $this->assertStringContainsString("'data/config'", $source);
         $this->assertStringContainsString('assertInstanceNotReused($platform, $root, $phpFpm);', $source);
         $this->assertStringContainsString("'env[SIMBIOZA_SETUP_HELPER] = ' . FPM_HELPER", $source);
+        $this->assertStringContainsString('php_admin_value[max_execution_time] = 900', $source);
         $this->assertMatchesRegularExpression(
             '/else \{\s*installIdentities\([^;]+;\s*installHelper\(/s',
             $source,

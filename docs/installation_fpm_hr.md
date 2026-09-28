@@ -136,6 +136,11 @@ biti dostupan nepouzdanoj mreži. Priprema paketa kroz grafički instaler može
 trajati nekoliko minuta; čekanje od 900 sekundi sprječava zadanu pogrešku 504
 nakon 60 sekundi dok ograničeni radnik još radi. Uskladite i čekanje svakog
 dodatnog posredničkog proxyja, ali ne ukidajte ograničenja drugim siteovima.
+Namjenski pool koji izrađuje `configure_fpm_setup.php` postavlja i PHP-ovo
+`max_execution_time` na 900 sekundi. To je važno: na provjerenom macOS/PHP
+8.5 okruženju vrijednost `0` ipak je prekidala dugačak zahtjev nakon jedne
+minute, premda bi trebala značiti bez ograničenja. Nakon generiranja poola
+provjerite oba vremenska ograničenja i testirajte dulju pripremu paketa.
 
 ## 4. Provedite grafičku instalaciju
 

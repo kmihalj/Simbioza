@@ -38,13 +38,18 @@ ili FPM izvršavaju istu PHP verziju.
 
 Označeno izdanje instalirajte u direktorij **bez** `.git` direktorija.
 Odaberite aktualni stabilni tag na [stranici izdanja](https://github.com/kmihalj/Simbioza/releases)
-i zamijenite `0.2.3` ako je dostupno novije izdanje:
+i zamijenite `0.2.4` ako je dostupno novije izdanje:
 
 ```bash
-SIMBIOZA_TAG=0.2.3
+SIMBIOZA_TAG=0.2.4
 SIMBIOZA_FETCH_DIR="$(mktemp -d)"
-git clone --quiet --depth 1 --branch "$SIMBIOZA_TAG" --single-branch \
-  https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/release"
+mkdir "$SIMBIOZA_FETCH_DIR/release"
+git -C "$SIMBIOZA_FETCH_DIR/release" init -q
+git -C "$SIMBIOZA_FETCH_DIR/release" remote add origin \
+  https://github.com/kmihalj/Simbioza.git
+git -C "$SIMBIOZA_FETCH_DIR/release" fetch --quiet --depth 1 origin \
+  "refs/tags/$SIMBIOZA_TAG:refs/tags/$SIMBIOZA_TAG"
+git -C "$SIMBIOZA_FETCH_DIR/release" -c advice.detachedHead=false checkout --quiet "$SIMBIOZA_TAG"
 mkdir -p /srv/simbioza
 rsync --archive --exclude=.git/ "$SIMBIOZA_FETCH_DIR/release/" /srv/simbioza/
 cd /srv/simbioza
