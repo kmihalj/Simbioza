@@ -155,6 +155,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 - [Brand identity and theme](docs/branding_en.md)
+- [Release 0.2.7: expanded first-party accessibility widget in six languages](docs/release-0.2.7_en.md)
 - [Release 0.2.6: complete installation guides and all modules selected by default](docs/release-0.2.6_en.md)
 - [Release 0.2.4: reliable long-running isolated FPM setup](docs/release-0.2.4_en.md)
 - [Release 0.2.3: reliable multi-site FPM setup and installation guidance](docs/release-0.2.3_en.md)
