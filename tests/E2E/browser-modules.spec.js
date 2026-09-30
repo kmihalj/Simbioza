@@ -1,4 +1,91 @@
 import { expect, test } from '@playwright/test';
+
+/*
+ * HR: Predmemorirani widget mora izgraditi iste nativne kontrole i zadržati
+ *     tipkovnicu, spremanje, prioritete filtara i uski prikaz bez većeg HTML-a.
+ * EN: The cached widget must build native controls and preserve keyboard use,
+ *     persistence, filter precedence, and narrow layouts without larger HTML.
+ */
+test('Accessibility builds native translated controls and retains browser preferences', async ({ page }) => {
+  await page.goto('/');
+  const launcher = page.locator('[data-hph-a11y-open]');
+  const dialog = page.locator('[data-hph-a11y-dialog]');
+  await expect(launcher).toBeVisible();
+  await launcher.click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('tab')).toHaveCount(4);
+  const contract = await dialog.evaluate((element) => {
+    const buttons = [...element.querySelectorAll('button[data-hph-a11y-setting]')];
+    const selects = [...element.querySelectorAll('select[data-hph-a11y-setting]')];
+    return {
+      buttons: buttons.length,
+      safeButtons: buttons.every((button) => button.type === 'button'
+        && button.hasAttribute('aria-pressed') && button.getAttribute('aria-label')
+        && button.dataset.hphA11yOffValue && button.querySelector('svg[aria-hidden="true"]')),
+      selects: selects.length,
+      labeledSelects: selects.every((select) => select.labels.length === 1 && select.labels[0].textContent.trim()),
+      resets: element.querySelectorAll('[data-hph-a11y-reset]').length,
+      sizeSteps: element.querySelectorAll('[data-hph-a11y-size-step]').length,
+      inertPayloadRemoved: !element.querySelector('[data-hph-a11y-labels]'),
+    };
+  });
+  expect(contract).toEqual({buttons: 14, safeButtons: true, selects: 6, labeledSelects: true, resets: 2, sizeSteps: 2, inertPayloadRemoved: true});
+  await dialog.locator('[data-hph-a11y-setting="lineHeight"]').selectOption('175');
+  await dialog.locator('[data-hph-a11y-setting="links"]').click();
+  await expect(page.locator('html')).toHaveAttribute('data-hph-a11y-links', 'on');
+  const tabs = dialog.getByRole('tab');
+  await tabs.nth(0).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(tabs.nth(1)).toBeFocused();
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+  const yellow = dialog.locator('[data-hph-a11y-value="yellow"]');
+  await yellow.click();
+  await tabs.nth(2).click();
+  await dialog.locator('[data-hph-a11y-value="mono"]').click();
+  await expect(page.locator('[data-hph-a11y-filter-overlay]')).toBeHidden();
+  await tabs.nth(1).click();
+  await yellow.click();
+  await expect(page.locator('[data-hph-a11y-filter-overlay]')).toBeVisible();
+  await tabs.nth(3).click();
+  await dialog.locator('[data-hph-a11y-value="line"]').click();
+  await dialog.locator('[data-hph-a11y-value="mask"]').click();
+  await expect(dialog.locator('[data-hph-a11y-value="line"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(dialog.locator('[data-hph-a11y-value="mask"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-hph-a11y-guide-overlay]')).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(launcher).toBeFocused();
+  await page.reload();
+  await expect(launcher).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-hph-a11y-links', 'on');
+  await expect(page.locator('html')).toHaveAttribute('data-hph-a11y-line-height', '175');
+  await launcher.click();
+  await dialog.locator('[data-hph-a11y-reset]').last().click();
+  await page.setViewportSize({width: 320, height: 844});
+  const plus = dialog.locator('[data-hph-a11y-size-step="1"]');
+  for (let step = 0; step < 5; step += 1) {
+    await plus.click();
+  }
+  await expect(dialog.locator('[data-hph-a11y-size-output]')).toHaveText('200%');
+  await expect(plus).toBeDisabled();
+  await expect.poll(() => dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  await dialog.locator('[data-hph-a11y-reset]').last().click();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(launcher).toBeFocused();
+  const hostileLabel = '<img src=x onerror="window.__accessibilityInjection=true">';
+  await page.route('**/', async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const updated = body.replace(/(<script type="application\/json" data-hph-a11y-labels>)(.*?)(<\/script>)/s,
+      (_, start, json, end) => `${start}${JSON.stringify({...JSON.parse(json), title: hostileLabel})}${end}`);
+    await route.fulfill({response, body: updated});
+  });
+  await page.goto('/');
+  await launcher.click();
+  await expect(dialog.locator('#hph-a11y-title')).toHaveText(hostileLabel);
+  await expect(dialog.locator('img')).toHaveCount(0);
+  expect(await page.evaluate(() => window.__accessibilityInjection)).toBeUndefined();
+});
 import {
   apiHeaders,
   createEditorSurface,

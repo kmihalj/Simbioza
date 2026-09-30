@@ -1,6 +1,6 @@
 # Simbioza 0.2.7
 
-Opcionalni modul Pristupačnost nadograđen je na 0.1.3. Vlastiti widget sada ima kartice usklađene s temom, vidljivo stanje uključenosti, broj aktivnih prilagodbi te promjenu veličine teksta od 100% do 200%.
+Opcionalni modul Pristupačnost nadograđen je na 0.1.4. Vlastiti widget sada ima kartice usklađene s temom, vidljivo stanje uključenosti, broj aktivnih prilagodbi te promjenu veličine teksta od 100% do 200%. Ponovljivu strukturu kontrola i ikona gradi predmemorirana lokalna skripta, čime HTML odgovora ostaje unutar postojećeg ograničenja performansi.
 
 Nove kontrole obuhvaćaju zasebnu visinu retka, razmak odlomaka, debljinu teksta, isticanje naslova, visoki kontrast žutog teksta na crnoj podlozi, visoku/nisku zasićenost i monokromatski prikaz, vodič i masku za čitanje te veliki kursor. Postojeći lokalno uključeni fontovi, semantičke palete boja, isticanje poveznica, jači pokazatelji fokusa i smanjenje animacija ostaju dostupni. Sve su kontrole prevedene na hrvatski, engleski, njemački, francuski, španjolski i talijanski.
 
