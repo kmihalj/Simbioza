@@ -556,7 +556,7 @@ final readonly class InstallationWebApplication
         $catalog = new ModuleCatalog();
         $optionalModules = is_array($values['optional_modules'] ?? null)
         ? $values['optional_modules']
-        : $catalog->recommendedSlugs();
+        : $catalog->optionalSlugs();
         $packageChangesAvailable = $this->installerPackageChangesAvailable();
         $timezone = $this->scalarString(
             $values['timezone'] ?? ($primaryLocale === 'hr' ? 'Europe/Zagreb' : 'UTC'),
@@ -590,8 +590,7 @@ final readonly class InstallationWebApplication
             $this->escape($this->text('modules_title', $locale)),
             $this->escape($this->text('modules_intro', $locale)),
             $packageChangesAvailable ? '' : sprintf(
-                '<p class="hint">%s <code>php scripts/installation_packages.php prepare '
-                . '--modules=theme,calendar</code></p>',
+                '<p class="hint">%s <code>php scripts/installation_packages.php prepare</code></p>',
                 $this->escape($this->text('modules_cli_hint', $locale)),
             ),
             $this->moduleCheckboxes($optionalModules, $locale, $packageChangesAvailable),
@@ -1120,10 +1119,12 @@ final readonly class InstallationWebApplication
             'supported_locales_label' => ['hr' => 'Dostupni jezici', 'en' => 'Available languages'],
             'modules_title' => ['hr' => 'Opcionalni moduli', 'en' => 'Optional modules'],
             'modules_intro' => [
-                'hr' => 'Odaberite dodatne mogućnosti. Obvezni moduli za područja, pretraživanje, korisnike, '
-                . 'HTML editor, autentikaciju, izbornik, obavijesti i bazu uvijek se instaliraju.',
-                'en' => 'Choose additional features. Required workspace, search, user, HTML editor, authentication, '
-                . 'menu, notification, and database modules are always installed.',
+                'hr' => 'Svi opcionalni moduli unaprijed su odabrani; odznačite one koje ne trebate. Obvezni moduli '
+                . 'za područja, pretraživanje, korisnike, HTML editor, autentikaciju, izbornik, obavijesti i bazu '
+                . 'uvijek se instaliraju.',
+                'en' => 'All optional modules are selected by default; deselect those you do not need. Required '
+                . 'workspace, search, user, HTML editor, authentication, menu, notification, and database modules '
+                . 'are always installed.',
             ],
             'modules_cli_hint' => [
                 'hr' => 'Ova instalacija nema privilegirani FPM helper. Nedostupne pakete prvo pripremite '
@@ -1239,10 +1240,12 @@ final readonly class InstallationWebApplication
             ],
             'setup_helper' => [
                 'hr' => 'Odabrane module nije moguće pripremiti iz preglednika. Pokrenite '
-                . '`php scripts/installation_packages.php prepare --modules=...`, osvježite installer i '
+                . '`php scripts/installation_packages.php prepare` '
+                . '(ili navedite `--modules=...` za uži izbor), osvježite installer i '
                 . 'pokušajte ponovno.',
                 'en' => 'Selected modules cannot be prepared in the browser. Run '
-                . '`php scripts/installation_packages.php prepare --modules=...`, reload the installer, and try again.',
+                . '`php scripts/installation_packages.php prepare` '
+                . '(or use `--modules=...` for a smaller set), reload the installer, and try again.',
             ],
             'language_prepare' => [
                 'hr' => 'Odabrane jezike nije moguće pripremiti. Provjerite jesu li paketi objavljeni i potpuni, '

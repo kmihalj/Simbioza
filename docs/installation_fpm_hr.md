@@ -155,13 +155,14 @@ Za instalaciju na `/simbioza` koristite
 privatnom prozoru preglednika; token nemojte dijeliti ni prikazivati na
 screenshotu. Čarobnjak provjerava preduvjete i bazu, traži naziv sitea,
 jezike, vremensku zonu, prvog administratora i opcionalne module te prije
-instalacije prikazuje pregled. Ako namjenski pomoćni program radi, odabrani
-opcionalni paketi instaliraju se kroz GUI. Tema je preporučena, ali nije
-obvezna.
+instalacije prikazuje pregled. Svi opcionalni moduli unaprijed su označeni;
+odznačite one koje ne želite. Ako namjenski pomoćni program radi, odabrani
+opcionalni paketi instaliraju se kroz GUI.
 
 Ako svjesno ne koristite namjenski pomoćni program, prije nastavka obrasca
 kao deploy korisnik pripremite odabrane opcionalne pakete naredbom
-`php scripts/installation_packages.php prepare --modules=theme,calendar` i
+`php scripts/installation_packages.php prepare` (svi moduli) ili navedite
+`--modules=theme,calendar` za uži izbor, a
 dodatne jezike naredbom
 `php scripts/installation_languages.php prepare --locales=de,es,fr,it`.
 Popise prilagodite stvarnom odabiru i osvježite instalacijski obrazac. Bez

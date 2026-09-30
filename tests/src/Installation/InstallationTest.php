@@ -23,6 +23,7 @@ use App\Installation\InstallationRequirements;
 use App\Installation\InstallationRunner;
 use App\Installation\InstallationValidationException;
 use App\Installation\InstallationWebApplication;
+use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -109,6 +110,24 @@ final class InstallationTest extends TestCase
             'username' => 'simbioza',
             'password' => '',
         ])['driver']);
+    }
+
+    /** HR: Novi obrazac uključuje sve opcionalne module, ali izričit prazan odabir ostaje prazan. EN: New forms select all optional modules while an explicit empty selection remains empty. */
+    public function testOptionalModulesDefaultToAllAndCanAllBeDeselected(): void
+    {
+        $validator = new InstallationInputValidator();
+        $input = [
+            'name' => 'Simbioza',
+            'primary_locale' => 'hr',
+            'supported_locales' => ['hr', 'en'],
+            'timezone' => 'Europe/Zagreb',
+        ];
+
+        $this->assertSame((new ModuleCatalog())->optionalSlugs(), $validator->application($input)['optional_modules']);
+        $this->assertSame([], $validator->application([
+            ...$input,
+            'module_selection_present' => '1',
+        ])['optional_modules']);
     }
 
     /** HR: Odbija slabe administratorske lozinke. EN: Rejects weak administrator passwords. */
@@ -442,7 +461,7 @@ final class InstallationTest extends TestCase
         $this->assertSame('Korisničke upute', $workspaceNames['hr']);
         $this->assertSame('User guides', $workspaceNames['en']);
         $this->assertSame($workspaceNames['en'], $workspaces[0]['name']);
-        $this->assertCount(8, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $this->assertCount(10, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
         $meetingPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('slug', '=', 'sastanci')->first();
         $this->assertIsArray($meetingPage);
@@ -579,6 +598,13 @@ final class InstallationTest extends TestCase
             dirname(__DIR__, 3) . '/resources/installation/workspace/instalacija.zip',
             $root . '/resources/installation/workspace/instalacija.zip',
         );
+        foreach (['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip'] as $guideArchive) {
+            copy(
+                dirname(__DIR__, 3) . '/resources/installation/workspace/' . $guideArchive,
+                $root . '/resources/installation/workspace/' . $guideArchive,
+            );
+        }
+
         // HR: Reproducira javni CLI put starog update.php, ne izravni poziv novog koraka.
         // EN: Reproduces the public CLI path of an old update.php, not a direct new-step call.
         file_put_contents($root . '/scripts/legacy-updater-migrate.php', <<<'PHP'
@@ -620,6 +646,14 @@ PHP);
         $installationAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $installationPage['id'])->get();
         $managedPageIds = [(int)$meetingPage['id'], (int)$installationPage['id']];
+        foreach (['apache-mod-php-instalacija', 'php-fpm-instalacija'] as $guideSlug) {
+            $guideNode = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+                ->where('slug', '=', $guideSlug)->first();
+            $this->assertIsArray($guideNode);
+            $this->assertSame((int)$installationPage['id'], (int)$guideNode['parent_id']);
+            $managedPageIds[] = (int)$guideNode['id'];
+        }
+
         $otherNodesBefore = array_values(array_filter(
             $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
@@ -820,6 +854,13 @@ PHP);
             dirname(__DIR__, 3) . '/resources/installation/workspace/instalacija.zip',
             $root . '/resources/installation/workspace/instalacija.zip',
         );
+        foreach (['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip'] as $guideArchive) {
+            copy(
+                dirname(__DIR__, 3) . '/resources/installation/workspace/' . $guideArchive,
+                $root . '/resources/installation/workspace/' . $guideArchive,
+            );
+        }
+
         $output = [];
         exec(
             escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/update_bundled_assets.php')
@@ -1088,6 +1129,13 @@ PHP);
             $projectRoot . '/resources/installation/workspace/instalacija.zip',
             $root . '/resources/installation/workspace/instalacija.zip',
         );
+        foreach (['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip'] as $guideArchive) {
+            copy(
+                $projectRoot . '/resources/installation/workspace/' . $guideArchive,
+                $root . '/resources/installation/workspace/' . $guideArchive,
+            );
+        }
+
         copy(
             $projectRoot . '/resources/installation/workspace/sastanci.zip',
             $root . '/resources/installation/workspace/sastanci.zip',

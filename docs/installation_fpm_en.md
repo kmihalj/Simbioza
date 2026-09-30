@@ -156,12 +156,14 @@ For a site at `/simbioza`, use
 private browser window; do not share or screenshot its token. The wizard checks
 requirements and database access, asks for the site identity, languages, time
 zone, first administrator, and optional modules, then shows a review before
-installation. With the dedicated helper working, selected optional packages
-are installed through the GUI. Theme is recommended, but not mandatory.
+installation. All optional modules are preselected; deselect those you do not
+want. With the dedicated helper working, selected optional packages are
+installed through the GUI.
 
 If you intentionally omit the dedicated helper, prepare the selected optional
 packages as the deploy user with
-`php scripts/installation_packages.php prepare --modules=theme,calendar` and
+`php scripts/installation_packages.php prepare` for all modules, or add
+`--modules=theme,calendar` for a smaller selection, and prepare
 additional languages with
 `php scripts/installation_languages.php prepare --locales=de,es,fr,it` before
 continuing. Match both lists to your selections and reload the installer.

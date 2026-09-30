@@ -83,24 +83,30 @@ use that full base URL in step 4.
 ## 3. Prepare optional packages in the CLI
 
 The graphical installer cannot run Composer as the Apache web account. From
-the release directory, the code owner prepares exactly the optional modules
-that will be offered in the wizard. With no explicit list, this prepares the
-recommended Theme:
+the release directory, the code owner prepares optional modules. Without an
+explicit list, the command prepares **all** optional modules because the wizard
+selects them all by default:
 
 ```bash
 cd /srv/simbioza
 php scripts/installation_packages.php prepare
 ```
 
-For a different set, for example Theme, Calendar, and E-mail:
+For a smaller set, such as Theme, Calendar, and E-mail, prepare only those
+modules and deselect the others in the wizard:
 
 ```bash
 php scripts/installation_packages.php prepare --modules=theme,calendar,email
 php scripts/installation_packages.php status
 ```
 
-The wizard will show which packages are ready. A missing package must be
-prepared in the CLI before it can be selected, then the wizard reloaded. Do
+To install no optional modules, use
+`php scripts/installation_packages.php prepare --modules=`. This temporarily
+prepares only Backup for the starter guides; deselect every optional module
+in the wizard.
+
+The `status` command shows which packages are actually installed. The wizard
+marks a missing package for CLI preparation; reload the page afterwards. Do
 not grant the web account write access to `vendor/` or `composer.json` to
 work around this boundary.
 
@@ -115,12 +121,14 @@ bin/simbioza install:prepare --base-url=https://simbioza.example.org
 Include the subdirectory in `--base-url` when applicable. Open the token URL
 in a private browser window, without sharing or screenshotting it. The wizard
 checks requirements and database access, asks for the site identity, at least
-one language, time zone, first administrator, and optional modules, then
+one language, time zone, first administrator, and optional modules (all selected
+by default), then
 shows a review before installation. It imports the selected user-guide
 languages.
 
-After successful installation, remove only the temporary Backup package used
-by the guide importer; an explicitly selected Backup module stays installed:
+After successful installation, clean up the temporary preparation state.
+Backup remains installed when selected in the wizard; otherwise cleanup removes
+it only if preparation added it:
 
 ```bash
 php scripts/installation_packages.php cleanup

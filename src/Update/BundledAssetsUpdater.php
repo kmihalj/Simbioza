@@ -45,6 +45,20 @@ final readonly class BundledAssetsUpdater
             'recovery' => 'previous_installation_guide',
             'message' => 'Bilingual installation guides updated; other pages and existing page permissions preserved.',
         ],
+        'installation_modphp_sha256' => [
+            'file' => 'apache-mod-php-instalacija.zip',
+            'slug' => 'apache-mod-php-instalacija',
+            'parent' => 'instalacija',
+            'recovery' => 'previous_installation_modphp_guide',
+            'message' => 'Bilingual Apache mod_php guide updated; existing page permissions preserved.',
+        ],
+        'installation_fpm_sha256' => [
+            'file' => 'php-fpm-instalacija.zip',
+            'slug' => 'php-fpm-instalacija',
+            'parent' => 'instalacija',
+            'recovery' => 'previous_installation_fpm_guide',
+            'message' => 'Bilingual PHP-FPM guide updated; existing page permissions preserved.',
+        ],
     ];
 
     /** HR: Prima javne servise modula. EN: Receives the modules' public services. */

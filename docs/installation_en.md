@@ -11,7 +11,8 @@ path rather than mixing directives or permissions from different modes:
 | [Apache mod_php](installation_mod_php_en.md) | Apache only | Yes; optional packages must first be prepared in the CLI | No; use the CLI for package operations and application updates |
 
 The initial browser wizard is **not** FPM-only. In either mode it configures
-the site, database, languages, administrator, and selected modules. What
+the site, database, languages, administrator, and modules. All optional modules
+are selected by default, and you can deselect any you do not need. What
 differs is whether the web process can request installation of missing
 Composer packages and later upgrades. For a new installation, dedicated FPM
 is recommended. Nginx does not support Apache's `mod_php`.

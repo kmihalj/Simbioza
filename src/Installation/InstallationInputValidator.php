@@ -121,7 +121,7 @@ final readonly class InstallationInputValidator
         $selectionSubmitted = $this->scalarString($input['module_selection_present'] ?? '') === '1';
         $requestedModules = is_array($input['optional_modules'] ?? null)
         ? $input['optional_modules']
-        : ($selectionSubmitted ? [] : $catalog->recommendedSlugs());
+        : ($selectionSubmitted ? [] : $catalog->optionalSlugs());
         $optionalModules = [];
         foreach ($requestedModules as $module) {
             $module = $catalog->normalizeSlug($this->scalarString($module));

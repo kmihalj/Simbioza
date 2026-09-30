@@ -44,15 +44,17 @@ try {
  * EN: Reads only the `--modules=a,b` option without shell interpretation.
  *
  * @param list<string> $arguments
- * @return array{modules:list<string>}
+ * @return array{modules:list<string>,specified:bool}
  */
 function parseOptions(array $arguments): array
 {
     $modules = [];
+    $specified = false;
     foreach ($arguments as $argument) {
         if (!str_starts_with($argument, '--modules=')) {
             throw new RuntimeException('Supported option: --modules=theme,calendar');
         }
+        $specified = true;
         foreach (explode(',', substr($argument, strlen('--modules='))) as $slug) {
             $slug = strtolower(trim($slug));
             if ($slug !== '') {
@@ -61,14 +63,14 @@ function parseOptions(array $arguments): array
         }
     }
 
-    return ['modules' => array_values(array_unique($modules))];
+    return ['modules' => array_values(array_unique($modules)), 'specified' => $specified];
 }
 
 /**
  * HR: Instalira odabrane pakete i privremeni Backup potreban početnim uputama.
  * EN: Installs selected packages and the temporary Backup needed by starter guides.
  *
- * @param array{modules:list<string>} $options
+ * @param array{modules:list<string>,specified:bool} $options
  */
 function preparePackages(
     string $root,
@@ -78,8 +80,8 @@ function preparePackages(
     array $options,
 ): void {
     $requested = $options['modules'];
-    if ($requested === []) {
-        $requested = $catalog->recommendedSlugs();
+    if (!$options['specified']) {
+        $requested = $catalog->optionalSlugs();
     }
     foreach ($requested as $slug) {
         if (!in_array($slug, $catalog->optionalSlugs(), true)) {
@@ -188,12 +190,16 @@ function printHelp(): void
     fwrite(STDOUT, <<<'HELP'
 Simbioza installation package preparation / Priprema instalacijskih paketa
 
+  php scripts/installation_packages.php prepare
   php scripts/installation_packages.php prepare --modules=theme,calendar
+  php scripts/installation_packages.php prepare --modules=
   php scripts/installation_packages.php status
   php scripts/installation_packages.php cleanup
 
 Run `prepare` before opening the web installer when no dedicated FPM Setup
-helper is configured. Choose the same modules in the web installer. Run
-`cleanup` once after success; it removes only a newly added, unselected Backup.
+helper is configured. Without --modules it prepares all optional modules;
+use --modules only when you intend to deselect the others in the wizard. An
+empty --modules= value prepares no optional module (temporary Backup only).
+Run `cleanup` once after success; it removes only a newly added, unselected Backup.
 HELP . PHP_EOL);
 }

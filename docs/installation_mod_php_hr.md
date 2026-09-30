@@ -85,24 +85,31 @@ osnovnu adresu navedite u 4. koraku.
 ## 3. Pripremite opcionalne pakete u CLI-ju
 
 Grafički instaler ne može pokrenuti Composer kao Apache web-račun. Vlasnik
-koda iz direktorija izdanja unaprijed priprema upravo opcionalne module koji
-će biti ponuđeni u čarobnjaku. Bez posebnog popisa priprema se preporučena
-Tema:
+koda iz direktorija izdanja unaprijed priprema opcionalne module. Naredba bez
+popisa priprema **sve** opcionalne module, jer su svi unaprijed označeni u
+čarobnjaku:
 
 ```bash
 cd /srv/simbioza
 php scripts/installation_packages.php prepare
 ```
 
-Za drukčiji odabir, primjerice Temu, Kalendar i E-poštu:
+Ako želite samo dio modula, primjerice Temu, Kalendar i E-poštu, pripremite
+upravo njih i ostale odznačite u čarobnjaku:
 
 ```bash
 php scripts/installation_packages.php prepare --modules=theme,calendar,email
 php scripts/installation_packages.php status
 ```
 
-Čarobnjak će pokazati koji su paketi spremni. Paket koji nedostaje treba
-pripremiti u CLI-ju i zatim osvježiti čarobnjaka. Web-računu nemojte dati
+Ako ne želite nijedan opcionalni modul, upotrijebite
+`php scripts/installation_packages.php prepare --modules=`. Tada se privremeno
+priprema samo Backup potreban za početne upute, a u čarobnjaku odznačite sve
+opcionalne module.
+
+Naredba `status` pokazuje koji su paketi stvarno instalirani. Čarobnjak će
+nedostupan paket označiti kao paket koji prvo treba pripremiti u CLI-ju;
+nakon pripreme osvježite stranicu. Web-računu nemojte dati
 pravo pisanja u `vendor/` ili `composer.json` radi zaobilaženja te granice.
 
 ## 4. Provedite grafičku instalaciju
@@ -116,11 +123,12 @@ bin/simbioza install:prepare --base-url=https://simbioza.example.org
 Ako instalirate u podputanji, uključite je u `--base-url`. Adresu s tokenom
 otvorite u privatnom prozoru; nemojte je dijeliti ni snimati. Čarobnjak
 provjerava preduvjete i bazu, traži naziv sitea, barem jedan jezik, vremensku
-zonu, prvog administratora i opcionalne module te prije instalacije prikazuje
+zonu, prvog administratora i opcionalne module (sve unaprijed odabrane) te prije instalacije prikazuje
 pregled. Uvozi korisničke upute na odabranim jezicima.
 
-Nakon uspješne instalacije uklonite samo privremeni Backup paket potreban za
-uvoz uputa; ako ste Backup izričito odabrali, on ostaje instaliran:
+Nakon uspješne instalacije pokrenite čišćenje privremenog stanja pripreme.
+Backup ostaje instaliran ako je ostao odabran u čarobnjaku; u suprotnom se
+uklanja samo ako ga je priprema dodala:
 
 ```bash
 php scripts/installation_packages.php cleanup

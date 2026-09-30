@@ -12,7 +12,8 @@ različitih načina:
 | [Apache mod_php](installation_mod_php_hr.md) | Samo Apache | Da; opcionalne pakete prvo treba pripremiti u CLI-ju | Ne; za paketne radnje i nadogradnje koristite CLI |
 
 Početni čarobnjak u pregledniku **nije ograničen na FPM**. U oba načina
-podešava site, bazu, jezike, administratora i odabrane module. Razlika je u
+podešava site, bazu, jezike, administratora i module. Svi opcionalni moduli
+unaprijed su odabrani, a nepotrebne možete odznačiti. Razlika je u
 tome smije li web-proces zatražiti instalaciju nedostajućih Composer paketa i
 kasnije nadogradnje. Za novu instalaciju preporučuje se namjenski FPM.
 Nginx ne podržava Apacheov `mod_php`.
