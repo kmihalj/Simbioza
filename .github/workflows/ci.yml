@@ -42,7 +42,6 @@ jobs:
 
   quality:
     name: PHP ${{ matrix.php }}
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -82,7 +81,6 @@ jobs:
 
   clean-install-sqlite:
     name: Clean module matrix / Čista matrica modula
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
 
     steps:
@@ -106,7 +104,6 @@ jobs:
 
   clean-install-network-databases:
     name: Clean PostgreSQL and MySQL / Čisti PostgreSQL i MySQL
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
 
     services:
@@ -175,7 +172,6 @@ jobs:
 
   browser-and-api-e2e:
     name: Browser and API E2E / Browser i API E2E
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
 
     steps:
@@ -224,7 +220,6 @@ jobs:
 
   postgresql-e2e:
     name: PostgreSQL E2E
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
 
     services:
@@ -294,7 +289,6 @@ jobs:
 
   mysql-e2e:
     name: MySQL E2E
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
 
     services:
