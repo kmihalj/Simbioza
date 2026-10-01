@@ -23,7 +23,7 @@ const sourceCalendarName = 'E2E Source Calendar';
  * EN: Creates a small real Confluence XML ZIP with hierarchy, an internal
  *     link, and a private attachment without committing a binary fixture.
  */
-async function confluenceArchive() {
+async function confluenceArchive(calendarMonth) {
   const directory = await mkdtemp(join(tmpdir(), 'simbioza-confluence-e2e-'));
   const descriptor = join(directory, 'exportDescriptor.properties');
   const entities = join(directory, 'entities.xml');
@@ -57,9 +57,9 @@ async function confluenceArchive() {
     `X-WR-CALNAME:${sourceCalendarName}`,
     'BEGIN:VEVENT',
     'UID:confluence-calendar-e2e-event@example.invalid',
-    'DTSTAMP:20260904T060000Z',
-    'DTSTART:20260907T080000Z',
-    'DTEND:20260907T090000Z',
+    `DTSTAMP:${calendarMonth}01T060000Z`,
+    `DTSTART:${calendarMonth}15T080000Z`,
+    `DTEND:${calendarMonth}15T090000Z`,
     'SUMMARY:Imported Confluence calendar event',
     'END:VEVENT',
     'END:VCALENDAR',
@@ -105,7 +105,13 @@ async function expectImportStagingEmpty() {
 
 test('administrator imports a Confluence space while ACL and private files remain enforced', async ({ browser, page }) => {
   test.setTimeout(120_000);
-  const fixture = await confluenceArchive();
+  // HR: Događaj mora biti u mjesecu koji preglednik prikazuje, ne u fiksnom rujnu.
+  // EN: The event must fall in the browser's displayed month, not a fixed September.
+  const calendarMonth = await page.evaluate(() => {
+    const now = new Date();
+    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const fixture = await confluenceArchive(calendarMonth);
   const suffix = Date.now();
   const workspaceSlug = `e2e-confluence-${suffix}`;
 
@@ -239,6 +245,15 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.getByRole('alert')).toContainText('E2E task failure');
     await expect(reportTask).toBeChecked();
     await expect(reportTask).toBeFocused();
+    // HR: Stvarna poruka pogreške mora ostati iznad vidljivog widgeta.
+    // EN: The real error notification must stay above the visible widget.
+    await expect(page.locator('[data-hph-a11y-open]')).toBeVisible();
+    await expect.poll(() => page.locator('.editor-task-toast').evaluate((toast) => {
+      const launcher = document.querySelector('[data-hph-a11y-open]');
+      const gap = launcher.getBoundingClientRect().top - toast.getBoundingClientRect().bottom;
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      return gap - rem * .75;
+    })).toBeGreaterThanOrEqual(-1);
     await page.locator('.editor-task-toast-close').focus();
     await page.locator('.editor-task-toast-close').press('Enter');
     await expect(reportTask).toBeFocused();
