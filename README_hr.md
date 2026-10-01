@@ -148,6 +148,7 @@ zaseban [engleski indeks](docs/index_en.md).
 
 ## Dokumentacija
 
+- [Izdanje 0.2.8: obavijesti više ne prekriva widget pristupačnosti](docs/release-0.2.8_hr.md)
 - [Izdanje 0.2.7: prošireni vlastiti widget pristupačnosti na šest jezika](docs/release-0.2.7_hr.md)
 - [Izdanje 0.2.6: potpune instalacijske upute i unaprijed odabrani svi moduli](docs/release-0.2.6_hr.md)
 - [Izdanje 0.2.4: pouzdan dugotrajan izolirani FPM setup](docs/release-0.2.4_hr.md)
