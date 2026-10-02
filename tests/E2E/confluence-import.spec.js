@@ -28,6 +28,7 @@ async function confluenceArchive(calendarMonth) {
   const descriptor = join(directory, 'exportDescriptor.properties');
   const entities = join(directory, 'entities.xml');
   const attachment = join(directory, 'sample.bin');
+  const historicalAttachment = join(directory, 'historical-sample.bin');
   const calendar = join(directory, 'source-calendar.ics');
   const archive = join(directory, 'tiny-space.xml.zip');
 
@@ -38,7 +39,12 @@ async function confluenceArchive(calendarMonth) {
     + '<th id="month" headers="year" scope="col">September</th></tr>'
     + '<tr><td headers="year month">Imported cell</td><td>Other cell</td></tr></table>'
     + ']]></ac:plain-text-body></ac:structured-macro>';
-  const tableMacrosXml = (tableMacro + tableMacro).replaceAll('&', '&amp;')
+  // HR: Prazni elementi datuma moraju preživjeti cijeli import i čišćenje editora.
+  // EN: Empty date elements must survive the complete import and editor sanitization.
+  const dateStorage = '<table><caption>Imported dates</caption><tbody><tr>'
+    + '<td><time datetime="2023-05-10" /></td><td><time datetime="2025-09-30" /></td>'
+    + '</tr></tbody></table><p><time datetime="2023-05-10">10 May 2023</time></p>';
+  const tableMacrosXml = (tableMacro + tableMacro + dateStorage).replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
   await writeFile(descriptor, [
@@ -50,6 +56,7 @@ async function confluenceArchive(calendarMonth) {
     '',
   ].join('\n'));
   await writeFile(attachment, 'private attachment body');
+  await writeFile(historicalAttachment, 'historical private attachment body');
   await writeFile(calendar, [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -75,18 +82,20 @@ async function confluenceArchive(calendarMonth) {
   <object class="BodyContent" package="com.atlassian.confluence.core"><id name="id">b101</id><property name="content"><id>101</id></property><property name="body">&lt;p&gt;Imported child body.&lt;/p&gt;&lt;ac:link&gt;&lt;ri:attachment ri:filename="sample.bin"/&gt;&lt;ac:plain-text-link-body&gt;Download sample&lt;/ac:plain-text-link-body&gt;&lt;/ac:link&gt;&lt;ac:task-list&gt;&lt;ac:task&gt;&lt;ac:task-id&gt;14&lt;/ac:task-id&gt;&lt;ac:task-status&gt;incomplete&lt;/ac:task-status&gt;&lt;ac:task-body&gt;Review https://example.test/task&lt;/ac:task-body&gt;&lt;/ac:task&gt;&lt;/ac:task-list&gt;&lt;ac:structured-macro ac:name="calendar" ac:macro-id="calendar-child"&gt;&lt;ac:parameter ac:name="id"&gt;${sourceCalendarUuid}&lt;/ac:parameter&gt;&lt;/ac:structured-macro&gt;</property></object>
   <object class="CustomContentEntityObject" package="com.atlassian.confluence.content"><id name="id">301</id><property name="title">${sourceCalendarName}</property><property name="pluginModuleKey">com.atlassian.confluence.extra.team-calendars:calendar-content-type</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p301</id><property name="content"><id>301</id></property><property name="name">subCalendarId</property><property name="stringValue">${sourceCalendarUuid}</property></object>
-  <object class="Attachment" package="com.atlassian.confluence.pages"><id name="id">201</id><property name="containerContent"><id>101</id></property><property name="space"><id>1</id></property><property name="title">sample.bin</property><property name="version">1</property><property name="contentStatus">current</property></object>
+  <object class="Attachment" package="com.atlassian.confluence.pages"><id name="id">201</id><property name="containerContent"><id>101</id></property><property name="space"><id>1</id></property><property name="title">sample.bin</property><property name="version">2</property><property name="contentStatus">current</property></object>
+  <object class="Attachment" package="com.atlassian.confluence.pages"><id name="id">202</id><property name="containerContent"><id>101</id></property><property name="space"><id>1</id></property><property name="title">sample.bin</property><property name="version">1</property><property name="contentStatus">current</property><property name="originalVersion"><id>201</id></property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201a</id><property name="content"><id>201</id></property><property name="name">MEDIA_TYPE</property><property name="stringValue">application/octet-stream</property></object>
   <object class="ContentProperty" package="com.atlassian.confluence.core"><id name="id">p201b</id><property name="content"><id>201</id></property><property name="name">FILESIZE</property><property name="longValue">23</property></object>
 </hibernate-generic>`.replace('&lt;p&gt;Imported home body.', `${tableMacrosXml}&lt;p&gt;Imported home body.`));
 
   execFileSync('php', [
     '-r',
-    '$z=new ZipArchive();$z->open($argv[1],ZipArchive::CREATE|ZipArchive::OVERWRITE);$z->addFile($argv[2],"entities.xml");$z->addFile($argv[3],"exportDescriptor.properties");$z->addFile($argv[4],"attachments/101/201/1");if(!$z->close()){exit(1);}',
+    '$z=new ZipArchive();$z->open($argv[1],ZipArchive::CREATE|ZipArchive::OVERWRITE);$z->addFile($argv[2],"entities.xml");$z->addFile($argv[3],"exportDescriptor.properties");$z->addFile($argv[4],"attachments/101/201/2");$z->addFile($argv[5],"attachments/101/201/1");if(!$z->close()){exit(1);}',
     archive,
     entities,
     descriptor,
     attachment,
+    historicalAttachment,
   ]);
 
   return { archive, calendar, directory };
@@ -170,7 +179,8 @@ test('administrator imports a Confluence space while ACL and private files remai
     await page.locator('#confluence-import-run').click();
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('#confluence-import-result')).toContainText('"pages_imported": 2');
-    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 1');
+    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 2');
+    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_failed": 0');
     await expectImportStagingEmpty();
 
     await page.goto(`/settings/confluence-import/report/${jobUuid}`);
@@ -211,6 +221,10 @@ test('administrator imports a Confluence space while ACL and private files remai
       headerIds.push(yearId, monthId);
     }
     expect(new Set(headerIds).size).toBe(4);
+    const importedDates = page.getByRole('table', { name: 'Imported dates', exact: true });
+    await expect(importedDates.getByRole('cell', { name: '2023-05-10', exact: true })).toBeVisible();
+    await expect(importedDates.getByRole('cell', { name: '2025-09-30', exact: true })).toBeVisible();
+    await expect(page.locator('article')).toContainText('10 May 2023');
     const firstLevelTreeNode = page.locator(
       '#workspace-page-tree [data-workspace-tree-level="1"]',
     ).first();
@@ -328,7 +342,8 @@ test('administrator imports a Confluence space while ACL and private files remai
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#confluence-import-run').click();
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
-    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 1');
+    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 2');
+    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_failed": 0');
     await expectImportStagingEmpty();
 
     await page.goto(`/workspace/${workspaceSlug}/${shortenedChildSlug}?lang=en`);
