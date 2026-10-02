@@ -179,7 +179,9 @@ test('administrator imports a Confluence space while ACL and private files remai
     await page.locator('#confluence-import-run').click();
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('#confluence-import-result')).toContainText('"pages_imported": 2');
-    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 2');
+    await expect(page.locator('#confluence-import-result')).toContainText('Current attachments: 1 / 1');
+    await page.locator('#confluence-import-result details summary').click();
+    await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 1');
     await expect(page.locator('#confluence-import-result')).toContainText('"attachments_failed": 0');
     await expectImportStagingEmpty();
 
@@ -339,9 +341,12 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.locator('#confluence-import-workspace-slug')).toHaveValue(workspaceSlug);
     await expect(page.locator('input[name="reimport_strategy"][value="replace"]')).toBeChecked();
     await page.locator('#confluence-import-source-base-url').fill('https://wiki.example.org');
+    await page.locator('input[name="include_history"]').check();
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#confluence-import-run').click();
     await expect(page.locator('#confluence-import-result')).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('#confluence-import-result')).toContainText('Attachment history: 1 / 1');
+    await page.locator('#confluence-import-result details summary').click();
     await expect(page.locator('#confluence-import-result')).toContainText('"attachments_imported": 2');
     await expect(page.locator('#confluence-import-result')).toContainText('"attachments_failed": 0');
     await expectImportStagingEmpty();

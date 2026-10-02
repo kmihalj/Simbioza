@@ -87,7 +87,7 @@
         "php": ">=8.2",
         "aaieduhr/heartphrame-framework": "^0.0.25",
         "aaieduhr/heartphrame-module-auth": "^0.1.15",
-        "aaieduhr/heartphrame-module-editor-html": "^0.1.38",
+        "aaieduhr/heartphrame-module-editor-html": "^0.1.39",
         "aaieduhr/heartphrame-module-menu": "^0.1.25",
         "aaieduhr/heartphrame-module-notification": "^0.1.6",
         "aaieduhr/heartphrame-module-orm": "^0.1.7",
@@ -150,7 +150,7 @@
                 "aaieduhr/heartphrame-module-email": "^0.1.4",
                 "aaieduhr/heartphrame-module-task": "^0.1.8",
                 "aaieduhr/heartphrame-module-theme": "^0.1.17",
-                "aaieduhr/simbioza-module-confluence-import": "^0.1.42"
+                "aaieduhr/simbioza-module-confluence-import": "^0.1.43"
             },
             "development-tools": {
                 "phpstan/phpstan": "^2.1",
