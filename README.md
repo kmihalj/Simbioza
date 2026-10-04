@@ -32,6 +32,8 @@ Watch the export, import, and result in this short walkthrough, with British
 English narration and English captions. Confluence's table-of-contents macro
 is not duplicated: Simbioza already provides a built-in page outline.
 
+https://github.com/user-attachments/assets/528b8ac8-5298-460a-b06f-2aeb4ac636d2
+
 [Try the migration demo](https://piko.webhop.me/demo/workspace/simbioza-demo/confluence-import)
 or read the [Confluence import guide](https://piko.webhop.me/demo/workspace/korisnicke-upute/confluence-import?lang=en).
 

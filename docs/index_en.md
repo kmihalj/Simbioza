@@ -7,6 +7,7 @@ is not developed in this repository.
 Brand slogan: **Knowledge that lives together.**
 
 - [Brand identity and the Simbioza theme](branding_en.md)
+- [Release 0.2.11: Confluence migration video and portable guides](release-0.2.11_en.md)
 
 The documentation is structured for beginners and advanced users. Each topic
 has a separate English and Croatian file.

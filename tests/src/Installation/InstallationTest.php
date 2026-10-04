@@ -598,7 +598,9 @@ final class InstallationTest extends TestCase
             dirname(__DIR__, 3) . '/resources/installation/workspace/instalacija.zip',
             $root . '/resources/installation/workspace/instalacija.zip',
         );
-        foreach (['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip'] as $guideArchive) {
+        foreach (
+            ['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip', 'confluence-import.zip'] as $guideArchive
+        ) {
             copy(
                 dirname(__DIR__, 3) . '/resources/installation/workspace/' . $guideArchive,
                 $root . '/resources/installation/workspace/' . $guideArchive,
@@ -654,6 +656,25 @@ PHP);
             $managedPageIds[] = (int)$guideNode['id'];
         }
 
+        // HR: Novi paket nadograđuje samo uputu za uvoz i čuva njen položaj i ACL.
+        // EN: The new package upgrades only the import guide and preserves its position and ACL.
+        $confluencePage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('slug', '=', 'confluence-import')->first();
+        $this->assertIsArray($confluencePage);
+        $managedPageIds[] = (int)$confluencePage['id'];
+        $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)->insert([
+            'node_id' => $confluencePage['id'], 'subject_type' => 'user',
+            'subject_id' => $administrator['id'], 'can_view' => 1, 'can_manage' => 1,
+        ]);
+        $confluenceAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $confluencePage['id'])->get();
+        $confluenceDocument = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $confluencePage['document_key'])->first();
+        $this->assertIsArray($confluenceDocument);
+        $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('document_id', '=', $confluenceDocument['id'])
+            ->update(['content_html' => '<p>Previous Confluence import guide without a video.</p>']);
+
         $otherNodesBefore = array_values(array_filter(
             $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
@@ -699,6 +720,15 @@ PHP);
             ->where('node_id', '=', $meetingPage['id'])->get());
         $this->assertSame($installationAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $installationPage['id'])->get());
+        $this->assertSame($confluenceAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $confluencePage['id'])->get());
+        $updatedConfluencePage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('id', '=', $confluencePage['id'])->first();
+        $this->assertIsArray($updatedConfluencePage);
+        $this->assertSame(
+            array_diff_key($confluencePage, ['updated_at' => true]),
+            array_diff_key($updatedConfluencePage, ['updated_at' => true]),
+        );
         $otherNodesAfter = array_values(array_filter(
             $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
@@ -745,6 +775,36 @@ PHP);
         }
 
         $this->assertSame('none', $meetingDocument['attachment_visibility']);
+
+        // HR: Video se prenosi lokalno, s ispravnim putanjama u HR i EN uputi.
+        // EN: The video is transferred locally with correctly rebased URLs in both guide locales.
+        $confluenceVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('document_id', '=', $confluenceDocument['id'])->get();
+        $this->assertSame(['hr', 'en'], array_column($confluenceVersions, 'language_code'));
+        $confluenceAssets = array_column($database->table(ModuleEditorHtml::TABLE_ASSETS)
+            ->where('document_id', '=', $confluenceDocument['id'])->get(), null, 'uuid');
+        foreach ($confluenceVersions as $version) {
+            $html = BundledAssetsUpdater::guideVersionHtml(
+                $version,
+                $root . '/data/editor-html',
+                new EditorHtmlDocumentFormatter(),
+            );
+            $this->assertSame(1, preg_match(
+                '~<video[^>]* src="/test-simbioza/editor-html/asset/([0-9a-f-]{36})"~',
+                $html,
+                $videoMatch,
+            ));
+            $this->assertStringNotContainsString('github.com', substr($html, 0, strpos($html, '</video>') ?: 0));
+            $this->assertArrayHasKey($videoMatch[1], $confluenceAssets);
+            $video = $confluenceAssets[$videoMatch[1]];
+            $this->assertSame('video/mp4', $video['mime_type']);
+            $videoPath = $root . '/data/editor-html/uploads/' . $video['content_path'];
+            $this->assertFileExists($videoPath);
+            $this->assertGreaterThan(1000000, filesize($videoPath));
+            $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($videoPath));
+            $this->assertSame(filegroup($root . '/data/editor-html/uploads'), filegroup($videoPath));
+        }
+
         $this->assertSame(0600, fileperms($root . '/data/bundled-assets.json') & 0777);
         $stateHash = hash_file('sha256', $root . '/data/bundled-assets.json');
         $repairPath = null;
@@ -854,7 +914,9 @@ PHP);
             dirname(__DIR__, 3) . '/resources/installation/workspace/instalacija.zip',
             $root . '/resources/installation/workspace/instalacija.zip',
         );
-        foreach (['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip'] as $guideArchive) {
+        foreach (
+            ['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip', 'confluence-import.zip'] as $guideArchive
+        ) {
             copy(
                 dirname(__DIR__, 3) . '/resources/installation/workspace/' . $guideArchive,
                 $root . '/resources/installation/workspace/' . $guideArchive,
@@ -1129,7 +1191,9 @@ PHP);
             $projectRoot . '/resources/installation/workspace/instalacija.zip',
             $root . '/resources/installation/workspace/instalacija.zip',
         );
-        foreach (['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip'] as $guideArchive) {
+        foreach (
+            ['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip', 'confluence-import.zip'] as $guideArchive
+        ) {
             copy(
                 $projectRoot . '/resources/installation/workspace/' . $guideArchive,
                 $root . '/resources/installation/workspace/' . $guideArchive,

@@ -32,6 +32,8 @@ U kratkom videu pogledajte izvoz, uvoz i rezultat, uz naraciju na britanskom
 engleskom i engleske titlove. Confluenceov makro za kazalo ne prenosi se kao
 zaseban blok: Simbioza već ima ugrađeno kazalo stranice.
 
+https://github.com/user-attachments/assets/528b8ac8-5298-460a-b06f-2aeb4ac636d2
+
 [Isprobajte demo prijelaza](https://piko.webhop.me/demo/workspace/simbioza-demo/confluence-import?lang=hr)
 ili pročitajte [uputu za Confluence uvoz](https://piko.webhop.me/demo/workspace/korisnicke-upute/confluence-import?lang=hr).
 
