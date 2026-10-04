@@ -7,6 +7,7 @@ repozitoriju.
 Slogan brenda: **Znanje koje živi zajedno.**
 
 - [Vizualni identitet i tema Simbioza](branding_hr.md)
+- [Izdanje 0.2.11: video prijelaza iz Confluencea i prenosive upute](release-0.2.11_hr.md)
 
 Dokumentacija je strukturirana za početnike i napredne korisnike. Svaka tema
 ima zasebnu hrvatsku i englesku datoteku.

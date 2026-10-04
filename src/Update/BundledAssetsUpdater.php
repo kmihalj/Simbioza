@@ -59,6 +59,13 @@ final readonly class BundledAssetsUpdater
             'recovery' => 'previous_installation_fpm_guide',
             'message' => 'Bilingual PHP-FPM guide updated; existing page permissions preserved.',
         ],
+        'confluence_import_sha256' => [
+            'file' => 'confluence-import.zip',
+            'slug' => 'confluence-import',
+            'parent' => 'podrucja',
+            'recovery' => 'previous_confluence_import_guide',
+            'message' => 'Bilingual Confluence import guide and local video updated; page permissions preserved.',
+        ],
     ];
 
     /** HR: Prima javne servise modula. EN: Receives the modules' public services. */
