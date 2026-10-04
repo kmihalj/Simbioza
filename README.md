@@ -19,6 +19,22 @@ reset every five hours.
 
 *A public User Guides Workspace, with its page tree, article, and table of contents.*
 
+## Optional Confluence import
+
+Moving a knowledge base to your own server? The optional **Confluence Import**
+module imports a Confluence XML ZIP export into a Simbioza Workspace, preserving
+the page tree, internal links, current attachments, and supported macros. Review
+identity and permission mappings before starting; page and attachment history
+are imported only when explicitly selected. The import report identifies
+unsupported macros and files that need attention.
+
+Watch the export, import, and result in this short walkthrough, with British
+English narration and English captions. Confluence's table-of-contents macro
+is not duplicated: Simbioza already provides a built-in page outline.
+
+[Try the migration demo](https://piko.webhop.me/demo/workspace/simbioza-demo/confluence-import)
+or read the [Confluence import guide](https://piko.webhop.me/demo/workspace/korisnicke-upute/confluence-import?lang=en).
+
 ## Knowledge has a place to live
 
 Organize content into **Workspaces**: each can have its own address, page tree,

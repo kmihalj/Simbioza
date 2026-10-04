@@ -19,6 +19,22 @@ demu poništavaju se svakih pet sati.
 
 *Javno područje Korisničke upute sa stablom stranica, člankom i kazalom.*
 
+## Opcionalni uvoz iz Confluencea
+
+Želite preseliti bazu znanja na vlastiti poslužitelj? Opcionalni modul
+**Confluence Import** uvozi Confluence XML ZIP izvoz u područje Simbioze,
+uz očuvanje stabla stranica, internih poveznica, aktualnih privitaka i podržanih
+makroa. Prije pokretanja pregledajte mapiranje identiteta i ovlasti; povijest
+stranica i privitaka uvozi se samo ako je izričito odaberete. Izvješće uvoza
+navodi nepodržane makroe i datoteke koje zahtijevaju provjeru.
+
+U kratkom videu pogledajte izvoz, uvoz i rezultat, uz naraciju na britanskom
+engleskom i engleske titlove. Confluenceov makro za kazalo ne prenosi se kao
+zaseban blok: Simbioza već ima ugrađeno kazalo stranice.
+
+[Isprobajte demo prijelaza](https://piko.webhop.me/demo/workspace/simbioza-demo/confluence-import?lang=hr)
+ili pročitajte [uputu za Confluence uvoz](https://piko.webhop.me/demo/workspace/korisnicke-upute/confluence-import?lang=hr).
+
 ## Znanje ima svoje mjesto
 
 Sadržaj organizirajte u **područja**: svako može imati vlastitu adresu, stablo
