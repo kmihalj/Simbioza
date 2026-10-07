@@ -241,6 +241,12 @@ access to Simbioza's features. For an inquiry or estimate, contact
 
 ## Community
 
+<a href="https://alternativeto.net/software/simbioza/about/?utm_source=badge&amp;utm_medium=referral" target="_blank">
+  <img src="https://alternativeto.net/static/badges/badge-wide-color.svg"
+       alt="Simbioza | AlternativeTo"
+       width="406" height="73" />
+</a>
+
 - [Authors](AUTHORS.md)
 - [Get support](SUPPORT.md)
 - [Report a security vulnerability privately](SECURITY.md)

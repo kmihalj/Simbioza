@@ -240,6 +240,12 @@ a ne pristup mogućnostima Simbioze. Za dogovor ili ponudu pišite na
 
 ## Zajednica
 
+<a href="https://alternativeto.net/software/simbioza/about/?utm_source=badge&amp;utm_medium=referral" target="_blank">
+  <img src="https://alternativeto.net/static/badges/badge-wide-color.svg"
+       alt="Simbioza | AlternativeTo"
+       width="406" height="73" />
+</a>
+
 - [Autori](AUTHORS_hr.md)
 - [Podrška](SUPPORT_hr.md)
 - [Privatna prijava sigurnosne ranjivosti](SECURITY_hr.md)
