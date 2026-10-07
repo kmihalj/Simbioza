@@ -19,6 +19,17 @@ reset every five hours.
 
 *A public User Guides Workspace, with its page tree, article, and table of contents.*
 
+## Built on HeartPhrame
+
+Simbioza is built on [HeartPhrame Framework](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame),
+a lightweight, modular PHP framework. The development of Simbioza has also
+produced a collection of reusable HeartPhrame modules for content management,
+authentication, APIs, calendars, tasks, notifications, and more. These modules
+are maintained separately and can be used in other HeartPhrame applications
+with their required dependencies. Simbioza brings them together into one
+wiki/CMS. See the [module dependency matrix](docs/module-dependencies_en.md)
+and [authors and framework credits](AUTHORS.md).
+
 ## Optional Confluence import
 
 Moving a knowledge base to your own server? The optional **Confluence Import**
@@ -99,10 +110,10 @@ in [Croatian](README_hr.md).
 
 ## Dependencies
 
-Simbioza is built on the HeartPhrame Framework and its independently maintained
-modules. Application work belongs here and in module repositories; the
-Framework is consumed from its tagged `v0.0.25` release and is not developed
-as part of this repository.
+Simbioza is built on [HeartPhrame Framework](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame)
+and its independently maintained modules. Application work belongs here and in
+module repositories; the Framework is consumed from its tagged `v0.0.25`
+release and is not developed as part of this repository.
 
 Every HeartPhrame module requires `aaieduhr/heartphrame-framework:^0.0.25`.
 Required module order and optional capabilities are listed in

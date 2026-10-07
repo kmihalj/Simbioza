@@ -19,6 +19,17 @@ demu poništavaju se svakih pet sati.
 
 *Javno područje Korisničke upute sa stablom stranica, člankom i kazalom.*
 
+## Izgrađeno na HeartPhrameu
+
+Simbioza je izgrađena na [HeartPhrame Frameworku](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame),
+laganom, modularnom PHP frameworku. Uz razvoj Simbioze nastao je i skup
+višekratno upotrebljivih modula za HeartPhrame: za upravljanje sadržajem,
+autentikaciju, API-je, kalendare, zadatke, obavijesti i druge mogućnosti.
+Moduli se održavaju zasebno i mogu se koristiti u drugim HeartPhrame
+aplikacijama uz svoje obavezne ovisnosti. Simbioza ih povezuje u jedan
+wiki/CMS. Pogledajte [matricu ovisnosti modula](docs/module-dependencies_hr.md)
+i [autore i zasluge za framework](AUTHORS_hr.md).
+
 ## Opcionalni uvoz iz Confluencea
 
 Želite preseliti bazu znanja na vlastiti poslužitelj? Opcionalni modul
@@ -99,10 +110,10 @@ Počnite s [uputom za instalaciju](docs/installation_hr.md) ili pregledajte
 
 ## Ovisnosti
 
-Simbioza je izgrađena na HeartPhrame Frameworku i njegovim samostalno
-održavanim modulima. Aplikacijski razvoj pripada ovdje i u repozitorije modula;
-Framework se koristi iz označenog izdanja `v0.0.25` i ne razvija se u ovom
-repozitoriju.
+Simbioza je izgrađena na [HeartPhrame Frameworku](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame)
+i njegovim samostalno održavanim modulima. Aplikacijski razvoj pripada ovdje i
+u repozitorije modula; Framework se koristi iz označenog izdanja `v0.0.25`
+i ne razvija se u ovom repozitoriju.
 
 Svaki HeartPhrame modul zahtijeva
 `aaieduhr/heartphrame-framework:^0.0.25`. Obavezni redoslijed modula i
