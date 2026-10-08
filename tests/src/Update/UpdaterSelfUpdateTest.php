@@ -321,7 +321,7 @@ final class UpdaterSelfUpdateTest extends TestCase
         }
 
         [$root, $repository, $tools] = $this->fixture();
-        $this->prepareWorker($root);
+        $this->prepareWorker($root, true);
         $this->release($repository, '0.2.12', $this->candidate($repository));
         $helper = $this->temporaryRoot . '/fixed-helper';
         file_put_contents($helper, "#!/bin/sh\nPATH=" . escapeshellarg($tools . ':' . getenv('PATH'))
@@ -353,10 +353,22 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertTrue($proof['lock_held']);
     }
 
-    /** HR: Priprema pravi worker bez kopiranja ili mijenjanja izvornog vendora. EN: Prepares the real worker without copying or modifying the source vendor. */
-    private function prepareWorker(string $root): void
+    /** HR: Priprema pravi worker; drugi UID dobiva privatnu kopiju bez ovisnosti o pristupu CI korisnikovom homeu. EN: Prepares the real worker; another UID receives a private copy independent of access to the CI user's home. */
+    private function prepareWorker(string $root, bool $isolatedVendor = false): void
     {
-        symlink(dirname(__DIR__, 3) . '/vendor', $root . '/vendor');
+        $sourceRoot = dirname(__DIR__, 3);
+        if ($isolatedVendor) {
+            foreach (['vendor', 'src'] as $directory) {
+                [$exit, $output] = $this->process([
+                    'rsync', '--archive', '--copy-links', '--chmod=D0755,F0644',
+                    $sourceRoot . '/' . $directory . '/', $root . '/' . $directory . '/',
+                ]);
+                $this->assertSame(0, $exit, $output);
+            }
+        } else {
+            symlink($sourceRoot . '/vendor', $root . '/vendor');
+        }
+
         copy(dirname(__DIR__, 3) . '/scripts/setup_worker.php', $root . '/scripts/setup_worker.php');
         mkdir($root . '/data/setup-requests', 0770, true);
         file_put_contents($root . '/config/setup.php', '<?php return ' . var_export([
