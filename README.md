@@ -156,8 +156,25 @@ composer e2e
 ```
 
 A deployed release may intentionally omit `.git` and retain its own verified
-`composer.lock`. From release `0.1.9` onward, check and install the newest stable
-application and compatible module tags from the installation root with:
+`composer.lock`.
+
+**Required upgrade step for every installation older than 0.2.12:** first
+update explicitly to **0.2.12**, which introduces updater self-updates:
+
+```bash
+php update.php --tag=0.2.12
+```
+
+Do not skip this bridge release. Direct upgrades from an older version to a
+later release are unsupported. On older dedicated FPM sites, use the CLI
+maintainer's restricted helper; on mod_php, use the installation's code owner.
+For locally managed demos, use the demo host's controlled update procedure
+targeting 0.2.12 so its baseline/reset remains valid.
+
+After this step, GUI and CLI updates first check the latest stable updater.
+When needed, they replace it atomically and continue in a **new PHP process**
+before changing application code, modules, configuration, or database schemas.
+Then check and install application and compatible module tags normally:
 
 ```bash
 php update.php --check
@@ -176,6 +193,7 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Release 0.2.12: required updater self-update bridge](docs/release-0.2.12_en.md)
 - [Dedicated PHP-FPM installation](docs/installation_fpm_en.md)
 - [Apache mod_php installation](docs/installation_mod_php_en.md)
 - [Six clean installations and screenshots](docs/installation-lab_en.md)

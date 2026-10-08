@@ -19,10 +19,21 @@ use Throwable;
  */
 final class ApplicationUpdateCommand
 {
+    // HR: Povećati pri svakoj promjeni updatera; protokol predaje ostaje kompatibilan.
+    // EN: Increment on every updater change; keep the handoff protocol compatible.
+    public const UPDATER_VERSION = '1.0.0';
+
+    public const HANDOFF_PROTOCOL = 1;
+
+    public const BRIDGE_RELEASE = '0.2.12';
+
+    private const HANDOFF_ENV = 'SIMBIOZA_UPDATER_HANDOFF';
+
     private const REPOSITORY = 'https://github.com/kmihalj/Simbioza.git';
 
     /** @var list<string> */
     private const SOURCE_SYNC_EXCLUDES = [
+        '/update.php',
         '/.git/',
         '/vendor/',
         '/data/',
@@ -132,6 +143,14 @@ final class ApplicationUpdateCommand
             'hr' => 'Ciljno izdanje: %s.',
             'en' => 'Target release: %s.',
         ],
+        'updater_check' => [
+            'hr' => 'Prvo provjeravam updater iz zadnjeg stabilnog izdanja...',
+            'en' => 'Checking the updater from the latest stable release first...',
+        ],
+        'updater_restart' => [
+            'hr' => 'Updater je osvježen. Nadogradnju nastavlja novi PHP proces...',
+            'en' => 'Updater refreshed. A new PHP process will continue the update...',
+        ],
         'backup' => [
             'hr' => 'Sigurnosna kopija aplikacijskog koda: %s',
             'en' => 'Application code backup: %s',
@@ -203,6 +222,8 @@ final class ApplicationUpdateCommand
     /** @var resource|null */
     private $lockHandle;
 
+    private bool $inheritedLock = false;
+
     private bool $maintenanceEnabled = false;
 
     private bool $migrationStarted = false;
@@ -250,79 +271,72 @@ final class ApplicationUpdateCommand
             return 0;
         }
 
+        if ($this->hasOption('--updater-info')) {
+            $this->write(json_encode([
+                'version' => self::UPDATER_VERSION,
+                'protocol' => self::HANDOFF_PROTOCOL,
+                'bridge_release' => self::BRIDGE_RELEASE,
+            ], JSON_THROW_ON_ERROR));
+            return 0;
+        }
+
         try {
             $this->assertInstallationRoot();
-            $git = $this->requireExecutable('git');
-            $latestTag = $this->latestStableTag($git);
-            $targetTag = $this->requestedTag() ?? $latestTag;
             $currentTag = $this->currentTag();
-
-            $this->write(sprintf(
-                $this->message('current_latest'),
-                $currentTag ?? $this->message('unknown'),
-                $latestTag,
-            ));
-
-            if ($this->hasOption('--check')) {
-                if ($this->requestedTag() !== null) {
-                    $this->write(sprintf($this->message('target'), $targetTag));
+            if ($this->hasOption('--continue-update')) {
+                [$targetTag, $sourceTag, $sourceDirectory] = $this->receiveUpdaterHandoff();
+                $this->reportProgress('updater_ready', 9, 'Refreshed updater is running.');
+                if ($targetTag !== $sourceTag) {
+                    $sourceDirectory = $this->temporaryDirectory . '/source';
+                    $this->fetchRelease($this->requireExecutable('git'), $targetTag, $sourceDirectory);
                 }
-                return 0;
+            } else {
+                $git = $this->requireExecutable('git');
+                $latestTag = $this->latestStableTag($git);
+                $targetTag = $this->requestedTag() ?? $latestTag;
+                $this->write(sprintf(
+                    $this->message('current_latest'),
+                    $currentTag ?? $this->message('unknown'),
+                    $latestTag,
+                ));
+                if ($this->hasOption('--check')) {
+                    $this->write('Updater: ' . self::UPDATER_VERSION);
+                    if ($this->requestedTag() !== null) {
+                        $this->write(sprintf($this->message('target'), $targetTag));
+                    }
+                    return 0;
+                }
+                if (version_compare(ltrim($targetTag, 'v'), self::BRIDGE_RELEASE, '<')) {
+                    throw new RuntimeException('Target releases older than the required bridge ' . self::BRIDGE_RELEASE . ' are not supported.');
+                }
+                if ($this->shouldDelegateToSetupHelper()) {
+                    return $this->delegateToSetupHelper($targetTag);
+                }
+                if (!is_writable($this->appRoot)) {
+                    throw new RuntimeException($this->message('write_access'));
+                }
+                $this->acquireLock();
+                $this->temporaryDirectory = $this->createTemporaryDirectory();
+                $this->progress('updater_check', 6, $this->message('updater_check'));
+                $updaterSource = $this->temporaryDirectory . '/updater-source';
+                $this->fetchRelease($git, $latestTag, $updaterSource);
+                $refreshed = $this->refreshUpdater($updaterSource . '/update.php');
+                if ($refreshed) {
+                    $this->progress('updater_restart', 9, $this->message('updater_restart'));
+                    return $this->continueWithNewUpdater($targetTag, $latestTag, $updaterSource);
+                }
+                $sourceDirectory = $updaterSource;
+                if ($targetTag !== $latestTag) {
+                    $sourceDirectory = $this->temporaryDirectory . '/source';
+                    $this->fetchRelease($git, $targetTag, $sourceDirectory);
+                }
             }
 
-            if ($this->shouldDelegateToSetupHelper()) {
-                return $this->delegateToSetupHelper($targetTag);
-            }
-
-            if (!is_writable($this->appRoot)) {
-                throw new RuntimeException($this->message('write_access'));
-            }
-
-            $this->acquireLock();
             $rsync = $this->requireExecutable('rsync');
             $tar = $this->requireExecutable('tar');
             $composer = $this->requireExecutable('composer');
             $this->write(sprintf($this->message('target'), $targetTag));
-
-            $this->temporaryDirectory = $this->createTemporaryDirectory();
-            $sourceDirectory = $this->temporaryDirectory . '/source';
             $this->progress('download', 10, $this->message('download'));
-            $this->mustRun([
-                $git,
-                'init',
-                '--quiet',
-                $sourceDirectory,
-            ]);
-            $this->mustRun([
-                $git,
-                '-C',
-                $sourceDirectory,
-                'remote',
-                'add',
-                'origin',
-                self::REPOSITORY,
-            ]);
-            $this->mustRun([
-                $git,
-                '-C',
-                $sourceDirectory,
-                'fetch',
-                '--quiet',
-                '--depth',
-                '1',
-                'origin',
-                'refs/tags/' . $targetTag,
-            ]);
-            $this->mustRun([
-                $git,
-                '-C',
-                $sourceDirectory,
-                '-c',
-                'advice.detachedHead=false',
-                'checkout',
-                '--quiet',
-                'FETCH_HEAD',
-            ]);
             $this->assertReleaseSource($sourceDirectory, $targetTag);
             $this->captureSelectedOptionalRequirements($sourceDirectory);
 
@@ -409,7 +423,9 @@ final class ApplicationUpdateCommand
                 }
             }
 
-            $this->disableMaintenance();
+            if ($this->maintenanceEnabled) {
+                $this->disableMaintenance();
+            }
             return 1;
         } finally {
             $this->restorePreservedPathMetadata(false);
@@ -464,6 +480,222 @@ final class ApplicationUpdateCommand
         }
 
         return $tag;
+    }
+
+    /** HR: Dohvaća točan stabilni tag bez pokretanja aplikacije. EN: Fetches an exact stable tag without bootstrapping the application. */
+    private function fetchRelease(string $git, string $targetTag, string $sourceDirectory): void
+    {
+        $this->mustRun([$git, 'init', '--quiet', $sourceDirectory]);
+        $this->mustRun([$git, '-C', $sourceDirectory, 'remote', 'add', 'origin', self::REPOSITORY]);
+        $this->mustRun([$git, '-C', $sourceDirectory, 'fetch', '--quiet', '--depth', '1', 'origin', 'refs/tags/' . $targetTag]);
+        $this->mustRun([$git, '-C', $sourceDirectory, '-c', 'advice.detachedHead=false', 'checkout', '--quiet', 'FETCH_HEAD']);
+        $this->assertReleaseSource($sourceDirectory, $targetTag);
+    }
+
+    /**
+     * HR: Provjerava i atomski osvježava jedinu samostalnu datoteku updatera.
+     *     Baza, vendor, konfiguracija i održavanje još nisu mijenjani.
+     * EN: Validates and atomically refreshes the single standalone updater file.
+     *     Database, vendor, configuration, and maintenance are still untouched.
+     */
+    private function refreshUpdater(string $candidate): bool
+    {
+        if (!is_file($candidate) || is_link($candidate)) {
+            throw new RuntimeException('The release updater is missing or is a symbolic link.');
+        }
+        $contents = (string)file_get_contents($candidate);
+        if (
+            preg_match("/public const UPDATER_VERSION = '([0-9]+\\.[0-9]+\\.[0-9]+)';/", $contents, $version) !== 1
+            || preg_match('/public const HANDOFF_PROTOCOL = ([0-9]+);/', $contents, $protocol) !== 1
+            || (int)$protocol[1] !== self::HANDOFF_PROTOCOL
+        ) {
+            throw new RuntimeException('The release updater has incompatible or missing version/protocol metadata.');
+        }
+        [$lintExit] = $this->runProcess([PHP_BINARY, '-l', $candidate], $this->appRoot, true);
+        if ($lintExit !== 0) {
+            throw new RuntimeException('The release updater is incompatible with the installed PHP runtime.');
+        }
+        $installed = $this->appRoot . '/update.php';
+        if (!is_file($installed) || is_link($installed)) {
+            throw new RuntimeException('The installed updater must be a regular file.');
+        }
+        if (version_compare($version[1], self::UPDATER_VERSION, '<')) {
+            return false;
+        }
+        if (hash_file('sha256', $candidate) === hash_file('sha256', $installed)) {
+            return false;
+        }
+        if ($version[1] === self::UPDATER_VERSION) {
+            throw new RuntimeException('Different updater code uses the same updater version. Refusing an ambiguous self-update.');
+        }
+        $metadata = stat($installed);
+        if ($metadata === false) {
+            throw new RuntimeException('Unable to read installed updater permissions.');
+        }
+        $backupDirectory = $this->appRoot . '/data/backups/updater';
+        if (!is_dir($backupDirectory) && !mkdir($backupDirectory, 0700, true) && !is_dir($backupDirectory)) {
+            throw new RuntimeException('Unable to prepare the private updater backup directory.');
+        }
+        $backup = $backupDirectory . '/update-' . self::UPDATER_VERSION . '-' . bin2hex(random_bytes(8)) . '.php';
+        if (!copy($installed, $backup) || !chmod($backup, 0600)) {
+            throw new RuntimeException('Unable to back up the installed updater.');
+        }
+        $temporary = tempnam($this->appRoot, '.simbioza-updater-');
+        if (!is_string($temporary)) {
+            throw new RuntimeException('Unable to stage the release updater.');
+        }
+        try {
+            if (file_put_contents($temporary, $contents, LOCK_EX) !== strlen($contents)) {
+                throw new RuntimeException('Unable to write the release updater.');
+            }
+            if (PHP_OS_FAMILY !== 'Windows') {
+                if (
+                    (fileowner($temporary) !== $metadata['uid'] && !@chown($temporary, $metadata['uid']))
+                    || (filegroup($temporary) !== $metadata['gid'] && !@chgrp($temporary, $metadata['gid']))
+                    || !chmod($temporary, $metadata['mode'] & 0777)
+                ) {
+                    throw new RuntimeException('Unable to preserve updater ownership and permissions.');
+                }
+            }
+            if (!rename($temporary, $installed)) {
+                throw new RuntimeException('Unable to activate the release updater.');
+            }
+        } finally {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * HR: Novi PHP proces nasljeđuje lock; stari omotač prenosi GUI napredak
+     *     i čeka njegov stvarni izlazni kod. Ne koristi shell niti pcntl.
+     * EN: The new PHP process inherits the lock; the old wrapper relays GUI
+     *     progress and waits for its real exit code. Uses neither shell nor pcntl.
+     */
+    private function continueWithNewUpdater(string $targetTag, string $sourceTag, string $sourceDirectory): int
+    {
+        if (!is_resource($this->lockHandle) || $this->temporaryDirectory === null) {
+            throw new RuntimeException('Updater handoff requires an active update lock.');
+        }
+        $context = fopen($this->temporaryDirectory . '/handoff.json', 'x+');
+        if ($context === false) {
+            throw new RuntimeException('Unable to prepare updater handoff context.');
+        }
+        // HR: Protokol 1 koristi samo ove skalarne vrijednosti i deskriptore 3/4/5.
+        // EN: Protocol 1 uses only these scalar values and descriptors 3/4/5.
+        fwrite($context, json_encode([
+            'protocol' => self::HANDOFF_PROTOCOL,
+            'root' => realpath($this->appRoot),
+            'target_tag' => $targetTag,
+            'source_tag' => $sourceTag,
+            'source' => realpath($sourceDirectory),
+            'temporary' => realpath($this->temporaryDirectory),
+            'updater_hash' => hash_file('sha256', $this->appRoot . '/update.php'),
+        ], JSON_THROW_ON_ERROR));
+        rewind($context);
+        $previousHandoff = getenv(self::HANDOFF_ENV);
+        putenv(self::HANDOFF_ENV . '=' . bin2hex(random_bytes(32)));
+        try {
+            $process = proc_open([
+                PHP_BINARY,
+                $this->appRoot . '/update.php',
+                '--continue-update',
+                '--lang=' . $this->locale,
+            ], [
+                0 => ['file', '/dev/null', 'r'],
+                1 => STDOUT,
+                2 => STDERR,
+                3 => $this->lockHandle,
+                4 => ['pipe', 'w'],
+                5 => $context,
+            ], $pipes, $this->appRoot, null, ['bypass_shell' => true]);
+        } finally {
+            putenv($previousHandoff === false ? self::HANDOFF_ENV : self::HANDOFF_ENV . '=' . $previousHandoff);
+            fclose($context);
+        }
+        if (!is_resource($process)) {
+            throw new RuntimeException('Unable to start the refreshed updater. Application update has not started.');
+        }
+        $ready = false;
+        $complete = false;
+        try {
+            while (($line = fgets($pipes[4], 16384)) !== false) {
+                $event = json_decode($line, true);
+                if (
+                    !is_array($event) || !is_string($event['stage'] ?? null)
+                    || !is_int($event['progress'] ?? null) || !is_string($event['message'] ?? null)
+                    || preg_match('/\A[a-z_]+\z/D', $event['stage']) !== 1
+                ) {
+                    continue;
+                }
+                $ready = $ready || $event['stage'] === 'updater_ready';
+                $complete = $complete || ($event['stage'] === 'complete' && $event['progress'] === 100);
+                $this->reportProgress($event['stage'], $event['progress'], $event['message']);
+            }
+        } finally {
+            fclose($pipes[4]);
+            $exitCode = proc_close($process);
+        }
+        if ($exitCode === 0 && (!$ready || !$complete)) {
+            throw new RuntimeException('The refreshed updater did not confirm successful application update completion.');
+        }
+        return $exitCode;
+    }
+
+    /**
+     * HR: Prihvaća internu predaju samo kroz naslijeđene privatne deskriptore,
+     *     s istim korijenom, lock inodeom, kodom i provjerenim izvornim tagom.
+     * EN: Accepts internal handoff only through inherited private descriptors,
+     *     with the same root, lock inode, code, and validated source tag.
+     *
+     * @return array{string,string,string}
+     */
+    private function receiveUpdaterHandoff(): array
+    {
+        $context = @fopen('php://fd/5', 'r');
+        $lock = @fopen('php://fd/3', 'r+');
+        if ($context === false || $lock === false) {
+            throw new RuntimeException('Internal updater handoff descriptors are unavailable.');
+        }
+        $payload = json_decode((string)stream_get_contents($context, 16384), true);
+        fclose($context);
+        putenv(self::HANDOFF_ENV);
+        $lockMetadata = fstat($lock);
+        $pathMetadata = @stat($this->appRoot . '/data/update.lock');
+        if (
+            !is_array($payload) || ($payload['protocol'] ?? null) !== self::HANDOFF_PROTOCOL
+            || ($payload['root'] ?? null) !== realpath($this->appRoot)
+            || ($payload['updater_hash'] ?? null) !== hash_file('sha256', $this->appRoot . '/update.php')
+            || $lockMetadata === false || $pathMetadata === false
+            || $lockMetadata['ino'] !== $pathMetadata['ino'] || $lockMetadata['dev'] !== $pathMetadata['dev']
+            || !flock($lock, LOCK_EX | LOCK_NB)
+        ) {
+            fclose($lock);
+            throw new RuntimeException('Internal updater handoff validation failed.');
+        }
+        $this->lockHandle = $lock;
+        $this->inheritedLock = true;
+        foreach (['target_tag', 'source_tag'] as $field) {
+            if (!is_string($payload[$field] ?? null) || preg_match('/\A(?:v)?\d+\.\d+\.\d+\z/D', $payload[$field]) !== 1) {
+                throw new RuntimeException('Invalid updater handoff release tag.');
+            }
+        }
+        $temporary = $payload['temporary'] ?? null;
+        $source = $payload['source'] ?? null;
+        $temporaryRoot = rtrim((string)realpath($this->appRoot . '/data'), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        if (
+            !is_string($temporary) || !is_string($source)
+            || !str_starts_with($temporary, $temporaryRoot . 'simbioza-update-')
+            || realpath($temporary) !== $temporary || $source !== $temporary . '/updater-source'
+            || realpath($source) !== $source
+        ) {
+            throw new RuntimeException('Invalid updater handoff source directory.');
+        }
+        $this->assertReleaseSource($source, $payload['source_tag']);
+        $this->temporaryDirectory = $temporary;
+        return [$payload['target_tag'], $payload['source_tag'], $source];
     }
 
     private function assertInstallationRoot(): void
@@ -689,7 +921,9 @@ final class ApplicationUpdateCommand
         if (!is_resource($this->lockHandle)) {
             return;
         }
-        flock($this->lockHandle, LOCK_UN);
+        if (!$this->inheritedLock) {
+            flock($this->lockHandle, LOCK_UN);
+        }
         fclose($this->lockHandle);
         $this->lockHandle = null;
     }
@@ -727,6 +961,7 @@ final class ApplicationUpdateCommand
         $command = [
             $rsync,
             '--archive',
+            '--checksum',
             '--delete',
             '--no-owner',
             '--no-group',
@@ -1816,6 +2051,7 @@ final class ApplicationUpdateCommand
         $command = [
             $rsync,
             '--archive',
+            '--checksum',
             '--delete',
             '--no-owner',
             '--no-group',
@@ -1920,7 +2156,9 @@ final class ApplicationUpdateCommand
 
     private function createTemporaryDirectory(): string
     {
-        $path = rtrim(sys_get_temp_dir(), '/') . '/simbioza-update-' . bin2hex(random_bytes(8));
+        // HR: I demo zadržava privremene datoteke unutar svoje instalacije.
+        // EN: Demo installations also keep temporary files inside their own root.
+        $path = $this->appRoot . '/data/simbioza-update-' . bin2hex(random_bytes(8));
         if (!mkdir($path, 0700, true) && !is_dir($path)) {
             throw new RuntimeException('Unable to create a temporary update directory.');
         }
@@ -2145,5 +2383,24 @@ if (is_string($_SERVER['SCRIPT_FILENAME'] ?? null) && realpath($_SERVER['SCRIPT_
             $arguments[] = $argument;
         }
     }
-    exit((new ApplicationUpdateCommand(__DIR__, $arguments))->run());
+    $reporter = null;
+    if (in_array('--continue-update', $arguments, true)) {
+        $handoffMarker = getenv('SIMBIOZA_UPDATER_HANDOFF');
+        if (!is_string($handoffMarker) || preg_match('/\A[0-9a-f]{64}\z/D', $handoffMarker) !== 1) {
+            fwrite(STDERR, "Internal updater handoff is not an operator option.\n");
+            exit(1);
+        }
+        $progressStream = @fopen('php://fd/4', 'w');
+        if (!is_resource($progressStream)) {
+            fwrite(STDERR, "Internal updater progress channel is unavailable.\n");
+            exit(1);
+        }
+        $reporter = static function (string $stage, int $progress, string $message) use ($progressStream): void {
+            fwrite($progressStream, json_encode([
+                'stage' => $stage, 'progress' => $progress, 'message' => $message,
+            ], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE) . "\n");
+            fflush($progressStream);
+        };
+    }
+    exit((new ApplicationUpdateCommand(__DIR__, $arguments, $reporter))->run());
 }

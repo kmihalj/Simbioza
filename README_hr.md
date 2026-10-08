@@ -157,9 +157,25 @@ composer e2e
 ```
 
 Poslužiteljska release instalacija smije namjerno biti bez `.git` direktorija i
-čuvati vlastiti provjereni `composer.lock`. Od izdanja `0.1.9` nadalje iz
-korijena instalacije provjerite i instalirajte najnovije stabilne tagove
-aplikacije i kompatibilnih modula ovako:
+čuvati vlastiti provjereni `composer.lock`.
+
+**Obvezan prijelaz za svaku instalaciju stariju od 0.2.12:** prvo je izričito
+nadogradite na **0.2.12**, koji uvodi nadogradnju samog updatera:
+
+```bash
+php update.php --tag=0.2.12
+```
+
+Ne preskačite ovo prijelazno izdanje. Izravne nadogradnje sa starije verzije na
+kasnije izdanje nisu podržane. Na starijem namjenskom FPM-u koristite CLI
+održavatelja i ograničeni helper, a na mod_php-u vlasnika aplikacijskog koda.
+Lokalni demo nadogradite kontroliranim postupkom njegova hosta, uz ciljno
+izdanje 0.2.12, kako bi početna kopija i automatski reset ostali valjani.
+
+Nakon toga GUI i CLI prvo provjeravaju updater iz najnovijeg stabilnog izdanja.
+Ako je potrebno, atomski ga zamjenjuju i nastavljaju u **novom PHP procesu**,
+prije promjena aplikacijskog koda, modula, konfiguracija ili sheme baze.
+Zatim provjeravajte i instalirajte izdanja aplikacije i kompatibilnih modula:
 
 ```bash
 php update.php --check
@@ -176,6 +192,8 @@ su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima
 zaseban [engleski indeks](docs/index_en.md).
 
 ## Dokumentacija
+
+- [Izdanje 0.2.12: obvezan prijelaz na updater koji nadograđuje sam sebe](docs/release-0.2.12_hr.md)
 
 - [Izdanje 0.2.8: obavijesti više ne prekriva widget pristupačnosti](docs/release-0.2.8_hr.md)
 - [Izdanje 0.2.7: prošireni vlastiti widget pristupačnosti na šest jezika](docs/release-0.2.7_hr.md)

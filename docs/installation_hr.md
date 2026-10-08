@@ -160,6 +160,10 @@ postoje prijevodi svih uputa.
 
 ### Nadogradnje aplikacije
 
+**Prije daljnjih nadogradnji svaka verzija starija od 0.2.12 mora prvo izvršiti
+`php update.php --tag=0.2.12`.** To obvezno prijelazno izdanje uvodi nadogradnju
+samog updatera. Preskakanje nije podržano; pogledajte [napomene za 0.2.12](release-0.2.12_hr.md).
+
 Na ispravno podešenom namjenskom FPM-u administrator može provjeriti i
 pokrenuti nadogradnju u GUI Setupu. Stvarni posao radi ograničeni deploy
 račun, a ne web-proces. Održavatelj može koristiti i CLI nakon što dobije
@@ -172,13 +176,24 @@ php update.php --check
 php update.php
 ```
 
-Za određeni objavljeni tag koristite `php update.php --tag=<TAG>`. Updater
-izrađuje kopiju koda, uključuje održavanje, čuva privatnu konfiguraciju i
+Za određeni objavljeni tag koristite `php update.php --tag=<TAG>`. Od 0.2.12
+updater prvo provjerava updater iz najnovijeg stabilnog izdanja, čak i ako
+odaberete drugi aplikacijski tag. Novi updater dobiva privatnu sigurnosnu
+kopiju, atomski se zamjenjuje i pokreće u svježem PHP procesu uz isto
+zaključavanje, deploy identitet, jezik, ciljni tag i prijenos GUI napretka.
+Tek zatim izrađuje kopiju koda, uključuje održavanje, čuva privatnu konfiguraciju i
 podatke, zadržava odabrane opcionalne module, instalira kompatibilne tagirane
 pakete, provjerava pokretanje, primjenjuje migracije, osvježava upute i temu
 te čisti cache. Na postojećoj instalaciji **nemojte** ga zamijeniti
 samostalnim `composer update`: time se mogu izgubiti odabrani opcionalni
 paketi iz aplikacijskog manifesta.
+
+Kopije updatera nalaze se u `data/backups/updater/` s pravima `0600`.
+Privremeni rad i podaci predaje ostaju unutar `data/` i uklanjaju se po završetku.
+Povrat aplikacijskog koda ne vraća zastarjeli updater. `--check` je samo
+read-only provjera; `--updater-info` prikazuje verziju updatera i protokol predaje
+bez aplikacijskih ovisnosti. Izdanja starija od obveznog prijelaznog izdanja
+nisu valjani ciljevi ovog updatera.
 
 Greška **prije** migracija automatski vraća kod i Composer pakete. Kada
 migracije već počnu, održavanje namjerno ostaje uključeno radi kontroliranog

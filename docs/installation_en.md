@@ -160,6 +160,10 @@ guides to exist yet.
 
 ### Application updates
 
+**Before any later upgrade, every version older than 0.2.12 must first run
+`php update.php --tag=0.2.12`.** This required bridge installs the self-updating
+updater. Skipping it is unsupported; see the [0.2.12 release notes](release-0.2.12_en.md).
+
 On a correctly configured dedicated FPM installation, the administrator may
 check and start an update in GUI Setup. The actual job runs as the restricted
 deployment account, not as the web process. The signed-in Unix maintainer can
@@ -173,11 +177,15 @@ php update.php --check
 php update.php
 ```
 
-To request a specific published tag, use `php update.php --tag=<TAG>`. The
-updater backs up code, enables maintenance, preserves private configuration
-and data, resolves the installed optional modules, installs compatible tagged
-packages, checks bootstrap, applies migrations, refreshes guides and the
-theme, and clears caches. Do **not** replace it with a standalone
+To request a specific published tag, use `php update.php --tag=<TAG>`. Since
+0.2.12, the updater first validates the updater from the latest stable release,
+even if you request a different application tag. A changed updater is backed
+up privately, replaced atomically, and started in a fresh PHP process with the
+same update lock, deployment identity, language, target tag, and GUI progress
+channel. Only then does it back up code, enable maintenance, preserve private
+configuration and data, resolve the installed optional modules, install
+compatible tagged packages, check bootstrap, apply migrations, refresh guides
+and the theme, and clear caches. Do **not** replace it with a standalone
 `composer update` on an existing installation: that could drop optional
 packages from the installation's selected set.
 
@@ -188,6 +196,13 @@ never move or delete it until you have proved that no update process is still
 running and inspected the log and backup path. Confirm the final updater
 status, zero pending migrations, and real sign-in/content flows after every
 update. Back up the database, settings, uploaded files, and themes separately.
+
+Updater backups are stored in `data/backups/updater/` with mode `0600`;
+temporary work and handoff files stay inside `data/` and are removed when the
+job finishes. Application rollback does not downgrade the refreshed updater.
+`--check` is read-only; `--updater-info` displays the installed updater version
+and handoff protocol without requiring application dependencies. Releases
+older than the required bridge are not valid targets for this updater.
 
 Older dedicated FPM installations configured with release 0.1.77 or earlier
 need the FPM guide's `--finalize` step once after updating so that CLI

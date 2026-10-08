@@ -28,6 +28,10 @@ final class ApplicationUpdateCommandTest extends TestCase
     protected function tearDown(): void
     {
         foreach ($this->temporaryDirectories as $directory) {
+            if (!is_dir($directory)) {
+                continue;
+            }
+
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::CHILD_FIRST,
@@ -332,7 +336,7 @@ PHP);
         $updater = (string)file_get_contents(dirname(__DIR__, 3) . '/update.php');
         $this->assertStringContainsString("'refs/tags/' . \$targetTag", $updater);
         $this->assertStringContainsString(
-            "'checkout',\n                '--quiet',\n                'FETCH_HEAD'",
+            "'checkout', '--quiet', 'FETCH_HEAD'",
             $updater,
         );
         $this->assertStringContainsString("'advice.detachedHead=false'", $updater);

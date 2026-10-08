@@ -56,7 +56,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pdo, pdo_sqlite, simplexml, tokenizer, xmlwriter, zip
+          extensions: ctype, dom, fileinfo, filter, json, libxml, mbstring, openssl, pcntl, pdo, pdo_sqlite, posix, simplexml, tokenizer, xmlwriter, zip
           coverage: pcov
 
       - name: Validate Composer metadata / Provjeri Composer metapodatke
@@ -71,13 +71,17 @@ jobs:
         run: COMPOSER=composer.ci.json composer check-platform-reqs
 
       - name: Run quality and test suite / Pokreni provjere i testove
-        run: COMPOSER=composer.ci.json composer on-commit
+        run: |
+          git fetch --depth=1 origin refs/tags/0.2.11:refs/tags/0.2.11
+          COMPOSER=composer.ci.json composer on-commit
 
       # HR: Root izvodi samo test na privremenim datotekama ovog izoliranog runnera.
       # EN: Root runs only the test against temporary files on this isolated runner.
       - name: Verify cross-user ownership / Provjeri vlasništvo između korisnika
         if: matrix.php == '8.5'
-        run: sudo -n "$(command -v php)" scripts/verify_root_asset_permissions.php
+        run: |
+          sudo -n "$(command -v php)" scripts/verify_root_asset_permissions.php
+          sudo -n "$(command -v php)" scripts/verify_updater_permissions.php
 
   clean-install-sqlite:
     name: Clean module matrix / Čista matrica modula

@@ -142,6 +142,9 @@ theme data before going live.
 
 ## 5. Maintain this installation
 
+Versions older than 0.2.12 must first run `php update.php --tag=0.2.12`
+as the code owner. Do not skip this required updater bridge.
+
 In **Settings → Setup and modules**, an administrator may enable or disable
 modules already installed. Package add/remove and application updates must
 be run by the Unix code owner, not by Apache:

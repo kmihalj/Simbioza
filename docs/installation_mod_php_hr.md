@@ -142,6 +142,9 @@ korisničke datoteke i podatke teme.
 
 ## 5. Održavajte instalaciju
 
+Verzije starije od 0.2.12 prvo nadogradite naredbom `php update.php --tag=0.2.12`
+kao vlasnik koda. Ne preskačite ovo obvezno prijelazno izdanje updatera.
+
 U **Postavke → Setup i moduli** administrator može uključivati ili
 isključivati već instalirane module. Dodavanje/uklanjanje paketa i nadogradnje
 mora pokrenuti Unix vlasnik koda, a ne Apache:
