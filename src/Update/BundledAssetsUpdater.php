@@ -532,6 +532,10 @@ final readonly class BundledAssetsUpdater
 
         foreach ($paths as $item) {
             $path = $item->getPathname();
+            // EN: Discard cached metadata before and after POSIX changes, including on PHP 8.2.
+            //
+            // HR: Odbacuje cache metapodataka prije i poslije POSIX promjena, uključujući PHP 8.2.
+            clearstatcache(true, $path);
             $permissions = @fileperms($path);
             if (!is_int($permissions)) {
                 throw new RuntimeException('Release path permissions cannot be read: ' . $path);
@@ -546,6 +550,8 @@ final readonly class BundledAssetsUpdater
             if (!@chmod($path, $mode | $required)) {
                 throw new RuntimeException('Release path cannot be made web-readable: ' . $path);
             }
+
+            clearstatcache(true, $path);
         }
     }
 
