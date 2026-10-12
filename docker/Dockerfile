@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -r /var/lib/apt/lists/*
 
 FROM php-runtime AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends git unzip \
+    && rm -r /var/lib/apt/lists/*
 COPY --from=composer:2@sha256:af98f42dfff7c68ba8d53c2164fd9fde1087b7d449514baa38c418b1f6bc4bac /usr/bin/composer /usr/local/bin/composer
 WORKDIR /opt/simbioza
 COPY app/ ./
@@ -27,7 +29,8 @@ COPY packages/ /opt/simbioza-build/packages/
 RUN composer update --no-dev --no-interaction --no-progress --no-scripts --prefer-dist \
     --optimize-autoloader && composer check-platform-reqs --no-dev \
     && php docker/finalize_identity.php \
-    && test ! -L vendor/aaieduhr/heartphrame-framework
+    && test ! -L vendor/aaieduhr/heartphrame-framework \
+    && find vendor -type d -name .git -prune -exec rm -r {} +
 
 FROM php-runtime AS application
 ARG VERSION=0.3.0

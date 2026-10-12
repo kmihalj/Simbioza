@@ -111,7 +111,10 @@ final class SecurityHeadersConfigurationTest extends TestCase
                 $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
                 $this->assertNotSame('', $response->getHeaderLine('X-Frame-Options'));
                 $this->assertNotSame('', $response->getHeaderLine('Content-Security-Policy'));
-                $this->assertSame($scheme === 'https' ? 'max-age=3600' : '', $response->getHeaderLine('Strict-Transport-Security'));
+                $this->assertSame(
+                    $scheme === 'https' ? 'max-age=3600' : '',
+                    $response->getHeaderLine('Strict-Transport-Security'),
+                );
                 $this->assertStringNotContainsString('Private detail', (string)$response->getBody());
             }
         }
