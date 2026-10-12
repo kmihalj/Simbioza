@@ -192,7 +192,11 @@ function auditDocumentationAnchors(string $document, string $label, array &$issu
  */
 function auditDocumentationExamples(string $text, string $label, array &$issues): void
 {
-    if (preg_match('~/(?:release-|release_)[0-9]~', $label)) {
+    $currentVersion = trim((string)file_get_contents(dirname(__DIR__) . '/VERSION'));
+    if (
+        preg_match('~/(?:release-|release_)([0-9]+\.[0-9]+\.[0-9]+)~', $label, $version) === 1
+        && $version[1] !== $currentVersion
+    ) {
         if (!str_contains($text, 'Historical release note') && !str_contains($text, 'Povijesna bilješka izdanja')) {
             $issues[] = $label . ': historical release note lacks an explicit current-guide notice';
         }

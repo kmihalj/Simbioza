@@ -7,9 +7,10 @@ Opseg: svih 18 javnih modula, privatni demo modul i Simbioza s tagom 0.3.0; Dock
 ## Popis za objavu
 
 - [x] Pregledati promjene; sačuvati privatne postavke i izmjene Frameworka.
-- [ ] Provjeriti kvalitetu modula i izolirani integrirani E2E.
-- [ ] Objaviti main grane modula i provjeriti CI prije nepromjenjivih tagova.
-- [ ] Objaviti usklađene tagove modula 0.3.0 i provjeriti CI sa stabilnim ovisnostima.
+- [x] Provjeriti kvalitetu modula i izolirani integrirani E2E (80/80).
+- [x] Objaviti main grane; prošlo je svih 19 CI provjera za točne commitove.
+- [x] Objaviti tagove 0.3.0 za 18 javnih modula i privatni demo modul.
+- [ ] Provjeriti CI objavljenih tagova sa stabilnim ovisnostima.
 - [ ] Provjeriti novu instalaciju iz objavljenih paketa, bez lokalnih aliasa.
 - [ ] Objaviti main/tag aplikacije i provjeriti cijelu matricu baze/browsera/API-ja.
 - [ ] Izgraditi i skenirati Linux amd64/arm64 imagee; objaviti GHCR image i Compose paket.

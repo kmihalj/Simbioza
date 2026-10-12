@@ -46,7 +46,7 @@ arhive trebaju dostavljati samo pouzdani administratori; ne uvoziti nepouzdane e
 ## Provjere
 
 Lokalni integrirani E2E: svih 80 scenarija prošlo je provjeru. Aplikacijski unit
-suite: 272 testa i 6.150 provjera; tri root/Linux provjere izvode se zasebno u CI-ju.
+testovi i tri dodatne root/Linux provjere također se izvode u CI-ju izdanja.
 CI izdanja dodatno provjerava PHP 8.2-8.5, čiste kombinacije modula, PostgreSQL,
 MySQL, browser/API tokove i obje nativne arhitekture imagea. Točni CI rezultati i
 digesti imagea dio su objave; pripremljeni checkout nije dokaz objavljenog artefakta.

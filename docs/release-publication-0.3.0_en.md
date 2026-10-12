@@ -7,9 +7,10 @@ Scope: all 18 public modules, the private demo module and Simbioza at tag 0.3.0;
 ## Checklist
 
 - [x] Inspect repository changes; preserve private settings and Framework edits.
-- [ ] Validate module quality checks and isolated integrated E2E.
-- [ ] Publish module main branches and verify branch CI before immutable tags.
-- [ ] Publish coordinated module 0.3.0 tags and verify stable dependency CI.
+- [x] Validate module quality checks and isolated integrated E2E (80/80).
+- [x] Publish module main branches; all 19 exact-commit main CI checks passed.
+- [x] Publish 0.3.0 tags for 18 public modules and the private demo module.
+- [ ] Verify stable dependency CI on the published module tags.
 - [ ] Verify fresh installation from published packages, without local aliases.
 - [ ] Publish application main/tag and verify the complete database/browser/API matrix.
 - [ ] Build and scan Linux amd64/arm64 images; publish GHCR image and Compose bundle.

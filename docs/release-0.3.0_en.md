@@ -44,8 +44,8 @@ should supply migration archives; do not import untrusted exports.
 
 ## Verification
 
-Local integrated E2E: 80/80 scenarios passed. Application unit suite: 272 tests,
-6,150 assertions; three root/Linux-specific checks are verified separately in CI.
+Local integrated E2E: 80/80 scenarios passed. Application unit checks and
+three additional root/Linux-specific checks are also verified in release CI.
 Release CI additionally checks PHP 8.2-8.5, fresh module combinations, PostgreSQL,
 MySQL, browser/API flows and both native image architectures. Exact CI results and
 image digests accompany publication; a prepared source checkout is not proof of

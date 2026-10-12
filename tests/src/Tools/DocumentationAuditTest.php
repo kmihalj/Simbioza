@@ -65,6 +65,19 @@ final class DocumentationAuditTest extends TestCase
     }
 
     /**
+     * EN: The current release remains current guidance and must validate its examples.
+     *
+     * HR: Aktualno izdanje ostaje aktualna uputa i mora provjeravati primjere.
+     */
+    public function testCurrentReleaseExamplesAreValidated(): void
+    {
+        $version = trim((string)file_get_contents(dirname(__DIR__, 3) . '/VERSION'));
+        $issues = [];
+        \auditDocumentationExamples("```json\ninvalid\n```", 'app/release-' . $version . '_en.md', $issues);
+        $this->assertCount(1, $issues);
+    }
+
+    /**
      * EN: Starting examples need valid JSON and two non-empty ordered language sections.
      *
      * HR: Početni primjeri trebaju valjan JSON i dva neprazna uređena jezična odjeljka.
