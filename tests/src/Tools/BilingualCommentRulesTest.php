@@ -27,11 +27,11 @@ final class BilingualCommentRulesTest extends TestCase
             "/**\n * EN: English.\n * HR: Hrvatski.\n */",
             ] as $comment
         ) {
-            self::assertFalse($rules->isOrdered($comment));
+            $this->assertFalse($rules->isOrdered($comment));
             $normalized = $rules->normalizeComment($comment);
-            self::assertTrue($rules->isOrdered($normalized), $normalized);
-            self::assertSame(['EN', 'HR'], $rules->markers($normalized));
-            self::assertSame($normalized, $rules->normalizeComment($normalized));
+            $this->assertTrue($rules->isOrdered($normalized), $normalized);
+            $this->assertSame(['EN', 'HR'], $rules->markers($normalized));
+            $this->assertSame($normalized, $rules->normalizeComment($normalized));
         }
     }
 
@@ -63,15 +63,16 @@ function example(array $items): string
 }
 PHP;
         $normalized = $rules->normalizeSource($source);
-        self::assertSame($rules->semanticHash($source), $rules->semanticHash($normalized));
-        self::assertStringContainsString("return 'HR: literal EN: not a comment';", $normalized);
-        self::assertStringContainsString(' * @param array<string,int> $items', $normalized);
-        self::assertStringContainsString("    // EN: First English line.\n", $normalized);
-        self::assertStringContainsString("\n    //\n    // HR:", $normalized);
+        $this->assertSame($rules->semanticHash($source), $rules->semanticHash($normalized));
+        $this->assertStringContainsString("return 'HR: literal EN: not a comment';", $normalized);
+        $this->assertStringContainsString(' * @param array<string,int> $items', $normalized);
+        $this->assertStringContainsString("    // EN: First English line.\n", $normalized);
+        $this->assertStringContainsString("\n    //\n    // HR:", $normalized);
         foreach ($rules->comments($normalized) as $comment) {
-            self::assertTrue($rules->isOrdered($comment['text']));
+            $this->assertTrue($rules->isOrdered($comment['text']));
         }
-        self::assertSame($normalized, $rules->normalizeSource($normalized));
+
+        $this->assertSame($normalized, $rules->normalizeSource($normalized));
     }
 
     /**
@@ -90,8 +91,8 @@ PHP;
             "// EN: English.\n//\n// HR: Hrvatski.",
             ] as $comment
         ) {
-            self::assertTrue($rules->isOrdered($comment));
-            self::assertSame($comment, $rules->normalizeComment($comment));
+            $this->assertTrue($rules->isOrdered($comment));
+            $this->assertSame($comment, $rules->normalizeComment($comment));
         }
     }
 
@@ -105,8 +106,8 @@ PHP;
         $rules = new BilingualCommentRules();
         $source = "<?php\n/** HR: Opis. EN: Description.\n * @see Example */\nfunction example(): void {}";
         $result = $rules->normalizeSource($source);
-        self::assertStringContainsString(" * @see Example\n */", $result);
-        self::assertSame($rules->semanticHash($source), $rules->semanticHash($result));
+        $this->assertStringContainsString(" * @see Example\n */", $result);
+        $this->assertSame($rules->semanticHash($source), $rules->semanticHash($result));
     }
 
     /**
@@ -127,10 +128,10 @@ PHP;
 function links(array $links): void {}
 PHP;
         $result = $rules->normalizeSource($source);
-        self::assertSame($rules->semanticHash($source), $rules->semanticHash($result));
-        self::assertStringContainsString(' * @param array<string,string> $links', $result);
-        self::assertStringContainsString('Relative paths.', $result);
-        self::assertStringContainsString('Relativne putanje.', $result);
-        self::assertTrue($rules->isOrdered($rules->comments($result)[0]['text']));
+        $this->assertSame($rules->semanticHash($source), $rules->semanticHash($result));
+        $this->assertStringContainsString(' * @param array<string,string> $links', $result);
+        $this->assertStringContainsString('Relative paths.', $result);
+        $this->assertStringContainsString('Relativne putanje.', $result);
+        $this->assertTrue($rules->isOrdered($rules->comments($result)[0]['text']));
     }
 }

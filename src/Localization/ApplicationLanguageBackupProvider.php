@@ -101,8 +101,8 @@ final class ApplicationLanguageBackupProvider implements BackupProviderInterface
             foreach ($this->resources($rows, $context) as $relative) {
                 $this->storage->assertWritable($relative);
             }
-        } catch (Throwable $error) {
-            $errors[] = $error->getMessage();
+        } catch (Throwable $throwable) {
+            $errors[] = $throwable->getMessage();
             $rows = [];
         }
 
@@ -135,9 +135,9 @@ final class ApplicationLanguageBackupProvider implements BackupProviderInterface
 
             $this->locks[] = $this->storage->lock();
             $this->configuration->prepareImport($context, $reader);
-        } catch (Throwable $error) {
+        } catch (Throwable $throwable) {
             $this->release();
-            throw $error;
+            throw $throwable;
         }
     }
 

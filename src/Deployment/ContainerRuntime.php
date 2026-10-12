@@ -43,11 +43,13 @@ final readonly class ContainerRuntime
         if (posix_geteuid() !== 0) {
             throw new RuntimeException('Run the short init job as root, not the web application.');
         }
+
         $lockPath = $this->target('.container-init.lock');
         $lock = fopen($lockPath, 'c+b');
         if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
             throw new RuntimeException('Another runtime initializer is running.');
         }
+
         try {
             $this->secure($lockPath);
             foreach (
@@ -56,6 +58,7 @@ final readonly class ContainerRuntime
             ) {
                 $this->directory($relative);
             }
+
             $this->create('config/env.php', [
                 'salt' => bin2hex(random_bytes(32)), 'encryption_key' => base64_encode(random_bytes(32)),
                 'environment' => 'production', 'debug' => false, 'log_level' => 'info', 'trusted_proxies' => [],
@@ -67,10 +70,12 @@ final readonly class ContainerRuntime
                 if (!is_string($secretFile) || !is_readable($secretFile)) {
                     throw new RuntimeException('A readable database secret file is required for initial setup.');
                 }
+
                 $password = file_get_contents($secretFile, false, null, 0, 4097);
                 if (!is_string($password) || strlen($password) > 4096 || trim($password) === '') {
                     throw new RuntimeException('Invalid database secret file.');
                 }
+
                 $this->create('config/database.php', ['connections' => ['default' => [
                     'driver' => 'pgsql', 'host' => getenv('SIMBIOZA_DB_HOST') ?: 'database', 'port' => 5432,
                     'database' => getenv('SIMBIOZA_DB_NAME') ?: 'simbioza',
@@ -78,6 +83,7 @@ final readonly class ContainerRuntime
                     'password' => rtrim($password, "\r\n"), 'charset' => 'UTF8', 'options' => [],
                 ]]]);
             }
+
             $this->publish('data/.container-initialized', "1\n");
         } finally {
             flock($lock, LOCK_UN);
@@ -95,6 +101,7 @@ final readonly class ContainerRuntime
         if (preg_match('~\A[a-z0-9./_-]+\z~D', $relative) !== 1 || str_contains($relative, '..')) {
             throw new RuntimeException('Invalid runtime path.');
         }
+
         $path = $this->runtimeRoot;
         foreach (explode('/', $relative) as $part) {
             $path .= '/' . $part;
@@ -102,6 +109,7 @@ final readonly class ContainerRuntime
                 throw new RuntimeException('Runtime targets must not be symbolic links.');
             }
         }
+
         return $path;
     }
 
@@ -117,6 +125,7 @@ final readonly class ContainerRuntime
             if (!mkdir($path, 0770)) {
                 throw new RuntimeException('Unable to create a private runtime directory.');
             }
+
             if (!chown($path, 33) || !chgrp($path, 33) || !chmod($path, 0770)) {
                 throw new RuntimeException('Unable to secure a private runtime directory.');
             }
@@ -139,8 +148,10 @@ final readonly class ContainerRuntime
             if (!is_file($path) || !is_readable($path)) {
                 throw new RuntimeException('Existing private configuration is invalid or unreadable.');
             }
+
             return;
         }
+
         $this->publish($relative, "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($value, true) . ";\n");
     }
 
@@ -156,15 +167,18 @@ final readonly class ContainerRuntime
         if (!is_string($temporary)) {
             throw new RuntimeException('Unable to stage runtime state.');
         }
+
         try {
             if (file_put_contents($temporary, $bytes) !== strlen($bytes)) {
                 throw new RuntimeException('Unable to write runtime state.');
             }
+
             if (posix_geteuid() === 0) {
                 $this->secure($temporary);
             } elseif (!chmod($temporary, 0660)) {
                 throw new RuntimeException('Unable to secure runtime state.');
             }
+
             if (!rename($temporary, $path)) {
                 throw new RuntimeException('Unable to publish runtime state.');
             }
@@ -205,13 +219,16 @@ final readonly class ContainerRuntime
         ) {
             throw new RuntimeException('Invalid image marker.');
         }
+
         $modules = [];
         foreach ($image['modules'] as $module) {
             if (!is_string($module) || preg_match('~\A[a-z0-9_-]+/[a-z0-9_-]+\z~D', $module) !== 1) {
                 throw new RuntimeException('Invalid image module composition.');
             }
+
             $modules[] = $module;
         }
+
         return ['format' => 'simbioza-image-v1', 'code_id' => $image['code_id'], 'modules' => $modules];
     }
 
@@ -225,6 +242,7 @@ final readonly class ContainerRuntime
         if (!is_file($this->target('data/.container-initialized'))) {
             throw new RuntimeException('Run the init job before starting the application.');
         }
+
         if (is_file($this->target('data/installation.lock'))) {
             $file = $this->target('data/.image-state.json');
             $state = is_file($file) ? json_decode((string)file_get_contents($file), true, 32, JSON_THROW_ON_ERROR) : [];
@@ -246,10 +264,12 @@ final readonly class ContainerRuntime
         if (!is_file($this->target('data/installation.lock'))) {
             throw new RuntimeException('Complete the new-site installer before migrating an existing installation.');
         }
+
         $lock = fopen($this->target('data/.deployment.lock'), 'c+b');
         if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
             throw new RuntimeException('Another image migration is running.');
         }
+
         try {
             // EN: Migrations load configuration without booting services that may require the new schema.
             //
@@ -266,16 +286,20 @@ final readonly class ContainerRuntime
                 if ($owner !== null && !InstalledVersions::isInstalled($catalog->definitionFor($owner)['package'])) {
                     continue;
                 }
+
                 $migration = require $file;
                 if (!$migration instanceof MigrationInterface) {
                     throw new RuntimeException('Invalid baked migration.');
                 }
+
                 $migrations[$name] = $migration;
             }
+
             ksort($migrations);
             if (array_diff($database->migrator()->ran(), array_keys($migrations)) !== []) {
                 throw new RuntimeException('This image lacks already-applied migrations; downgrade/removal is unsafe.');
             }
+
             $applied = $database->migrator()->migrate($migrations);
             $this->clearCache();
             $this->publish('data/.image-state.json', json_encode([
@@ -304,6 +328,7 @@ final readonly class ContainerRuntime
             if (!$file instanceof \SplFileInfo) {
                 continue;
             }
+
             $file->isDir() && !$file->isLink() ? rmdir($file->getPathname()) : unlink($file->getPathname());
         }
     }

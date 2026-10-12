@@ -59,9 +59,11 @@ final class ConfigurationExamplesTest extends TestCase
                         $this->assertStringContainsString($key, substr($contents, 0, strpos($contents, 'return [')));
                     }
                 }
+
                 mkdir($root . '/' . $module, 0700);
                 copy($example, $root . '/' . $module . '/' . $module . '.php');
             }
+
             $config = new Config(new Helper(), [], $app);
             $config->loadLayeredDirectories(ConfigPathResolver::fromEnvironment($app));
             $this->assertSame(120, ApiConfiguration::resolve($config)->getAsInt('api.rate_limit_per_minute'));
@@ -81,15 +83,18 @@ final class ConfigurationExamplesTest extends TestCase
             foreach (['HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $index => $key) {
                 putenv($environment[$index] === false ? $key : $key . '=' . $environment[$index]);
             }
+
             foreach (['api', 'backup'] as $module) {
                 $target = $root . '/' . $module . '/' . $module . '.php';
                 if (is_file($target)) {
                     unlink($target);
                 }
+
                 if (is_dir($root . '/' . $module)) {
                     rmdir($root . '/' . $module);
                 }
             }
+
             rmdir($root);
         }
     }

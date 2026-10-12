@@ -297,20 +297,23 @@ PHP);
         foreach (['catalogs/de.json', 'flags/de.svg', 'repository-versions.json'] as $file) {
             $before[$file] = $storage->bytes($file);
         }
+
         $registry = file_get_contents($this->root . '/config/languages.php');
         $flag = $storage->path('flags/de.svg');
         chmod($flag, 0400);
         try {
             $manager->install($pack, true);
             $this->fail('Read-only flag accepted.');
-        } catch (RuntimeException $error) {
-            $this->assertStringContainsString('not writable', $error->getMessage());
+        } catch (RuntimeException $runtimeException) {
+            $this->assertStringContainsString('not writable', $runtimeException->getMessage());
         } finally {
             chmod($flag, 0660);
         }
+
         foreach ($before as $file => $bytes) {
             $this->assertSame($bytes, $storage->bytes($file));
         }
+
         $this->assertSame($registry, file_get_contents($this->root . '/config/languages.php'));
         $manager->install($pack, true);
         $this->assertSame([], $storage->versions());

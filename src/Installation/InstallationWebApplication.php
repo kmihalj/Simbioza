@@ -405,6 +405,7 @@ final readonly class InstallationWebApplication
         if ((new \App\Deployment\DeploymentPolicy($this->paths->appRoot()))->isImmutable()) {
             return;
         }
+
         $configuredModules = is_array($application['optional_modules'] ?? null)
         ? $application['optional_modules']
         : [];

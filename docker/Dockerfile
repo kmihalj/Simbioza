@@ -3,7 +3,7 @@
 #
 # HR: Graditi samo očišćeni kontekst iz scripts/build_container_context.php.
 # Privatni HFC config, podatke, tajne i žive vendor linkove nikada ne slati Dockeru.
-ARG PHP_IMAGE=php:8.4-apache-bookworm@sha256:9e811795a606ca7f8586dee48d32acf444985c19ac252d70d181cd71a4603898
+ARG PHP_IMAGE=php:8.4-apache-trixie@sha256:901b0dbcd2419cc9cd307ea05e57403449ce722ccd5b32335da6e8d39f2b1ee0
 FROM ${PHP_IMAGE} AS php-runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu-dev libzip-dev libpq-dev libonig-dev libsqlite3-dev \
@@ -11,6 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j2 intl mbstring zip pdo_pgsql pdo_mysql pdo_sqlite gd opcache pcntl \
     && a2enmod rewrite headers \
+    && apt-mark manual libicu76 libzip5 libpq5 libonig5 libsqlite3-0 \
+        libpng16-16t64 libjpeg62-turbo libfreetype6 \
+    && apt-get purge -y --auto-remove $PHPIZE_DEPS \
+        libicu-dev libzip-dev libpq-dev libonig-dev libsqlite3-dev \
+        libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+        libc6-dev libcrypt-dev linux-libc-dev rpcsvc-proto \
     && rm -r /var/lib/apt/lists/*
 
 FROM php-runtime AS builder

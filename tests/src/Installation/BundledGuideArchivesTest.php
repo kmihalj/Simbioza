@@ -57,10 +57,12 @@ final class BundledGuideArchivesTest extends TestCase
                         if ($provider['id'] === 'editor-html-workspace') {
                             $this->assertSame(2, $provider['schema_version']);
                         }
+
                         if ($provider['id'] === 'editor-html-files') {
                             $this->assertSame(3, $provider['schema_version']);
                         }
                     }
+
                     $this->assertNotEmpty($manifest['files']);
                 } finally {
                     $reader->close();

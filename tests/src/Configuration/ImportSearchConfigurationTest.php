@@ -47,6 +47,7 @@ final class ImportSearchConfigurationTest extends TestCase
         foreach (['config', 'external', 'last'] as $directory) {
             $this->directory($this->root . '/' . $directory);
         }
+
         foreach (['HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $key) {
             $this->environment[$key] = getenv($key);
             putenv($key);
@@ -63,9 +64,11 @@ final class ImportSearchConfigurationTest extends TestCase
         foreach (array_reverse($this->files) as $path) {
             unlink($path);
         }
+
         foreach (array_reverse($this->directories) as $path) {
             rmdir($path);
         }
+
         foreach ($this->environment as $key => $value) {
             putenv($value === false ? $key : $key . '=' . $value);
         }
@@ -93,22 +96,24 @@ final class ImportSearchConfigurationTest extends TestCase
             ]);
             putenv('HPH_CONFIG_PATH=' . $this->root . '/external');
         }
+
         if ($mode === 'layered') {
             $this->write('last', 'workspace-search/workspace-search.php', ['results_per_page' => 9]);
             $this->write('last', 'confluence-import/confluence-import.php', ['chunk_size' => 13]);
             putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $this->root . '/last');
         }
+
         [$search, $import] = $this->consumers();
-        self::assertSame(match ($mode) {
+        $this->assertSame(match ($mode) {
             'default' => 5, 'external' => 8, default => 9
         }, $search->resultsPerPage());
-        self::assertSame($mode === 'default' ? 100 : 50, $search->maximumResultsPerPage());
-        self::assertSame(match ($mode) {
+        $this->assertSame($mode === 'default' ? 100 : 50, $search->maximumResultsPerPage());
+        $this->assertSame(match ($mode) {
             'default' => 7, 'external' => 11, default => 13
         }, $import->chunkSize());
-        self::assertSame($mode === 'default' ? 'hr' : 'en', $import->defaultLanguage());
-        self::assertSame($this->root . '/data/confluence-import', $import->dataDirectory());
-        self::assertDirectoryDoesNotExist($this->root . '/data');
+        $this->assertSame($mode === 'default' ? 'hr' : 'en', $import->defaultLanguage());
+        $this->assertSame($this->root . '/data/confluence-import', $import->dataDirectory());
+        $this->assertDirectoryDoesNotExist($this->root . '/data');
     }
 
     /**
@@ -124,8 +129,8 @@ final class ImportSearchConfigurationTest extends TestCase
         $this->write('last', 'confluence-import/confluence-import.php', []);
         putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $this->root . '/last');
         [$search, $import] = $this->consumers();
-        self::assertSame(20, $search->resultsPerPage());
-        self::assertSame(8388608, $import->chunkSize());
+        $this->assertSame(20, $search->resultsPerPage());
+        $this->assertSame(8388608, $import->chunkSize());
     }
 
     /**
@@ -143,9 +148,10 @@ final class ImportSearchConfigurationTest extends TestCase
                 : new ConfluenceImportConfig($config, $this->moduleRoot($module));
                 self::fail('Invalid configuration must not fall back to defaults.');
             } catch (RuntimeException $exception) {
-                self::assertStringContainsString('must be an array', $exception->getMessage());
+                $this->assertStringContainsString('must be an array', $exception->getMessage());
             }
         }
+
         foreach (['../outside', '/outside', 'a/../../outside', 'a\\outside', "a\0b"] as $path) {
             $config = new Config(new Helper(), ['confluence-import' => [
                 'confluence-import' => ['data_path' => $path],
@@ -154,7 +160,7 @@ final class ImportSearchConfigurationTest extends TestCase
                 (new ConfluenceImportConfig($config, $this->moduleRoot('confluence-import')))->dataDirectory();
                 self::fail('Import data must remain inside data.');
             } catch (RuntimeException $exception) {
-                self::assertStringContainsString('data_path', $exception->getMessage());
+                $this->assertStringContainsString('data_path', $exception->getMessage());
             }
         }
     }
@@ -169,19 +175,21 @@ final class ImportSearchConfigurationTest extends TestCase
         $this->write('config', 'workspace-search.php', ['results_per_page' => 99]);
         $this->write('config', 'confluence_import.php', ['chunk_size' => 999]);
         [$search, $import] = $this->consumers();
-        self::assertSame(20, $search->resultsPerPage());
-        self::assertSame(8388608, $import->chunkSize());
+        $this->assertSame(20, $search->resultsPerPage());
+        $this->assertSame(8388608, $import->chunkSize());
     }
 
     /**
      * EN: Enumerates default, external and layered configuration modes.
      *
      * HR: Navodi zadani, vanjski i slojeviti način konfiguracije.
-     * @return array<string,array{string}>
+     * @return \Iterator<string, array{string}>
      */
-    public static function modes(): array
+    public static function modes(): \Iterator
     {
-        return ['default' => ['default'], 'external' => ['external'], 'layered' => ['layered']];
+        yield 'default' => ['default'];
+        yield 'external' => ['external'];
+        yield 'layered' => ['layered'];
     }
 
     /**
@@ -220,7 +228,8 @@ final class ImportSearchConfigurationTest extends TestCase
         if (!is_dir(dirname($path))) {
             $this->directory(dirname($path));
         }
-        self::assertNotFalse(file_put_contents($path, '<?php return ' . var_export($values, true) . ';'));
+
+        $this->assertNotFalse(file_put_contents($path, '<?php return ' . var_export($values, true) . ';'));
         $this->files[] = $path;
     }
 
@@ -231,7 +240,7 @@ final class ImportSearchConfigurationTest extends TestCase
      */
     private function directory(string $path): void
     {
-        self::assertTrue(mkdir($path, 0700));
+        $this->assertTrue(mkdir($path, 0700));
         $this->directories[] = $path;
     }
 }

@@ -36,15 +36,15 @@ final class DocumentationAuditTest extends TestCase
             'module/docs_en.md',
             $issues,
         );
-        self::assertSame([], $issues);
+        $this->assertSame([], $issues);
         \auditDocumentationExamples(
             "```php\n<?php return [;\n```\n```json\n{\"enabled\":}\n```\n",
             'module/docs_en.md',
             $issues,
         );
-        self::assertCount(2, $issues);
-        self::assertStringContainsString('invalid php example', $issues[0]);
-        self::assertStringContainsString('invalid json example', $issues[1]);
+        $this->assertCount(2, $issues);
+        $this->assertStringContainsString('invalid php example', (string) $issues[0]);
+        $this->assertStringContainsString('invalid json example', (string) $issues[1]);
     }
 
     /**
@@ -56,11 +56,11 @@ final class DocumentationAuditTest extends TestCase
     {
         $issues = [];
         \auditDocumentationExamples('Old instructions.', 'app/release-0.2.12_en.md', $issues);
-        self::assertCount(1, $issues);
+        $this->assertCount(1, $issues);
         foreach (['Historical release note', 'Povijesna bilješka izdanja'] as $notice) {
             $issues = [];
             \auditDocumentationExamples($notice . "\n```json\ninvalid\n```", 'app/release-0.2.12_hr.md', $issues);
-            self::assertSame([], $issues);
+            $this->assertSame([], $issues);
         }
     }
 
@@ -73,9 +73,9 @@ final class DocumentationAuditTest extends TestCase
     {
         $issues = [];
         \auditJsonStartingExample('{"_documentation":{"en":"Example","hr":"Primjer"}}', 'valid', $issues);
-        self::assertSame([], $issues);
+        $this->assertSame([], $issues);
         \auditJsonStartingExample('{"_description_en":"Example","_description_hr":"Primjer"}', 'valid', $issues);
-        self::assertSame([], $issues);
+        $this->assertSame([], $issues);
         foreach (
             ['{', '{}', '{"_documentation":{"hr":"Primjer","en":"Example"}}',
             '{"_documentation":{"en":"","hr":"Primjer"}}',
@@ -83,7 +83,7 @@ final class DocumentationAuditTest extends TestCase
         ) {
             $issues = [];
             \auditJsonStartingExample($text, 'invalid', $issues);
-            self::assertCount(1, $issues);
+            $this->assertCount(1, $issues);
         }
     }
 
@@ -97,7 +97,7 @@ final class DocumentationAuditTest extends TestCase
     public function testChecksReadmeHeadingTargetsWithoutFetchingExternalLinks(): void
     {
         $directory = sys_get_temp_dir() . '/simbioza-a5-docs-' . bin2hex(random_bytes(8));
-        self::assertTrue(mkdir($directory, 0700));
+        $this->assertTrue(mkdir($directory, 0700));
         try {
             file_put_contents($directory . '/guide.md', "# Čista instalacija\n## Save / Update / Delete\n"
                 . "## Save / Update / Delete\n<a id=\"custom\"></a>\n```php\n# not-a-heading\n```\n");
@@ -107,9 +107,9 @@ final class DocumentationAuditTest extends TestCase
                 . "\n[Wrong](guide.md#missing)\n[Code is not a heading](guide.md#not-a-heading)\n");
             $issues = [];
             \auditDocumentationAnchors($directory . '/README.md', 'fixture/README.md', $issues);
-            self::assertCount(2, $issues);
-            self::assertStringContainsString('#missing', $issues[0]);
-            self::assertStringContainsString('#not-a-heading', $issues[1]);
+            $this->assertCount(2, $issues);
+            $this->assertStringContainsString('#missing', (string) $issues[0]);
+            $this->assertStringContainsString('#not-a-heading', (string) $issues[1]);
         } finally {
             unlink($directory . '/README.md');
             unlink($directory . '/guide.md');

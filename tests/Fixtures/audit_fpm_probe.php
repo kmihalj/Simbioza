@@ -9,10 +9,12 @@ $root = getenv('HPH_APP_PATH');
 if ($root !== '/tmp/simbioza-r030-fpm-fixture' || PHP_SAPI !== 'fpm-fcgi') {
     throw new RuntimeException('Unexpected FPM audit fixture.');
 }
+
 $resolvedRoot = realpath($root);
 if ($resolvedRoot !== $root || !is_file($resolvedRoot . '/vendor/autoload.php')) {
     throw new RuntimeException('Missing or redirected FPM audit fixture.');
 }
+
 $root = $resolvedRoot;
 require __DIR__ . '/audit_fpm_loader.php';
 loadAuditFpmFixture($root);
@@ -73,6 +75,7 @@ unlink($languageFile);
 if (count($layers) > 1) {
     $checks['lower_config_read_only'] = !is_writable($layers[0]);
 }
+
 header('Content-Type: application/json');
 echo json_encode($checks, JSON_THROW_ON_ERROR), PHP_EOL;
 if (in_array(false, $checks, true)) {

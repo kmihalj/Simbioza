@@ -39,9 +39,9 @@ final class SecurityHeadersConfigurationTest extends TestCase
         try {
             putenv('HPH_REQUEST_LOG=' . sys_get_temp_dir() . '/fictional-metrics.jsonl');
             $stack = require dirname(__DIR__, 3) . '/config/middleware.php';
-            self::assertSame([TrustedProxyMiddleware::class, SecurityHeadersMiddleware::class,
+            $this->assertSame([TrustedProxyMiddleware::class, SecurityHeadersMiddleware::class,
                 ErrorHandlerMiddleware::class], array_slice($stack, 0, 3));
-            self::assertSame(3, array_search(\App\Performance\RequestMetricsMiddleware::class, $stack, true));
+            $this->assertSame(3, array_search(\App\Performance\RequestMetricsMiddleware::class, $stack, true));
         } finally {
             putenv($previous === false ? 'HPH_REQUEST_LOG' : 'HPH_REQUEST_LOG=' . $previous);
         }
@@ -65,7 +65,7 @@ final class SecurityHeadersConfigurationTest extends TestCase
         $headers = new SecurityHeadersMiddleware($config, $logger);
         foreach ([200, 302, 403, 500] as $status) {
             $inner = new class ($status) implements RequestHandlerInterface {
-                public function __construct(private int $status)
+                public function __construct(private readonly int $status)
                 {
                 }
 
@@ -79,17 +79,19 @@ final class SecurityHeadersConfigurationTest extends TestCase
                     if ($this->status === 403) {
                         throw new ForbiddenException('Private detail');
                     }
+
                     if ($this->status === 500) {
                         throw new \RuntimeException('Private detail');
                     }
+
                     return new Response($this->status, ['Content-Type' => 'text/html'], '<p>Test</p>');
                 }
             };
             $errors = new ErrorHandlerMiddleware(new ExceptionResponseFactory($config), $logger);
             $handler = new class ($errors, $inner) implements RequestHandlerInterface {
                 public function __construct(
-                    private ErrorHandlerMiddleware $errors,
-                    private RequestHandlerInterface $inner,
+                    private readonly ErrorHandlerMiddleware $errors,
+                    private readonly RequestHandlerInterface $inner,
                 ) {
                 }
 
@@ -105,15 +107,12 @@ final class SecurityHeadersConfigurationTest extends TestCase
             };
             foreach (['http', 'https'] as $scheme) {
                 $response = $headers->process(new Request('GET', $scheme . '://example.invalid/'), $handler);
-                self::assertSame($status, $response->getStatusCode());
-                self::assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
-                self::assertNotSame('', $response->getHeaderLine('X-Frame-Options'));
-                self::assertNotSame('', $response->getHeaderLine('Content-Security-Policy'));
-                self::assertSame(
-                    $scheme === 'https' ? 'max-age=3600' : '',
-                    $response->getHeaderLine('Strict-Transport-Security'),
-                );
-                self::assertStringNotContainsString('Private detail', (string)$response->getBody());
+                $this->assertSame($status, $response->getStatusCode());
+                $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
+                $this->assertNotSame('', $response->getHeaderLine('X-Frame-Options'));
+                $this->assertNotSame('', $response->getHeaderLine('Content-Security-Policy'));
+                $this->assertSame($scheme === 'https' ? 'max-age=3600' : '', $response->getHeaderLine('Strict-Transport-Security'));
+                $this->assertStringNotContainsString('Private detail', (string)$response->getBody());
             }
         }
     }

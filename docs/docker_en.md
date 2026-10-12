@@ -80,6 +80,11 @@ unneeded module instead of removing its schema/package from the image.
    (or set `SIMBIOZA_IMAGE` to your own verified build). Create two private password
    files at the declared paths: one for Simbioza and one for PostgreSQL's admin.
    Each contains a distinct strong password on one line. Keep both out of Git.
+   Set the secret directory to `0700` and its files to `0444`: the directory
+   prevents other host users from reading them, while read-only Compose mounts
+   allow the PostgreSQL container's different UID to read its assigned secrets.
+   File-backed Compose secrets do not remap file ownership. Do not place these
+   files in a public or shared host directory; the app never receives the admin secret.
 2. The default listener is `127.0.0.1:1511`. Put a trusted HTTPS reverse proxy
    in front of it; do not publish the database port. Keep cookie security enabled.
    For an isolated local HTTP lab only, set `SIMBIOZA_COOKIE_SECURE=0`.

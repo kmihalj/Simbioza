@@ -85,6 +85,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
         foreach ($this->readers as $reader) {
             $reader->close();
         }
+
         (new BackupFilesystem())->removeDirectory($this->root);
         foreach ($this->environment as $key => $value) {
             putenv($value === false ? $key : $key . '=' . $value);
@@ -104,6 +105,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
         foreach ($locales as $locale => $name) {
             $registry[$locale] = ['names' => [$locale => $name], 'native_name' => $name, 'flag' => $locale . '.svg'];
         }
+
         file_put_contents($root . '/config/languages.php', '<?php return ' . var_export($registry, true) . ';');
     }
 
@@ -176,6 +178,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
             $writer->writeRecord('application-config', 'configuration', ['key' => 'application', 'values' => []]);
             $writer->writeRecord('application-config', 'languages', $invalid);
         }
+
         $reader = new BackupArchiveReader($writer->finish(), $config, new BackupFilesystem());
         $this->readers[] = $reader;
         return $reader;
@@ -207,6 +210,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
         $target->import($context, $reader);
         $target->finalizeImport($context, $reader);
         $target->completeImport($context);
+
         $storage = new RuntimeLanguageStorage($this->root . '/target');
         $this->assertSame('Guten Tag', $storage->catalog('de')['hello']);
         $this->assertSame(str_repeat('a', 64), $storage->versions()['de']['sha256']);
@@ -227,6 +231,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
         $storage = new RuntimeLanguageStorage($this->root . '/target');
         $storage->install('en', ['hello' => 'target override']);
         $storage->write('flags/en.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
+
         $reader = $this->archive();
         $target = $this->provider('target');
         $context = $this->context(BackupImportContext::CONFLICT_MERGE);
@@ -254,6 +259,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
         foreach (['catalogs/de.json', 'flags/de.svg', 'repository-versions.json'] as $file) {
             $previous[$file] = $storage->bytes($file);
         }
+
         $registry = file_get_contents($this->root . '/target/config/languages.php');
         $context = $this->context();
         $target->prepareImport($context, $reader);
@@ -263,6 +269,7 @@ final class ApplicationLanguageBackupProviderTest extends TestCase
         foreach ($previous as $file => $bytes) {
             $this->assertSame($bytes, $storage->bytes($file));
         }
+
         $this->assertSame($registry, file_get_contents($this->root . '/target/config/languages.php'));
         $this->assertSame(0600, fileperms($storage->path('catalogs/de.json')) & 0777);
         $target->prepareImport($context, $reader);

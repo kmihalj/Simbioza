@@ -41,9 +41,11 @@ final class BilingualCommentRules
         if (!in_array('EN', $markers, true) || !in_array('HR', $markers, true)) {
             return true;
         }
+
         if ($markers !== ['EN', 'HR']) {
             return false;
         }
+
         return preg_match('/\n\s*(?:\*|\/\/)?\s*\n\s*(?:\*|\/\/)\s*HR:/', $comment) === 1;
     }
 
@@ -58,12 +60,14 @@ final class BilingualCommentRules
         if (!in_array('EN', $markers, true) || !in_array('HR', $markers, true) || $this->isOrdered($comment)) {
             return $comment;
         }
+
         $lineComment = str_starts_with(ltrim($comment), '//');
         $docComment = str_starts_with(ltrim($comment), '/**');
         $lines = preg_split('/\R/', $comment);
         if (!is_array($lines)) {
             throw new RuntimeException('Unable to split a comment.');
         }
+
         $body = [];
         foreach ($lines as $line) {
             $line = preg_replace('~^\s*(?:/\*\*?|\*|//)\s?~', '', $line) ?? $line;
@@ -71,16 +75,20 @@ final class BilingualCommentRules
             if (trim($line) === '/') {
                 continue;
             }
+
             $body[] = $line;
         }
+
         $parts = preg_split('/(?<![a-zA-Z0-9_])(EN|HR):\s*/', implode("\n", $body), -1, PREG_SPLIT_DELIM_CAPTURE);
         if (!is_array($parts)) {
             throw new RuntimeException('Unable to split bilingual sections.');
         }
+
         $header = $this->trimLines(explode("\n", (string)array_shift($parts)));
         $sections = ['EN' => [], 'HR' => []];
         $annotations = [];
-        for ($index = 0; $index + 1 < count($parts); $index += 2) {
+        $counter = count($parts);
+        for ($index = 0; $index + 1 < $counter; $index += 2) {
             $language = $parts[$index];
             $content = explode("\n", $parts[$index + 1]);
             $tagStarted = false;
@@ -88,6 +96,7 @@ final class BilingualCommentRules
                 if (preg_match('/^\s*@(?:[a-zA-Z][a-zA-Z0-9_-]*)\b/', $line)) {
                     $tagStarted = true;
                 }
+
                 if ($tagStarted) {
                     $annotations[] = $line;
                 } else {
@@ -95,27 +104,32 @@ final class BilingualCommentRules
                 }
             }
         }
+
         $output = $header;
         foreach (['EN', 'HR'] as $language) {
             $content = $this->trimLines($sections[$language]);
             if ($output !== []) {
                 $output[] = '';
             }
+
             $first = array_shift($content) ?? '';
             $output[] = $language . ': ' . ltrim($first);
             array_push($output, ...$content);
         }
+
         $annotations = $this->trimLines($annotations);
         if ($annotations !== []) {
             $output[] = '';
             array_push($output, ...$annotations);
         }
+
         if ($lineComment) {
             return implode("\n", array_map(
                 static fn(string $line): string => '//' . ($line === '' ? '' : ' ' . rtrim($line)),
                 $output,
             ));
         }
+
         return ($docComment ? '/**' : '/*') . "\n" . implode("\n", array_map(
             static fn(string $line): string => ' *' . ($line === '' ? '' : ' ' . rtrim($line)),
             $output,
@@ -135,9 +149,11 @@ final class BilingualCommentRules
         while ($lines !== [] && trim($lines[0]) === '') {
             array_shift($lines);
         }
+
         while ($lines !== [] && trim($lines[count($lines) - 1]) === '') {
             array_pop($lines);
         }
+
         return array_values($lines);
     }
 
@@ -154,7 +170,7 @@ final class BilingualCommentRules
         $comments = [];
         $offset = 0;
         $count = count($tokens);
-        for ($index = 0; $index < $count; $index++) {
+        for ($index = 0; $index < $count; ++$index) {
             $token = $tokens[$index];
             $bytes = is_array($token) ? $token[1] : $token;
             if (is_array($token) && in_array($token[0], [T_COMMENT, T_DOC_COMMENT], true)) {
@@ -170,15 +186,19 @@ final class BilingualCommentRules
                         ) {
                             break;
                         }
+
                         $text .= $space[1] . $next[1];
                         $index += 2;
                     }
                 }
+
                 $comments[] = ['offset' => $offset, 'length' => strlen($text), 'line' => $token[2], 'text' => $text];
                 $bytes = $text;
             }
+
             $offset += strlen($bytes);
         }
+
         return $comments;
     }
 
@@ -194,8 +214,10 @@ final class BilingualCommentRules
             if (is_array($token) && in_array($token[0], [T_COMMENT, T_DOC_COMMENT, T_WHITESPACE], true)) {
                 continue;
             }
+
             hash_update($hash, is_array($token) ? $token[0] . ':' . $token[1] . "\0" : $token . "\0");
         }
+
         return hash_final($hash);
     }
 
@@ -212,9 +234,11 @@ final class BilingualCommentRules
             if ($normalized === $comment['text']) {
                 continue;
             }
+
             if ($this->annotationSignatures($comment['text']) !== $this->annotationSignatures($normalized)) {
                 throw new RuntimeException('Comment normalization would change PHPDoc tags.');
             }
+
             $lineStart = strrpos(substr($source, 0, $comment['offset']), "\n");
             $prefix = substr(
                 $source,
@@ -225,9 +249,11 @@ final class BilingualCommentRules
             $normalized = preg_replace('/\n/', "\n" . $indent, $normalized) ?? $normalized;
             $result = substr_replace($result, $normalized, $comment['offset'], $comment['length']);
         }
+
         if ($this->semanticHash($result) !== $this->semanticHash($source)) {
             throw new RuntimeException('Comment normalization would alter executable code.');
         }
+
         return $result;
     }
 
@@ -248,6 +274,7 @@ final class BilingualCommentRules
             $value = preg_replace('~\s*\*/\s*$~', '', rtrim($value)) ?? $value;
             $signatures[] = preg_replace('~\s+(?:EN|HR):.*$~', '', $value) ?? $value;
         }
+
         return $signatures;
     }
 }

@@ -238,6 +238,7 @@ final readonly class LanguagePackManager
         if ($repositoryRevision !== null) {
             $versions += RuntimeLanguageStorage::validateVersions([$pack['locale'] => $repositoryRevision]);
         }
+
         $this->storage->assertWritable('repository-versions.json');
         if ($this->installed($pack['locale']) && !$replace) {
             throw new RuntimeException('Language already exists; pass --replace to overwrite it.');
@@ -352,6 +353,7 @@ final readonly class LanguagePackManager
         $this->writeRegistry($registry);
         $this->storage->remove('catalogs/' . $locale . '.json');
         $this->storage->remove('flags/' . $locale . '.svg');
+
         $versions = $this->storage->versions();
         unset($versions[$locale]);
         $this->storage->writeVersions($versions);
@@ -911,6 +913,7 @@ final readonly class LanguagePackManager
             $original[$relative] = ['bytes' => $this->storage->bytes($relative),
                 'mode' => is_file($path) ? fileperms($path) & 0777 : 0660];
         }
+
         $config = [];
         foreach ($installation ? ['languages.php', 'installation.php'] : ['languages.php'] as $file) {
             $path = $this->configuration->writableFile($file);
@@ -920,13 +923,14 @@ final readonly class LanguagePackManager
 
         try {
             return $operation();
-        } catch (\Throwable $error) {
+        } catch (\Throwable $throwable) {
             foreach ($original as $relative => $entry) {
                 if ($this->storage->bytes($relative) !== $entry['bytes']) {
                     $entry['bytes'] === null ? $this->storage->remove($relative)
                     : $this->storage->write($relative, $entry['bytes'], $entry['mode']);
                 }
             }
+
             foreach ($config as $path => $entry) {
                 $current = is_file($path) ? file_get_contents($path) : null;
                 if ($current !== $entry['bytes']) {
@@ -934,7 +938,8 @@ final readonly class LanguagePackManager
                     : $this->atomicWrite($path, $entry['bytes'], $entry['mode']);
                 }
             }
-            throw $error;
+
+            throw $throwable;
         }
     }
 }

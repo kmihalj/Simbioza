@@ -48,12 +48,14 @@ final readonly class ImageContextBuilder
         if (file_exists($destination) || is_link($destination) || !is_dir(dirname($destination))) {
             throw new RuntimeException('The image context must be a new directory under an existing parent.');
         }
+
         if (
             !mkdir($destination, 0700) || !mkdir($destination . '/app', 0700)
             || !mkdir($destination . '/packages', 0700) || !mkdir($destination . '/docker', 0700)
         ) {
             throw new RuntimeException('Unable to create image context.');
         }
+
         $catalog = new ModuleCatalog();
         // EN: Backup is also required by the bundled first-install guide importer.
         //
@@ -67,6 +69,7 @@ final readonly class ImageContextBuilder
                 }
             }
         } while (count($selected) !== $previous);
+
         $packages = $catalog->packagesForSelection(array_keys($selected));
         $files = $this->gitFiles($this->sourceRoot);
         $digest = hash_init('sha256');
@@ -79,6 +82,7 @@ final readonly class ImageContextBuilder
                 $this->copy($this->sourceRoot, $file, $destination . '/app', $digest);
             }
         }
+
         foreach (['Dockerfile', 'apache.conf', 'php.ini'] as $file) {
             $this->copy($this->sourceRoot, 'docker/' . $file, $destination, $digest);
         }
@@ -92,6 +96,7 @@ final readonly class ImageContextBuilder
         if (!is_array($manifest) || !is_array($manifest['require'] ?? null)) {
             throw new RuntimeException('Invalid source Composer manifest.');
         }
+
         foreach (array_keys($manifest['require']) as $package) {
             if (
                 $package !== 'php' && $package !== 'aaieduhr/heartphrame-framework'
@@ -100,13 +105,13 @@ final readonly class ImageContextBuilder
                 unset($manifest['require'][$package]);
             }
         }
+
         unset($manifest['require-dev'], $manifest['autoload-dev'], $manifest['scripts']);
         foreach (array_keys($selected) as $slug) {
             $definition = $catalog->definitionFor($slug);
-            if (!isset($manifest['require'][$definition['package']])) {
-                $manifest['require'][$definition['package']] = $catalog->constraintFor($slug);
-            }
+            $manifest['require'][$definition['package']] ??= $catalog->constraintFor($slug);
         }
+
         $configuration = is_array($manifest['config'] ?? null) ? $manifest['config'] : [];
         $configuration['cache-dir'] = '/tmp/composer-cache';
         $configuration['allow-plugins'] = false;
@@ -126,8 +131,10 @@ final readonly class ImageContextBuilder
                     if (!$code || str_starts_with(basename($file), '.') || str_ends_with($file, '.lock')) {
                         continue;
                     }
+
                     $this->copy($source, $file, $destination . '/packages/' . $directory, $digest);
                 }
+
                 // EN: Use explicit candidate versions satisfying unchanged inter-module constraints.
                 // This affects only exported metadata, never a sibling repository's manifest.
                 //
@@ -138,10 +145,12 @@ final readonly class ImageContextBuilder
                     'options' => ['symlink' => false, 'versions' => [$package => $version]]];
                 $manifest['require'][$package] = $version;
             }
+
             $manifest['repositories'] = $repositories;
             $manifest['minimum-stability'] = 'dev';
             $manifest['prefer-stable'] = true;
         }
+
         $manifestBytes = json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         hash_update($digest, $manifestBytes);
         file_put_contents($destination . '/app/composer.json', $manifestBytes . "\n");
@@ -151,6 +160,7 @@ final readonly class ImageContextBuilder
         if (!is_dir($markerDirectory) && !mkdir($markerDirectory, 0700, true)) {
             throw new RuntimeException('Unable to create the image marker directory.');
         }
+
         file_put_contents($markerDirectory . '/immutable.json', json_encode([
             'format' => 'simbioza-image-v1', 'code_id' => $id, 'modules' => $packages,
             'source' => $local ? 'unpublished-local-candidate' : 'release-source',
@@ -174,6 +184,7 @@ final readonly class ImageContextBuilder
         if ($result->exitCode !== 0) {
             throw new RuntimeException('Unable to enumerate source repository files.');
         }
+
         $files = array_values(array_unique(array_filter(explode("\0", $result->stdout))));
         sort($files, SORT_STRING);
         return $files;
@@ -183,18 +194,18 @@ final readonly class ImageContextBuilder
      * EN: Copies regular allowlisted files only, without following source links or hidden data directories.
      *
      * HR: Kopira samo regularne allowlist datoteke, bez praćenja izvornih linkova ili skrivenih podataka.
-     *
-     * @param \HashContext $digest
      */
     private function copy(string $root, string $file, string $target, \HashContext $digest): void
     {
         if (str_starts_with($file, '/') || str_contains($file, '..') || str_contains($file, "\0")) {
             throw new RuntimeException('Invalid source filename.');
         }
+
         $source = $root . '/' . $file;
         if (!file_exists($source)) {
             return;
         }
+
         $cursor = $root;
         foreach (explode('/', $file) as $part) {
             $cursor .= '/' . $part;
@@ -202,16 +213,20 @@ final readonly class ImageContextBuilder
                 throw new RuntimeException('Source links cannot be exported into an image.');
             }
         }
+
         if (!is_file($source)) {
             throw new RuntimeException('Image inputs must be regular files.');
         }
+
         $destination = $target . '/' . $file;
         if (!is_dir(dirname($destination)) && !mkdir(dirname($destination), 0700, true)) {
             throw new RuntimeException('Unable to prepare image input directories.');
         }
+
         if (!copy($source, $destination)) {
             throw new RuntimeException('Unable to copy image source.');
         }
+
         chmod($destination, 0644);
         hash_update($digest, $file . "\0" . hash_file('sha256', $source) . "\0");
     }

@@ -64,12 +64,14 @@ jobs:
       - name: Fresh PostgreSQL installation, persistence and immutable-code checks
         working-directory: docker
         env:
-          SIMBIOZA_DB_PASSWORD_FILE: ${{ runner.temp }}/database_password
-          SIMBIOZA_DB_ADMIN_PASSWORD_FILE: ${{ runner.temp }}/database_admin_password
+          SIMBIOZA_DB_PASSWORD_FILE: ${{ runner.temp }}/private-secrets/database_password
+          SIMBIOZA_DB_ADMIN_PASSWORD_FILE: ${{ runner.temp }}/private-secrets/database_admin_password
         run: |
           umask 077
+          mkdir -p "$RUNNER_TEMP/private-secrets"
           openssl rand -hex 32 > "$SIMBIOZA_DB_PASSWORD_FILE"
           openssl rand -hex 32 > "$SIMBIOZA_DB_ADMIN_PASSWORD_FILE"
+          chmod 0444 "$SIMBIOZA_DB_PASSWORD_FILE" "$SIMBIOZA_DB_ADMIN_PASSWORD_FILE"
           docker compose -p simbioza-release-ci run --rm --no-deps init
           docker compose -p simbioza-release-ci up -d --wait database
           docker compose -p simbioza-release-ci run --rm --no-deps --entrypoint php -v "$GITHUB_WORKSPACE/tests/Fixtures/container_probe.php:/tmp/probe.php:ro" app /tmp/probe.php install
@@ -142,8 +144,8 @@ jobs:
         if: always()
         working-directory: docker
         env:
-          SIMBIOZA_DB_PASSWORD_FILE: ${{ runner.temp }}/database_password
-          SIMBIOZA_DB_ADMIN_PASSWORD_FILE: ${{ runner.temp }}/database_admin_password
+          SIMBIOZA_DB_PASSWORD_FILE: ${{ runner.temp }}/private-secrets/database_password
+          SIMBIOZA_DB_ADMIN_PASSWORD_FILE: ${{ runner.temp }}/private-secrets/database_admin_password
         run: docker compose -p simbioza-release-ci down --volumes
 
   docker-publish:

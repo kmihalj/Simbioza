@@ -26,6 +26,7 @@ use RuntimeException;
 final class DeploymentTest extends TestCase
 {
     private string $root;
+
     private string|false $mode;
 
     /**
@@ -56,6 +57,7 @@ final class DeploymentTest extends TestCase
         foreach ($files as $file) {
             $file->isDir() && !$file->isLink() ? rmdir($file->getPathname()) : unlink($file->getPathname());
         }
+
         rmdir($this->root);
         $this->mode === false ? putenv('HPH_DEPLOYMENT_MODE') : putenv('HPH_DEPLOYMENT_MODE=' . $this->mode);
     }
@@ -68,13 +70,14 @@ final class DeploymentTest extends TestCase
     public function testBakedMarkerCannotBeDisabled(): void
     {
         $policy = new DeploymentPolicy($this->root);
-        self::assertFalse($policy->isImmutable());
+        $this->assertFalse($policy->isImmutable());
         $this->marker();
         putenv('HPH_DEPLOYMENT_MODE=classic');
-        self::assertTrue($policy->isImmutable());
+        $this->assertTrue($policy->isImmutable());
         foreach (['language-add', 'language-install', 'application-update-check', 'health-check'] as $action) {
             $policy->assertWorkerActionAllowed($action);
         }
+
         $this->expectException(RuntimeException::class);
         $policy->assertWorkerActionAllowed('application-update-start');
     }
@@ -114,17 +117,18 @@ final class DeploymentTest extends TestCase
         $gateway = new SetupGateway(new SetupRequestStore($this->root . '/requests'), $runner, $this->root, '', true);
         foreach (
             [fn() => $manager->install('audit'), fn() => $manager->uninstall('audit'),
-            fn() => $gateway->execute('packages-prepare')] as $operation
+            fn(): string => $gateway->execute('packages-prepare')] as $operation
         ) {
             try {
                 $operation();
                 self::fail('Immutable mutation must fail.');
             } catch (RuntimeException $error) {
-                self::assertStringContainsString('Immutable deployment', $error->getMessage());
+                $this->assertStringContainsString('Immutable deployment', $error->getMessage());
             }
         }
-        self::assertDirectoryDoesNotExist($this->root . '/requests');
-        self::assertFileDoesNotExist($this->root . '/composer.json');
+
+        $this->assertDirectoryDoesNotExist($this->root . '/requests');
+        $this->assertFileDoesNotExist($this->root . '/composer.json');
     }
 
     /**
@@ -144,16 +148,18 @@ final class DeploymentTest extends TestCase
             if ($id !== null) {
                 file_put_contents($data . '/.image-state.json', json_encode(['code_id' => $id]));
             }
+
             try {
                 $runtime->assertReady();
                 self::fail('A missing/stale image migration must block serving.');
             } catch (RuntimeException $error) {
-                self::assertStringContainsString('Run migrate', $error->getMessage());
+                $this->assertStringContainsString('Run migrate', $error->getMessage());
             }
         }
+
         file_put_contents($data . '/.image-state.json', json_encode(['code_id' => str_repeat('a', 64)]));
         $runtime->assertReady();
-        self::assertSame(str_repeat('a', 64), $runtime->image()['code_id']);
+        $this->assertSame(str_repeat('a', 64), $runtime->image()['code_id']);
     }
 
     /**
@@ -192,46 +198,51 @@ final class DeploymentTest extends TestCase
         foreach (['config/auth', 'data', 'vendor', 'src', 'docker'] as $directory) {
             mkdir($source . '/' . $directory, 0700, true);
         }
+
         foreach (
             ['config/env.php', 'config/database.php', 'config/auth/auth.json', 'data/private.txt',
             'vendor/private.php', 'composer.local.json'] as $private
         ) {
             file_put_contents($source . '/' . $private, 'fictional-private-value');
         }
+
         foreach (
             ['config/app.php', 'src/Example.php', 'docker/Dockerfile', 'docker/apache.conf',
             'docker/php.ini'] as $code
         ) {
             file_put_contents($source . '/' . $code, 'public-example-code');
         }
+
         $requirements = ['php' => '^8.2', 'aaieduhr/heartphrame-framework' => '^0.0.25'];
         $catalog = new ModuleCatalog();
         foreach ($catalog->requiredSlugs() as $slug) {
             $requirements[$catalog->definitionFor($slug)['package']] = '^0.3.0';
         }
+
         file_put_contents($source . '/composer.json', json_encode(['require' => $requirements], JSON_THROW_ON_ERROR));
         $processes = new \App\Module\NativeProcessRunner();
-        self::assertSame(0, $processes->run(['git', 'init', '--quiet'], $source)->exitCode);
+        $this->assertSame(0, $processes->run(['git', 'init', '--quiet'], $source)->exitCode);
         $context = $this->root . '/context';
         $builder = new ImageContextBuilder($source, $this->root);
         $id = $builder->build($context, false, []);
-        self::assertMatchesRegularExpression('/\A[a-f0-9]{64}\z/D', $id);
-        self::assertFileExists($context . '/app/config/app.php');
-        self::assertFileExists($context . '/app/src/Example.php');
+        $this->assertMatchesRegularExpression('/\A[a-f0-9]{64}\z/D', $id);
+        $this->assertFileExists($context . '/app/config/app.php');
+        $this->assertFileExists($context . '/app/src/Example.php');
         foreach (
             ['config/env.php', 'config/database.php', 'config/auth/auth.json', 'data/private.txt',
             'vendor/private.php', 'composer.local.json'] as $private
         ) {
-            self::assertFileDoesNotExist($context . '/app/' . $private);
+            $this->assertFileDoesNotExist($context . '/app/' . $private);
         }
+
         $manifest = json_decode(
             (string)file_get_contents($context . '/app/composer.json'),
             true,
             512,
             JSON_THROW_ON_ERROR,
         );
-        self::assertArrayHasKey('aaieduhr/heartphrame-module-backup', $manifest['require']);
-        self::assertArrayNotHasKey('aaieduhr/heartphrame-module-calendar', $manifest['require']);
+        $this->assertArrayHasKey('aaieduhr/heartphrame-module-backup', $manifest['require']);
+        $this->assertArrayNotHasKey('aaieduhr/heartphrame-module-calendar', $manifest['require']);
         $this->expectException(RuntimeException::class);
         $builder->build($context, false, []);
     }

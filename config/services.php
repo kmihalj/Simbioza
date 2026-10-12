@@ -62,6 +62,7 @@ $services = [
         if (!$translator instanceof RuntimeTranslator) {
             throw new RuntimeException('Runtime translator is unavailable.');
         }
+
         return $translator;
     },
     ConfigurationPaths::class => static function (ContainerInterface $container): ConfigurationPaths {
@@ -436,13 +437,16 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
             if (!isset($definition['restore_targets'])) {
                 continue;
             }
+
             foreach ($definition['restore_targets'] as &$target) {
                 if (isset($target['lock_path']) && basename($target['lock_path']) === '.languages.lock') {
                     unset($target['lock_path']);
                 }
             }
+
             unset($target);
         }
+
         unset($definition);
 
         $provider = new \AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBackupProvider(
@@ -467,6 +471,7 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
         if (!$languages instanceof LanguagePackManager) {
             throw new RuntimeException('Language backup service is unavailable.');
         }
+
         return new \App\Localization\ApplicationLanguageBackupProvider(
             $provider,
             ConfigurationPaths::fromEnvironment($config->getAppRootDir()),

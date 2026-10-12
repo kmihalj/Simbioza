@@ -162,6 +162,7 @@ final readonly class SetupController
                         $error,
                     );
                 }
+
                 $updates = count(array_filter(
                     $status,
                     static fn(array $row): bool => $row['installed'] && $row['update_available'],
@@ -403,6 +404,7 @@ final readonly class SetupController
         if (empty($diagnostics['language_changes_allowed'])) {
             throw new RuntimeException(__('Promjena jezika nije dostupna zbog prava pisanja.'));
         }
+
         $requested = $body['locales'] ?? null;
         if (!is_array($requested) || $requested === [] || count($requested) > 512) {
             throw new RuntimeException(__('Odaberite barem jedan dostupan jezik.'));

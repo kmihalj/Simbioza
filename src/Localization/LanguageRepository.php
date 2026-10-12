@@ -75,6 +75,7 @@ final readonly class LanguageRepository
                 if ($refresh) {
                     throw new RuntimeException('Unable to refresh the language catalogue; try again later.', 0, $error);
                 }
+
                 $raw = is_file($cache) ? file_get_contents($cache) : null;
                 if (!is_string($raw) || $raw === '') {
                     return [];
@@ -84,10 +85,11 @@ final readonly class LanguageRepository
 
         try {
             $payload = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $error) {
+        } catch (JsonException $jsonException) {
             if ($refresh) {
-                throw new RuntimeException('The refreshed language catalogue is not valid JSON.', 0, $error);
+                throw new RuntimeException('The refreshed language catalogue is not valid JSON.', 0, $jsonException);
             }
+
             return [];
         }
 
@@ -100,6 +102,7 @@ final readonly class LanguageRepository
             if ($refresh) {
                 throw new RuntimeException('The refreshed language catalogue has an invalid format.');
             }
+
             return [];
         }
 

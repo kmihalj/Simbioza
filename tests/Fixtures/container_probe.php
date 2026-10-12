@@ -20,6 +20,7 @@ if ($mode === 'saml') {
             mkdir($directory, 0770);
         }
     }
+
     $saml = [
         'baseurlpath' => 'http://127.0.0.1:18084/saml/', 'secretsalt' => str_repeat('a4-fictional-', 4),
         'auth.adminpassword' => 'fictional-only-not-an-admin-deployment', 'timezone' => 'UTC',
@@ -49,14 +50,17 @@ if ($mode === 'saml') {
     ) {
         throw new RuntimeException('SimpleSAMLphp did not use external private configuration.');
     }
+
     $authClass = new ReflectionClass('SimpleSAML\\Auth\\Simple');
     $auth = $authClass->newInstance('a4-sp');
     if ($authClass->getMethod('isAuthenticated')->invoke($auth)) {
         throw new RuntimeException('The fictional SP must have no real authentication session.');
     }
+
     echo "SimpleSAMLphp code loaded with external config and runtime-only session/cache.\n";
     exit;
 }
+
 if ($mode === 'install') {
     $writer = new \App\Installation\InstallationConfigWriter($paths);
     $tester = new \App\Installation\InstallationDatabaseTester($writer);
@@ -82,6 +86,7 @@ if ($mode === 'install') {
     echo json_encode($result, JSON_THROW_ON_ERROR) . "\n";
     exit;
 }
+
 $app = new \HeartPhrame\App(\HeartPhrame\Config\ConfigPathResolver::fromEnvironment($root), $root);
 $app->loadCommands();
 $database = $app->getContainer()->get(\AaiEduHr\HeartPhrameModuleOrm\Database\Database::class);
@@ -115,9 +120,11 @@ if ($mode === 'languages') {
     if (hash_file('sha256', $catalog) !== $expected || is_writable($root . '/lang')) {
         throw new RuntimeException('Runtime language roundtrip changed bytes or writable-code isolation.');
     }
+
     echo "Language installation and application-config backup/restore passed with read-only packaged lang.\n";
     exit;
 }
+
 if ($mode === 'backup') {
     $manager = $app->getContainer()->get(\AaiEduHr\HeartPhrameModuleBackup\Service\BackupManager::class);
     $scope = new \AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope('workspace', 'korisnicke-upute');
@@ -139,6 +146,7 @@ if ($mode === 'backup') {
     echo "Workspace archive export/import completed with immutable code and PostgreSQL.\n";
     exit;
 }
+
 if ($mode === 'worker') {
     $emailDefaultsPath = $root . '/vendor/aaieduhr/heartphrame-module-email/config/email.php';
     $email = new \AaiEduHr\HeartPhrameModuleEmail\Service\EmailConfigurationStore($root, require $emailDefaultsPath);
@@ -149,6 +157,7 @@ if ($mode === 'worker') {
     echo "Fictional SMTP configuration enabled; the queue is empty and no mail will be sent.\n";
     exit;
 }
+
 $connection = (require $paths->databaseConfig())['connections']['default'];
 $pdo = new PDO('pgsql:host=database;dbname=simbioza', $connection['username'], $connection['password']);
 if ($mode === 'seed') {
@@ -157,6 +166,7 @@ if ($mode === 'seed') {
     file_put_contents('/runtime/data/a4-persistent.txt', 'synthetic persisted attachment');
     file_put_contents('/runtime/config/a4.php', "<?php return ['fictional' => true];\n");
 }
+
 if ($mode === 'guards') {
     if (
         is_writable('/opt/simbioza/src') || is_writable('/opt/simbioza/vendor')
@@ -165,6 +175,7 @@ if ($mode === 'guards') {
     ) {
         throw new RuntimeException('Immutable runtime permissions are incorrect.');
     }
+
     $catalog = new \App\Module\ModuleCatalog();
     $packages = new \App\Module\ComposerPackageManager(
         $catalog,
@@ -181,13 +192,16 @@ if ($mode === 'guards') {
             }
         }
     }
+
     echo "Immutable package, code and writable runtime checks passed.\n";
     exit;
 }
+
 $counts = [];
 foreach (['auth_users', 'editor_html_documents', '_hph_migrations', 'a4_fixture'] as $table) {
     $counts[$table] = (int)$pdo->query('SELECT count(*) FROM ' . $table)->fetchColumn();
 }
+
 $roleQuery = $pdo->query("SELECT rolsuper FROM pg_roles WHERE rolname = current_user");
 $counts['app_role_superuser'] = $roleQuery->fetchColumn();
 $counts['private_config_hash'] = hash_file('sha256', '/runtime/config/auth/auth.json');

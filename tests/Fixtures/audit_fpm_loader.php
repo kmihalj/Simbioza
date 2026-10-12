@@ -13,5 +13,6 @@ function loadAuditFpmFixture(string $fixtureRoot): void
     if (!is_file($autoloader) || !is_readable($autoloader)) {
         throw new RuntimeException('Missing or unreadable FPM audit autoloader.');
     }
+
     require $autoloader;
 }

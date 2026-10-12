@@ -80,6 +80,11 @@ umjesto uklanjanja njegove sheme/paketa iz imagea.
    imagea (ili `SIMBIOZA_IMAGE` postaviti na vlastiti provjereni image). Stvoriti
    dvije privatne datoteke lozinki: jednu za Simbiozu, drugu za PostgreSQL admina.
    Svaka ima različitu snažnu lozinku u jednom retku. Ne spremati ih u Git.
+   Direktorij tajni postaviti na `0700`, a datoteke na `0444`: direktorij sprječava
+   druge korisnike hosta da ih čitaju, dok read-only Compose mountovi omogućuju
+   drukčijem UID-u PostgreSQL containera čitanje samo njegovih tajni. Compose
+   tajne iz datoteka ne mijenjaju vlasništvo. Datoteke ne stavljati u javni ili
+   dijeljeni direktorij hosta; aplikacija ne dobiva administratorsku tajnu baze.
 2. Zadani listener je `127.0.0.1:1511`. Ispred njega postaviti pouzdan HTTPS
    reverse proxy; port baze ne objavljivati. Sigurnost kolačića ostaviti uključenu.
    Samo za izolirani lokalni HTTP test zadati `SIMBIOZA_COOKIE_SECURE=0`.

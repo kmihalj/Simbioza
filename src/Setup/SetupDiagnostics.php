@@ -328,6 +328,7 @@ final readonly class SetupDiagnostics
             foreach (['catalogs/en.json', 'flags/en.svg', 'repository-versions.json', '.packs.lock'] as $relative) {
                 $storage->assertWritable($relative);
             }
+
             return $this->check(
                 'language_data_writable',
                 'Jezični podaci su zapisivi',
@@ -336,14 +337,14 @@ final readonly class SetupDiagnostics
                 true,
                 dirname($storage->path('repository-versions.json')),
             );
-        } catch (\RuntimeException $error) {
+        } catch (\RuntimeException $runtimeException) {
             return $this->check(
                 'language_data_writable',
                 'Jezični podaci su zapisivi',
                 'Language data is writable',
                 false,
                 true,
-                $error->getMessage(),
+                $runtimeException->getMessage(),
             );
         }
     }

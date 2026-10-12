@@ -95,6 +95,7 @@ final class RuntimeLanguageStorageTest extends TestCase
     {
         $storage = new RuntimeLanguageStorage($this->root);
         $storage->install('en', ['shared' => 'runtime', 'literal' => '<?php not executable ?>']);
+
         $translator = $this->translator();
         $this->assertSame('runtime', $translator->trans('shared'));
         $this->assertSame('new code', $translator->trans('new-key'));
@@ -156,6 +157,7 @@ final class RuntimeLanguageStorageTest extends TestCase
                 $this->assertSame('Invalid runtime locale.', $error->getMessage());
             }
         }
+
         mkdir($this->root . '/data/languages', 0770);
         symlink($this->root . '/lang', $this->root . '/data/languages/catalogs');
         $this->expectException(RuntimeException::class);
@@ -195,6 +197,7 @@ final class RuntimeLanguageStorageTest extends TestCase
             flock($lock, LOCK_UN);
             fclose($lock);
         }
+
         $next = $storage->lock();
         $this->assertSame('stream', get_resource_type($next));
         fclose($next);
