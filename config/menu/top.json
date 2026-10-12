@@ -1,0 +1,88 @@
+[
+    {
+        "id": "home",
+        "label": {
+            "hr": "Početna",
+            "en": "Home"
+        },
+        "translation_key": null,
+        "route": "home",
+        "url": null,
+        "query": [],
+        "order": 10,
+        "enabled": true,
+        "children": []
+    },
+    {
+        "id": "about",
+        "label": {
+            "hr": "O aplikaciji",
+            "en": "About"
+        },
+        "translation_key": null,
+        "route": "about",
+        "url": null,
+        "query": [],
+        "order": 20,
+        "enabled": true,
+        "children": []
+    },
+    {
+        "id": "settings",
+        "label": {
+            "hr": "Postavke",
+            "en": "Settings"
+        },
+        "translation_key": null,
+        "route": "settings",
+        "url": null,
+        "query": [],
+        "order": 30,
+        "enabled": true,
+        "children": []
+    },
+    {
+        "id": "calendar",
+        "label": {
+            "hr": "Kalendari",
+            "en": "Calendars"
+        },
+        "translation_key": null,
+        "route": "calendar.index",
+        "url": "",
+        "query": [],
+        "order": 40,
+        "enabled": true,
+        "children": []
+    },
+    {
+        "id": "editor-html",
+        "label": {
+            "hr": "Editor",
+            "en": "Editor"
+        },
+        "translation_key": null,
+        "route": "editor-html.index",
+        "url": null,
+        "query": [],
+        "order": 60,
+        "enabled": false,
+        "children": []
+    },
+    {
+        "id": "workspaces",
+        "label": {
+            "hr": "Područja",
+            "en": "Workspaces"
+        },
+        "translation_key": null,
+        "route": "workspace.index",
+        "url": "",
+        "query": "",
+        "order": 50,
+        "enabled": true,
+        "children": [],
+        "parent_id": "",
+        "level": 0
+    }
+]

@@ -30,3 +30,7 @@ gitlab-token.txt
 /docker/saml/
 /config/menu/*.json
 /config/theme/*.json
+!/config/menu/top.json
+!/config/menu/settings.json
+!/config/theme/themes.json
+!/config/theme/settings.json
