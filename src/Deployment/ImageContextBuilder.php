@@ -35,6 +35,44 @@ final readonly class ImageContextBuilder
     }
 
     /**
+     * EN: Seals the build marker with resolved dependency bytes; repeated sealing is idempotent.
+     * A rebuilt image cannot reuse another dependency generation's migration marker.
+     *
+     * HR: Zaključava build oznaku razriješenim ovisnostima; ponovljeni poziv je idempotentan.
+     * Ponovno izgrađeni image ne može preuzeti migracijsku oznaku drugih ovisnosti.
+     */
+    public static function sealDependencies(string $root): string
+    {
+        $file = $root . '/resources/deployment/immutable.json';
+        $marker = json_decode((string)file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+        $source = is_array($marker) ? ($marker['source_code_id'] ?? $marker['code_id'] ?? null) : null;
+        if (!is_string($source) || preg_match('/\A[a-f0-9]{64}\z/D', $source) !== 1) {
+            throw new RuntimeException('Invalid image source identity.');
+        }
+
+        $lock = $root . '/composer.lock';
+        if (!is_file($lock) || is_link($lock)) {
+            throw new RuntimeException('A resolved dependency lock is required.');
+        }
+
+        json_decode((string)file_get_contents($lock), true, 512, JSON_THROW_ON_ERROR);
+        $digest = hash_file('sha256', $lock);
+        if (!is_string($digest)) {
+            throw new RuntimeException('Cannot fingerprint resolved dependencies.');
+        }
+
+        $marker['source_code_id'] = $source;
+        $marker['dependency_lock_sha256'] = $digest;
+        $marker['code_id'] = hash('sha256', $source . "\0" . $digest);
+        $json = json_encode($marker, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
+        if (file_put_contents($file, $json, LOCK_EX) !== strlen($json)) {
+            throw new RuntimeException('Cannot seal the image dependency identity.');
+        }
+
+        return $marker['code_id'];
+    }
+
+    /**
      * EN: Creates only a new context; never merges into an existing directory or modifies source manifests.
      * Selection is dependency-expanded; a missing module must be baked into a subsequent image.
      *
@@ -77,7 +115,9 @@ final readonly class ImageContextBuilder
             $allowed = preg_match('~\A(?:src|views|public|database|lang|resources|bin)/~', $file) === 1
             || in_array($file, ['bootstrap.php', 'VERSION', 'LICENSE', 'update.php'], true)
             || (str_starts_with($file, 'config/') && in_array(substr($file, 7), self::FACTORY_CONFIG, true))
-            || in_array($file, ['docker/entrypoint.php', 'docker/healthcheck.php'], true);
+            || in_array($file, [
+                'docker/entrypoint.php', 'docker/healthcheck.php', 'docker/finalize_identity.php',
+            ], true);
             if ($allowed) {
                 $this->copy($this->sourceRoot, $file, $destination . '/app', $digest);
             }

@@ -62,6 +62,9 @@ Composer dependency constraints; they do not certify a published release.
 Remove `--local` only after the referenced release packages exist. Record the
 built image digest and its generated `composer.lock` for deployment; a rebuild
 is not guaranteed to resolve identical dependencies.
+The builder seals the read-only code marker with the resolved lock hash, so
+changed dependency bytes require an explicit migration generation even when
+the application source is unchanged.
 
 The exporter allowlists code/defaults and excludes HFC private configuration,
 active Auth documents, databases, content, Composer credentials and live vendor
@@ -233,6 +236,7 @@ work, not an implicit dependency of the normal Simbioza image.
 
 See the A4 record in the [pre-release audit](pre-release-audit-0.3.0_en.md).
 Only disposable fictional sites are used for container tests. HFC remains the
-classical development installation; demo/apps-test remain user-managed. Publishing
-images, signing release artifacts, vulnerability scanning and a real SAML SP login
-remain release/deployment checks, not actions authorized by this implementation.
+classical development installation; demo/apps-test remain user-managed. Image
+publication and scanning are part of release CI. Real HTTPS/proxy and SAML SP/IdP
+registration/login remain operator-specific deployment checks. Follow the
+[publication checklist](release-publication-0.3.0_en.md) for current release status.

@@ -30,6 +30,21 @@ final class DeploymentTest extends TestCase
     private string|false $mode;
 
     /**
+     * EN: The same source with different dependency locks needs another migration generation.
+     *
+     * HR: Isti izvor uz različite zaključane ovisnosti zahtijeva drugu migracijsku generaciju.
+     */
+    public function testSealedIdentityIncludesResolvedDependencyLock(): void
+    {
+        $this->marker();
+        file_put_contents($this->root . '/composer.lock', '{"packages":[]}');
+        $first = ImageContextBuilder::sealDependencies($this->root);
+        $this->assertSame($first, ImageContextBuilder::sealDependencies($this->root));
+        file_put_contents($this->root . '/composer.lock', '{"packages":[{"name":"example/module","version":"0.3.1"}]}');
+        $this->assertNotSame($first, ImageContextBuilder::sealDependencies($this->root));
+    }
+
+    /**
      * EN: Creates a uniquely owned fictional image/runtime.
      *
      * HR: Stvara jedinstveni testni image/runtime.

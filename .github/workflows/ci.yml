@@ -179,7 +179,7 @@ jobs:
           docker buildx imagetools inspect "ghcr.io/kmihalj/simbioza:$VERSION" > build/docker-evidence/image-manifest.txt
           mkdir -p build/release-bundle/docker build/release-bundle/docs
           cp docker/compose.yaml docker/compose.saml.yaml docker/.env.example docker/postgres-init.sh build/release-bundle/docker/
-          cp docs/docker_en.md docs/docker_hr.md build/release-bundle/docs/
+          cp docs/*.md build/release-bundle/docs/
           tar -czf "build/simbioza-$VERSION-docker.tar.gz" -C build/release-bundle .
           tar -czf "build/simbioza-$VERSION-docker-evidence.tar.gz" -C build/docker-evidence .
           cd build

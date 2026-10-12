@@ -1,5 +1,9 @@
 # Pre-release audit and continuation — 0.3.0
 
+Current status: release publication was explicitly authorized on 12 October 2026.
+[Publication tracking](release-publication-0.3.0_en.md) records exact-commit CI,
+immutable tags and image artifacts. The dated sections below are local audit evidence.
+
 The earlier [initial-release checks](initial-release-0.3.0_en.md) are baseline
 evidence **before** the new script registry. They do not approve publication of
 the expanded candidate. No release/tag/push or live-site update is authorized.
@@ -33,7 +37,8 @@ old configuration upgrade plan. Local checks do not authorize publication.
 - [x] Review Docker write paths and SimpleSAMLphp requirements; record A3/A4 rather than claim an image is ready.
 - [x] Rerun affected SQLite clean-install and real Linux FPM/secure-FPM checks. No schema changed; other database baseline dates stay explicit.
 - [x] Resolve A1–A5 and rerun affected local checks.
-- [ ] Obtain approval, then coordinate publication and tagged-package/image verification. User reinstalls demo/apps-test.
+- [x] Release publication authorized on 12 October 2026.
+- [ ] Complete coordinated publication and tagged-package/image verification. User reinstalls demo/apps-test.
 
 ## Comprehensive audit results — 12 October 2026
 
@@ -119,7 +124,7 @@ fixtures, not a claim that every application query is optimized.
   current configuration paths, README/file/heading links and historical release
   boundaries are corrected. See the A5 record below.
 - [x] Rerun affected local checks after the corrections.
-- [ ] Obtain explicit release approval. No publication or remote reinstall is part of this audit.
+- [x] Explicit release approval received on 12 October 2026. Publication is tracked separately; remote reinstalls remain user-operated.
 
 For A1, lack of a local signature check alone is not proof of an unauthenticated
 JWT-login exploit: OIDC code-flow responses can use validated direct TLS under
@@ -438,7 +443,7 @@ The A2 handoff was A3; its implemented scope and verification are recorded below
   language data remain; disposable test data has no backup.
 
 **Earlier handoff:** A5 was open after A1–A4; its completed record is
-now below. Explicit release approval remains open. Full Confluence-site export support is
+now below. Release publication was authorized on 12 October 2026. Full Confluence-site export support is
 informational and deferred; no such importer extension was implemented here.
 
 ## A4 completed locally — 12 October 2026

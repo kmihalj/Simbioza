@@ -48,14 +48,14 @@ The private demo module source under `DemoSeed/simbioza-module-demo/` uses curre
 
 ## Remaining publication step
 
-- [ ] After separate authorization, publish coordinated 0.3.0 module/application tags and verify installation from those published packages.
+- [ ] Publish coordinated 0.3.0 module/application tags and verify published-package installation; authorization received on 12 October 2026.
 - [ ] The user reinstalls demo and apps-test, then captures a new demo reset baseline.
 
 Until publication, dependency examples using `^0.3.0` describe the prepared release; development verification uses local package sources. Do not substitute old 0.2.x tags or attempt an upgrade from them.
 
 ## Boundaries and continuation
 
-Do not change HeartPhrame Framework. Preserve unrelated edits and private settings. The user reinstalls demo/apps-test; do not mutate those running sites or their databases. HFC is the development site and needs no content backup. No tags, commits or releases have been published by this task.
+Do not change HeartPhrame Framework. Preserve unrelated edits and private settings. The user reinstalls demo/apps-test; do not mutate those running sites or their databases. HFC is the development site and needs no content backup. Current publication state is tracked in [the release checklist](release-publication-0.3.0_en.md).
 
 2026-10-11: clean baseline verification complete. The expanded pre-release audit
 is in progress; publication and live-site reinstallation remain separate.

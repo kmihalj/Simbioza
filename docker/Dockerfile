@@ -26,6 +26,7 @@ COPY app/ ./
 COPY packages/ /opt/simbioza-build/packages/
 RUN composer update --no-dev --no-interaction --no-progress --no-scripts --prefer-dist \
     --optimize-autoloader && composer check-platform-reqs --no-dev \
+    && php docker/finalize_identity.php \
     && test ! -L vendor/aaieduhr/heartphrame-framework
 
 FROM php-runtime AS application

@@ -62,6 +62,9 @@ služe zadovoljavanju Composer ovisnosti; nisu potvrda objavljenog izdanja.
 Maknuti `--local` tek kada su potrebni release paketi objavljeni. Za deployment
 zabilježiti digest imagea i njegov generirani `composer.lock`: ponovna gradnja
 ne jamči potpuno jednake razriješene ovisnosti.
+Builder zaključava read-only oznaku koda sažetkom razriješenih ovisnosti, pa
+promijenjene ovisnosti zahtijevaju izričitu migracijsku generaciju čak i kada
+aplikacijski izvor nije promijenjen.
 
 Izvoz koristi allowlist koda i zadanih postavki te izostavlja privatni HFC config,
 aktivni Auth JSON, bazu, sadržaj, Composer vjerodajnice i žive vendor symlinkove.
@@ -233,5 +236,6 @@ budući koraci, ne obavezne ovisnosti normalnog Simbioza imagea.
 Dokaze pratiti u A4 zapisu [audita prije izdanja](pre-release-audit-0.3.0_hr.md).
 Docker testovi koriste samo privremene izmišljene siteove. HFC ostaje klasična
 razvojna instalacija; demo/apps-test ostaju pod korisnikovim upravljanjem.
-Objava imagea, potpisivanje release artefakata, provjera ranjivosti i stvarna SAML
-SP prijava ostaju provjere izdanja/deploymenta, ne radnje odobrene ovom implementacijom.
+Objava i skeniranje imagea dio su CI-ja izdanja. Stvarna HTTPS/proxy provjera i
+registracija/prijava SAML SP-a/IdP-a ostaju održavateljeve provjere deploymenta.
+Aktualno stanje izdanja pratiti u [popisu za objavu](release-publication-0.3.0_hr.md).

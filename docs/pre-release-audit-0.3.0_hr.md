@@ -1,5 +1,9 @@
 # Audit prije releasea i nastavak — 0.3.0
 
+Aktualno stanje: objava izdanja izričito je odobrena 12. listopada 2026.
+[Praćenje objave](release-publication-0.3.0_hr.md) bilježi CI za točne commitove,
+nepromjenjive tagove i image artefakte. Datirani zapisi ispod predstavljaju lokalne dokaze audita.
+
 Ranije [provjere inicijalnog izdanja](initial-release-0.3.0_hr.md) dokazuju stanje
 **prije** novog registra skripti. Ne odobravaju objavu proširenog kandidata.
 Nije odobren release/tag/push ni nadogradnja udaljenih instalacija.
@@ -33,7 +37,8 @@ konfiguracije. Lokalne provjere ne dopuštaju objavu.
 - [x] Pregledati Docker putanje upisa i zahtjeve SimpleSAMLphp-a; zabilježiti A3/A4, ne proglasiti image spremnim.
 - [x] Ponoviti pogođene SQLite clean-install i stvarne Linux FPM/sigurne-FPM provjere. Shema nije mijenjana; datumi provjera drugih baza ostaju jasno navedeni.
 - [x] Riješiti A1–A5 i ponoviti pogođene lokalne provjere.
-- [ ] Dobiti odobrenje, pa koordinirati objavu i provjeru označenih paketa/imagea. Korisnik ponovno instalira demo/apps-test.
+- [x] Objava izdanja odobrena je 12. listopada 2026.
+- [ ] Dovršiti usklađenu objavu i provjeru označenih paketa/imagea. Korisnik reinstalira demo/apps-test.
 
 ## Rezultati sveobuhvatnog audita — 12. listopada 2026.
 
@@ -119,7 +124,7 @@ provjere, ne dokazuju da je svaki aplikacijski upit optimalan.
   aktualne konfiguracijske putanje, poveznice README-ja/datoteka/naslova i granice
   povijesnih izdanja ispravljeni su. Zapis A5 je ispod.
 - [x] Nakon ispravaka ponoviti pogođene lokalne provjere.
-- [ ] Dobiti izričito odobrenje releasea. Objava i udaljene reinstalacije nisu dio ovog audita.
+- [x] Izričito odobrenje releasea primljeno je 12. listopada 2026. Objava se prati zasebno; udaljene reinstalacije provodi korisnik.
 
 Za A1 sam izostanak lokalne provjere potpisa nije dokaz anonimnog zaobilaženja
 prijave JWT-om: OIDC code-flow odgovor može koristiti provjeren izravni TLS pod
@@ -438,7 +443,7 @@ Točka nastavka nakon A2 bila je A3; provedeni obuhvat i provjere zapisani su ni
   ostaju; potrošni testni podaci nemaju backup.
 
 **Raniji nastavak:** A5 je nakon A1–A4 bio otvoren; njegov dovršeni zapis
-sada je ispod. Izričito odobrenje releasea ostaje otvoreno. Podrška punom Confluence site exportu ostaje
+sada je ispod. Objava izdanja odobrena je 12. listopada 2026. Podrška punom Confluence site exportu ostaje
 informativna i odgođena; ovdje nije proširivan taj importer.
 
 ## A4 dovršen lokalno — 12. listopada 2026.
