@@ -1,5 +1,11 @@
 # Simbioza 0.1.75
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
+Ovo je povijesna bilješka izdanja. Niže opisana putanja stanja modula naknadno
+je preseljena u `HPH_CONFIG_PATH/modules.php`; koristite
+[aktualnu konfiguracijsku uputu](configuration_hr.md), ne nekadašnju putanju pod `data/`.
+
 Ovo izdanje dovršava stvarni životni ciklus opcionalnih modula u GUI-ju i
 CLI-ju, jednako na namjenskoj FPM instalaciji i na instalaciji bez FPM-a.
 

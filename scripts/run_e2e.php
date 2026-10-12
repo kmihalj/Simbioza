@@ -3,11 +3,6 @@
 // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols -- This CLI runner defines and invokes local helpers.
 
 /**
- * HR: Izrađuje izoliranu HeartPhrame aplikaciju sa svim modulima, dodaje
- *     isključivo testne korisnike i API ključ, pokreće pravi HTTP poslužitelj
- *     te izvršava Playwright browser/API scenarije. Privremena aplikacija se
- *     briše čak i nakon neuspješnog testa, osim uz opciju `--keep`.
- *
  * EN: Builds an isolated HeartPhrame application with every module, adds only
  *     test users and an API key, starts a real HTTP server, and executes the
  *     Playwright browser/API scenarios. The temporary application is removed
@@ -20,6 +15,11 @@
  *   php scripts/run_e2e.php --headed --keep
  *   php scripts/run_e2e.php --local --spec=workspace-purge.spec.js
  *   php scripts/run_e2e.php --local --grep=workspace
+ *
+ * HR: Izrađuje izoliranu HeartPhrame aplikaciju sa svim modulima, dodaje
+ *     isključivo testne korisnike i API ključ, pokreće pravi HTTP poslužitelj
+ *     te izvršava Playwright browser/API scenarije. Privremena aplikacija se
+ *     briše čak i nakon neuspješnog testa, osim uz opciju `--keep`.
  */
 
 declare(strict_types=1);
@@ -44,8 +44,9 @@ const E2E_USER_LOGIN = 'e2e-user';
 const E2E_USER_PASSWORD = 'E2eUser!2026';
 
 /**
- * HR: Čita jednostavne E2E CLI zastavice.
  * EN: Reads the simple E2E CLI flags.
+ *
+ * HR: Čita jednostavne E2E CLI zastavice.
  *
  * @return array{database:string,local:bool,headed:bool,keep:bool,spec:string,grep:string}
  */
@@ -78,8 +79,9 @@ function e2eOptions(): array
 }
 
 /**
- * HR: Pronalazi slobodan lokalni TCP port bez korištenja slučajnog fiksnog raspona.
  * EN: Finds a free local TCP port without relying on a random fixed range.
+ *
+ * HR: Pronalazi slobodan lokalni TCP port bez korištenja slučajnog fiksnog raspona.
  */
 function e2eFreePort(): int
 {
@@ -100,8 +102,9 @@ function e2eFreePort(): int
 }
 
 /**
- * HR: Potvrđuje da je projekt stvarno unutar kontroliranog privremenog korijena.
  * EN: Confirms that the project is genuinely inside the controlled temporary root.
+ *
+ * HR: Potvrđuje da je projekt stvarno unutar kontroliranog privremenog korijena.
  */
 function assertSafeE2eProject(string $projectDirectory, string $temporaryRoot): string
 {
@@ -120,11 +123,11 @@ function assertSafeE2eProject(string $projectDirectory, string $temporaryRoot): 
 }
 
 /**
- * HR: Prije mrežnog E2E testa potvrđuje da je operator predao praznu bazu.
- *     Alat nikada sam ne briše niti preuređuje postojeću shemu.
- *
  * EN: Confirms the operator supplied an empty database before a network E2E
  *     run. The tool never deletes or rearranges an existing schema itself.
+ *
+ * HR: Prije mrežnog E2E testa potvrđuje da je operator predao praznu bazu.
+ *     Alat nikada sam ne briše niti preuređuje postojeću shemu.
  */
 function assertEmptyE2eNetworkDatabase(string $database): void
 {
@@ -168,13 +171,13 @@ function assertEmptyE2eNetworkDatabase(string $database): void
 }
 
 /**
- * HR: Prilagođava samo privremenu aplikaciju za lokalni HTTP test bez sigurnog
- *     cookieja te unaprijed postavlja nedostupni lokalni SMTP. Time se stvarni
- *     e-mail red čekanja može provjeriti bez vanjskog mrežnog poziva.
- *
  * EN: Adjusts only the temporary application for a local HTTP test without a
  *     secure cookie and preconfigures an unavailable local SMTP endpoint. This
  *     allows the real e-mail queue to be tested without an external network call.
+ *
+ * HR: Prilagođava samo privremenu aplikaciju za lokalni HTTP test bez sigurnog
+ *     cookieja te unaprijed postavlja nedostupni lokalni SMTP. Time se stvarni
+ *     e-mail red čekanja može provjeriti bez vanjskog mrežnog poziva.
  */
 function configureE2eApplication(string $projectDirectory): void
 {
@@ -184,12 +187,13 @@ function configureE2eApplication(string $projectDirectory): void
         throw new RuntimeException('E2E application configuration is invalid.');
     }
 
-    // HR: Testna aplikacija mora zadržati dinamički app.php kako bi browser
-    //     stvarno dokazao enable/disable životni ciklus. Mijenja se samo lokalni
-    //     secure-cookie uvjet; ime sesije ide kroz trajnu instalacijsku postavku.
     // EN: The test application must keep dynamic app.php so the browser genuinely
     //     proves the enable/disable lifecycle. Only the local secure-cookie flag
     //     changes here; the session name uses the installation override.
+    //
+    // HR: Testna aplikacija mora zadržati dinamički app.php kako bi browser
+    //     stvarno dokazao enable/disable životni ciklus. Mijenja se samo lokalni
+    //     secure-cookie uvjet; ime sesije ide kroz trajnu instalacijsku postavku.
     $configSource = str_replace(
         "'cookie_secure' => 1,",
         "'cookie_secure' => 0,",
@@ -211,17 +215,18 @@ function configureE2eApplication(string $projectDirectory): void
     $installation['session_name'] = 'HEARTPHRAME_E2E_SESSION';
     writeMatrixPhpConfig($installationPath, $installation);
 
-    $apiConfigPath = $projectDirectory . '/config/api.php';
+    $apiConfigPath = $projectDirectory . '/config/api/api.php';
     $apiConfigValue = require $apiConfigPath;
     if (!is_array($apiConfigValue)) {
         throw new RuntimeException('E2E API configuration is invalid.');
     }
 
     $apiConfig = matrixStringKeyedArray($apiConfigValue, 'E2E API configuration');
-    // HR: Cijeli E2E paket dijeli administratorski ključ. Visoki testni limit
-    //     sprječava da brzina pojedine baze odlučuje hoće li test pogoditi 429.
     // EN: The complete E2E suite shares one administrator key. A high test-only
     //     limit prevents database speed from deciding whether the suite hits 429.
+    //
+    // HR: Cijeli E2E paket dijeli administratorski ključ. Visoki testni limit
+    //     sprječava da brzina pojedine baze odlučuje hoće li test pogoditi 429.
     $apiConfig['rate_limit_per_minute'] = 10_000;
     $cors = is_array($apiConfig['cors'] ?? null) ? $apiConfig['cors'] : [];
     $cors['enabled'] = true;
@@ -229,7 +234,7 @@ function configureE2eApplication(string $projectDirectory): void
     $apiConfig['cors'] = $cors;
     writeMatrixPhpConfig($apiConfigPath, $apiConfig);
 
-    writeMatrixPhpConfig($projectDirectory . '/config/email.php', [
+    $emailSettings = [
         'enabled' => true,
         'smtp' => [
             'host' => '127.0.0.1',
@@ -253,9 +258,14 @@ function configureE2eApplication(string $projectDirectory): void
             'retry_delay_seconds' => 1,
         ],
         'menu' => ['auto_register_settings' => true],
-    ]);
+    ];
+    mkdir($projectDirectory . '/config/email', 0770, true);
+    file_put_contents($projectDirectory . '/config/email/email.json', json_encode(
+        $emailSettings,
+        JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+    ) . PHP_EOL);
 
-    $themeSettingsPath = $projectDirectory . '/resources/config/theme/settings.json';
+    $themeSettingsPath = $projectDirectory . '/config/theme/settings.json';
     $themeSettingsJson = file_get_contents($themeSettingsPath);
     if ($themeSettingsJson === false) {
         throw new RuntimeException('E2E theme settings could not be read.');
@@ -267,6 +277,10 @@ function configureE2eApplication(string $projectDirectory): void
     }
 
     $themeSettings = matrixStringKeyedArray($themeSettingsValue, 'E2E theme settings');
+    // EN: The synthetic browser fixture must not inherit a disabled development theme.
+    //
+    // HR: Sintetička browser fixture ne smije naslijediti isključenu razvojnu temu.
+    $themeSettings['enabled'] = true;
     $themeSettings['active_theme'] = 'simbioza';
     $encodedThemeSettings = json_encode(
         $themeSettings,
@@ -278,15 +292,15 @@ function configureE2eApplication(string $projectDirectory): void
 }
 
 /**
- * HR: U praznu privremenu bazu dodaje administratorskog i običnog korisnika te
- *     vraća njihove jednokratne API tokene bez ispisa u log. Oba ključa dobivaju
- *     cijeli dinamički katalog scopeova kako bi E2E mogao dokazati da scope sam
- *     po sebi nikada ne podiže stvarna prava običnog korisnika.
- *
  * EN: Adds an administrator and a regular user to the empty temporary database
  *     and returns their one-time API tokens without logging them. Both keys
  *     receive the complete dynamic scope catalog so E2E can prove that a scope
  *     alone never elevates the regular user's real permissions.
+ *
+ * HR: U praznu privremenu bazu dodaje administratorskog i običnog korisnika te
+ *     vraća njihove jednokratne API tokene bez ispisa u log. Oba ključa dobivaju
+ *     cijeli dinamički katalog scopeova kako bi E2E mogao dokazati da scope sam
+ *     po sebi nikada ne podiže stvarna prava običnog korisnika.
  *
  * @return array{admin_api_token:string,user_api_token:string}
  */
@@ -373,8 +387,9 @@ function seedE2eFixtures(string $projectDirectory): array
 }
 
 /**
- * HR: Pokreće PHP razvojni poslužitelj i sprema njegov izlaz u ignorirani build log.
  * EN: Starts PHP's development server and stores its output in an ignored build log.
+ *
+ * HR: Pokreće PHP razvojni poslužitelj i sprema njegov izlaz u ignorirani build log.
  *
  * @return resource
  */
@@ -404,8 +419,18 @@ function startE2eServer(
     $process = proc_open(
         [
             PHP_BINARY,
-            // HR: Arhiva cijele teme može sadržavati više upravljanih datoteka.
+            // EN: Test installs generate and replace files during the same run.
+            // Disable only this fixture's opcode cache, including host CLI defaults.
+            //
+            // HR: Testne instalacije stvaraju i zamjenjuju datoteke tijekom istog testa.
+            // Isključiti samo njihov opcode cache, uključujući CLI zadane postavke hosta.
+            '-d',
+            'opcache.enable=0',
+            '-d',
+            'opcache.enable_cli=0',
             // EN: A complete-theme archive may contain several managed files.
+            //
+            // HR: Arhiva cijele teme može sadržavati više upravljanih datoteka.
             '-d',
             'upload_max_filesize=64M',
             '-d',
@@ -431,8 +456,9 @@ function startE2eServer(
 }
 
 /**
- * HR: Čeka stvarni HTTP odgovor ili rano prijavljuje pad poslužitelja.
  * EN: Waits for a real HTTP response or reports an early server failure.
+ *
+ * HR: Čeka stvarni HTTP odgovor ili rano prijavljuje pad poslužitelja.
  *
  * @param resource $server
  */
@@ -462,8 +488,9 @@ function awaitE2eServer($server, string $baseUrl): void
 }
 
 /**
- * HR: Zaustavlja samo proces poslužitelja koji je pokrenuo ovaj testni alat.
  * EN: Stops only the server process started by this test tool.
+ *
+ * HR: Zaustavlja samo proces poslužitelja koji je pokrenuo ovaj testni alat.
  *
  * @param resource|null $server
  */
@@ -487,8 +514,9 @@ function stopE2eServer($server): void
 }
 
 /**
- * HR: Izvršava cijeli izolirani E2E tijek i vraća CLI izlazni kod.
  * EN: Executes the complete isolated E2E flow and returns a CLI exit code.
+ *
+ * HR: Izvršava cijeli izolirani E2E tijek i vraća CLI izlazni kod.
  */
 function runEndToEndSuite(): int
 {
@@ -597,6 +625,7 @@ function runEndToEndSuite(): int
             $sourceRoot,
             [
                 'HPH_E2E_BASE_URL' => $baseUrl,
+                'HPH_E2E_DATABASE' => $options['database'],
                 'HPH_E2E_ADMIN_LOGIN' => E2E_ADMIN_LOGIN,
                 'HPH_E2E_ADMIN_PASSWORD' => E2E_ADMIN_PASSWORD,
                 'HPH_E2E_USER_LOGIN' => E2E_USER_LOGIN,

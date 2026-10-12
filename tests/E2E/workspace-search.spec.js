@@ -32,8 +32,9 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
   let ordinaryUserId;
 
   /**
-   * HR: Stvara i objavljuje stvarnu Editor stranicu unutar zadanog područja.
    * EN: Creates and publishes a real Editor page inside the supplied Workspace.
+   *
+   * HR: Stvara i objavljuje stvarnu Editor stranicu unutar zadanog područja.
    */
   async function createAndPublish(request, workspaceSlug, documentId, title, body) {
     await expectData(await request.post('/api/v1/pages', {
@@ -365,8 +366,9 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     }));
 
     /*
-     * HR: Spremanje nacrta ne smije iz pretrage ukloniti zadnju objavljenu verziju.
      * EN: Saving a draft must not remove the last published version from search.
+     *
+     * HR: Spremanje nacrta ne smije iz pretrage ukloniti zadnju objavljenu verziju.
      */
     const whileDraft = await request.get(
       `/api/v1/workspace-search?q=${encodeURIComponent(sharedTerm)}&lang=hr`,
@@ -453,8 +455,9 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
       )),
       page.getByRole('button', { name: /Ponovno izgradi indeks|Rebuild index/ }).click(),
     ]);
-    // HR: Potvrda uspjeha nenametljivi je status, a ne hitno upozorenje.
     // EN: A success confirmation is a polite status, not an urgent alert.
+    //
+    // HR: Potvrda uspjeha nenametljivi je status, a ne hitno upozorenje.
     await expect(page.getByRole('status')).toContainText(/Indeks je obnovljen|Index rebuilt/);
     await expect(page.getByRole('status')).toHaveAttribute('aria-live', 'polite');
 

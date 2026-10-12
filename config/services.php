@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use AaiEduHr\HeartPhrameModuleMenu\Service\ComponentUpdateService;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use App\Configuration\ConfigurationPaths;
 use App\Controllers\SetupController;
 use App\Localization\LanguageCommand;
 use App\Localization\LanguagePackManager;
 use App\Localization\LanguageRepository;
 use App\Localization\RepositoryLanguageManager;
+use App\Localization\RuntimeTranslator;
 use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
 use App\Module\ModuleCommand;
@@ -55,6 +57,21 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    TranslatorInterface::class => static function (ContainerInterface $container): RuntimeTranslator {
+        $translator = $container->get(RuntimeTranslator::class);
+        if (!$translator instanceof RuntimeTranslator) {
+            throw new RuntimeException('Runtime translator is unavailable.');
+        }
+        return $translator;
+    },
+    ConfigurationPaths::class => static function (ContainerInterface $container): ConfigurationPaths {
+        $config = $container->get(ConfigInterface::class);
+        if (!$config instanceof ConfigInterface) {
+            throw new RuntimeException('Application configuration paths are unavailable.');
+        }
+
+        return ConfigurationPaths::fromEnvironment($config->getAppRootDir());
+    },
     LanguageRepository::class => static function (ContainerInterface $container): LanguageRepository {
         $config = $container->get(ConfigInterface::class);
         if (!$config instanceof ConfigInterface) {
@@ -267,8 +284,9 @@ $services = [
             $translator,
         );
     },
-    // HR: I stariji updater nakon preuzimanja koda koristi novu CLI integraciju paketa.
     // EN: An older updater uses the new CLI bundle integration after downloading the code.
+    //
+    // HR: I stariji updater nakon preuzimanja koda koristi novu CLI integraciju paketa.
     CommandManager::class => static function (ContainerInterface $container): CommandManager {
         $logger = $container->get(LoggerInterface::class);
         $config = $container->get(ConfigInterface::class);
@@ -278,10 +296,11 @@ $services = [
 
         return new BundledUpgradeCommandManager($container, $logger, $config->getAppRootDir());
     },
-    // HR: ORM profiler ostaje potpuno isključen dok alat za performanse ne
-    //     postavi ciljnu JSONL datoteku. Normalni zahtjevi nemaju diskovni log.
     // EN: ORM profiling remains fully disabled until the performance tool sets
     //     a JSONL target. Normal requests perform no query-log disk writes.
+    //
+    // HR: ORM profiler ostaje potpuno isključen dok alat za performanse ne
+    //     postavi ciljnu JSONL datoteku. Normalni zahtjevi nemaju diskovni log.
     Database::class => function (ContainerInterface $container): Database {
         /** @var ConfigInterface $config */
         $config = $container->get(ConfigInterface::class);
@@ -344,12 +363,13 @@ $services = [
         $appLogName = $config->getAsNonEmptyStringOrFail('app.logs.filename');
         $logLevel = $config->getAsNonEmptyStringOrFail('env.log_level');
         $logPath = $logsDir . '/' . $appLogName;
-        // HR: Audit modul donosi sigurnu rotaciju i uklanjanje tajni iz
-        //     tehničkog loga. Aplikacija i dalje radi s framework handlerom
-        //     kada taj opcionalni modul nije instaliran.
         // EN: The Audit module provides safe rotation and secret redaction for
         //     the technical log. The app still works with the framework handler
         //     when that optional module is not installed.
+        //
+        // HR: Audit modul donosi sigurnu rotaciju i uklanjanje tajni iz
+        //     tehničkog loga. Aplikacija i dalje radi s framework handlerom
+        //     kada taj opcionalni modul nije instaliran.
         $handler = class_exists(\AaiEduHr\HeartPhrameModuleAudit\Log\RotatingFileLogHandler::class)
             ? new \AaiEduHr\HeartPhrameModuleAudit\Log\RotatingFileLogHandler(
                 $logPath,
@@ -362,8 +382,9 @@ $services = [
         return $logger;
     },
 
-    // HR: Frameworkov pomoćni autentikacijski handler čita korisnike iz aplikacijske konfiguracije.
     // EN: The framework helper authentication handler reads users from application configuration.
+    //
+    // HR: Frameworkov pomoćni autentikacijski handler čita korisnike iz aplikacijske konfiguracije.
     AuthnHandlerInterface::class => function (ContainerInterface $container): AuthnHandlerInterface {
         /** @var ConfigInterface $config */
         $config = $container->get(ConfigInterface::class);
@@ -390,91 +411,45 @@ $services = [
 if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBackupProvider::class)) {
     $services['simbioza.backup.provider.application-config'] = static function (
         ContainerInterface $container,
-    ): \AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBackupProvider {
+    ): \App\Localization\ApplicationLanguageBackupProvider {
         /** @var ConfigInterface $config */
         $config = $container->get(ConfigInterface::class);
-        $files = $config->get('backup.application_configuration');
+        $backupConfig = $container->get(\AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig::class);
+        if (!$backupConfig instanceof \AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig) {
+            throw new RuntimeException('Backup configuration service is unavailable.');
+        }
+
+        $files = $backupConfig->get('application_configuration');
         $filesystem = $container->get(\AaiEduHr\HeartPhrameModuleBackup\Service\BackupFilesystem::class);
         if (!$filesystem instanceof \AaiEduHr\HeartPhrameModuleBackup\Service\BackupFilesystem) {
             throw new RuntimeException('Backup filesystem service is unavailable.');
         }
 
-        /**
-         * HR: Config granica se validira prije predaje generičkom provideru.
-         * EN: The config boundary is validated before passing it to the generic provider.
-         *
-         * @var list<array{key:string,path:string,include_keys?:list<string>,sensitive?:bool,
-         *     restore_targets?:list<array{path:string,key_map:array<string,string>}>}> $providerFiles
-         */
-        $providerFiles = [];
-        if (is_array($files)) {
-            foreach ($files as $definition) {
-                if (
-                    !is_array($definition)
-                    || !is_string($definition['key'] ?? null)
-                    || !is_string($definition['path'] ?? null)
-                ) {
-                    throw new RuntimeException('Invalid application backup configuration definition.');
-                }
+        $providerFiles = (new \App\Configuration\ApplicationBackupConfiguration(
+            ConfigurationPaths::fromEnvironment(dirname(__DIR__)),
+        ))->resolve($files);
 
-                $includeKeys = $definition['include_keys'] ?? [];
-                if (!is_array($includeKeys)) {
-                    throw new RuntimeException('Invalid application backup configuration key list.');
-                }
-
-                $normalizedKeys = [];
-                foreach ($includeKeys as $includeKey) {
-                    if (!is_string($includeKey)) {
-                        throw new RuntimeException('Application backup configuration keys must be strings.');
-                    }
-
-                    $normalizedKeys[] = $includeKey;
-                }
-
-                $providerFile = [
-                    'key' => $definition['key'],
-                    'path' => $definition['path'],
-                    'include_keys' => $normalizedKeys,
-                    'sensitive' => (bool)($definition['sensitive'] ?? false),
-                ];
-                if (array_key_exists('restore_targets', $definition)) {
-                    if (!is_array($definition['restore_targets']) || $definition['restore_targets'] === []) {
-                        throw new RuntimeException('Application backup restore targets must be a nonempty list.');
-                    }
-
-                    $targets = [];
-                    foreach ($definition['restore_targets'] as $target) {
-                        if (
-                            !is_array($target) || !is_string($target['path'] ?? null)
-                            || !is_array($target['key_map'] ?? null)
-                        ) {
-                            throw new RuntimeException('Invalid application backup restore target.');
-                        }
-
-                        $keyMap = [];
-                        foreach ($target['key_map'] as $sourceKey => $targetKey) {
-                            if (!is_string($sourceKey) || !is_string($targetKey)) {
-                                throw new RuntimeException('Application backup mapping keys must be strings.');
-                            }
-
-                            $keyMap[$sourceKey] = $targetKey;
-                        }
-
-                        $targets[] = ['path' => $target['path'], 'key_map' => $keyMap];
-                    }
-
-                    $providerFile['restore_targets'] = $targets;
-                }
-
-                $providerFiles[] = $providerFile;
+        // EN: The application wrapper holds this lock once for settings and language data.
+        //
+        // HR: Aplikacijski wrapper jednom drži ovaj lock za postavke i jezične podatke.
+        foreach ($providerFiles as &$definition) {
+            if (!isset($definition['restore_targets'])) {
+                continue;
             }
+            foreach ($definition['restore_targets'] as &$target) {
+                if (isset($target['lock_path']) && basename($target['lock_path']) === '.languages.lock') {
+                    unset($target['lock_path']);
+                }
+            }
+            unset($target);
         }
+        unset($definition);
 
-        return new \AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBackupProvider(
+        $provider = new \AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBackupProvider(
             new \AaiEduHr\HeartPhrameModuleBackup\Value\BackupProviderMetadata(
                 'application-config',
                 'heartphrame/simbioza',
-                1,
+                3,
                 ['hr' => 'Postavke aplikacije', 'en' => 'Application settings'],
                 [],
                 [
@@ -487,6 +462,16 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
             ),
             $filesystem,
             $providerFiles,
+        );
+        $languages = $container->get(LanguagePackManager::class);
+        if (!$languages instanceof LanguagePackManager) {
+            throw new RuntimeException('Language backup service is unavailable.');
+        }
+        return new \App\Localization\ApplicationLanguageBackupProvider(
+            $provider,
+            ConfigurationPaths::fromEnvironment($config->getAppRootDir()),
+            $languages,
+            new \App\Localization\RuntimeLanguageStorage($config->getAppRootDir()),
         );
     };
 }

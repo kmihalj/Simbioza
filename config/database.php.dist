@@ -5,18 +5,22 @@ declare(strict_types=1);
 return [
     'connections' => [
         'default' => [
-            // SQLite sample configuration
+            // EN: SQLite data stays in app/data, not beside an external HPH_CONFIG_PATH.
+            //
+            // HR: SQLite podatak ostaje u app/data, ne uz vanjski HPH_CONFIG_PATH.
             'driver' => 'sqlite',
-            'database' => __DIR__ . '/../data/heartphrame.sqlite',
-            // MySQL sample configuration
-//            'driver' => 'mysql',
-//            'host' => 'localhost',
-//            'port' => 3306,
-//            'database' => '',
-//            'username' => '',
-//            'password' => '',
-//            'charset' => 'utf8mb4',
-//            'options' => [],
+            'database' => (getenv('HPH_APP_PATH') ?: dirname(__DIR__)) . '/data/heartphrame.sqlite',
+            // EN: MySQL connection example; replace the SQLite block with real private values.
+            //            'driver' => 'mysql',
+            //            'host' => 'localhost',
+            //            'port' => 3306,
+            //            'database' => '',
+            //            'username' => '',
+            //            'password' => '',
+            //            'charset' => 'utf8mb4',
+            //            'options' => [],
+            //
+            // HR: Primjer MySQL veze; zamijenite SQLite blok stvarnim privatnim vrijednostima.
         ]
     ],
 ];

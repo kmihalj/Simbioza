@@ -1,0 +1,73 @@
+{
+    "_documentation": {
+        "en": {
+            "example": "Copy to HPH_CONFIG_PATH/editor-html/editor-html.json to start a new configuration. This .dist is not active; adapt it and never overwrite existing installation settings.",
+            "format_and_layers": "Valid JSON without comments; _documentation is descriptive and may be removed. Objects merge across HPH_CONFIG_OVERRIDE_PATHS and lists replace; writes target only the last layer under editor-html.json.lock.",
+            "storage": "driver is filesystem or database and selects only version HTML payload storage. Metadata, ACL, and versions remain in ORM. filesystem_path is relative to app/data, not HPH_CONFIG_PATH.",
+            "moving": "After content exists, do not manually change the driver or paths. Use GUI storage migration/move operations or a controlled offline content move.",
+            "view": "table_of_contents sets initial outline visibility. slug.enabled/path enable the standalone public route, such as /view/title. Workspace overrides this only at runtime without writing to this JSON.",
+            "localization": "default_language is the fallback language without an active Menu language selection.",
+            "uploads": "path is relative to app/data; attachments remain files with the database driver too. max_size_mb and chunk_size_mb are positive integers; allowed_mime_types is the complete allowed MIME list.",
+            "images": "web_variant creates derived WebP images without changing originals. cache_path is relative to app/data. max_width/max_height are pixels, quality controls quality, and max_source_megapixels limits the source image.",
+            "gui_and_menu": "gui.enabled=false disables administration, not document editing, export, or CLI. menu.auto_register_settings=false disables automatic settings-menu registration.",
+            "security": "Keep JSON outside the public web directory. Every configuration layer must be readable; only the final layer needs GUI write access. Content and attachments remain in data."
+        },
+        "hr": {
+            "primjer": "Kopirati u HPH_CONFIG_PATH/editor-html/editor-html.json za novu konfiguraciju. Ovaj .dist nije aktivan; prilagoditi ga i ne prepisivati postojeće postavke instalacije.",
+            "format_i_slojevi": "Valjan JSON bez komentara; _documentation služi samo opisu i može se ukloniti. Objekti se spajaju kroz HPH_CONFIG_OVERRIDE_PATHS, liste zamjenjuju; zapis ide samo u posljednji sloj pod editor-html.json.lock.",
+            "storage": "driver je filesystem ili database i određuje samo HTML payload verzija. Metapodaci, ACL i verzije ostaju u ORM bazi. filesystem_path je relativan prema app/data, nije prema HPH_CONFIG_PATH.",
+            "premjestanje": "Nakon stvaranja sadržaja ne mijenjati ručno driver ili putanje. Koristiti GUI migraciju pohrane/premještanje ili kontrolirano offline premještanje sadržaja.",
+            "view": "table_of_contents je početna vidljivost sadržaja. slug.enabled/path uključuju samostalnu javnu rutu, npr. /view/naziv. Workspace to nadjačava samo pri radu, bez zapisivanja u ovaj JSON.",
+            "localization": "default_language je rezervni jezik kada nema aktivnog Menu jezičnog odabira.",
+            "uploads": "path je relativan prema app/data; privici ostaju datoteke i s database driverom. max_size_mb i chunk_size_mb su pozitivni cijeli brojevi; allowed_mime_types je potpuni popis dopuštenih MIME tipova.",
+            "images": "web_variant stvara izvedene WebP slike, ne mijenja originale. cache_path je relativan prema app/data. max_width/max_height su pikseli, quality kvaliteta, max_source_megapixels ograničenje izvorne slike.",
+            "gui_i_menu": "gui.enabled=false isključuje administraciju, ne uređivanje dokumenata, izvoz ili CLI. menu.auto_register_settings=false isključuje automatsko dodavanje postavki u izbornik.",
+            "sigurnost": "JSON držati izvan javnog web direktorija. Svaki konfiguracijski sloj mora biti čitljiv; samo konačni sloj treba prava pisanja za GUI. Sadržaj i privici ostaju u data direktoriju."
+        }
+    },
+    "gui": {
+        "enabled": true
+    },
+    "menu": {
+        "auto_register_settings": true
+    },
+    "storage": {
+        "driver": "filesystem",
+        "filesystem_path": "editor-html"
+    },
+    "view": {
+        "table_of_contents": true,
+        "slug": {
+            "enabled": false,
+            "path": "view"
+        }
+    },
+    "localization": {
+        "default_language": "hr"
+    },
+    "uploads": {
+        "path": "editor-html/uploads",
+        "max_size_mb": 1024,
+        "chunk_size_mb": 1,
+        "allowed_mime_types": [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "application/pdf",
+            "text/plain",
+            "video/mp4",
+            "video/webm"
+        ]
+    },
+    "images": {
+        "web_variant": {
+            "enabled": true,
+            "cache_path": "editor-html/cache/images",
+            "max_width": 1600,
+            "max_height": 1600,
+            "quality": 82,
+            "max_source_megapixels": 40
+        }
+    }
+}

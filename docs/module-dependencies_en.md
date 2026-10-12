@@ -1,12 +1,14 @@
 # Module dependencies
 
+> Release 0.3.0 preparation: the tagged installation commands below apply after coordinated publication of the application and modules. Development verification uses local packages; older releases cannot replace this configuration and schema.
+
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the
 corresponding module is present. An optional module must not become a hidden
 requirement for basic operation.
 
 All modules use the tagged Framework `^0.0.25` release and compatible internal
-module releases from the `^0.1.0` line. Module repositories and Simbioza do not
+module releases from the `^0.3.0` line. Module repositories and Simbioza do not
 commit `composer.lock`; CI runs `composer update --with-all-dependencies` on
 every run, resolves the latest compatible tags, and then executes the complete
 `composer on-commit` suite.
@@ -27,7 +29,7 @@ that module. Inspect `composer outdated --direct` too. Dependencies use
 isolated local integration fixtures. Keep optional integrations optional.
 
 Do not select a tag solely by its numeric size: several repositories retain
-historical `1.x` tags predating the current `0.1.x` line. Confirm the compatible
+historical `1.x` tags predating the current `0.3.x` line. Confirm the compatible
 line, source reference and release history. Do not edit the Framework repository
 or patch its installed code; consume its maintainer's published tag.
 
@@ -48,13 +50,13 @@ not a claim that no newer major releases exist. Recheck them before each release
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu and Theme for the GUI only |
 | `module-menu` | Framework, ORM | Auth |
 | `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth (0.1.13+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
-| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.1.4+ when installed), Menu, Theme, Calendar, Workspace, Task, Comment |
+| `module-calendar` | Framework, Auth (0.3.0+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
+| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.3.0+ when installed), Menu, Theme, Calendar, Workspace, Task, Comment |
 | `module-email` | Framework, Auth, ORM | — |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
-| `module-workspace` | Framework, Auth, ORM | Backup (0.1.4+ when installed), HTML Editor, Menu, Notification; Email only indirectly through Notification |
-| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.1.5+ when installed) |
-| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.1.5+ when installed) |
+| `module-workspace` | Framework, Auth, ORM | Backup (0.3.0+ when installed), HTML Editor, Menu, Notification; Email only indirectly through Notification |
+| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.3.0+ when installed) |
+| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.3.0+ when installed) |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 | `module-audit` | Framework, Auth, ORM | Menu for Settings, Backup for portable activity-audit archives, API for `audit:read`, and every installed business-event producer |
 | `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |

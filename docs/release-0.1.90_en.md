@@ -1,5 +1,7 @@
 # Simbioza 0.1.90
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release introduces the optional HeartPhrame Accessibility module and continues the underlying accessibility work across Simbioza and its modules. The widget offers browser-local reading and display preferences. It works without Theme, Menu, or Bootstrap; when Theme is present, optional color palettes can adapt its semantic colors without changing the saved theme. The module is independent of the existing modules and can be installed and enabled through Setup after the application update.
 
 The application and module changes improve keyboard operation, labels and status messages in Setup, Backup, Calendar, API administration, menus, comments, tasks, notifications, search, workspaces, the HTML editor, and Confluence import. The editor checks author-created image, heading, table, and link semantics. Known Confluence conversions preserve meaningful table headers; imported content is not automatically rewritten or given invented descriptions. Updated English and Croatian source strings are published through the language catalog.

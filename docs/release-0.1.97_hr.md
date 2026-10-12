@@ -1,5 +1,7 @@
 # Simbioza 0.1.97
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Istodobno uređivanje istog zajedničkog nacrta više ne prepisuje neprimjetno
 izmjene drugog urednika. Spremanje sa zastarjelom revizijom odbija se, prikazuje
 se aktualni nacrt s poslužitelja, a odbijene izmjene ostaju u lokalnoj kopiji

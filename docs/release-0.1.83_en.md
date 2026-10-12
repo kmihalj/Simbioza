@@ -1,5 +1,7 @@
 # Simbioza 0.1.83
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release introduces the public Simbioza language catalogue. The installer
 offers the published languages and requires at least one selection. Croatian
 and English remain the built-in choices; the Setup page can install, enable,

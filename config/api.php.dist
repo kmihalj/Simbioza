@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+// EN: Copy to HPH_CONFIG_PATH/api/api.php. The default root is application/config.
+// Configure manually; no GUI is required. Later HPH_CONFIG_OVERRIDE_PATHS layers
+// merge maps and replace lists, including an empty list. Never allow private
+// networks or insecure HTTP in production without an explicit security review.
+// This is host policy, not a package's neutral config/api.php descriptor.
+//
+// Options:
+// rate_limit_per_minute: request budget shared by one API key within one minute.
+// max_json_body_bytes: largest accepted JSON write body, in bytes (here 2 MiB).
+// idempotency_ttl_seconds: how long replay records for Idempotency-Key are kept.
+// require_if_match: require an entity version on writes to avoid lost updates.
+// cors.enabled: allow cross-origin browser API access only when explicitly enabled.
+// cors.allowed_origins: exact origins, e.g. https://portal.example.org; empty denies all.
+// cors.allowed_methods / allowed_headers: browser methods/headers admitted by preflight.
+// cors.allow_credentials: permit browser credentials; never combine with a wildcard origin.
+// cors.max_age: browser preflight-cache lifetime in seconds.
+// webhooks.enabled: create/dispatch webhook events; subscriptions/deliveries stay in the database.
+// webhooks.max_attempts: maximum delivery attempts before marking a delivery failed.
+// webhooks.base_retry_seconds / max_retry_seconds: initial and capped retry delay.
+// webhooks.timeout_seconds: bounded timeout for one delivery, in seconds.
+// webhooks.allow_insecure_http: permit HTTP only for explicitly trusted non-production targets.
+// webhooks.allow_private_networks: SSRF exception; false rejects non-global IPv4/IPv6.
+// webhooks.allowed_hosts: exact lowercase destination hostnames; empty allows any public host.
+// A worker still checks every DNS address and pins its connection; redirects are not followed.
+//
+// HR: Kopirati u HPH_CONFIG_PATH/api/api.php. Zadani korijen je application/config.
+// Podešava se ručno; GUI nije potreban. Kasniji HPH_CONFIG_OVERRIDE_PATHS slojevi
+// spajaju mape i zamjenjuju liste, uključujući prazne liste. Privatne mreže i
+// nesigurni HTTP u produkciji ne dopuštati bez izričite sigurnosne provjere.
+// Ovo je politika hosta, a ne neutralni config/api.php opis paketa.
+//
+// Opcije:
+// rate_limit_per_minute: zajednički broj zahtjeva jednog API ključa unutar minute.
+// max_json_body_bytes: najveće dopušteno JSON tijelo upisa u bajtovima (ovdje 2 MiB).
+// idempotency_ttl_seconds: koliko se čuvaju zapisi za ponavljanje uz Idempotency-Key.
+// require_if_match: pri upisu zahtijeva verziju zapisa kako se izmjene ne bi izgubile.
+// cors.enabled: pristup iz drugih izvora preglednika dopušta samo kada je izričito uključen.
+// cors.allowed_origins: točni izvori, npr. https://portal.example.org; prazno odbija sve.
+// cors.allowed_methods / allowed_headers: metode/zaglavlja dopuštena pri browser preflight provjeri.
+// cors.allow_credentials: dopušta vjerodajnice preglednika; ne kombinirati sa zvjezdicom izvora.
+// cors.max_age: trajanje browser preflight predmemorije u sekundama.
+// webhooks.enabled: stvaranje/slanje webhook događaja; pretplate/isporuke ostaju u bazi.
+// webhooks.max_attempts: najviše pokušaja prije označavanja isporuke kao neuspjele.
+// webhooks.base_retry_seconds / max_retry_seconds: početni i najveći razmak ponovnog pokušaja.
+// webhooks.timeout_seconds: ograničeno trajanje jednog pokušaja u sekundama.
+// webhooks.allow_insecure_http: HTTP samo za izričito pouzdane neprodukcijske ciljeve.
+// webhooks.allow_private_networks: SSRF iznimka; false odbija nejavne IPv4/IPv6 adrese.
+// webhooks.allowed_hosts: točni mali nazivi ciljnih hostova; prazno dopušta sve javne hostove.
+// Worker i dalje provjerava sve DNS adrese i veže vezu na provjerenu adresu; ne prati preusmjerenja.
+
+return [
+    'rate_limit_per_minute' => 120,
+    'max_json_body_bytes' => 2_097_152,
+    'idempotency_ttl_seconds' => 86_400,
+    'require_if_match' => true,
+    'cors' => [
+        'enabled' => false,
+        'allowed_origins' => [],
+        'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        'allowed_headers' => [
+            'Accept',
+            'Accept-Language',
+            'Authorization',
+            'Content-Type',
+            'Idempotency-Key',
+            'If-Match',
+            'X-Request-Id',
+        ],
+        'allow_credentials' => false,
+        'max_age' => 600,
+    ],
+    'webhooks' => [
+        'enabled' => false,
+        'max_attempts' => 8,
+        'base_retry_seconds' => 30,
+        'max_retry_seconds' => 3600,
+        'timeout_seconds' => 15,
+        'allow_insecure_http' => false,
+        'allow_private_networks' => false,
+        'allowed_hosts' => [],
+    ],
+];

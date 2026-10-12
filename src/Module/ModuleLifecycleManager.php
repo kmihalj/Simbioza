@@ -7,6 +7,7 @@ namespace App\Module;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Migration\Migrator;
 use AaiEduHr\HeartPhrameModuleOrm\Database\MigrationInterface;
+use App\Deployment\DeploymentPolicy;
 use Composer\InstalledVersions;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -35,10 +36,11 @@ use function trim;
 use const PATHINFO_FILENAME;
 
 /**
- * HR: Provodi siguran životni ciklus opcionalnih modula: provjeru ovisnosti,
- *     uključivanje, isključivanje, NDJSON backup, uklanjanje sheme i povrat.
  * EN: Executes the safe optional-module lifecycle: dependency checks, enable,
  *     disable, NDJSON backup, schema removal, and restoration.
+ *
+ * HR: Provodi siguran životni ciklus opcionalnih modula: provjeru ovisnosti,
+ *     uključivanje, isključivanje, NDJSON backup, uklanjanje sheme i povrat.
  *
  * @phpstan-type ModuleDefinition array{
  *     package:string,
@@ -53,7 +55,11 @@ use const PATHINFO_FILENAME;
  */
 final readonly class ModuleLifecycleManager
 {
-    /** HR: Prima sve trajne granice potrebne upravljanju modulima. EN: Receives every durable boundary needed for module management. */
+    /**
+     * EN: Receives every durable boundary needed for module management.
+     *
+     * HR: Prima sve trajne granice potrebne upravljanju modulima.
+     */
     public function __construct(
         private Database $database,
         private ModuleCatalog $catalog,
@@ -65,17 +71,19 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Vraća stanje svakog ugrađenog modula bez izmjene instalacije.
      * EN: Returns the state of every bundled module without changing the installation.
+     *
+     * HR: Vraća stanje svakog ugrađenog modula bez izmjene instalacije.
      *
      * @return list<array{slug:string,package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,package_installed:bool,enabled:bool,schema_installed:bool,backup_available:bool,state:string}>
      */
     public function status(): array
     {
-        // HR: Jedna svježa snimka s diska izbjegava i zastarjeli FPM cache i
-        //     N+1 čitanja Composer metapodataka za svaki prikazani modul.
         // EN: One fresh on-disk snapshot avoids both stale FPM cache and N+1
         //     Composer metadata reads for every displayed module.
+        //
+        // HR: Jedna svježa snimka s diska izbjegava i zastarjeli FPM cache i
+        //     N+1 čitanja Composer metapodataka za svaki prikazani modul.
         $installedPackages = $this->packages?->installedPackages();
         $ran = array_fill_keys($this->ranMigrations(), true);
         $removed = array_fill_keys($this->state->removedSlugs(), true);
@@ -108,7 +116,11 @@ final readonly class ModuleLifecycleManager
         return $result;
     }
 
-    /** HR: Omogućuje već instalirani opcionalni modul. EN: Enables an already installed optional module. */
+    /**
+     * EN: Enables an already installed optional module.
+     *
+     * HR: Omogućuje već instalirani opcionalni modul.
+     */
     public function enable(string $slug): void
     {
         $definition = $this->optionalDefinition($slug);
@@ -124,7 +136,11 @@ final readonly class ModuleLifecycleManager
         $this->state->enable($slug);
     }
 
-    /** HR: Isključuje opcionalni modul bez brisanja njegovih podataka. EN: Disables an optional module without deleting its data. */
+    /**
+     * EN: Disables an optional module without deleting its data.
+     *
+     * HR: Isključuje opcionalni modul bez brisanja njegovih podataka.
+     */
     public function disable(string $slug): void
     {
         $this->optionalDefinition($slug);
@@ -133,10 +149,11 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Prije uklanjanja sheme stvara NDJSON kopiju, isključuje modul i
-     *     poništava samo migracije koje mu katalog izričito dodjeljuje.
      * EN: Before removing the schema, creates an NDJSON backup, disables the
      *     module, and reverses only migrations explicitly owned by it.
+     *
+     * HR: Prije uklanjanja sheme stvara NDJSON kopiju, isključuje modul i
+     *     poništava samo migracije koje mu katalog izričito dodjeljuje.
      */
     public function remove(string $slug): string
     {
@@ -144,19 +161,25 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Uklanja shemu i sprema kopiju nakon što je Setup odvojio paketnu
-     *     radnju. Ovu metodu smije koristiti samo kontrolirani GUI tijek.
      * EN: Removes schema and creates a backup after Setup has separated the
      *     package operation. Only the controlled GUI flow may use this method.
+     *
+     * HR: Uklanja shemu i sprema kopiju nakon što je Setup odvojio paketnu
+     *     radnju. Ovu metodu smije koristiti samo kontrolirani GUI tijek.
      */
     public function removePrepared(string $slug): string
     {
         return $this->removeInternal($slug, false);
     }
 
-    /** HR: Provodi zajednički dio uklanjanja uz opcionalnu Composer radnju. EN: Runs shared removal with an optional Composer operation. */
+    /**
+     * EN: Runs shared removal with an optional Composer operation.
+     *
+     * HR: Provodi zajednički dio uklanjanja uz opcionalnu Composer radnju.
+     */
     private function removeInternal(string $slug, bool $removePackage): string
     {
+        (new DeploymentPolicy($this->appRoot))->assertCodeChangesAllowed();
         $definition = $this->optionalDefinition($slug);
         $this->assertNoEnabledDependants($slug);
         if ($slug === 'confluence-import') {
@@ -172,15 +195,17 @@ final readonly class ModuleLifecycleManager
                 continue;
             }
 
-            // HR: Migraciju učitaj prije uklanjanja Composer paketa; omotač
-            //     nakon uspješnog uklanjanja više ne može autoloadati klasu modula.
             // EN: Load the migration before removing the Composer package; its
             //     wrapper can no longer autoload the module class afterwards.
+            //
+            // HR: Migraciju učitaj prije uklanjanja Composer paketa; omotač
+            //     nakon uspješnog uklanjanja više ne može autoloadati klasu modula.
             $ownedMigrations[$migrationName] = $this->migration($migrationName);
         }
 
-        // HR: Paketna pogreška mora ostaviti aktivnu shemu i stanje netaknutima.
         // EN: A package failure must leave the active schema and state untouched.
+        //
+        // HR: Paketna pogreška mora ostaviti aktivnu shemu i stanje netaknutima.
         if ($removePackage && $this->packages instanceof ComposerPackageManager) {
             $this->packages->uninstall($slug);
         }
@@ -196,12 +221,13 @@ final readonly class ModuleLifecycleManager
                 ->delete();
         }
 
-        // HR: Stariji omotači migracija nisu svi izlagali `down()`. Katalog
-        //     zato nakon reverzibilnih koraka zajamčeno uklanja isključivo
-        //     tablice u vlasništvu odabranog opcionalnog modula.
         // EN: Some legacy migration wrappers did not expose `down()`. After
         //     reversible steps, the catalog therefore guarantees removal of
         //     only the tables owned by the selected optional module.
+        //
+        // HR: Stariji omotači migracija nisu svi izlagali `down()`. Katalog
+        //     zato nakon reverzibilnih koraka zajamčeno uklanja isključivo
+        //     tablice u vlasništvu odabranog opcionalnog modula.
         foreach (array_reverse($definition['tables']) as $table) {
             $this->database->schema()->dropIfExists($table);
         }
@@ -212,26 +238,33 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Instalira nedostajuće migracije i po izboru vraća zadnju kopiju ili
-     *     započinje s praznim tablicama, zatim omogućuje modul.
      * EN: Installs missing migrations and optionally restores the latest backup
      *     or starts with empty tables, then enables the module.
+     *
+     * HR: Instalira nedostajuće migracije i po izboru vraća zadnju kopiju ili
+     *     započinje s praznim tablicama, zatim omogućuje modul.
      */
     public function add(string $slug, bool $restore): ?string
     {
+        (new DeploymentPolicy($this->appRoot))->assertCodeChangesAllowed();
         return $this->addInternal($slug, $restore, true);
     }
 
     /**
-     * HR: Instalira shemu paketa koji je Setup helper već sigurno dodao.
      * EN: Installs the schema of a package already added safely by the Setup helper.
+     *
+     * HR: Instalira shemu paketa koji je Setup helper već sigurno dodao.
      */
     public function addPrepared(string $slug, bool $restore): ?string
     {
         return $this->addInternal($slug, $restore, false);
     }
 
-    /** HR: Provodi zajednički dio dodavanja uz opcionalnu Composer radnju. EN: Runs shared addition with an optional Composer operation. */
+    /**
+     * EN: Runs shared addition with an optional Composer operation.
+     *
+     * HR: Provodi zajednički dio dodavanja uz opcionalnu Composer radnju.
+     */
     private function addInternal(string $slug, bool $restore, bool $installPackage): ?string
     {
         $definition = $this->optionalDefinition($slug);
@@ -273,8 +306,9 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Vraća dostupne kopije opcionalnog modula.
      * EN: Returns available backups for an optional module.
+     *
+     * HR: Vraća dostupne kopije opcionalnog modula.
      *
      * @return list<string>
      */
@@ -286,10 +320,11 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Primjenjuje aplikacijske migracije samo za stvarno instalirane
-     *     pakete. Isključeni modul ostaje uključen u skup jer mu je shema sačuvana.
      * EN: Applies application migrations only for packages that are actually
      *     installed. A disabled module remains in the set because its schema is retained.
+     *
+     * HR: Primjenjuje aplikacijske migracije samo za stvarno instalirane
+     *     pakete. Isključeni modul ostaje uključen u skup jer mu je shema sačuvana.
      *
      * @return list<string>
      */
@@ -299,10 +334,11 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Vraća status migracija instaliranih paketa bez učitavanja omotača
-     *     opcionalnih paketa koji nisu prisutni u Composer instalaciji.
      * EN: Returns migration status for installed packages without loading
      *     wrappers belonging to optional packages absent from Composer.
+     *
+     * HR: Vraća status migracija instaliranih paketa bez učitavanja omotača
+     *     opcionalnih paketa koji nisu prisutni u Composer instalaciji.
      *
      * @return array{ran:list<string>,pending:list<string>}
      */
@@ -324,8 +360,9 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Vraća i provjerava da se korisnička radnja odnosi samo na opcionalni modul.
      * EN: Returns and validates that a user action targets an optional module only.
+     *
+     * HR: Vraća i provjerava da se korisnička radnja odnosi samo na opcionalni modul.
      *
      * @return ModuleDefinition
      */
@@ -340,8 +377,9 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Zahtijeva da su sve tvrde ovisnosti ciljnog modula omogućene.
      * EN: Requires every hard dependency of the target module to be enabled.
+     *
+     * HR: Zahtijeva da su sve tvrde ovisnosti ciljnog modula omogućene.
      *
      * @param ModuleDefinition $definition
      */
@@ -354,7 +392,11 @@ final readonly class ModuleLifecycleManager
         }
     }
 
-    /** HR: Sprječava isključivanje modula koji još treba drugi omogućeni modul. EN: Prevents disabling a module still required by another enabled module. */
+    /**
+     * EN: Prevents disabling a module still required by another enabled module.
+     *
+     * HR: Sprječava isključivanje modula koji još treba drugi omogućeni modul.
+     */
     private function assertNoEnabledDependants(string $slug): void
     {
         foreach ($this->catalog->definitions() as $candidateSlug => $definition) {
@@ -369,8 +411,9 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Provjerava da su sve migracije modula evidentirane.
      * EN: Checks that every module migration is recorded.
+     *
+     * HR: Provjerava da su sve migracije modula evidentirane.
      *
      * @param ModuleDefinition $definition
      * @param array<string,true> $ran
@@ -388,8 +431,9 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Normalizira evidenciju izvršenih migracija prije rada s ključevima polja.
      * EN: Normalizes the executed-migration ledger before using it as array keys.
+     *
+     * HR: Normalizira evidenciju izvršenih migracija prije rada s ključevima polja.
      *
      * @return list<string>
      */
@@ -406,12 +450,13 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Učitava migracijske datoteke izdanja, ali preskače one kojima katalog
-     *     dodjeljuje paket koji nije instaliran. Time minimalna instalacija ne
-     *     pokušava requireati nepostojeći vendor kod opcionalnog modula.
      * EN: Loads release migration files while skipping those assigned by the
      *     catalog to a package that is not installed. This prevents a minimal
      *     installation from requiring absent optional-module vendor code.
+     *
+     * HR: Učitava migracijske datoteke izdanja, ali preskače one kojima katalog
+     *     dodjeljuje paket koji nije instaliran. Time minimalna instalacija ne
+     *     pokušava requireati nepostojeći vendor kod opcionalnog modula.
      *
      * @return array<string,MigrationInterface>
      */
@@ -445,10 +490,11 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Pronalazi stvarni omotač migracije, uključujući onaj kojem je čarobnjak
-     *     pri instalaciji dodijelio novu vremensku oznaku.
      * EN: Finds the actual migration wrapper, including one assigned a fresh
      *     timestamp by the installation wizard.
+     *
+     * HR: Pronalazi stvarni omotač migracije, uključujući onaj kojem je čarobnjak
+     *     pri instalaciji dodijelio novu vremensku oznaku.
      *
      * @param array<string,true> $ran
      */
@@ -476,12 +522,13 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Ne dopušta uklanjanje Confluence pomoćnih tablica dok ijedna stara
-     *     verzija stranice još sadrži privremeni import proxy ili dinamičku
-     *     referencu na izvorno područje.
      * EN: Refuses to remove Confluence helper tables while any legacy page
      *     version still contains a temporary import proxy or a dynamic source
      *     workspace reference.
+     *
+     * HR: Ne dopušta uklanjanje Confluence pomoćnih tablica dok ijedna stara
+     *     verzija stranice još sadrži privremeni import proxy ili dinamičku
+     *     referencu na izvorno područje.
      */
     private function assertConfluenceRuntimeReferencesResolved(): void
     {
@@ -529,15 +576,23 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Vraća provjereni korijen filesystem verzija HTML dokumenata.
      * EN: Returns the validated root of filesystem-backed HTML document versions.
+     *
+     * HR: Vraća provjereni korijen filesystem verzija HTML dokumenata.
      */
     private function editorDocumentsRoot(): string
     {
         $relative = 'editor-html';
-        $configPath = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/config/editor-html.php';
-        $config = is_file($configPath) ? require $configPath : [];
-        $storage = is_array($config) && is_array($config['storage'] ?? null) ? $config['storage'] : [];
+        $module = InstalledVersions::getInstallPath('aaieduhr/heartphrame-module-editor-html');
+        if (!is_string($module)) {
+            throw new RuntimeException('The editor module is required to validate stored document references.');
+        }
+
+        $config = (new \AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfigurationStore(
+            $this->appRoot,
+            \AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfigurationStore::packageDefaults($module),
+        ))->read();
+        $storage = is_array($config['storage'] ?? null) ? $config['storage'] : [];
         if (is_scalar($storage['filesystem_path'] ?? null)) {
             $relative = trim(str_replace('\\', '/', (string)$storage['filesystem_path']), '/');
         }
@@ -554,10 +609,11 @@ final readonly class ModuleLifecycleManager
     }
 
     /**
-     * HR: Provjerava stvarnu dostupnost paketa, uz opcionalnu zajedničku snimku
-     *     koja sprječava N+1 čitanja pri prikazu svih modula.
      * EN: Checks actual package availability, with an optional shared snapshot
      *     that prevents N+1 reads while rendering all modules.
+     *
+     * HR: Provjerava stvarnu dostupnost paketa, uz opcionalnu zajedničku snimku
+     *     koja sprječava N+1 čitanja pri prikazu svih modula.
      *
      * @param null|list<string> $installedPackages
      */
@@ -572,7 +628,11 @@ final readonly class ModuleLifecycleManager
         : InstalledVersions::isInstalled($package);
     }
 
-    /** HR: Učitava samo migraciju iz fiksnog aplikacijskog direktorija. EN: Loads a migration only from the fixed application directory. */
+    /**
+     * EN: Loads a migration only from the fixed application directory.
+     *
+     * HR: Učitava samo migraciju iz fiksnog aplikacijskog direktorija.
+     */
     private function migration(string $name): MigrationInterface
     {
         $path = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/database/migrations/' . $name . '.php';

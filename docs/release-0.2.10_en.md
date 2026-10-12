@@ -1,5 +1,7 @@
 # Simbioza 0.2.10
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release coordinates HTML Editor 0.1.39, the optional Confluence Import
 module 0.1.43, and updated translations in all six supported languages.
 

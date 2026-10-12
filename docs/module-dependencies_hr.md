@@ -1,12 +1,14 @@
 # Ovisnosti modula
 
+> Priprema izdanja 0.3.0: navedene naredbe za označena izdanja vrijede nakon koordinirane objave aplikacije i modula. Razvojna provjera koristi lokalne pakete; starija izdanja nisu zamjena za ovu konfiguraciju i shemu.
+
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
 odgovarajući modul prisutan. Opcionalni modul ne smije postati skriveni uvjet
 za osnovni rad.
 
 Svi moduli koriste označeno izdanje Frameworka `^0.0.25` i kompatibilna izdanja
-internih modula iz linije `^0.1.0`. Repozitoriji modula i Simbioza ne spremaju
+internih modula iz linije `^0.3.0`. Repozitoriji modula i Simbioza ne spremaju
 `composer.lock`; CI pri svakom pokretanju izvršava
 `composer update --with-all-dependencies`, dohvaća najnovije kompatibilne tagove
 i zatim pokreće puni `composer on-commit`.
@@ -27,7 +29,7 @@ grane pripadaju samo izričito izoliranim lokalnim integracijskim instalacijama.
 Opcionalne integracije moraju ostati opcionalne.
 
 Tag ne birati samo prema najvećem broju: nekoliko repozitorija ima povijesne
-tagove `1.x`, starije od aktualne linije `0.1.x`. Provjeriti kompatibilnu liniju,
+tagove `1.x`, starije od aktualne linije `0.3.x`. Provjeriti kompatibilnu liniju,
 referencu koda i povijest izdanja. Repozitorij Frameworka ne uređuje se niti se
 ručno krpa njegova instalirana kopija; koristi se tag koji objavi održavatelj.
 
@@ -49,13 +51,13 @@ provjeriti prije svakog izdanja.
 | `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu i Theme samo za GUI |
 | `module-menu` | Framework, ORM | Auth |
 | `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth (0.1.13+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
-| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.1.4+ ako je instaliran), Menu, Theme, Calendar, Workspace, Task, Comment |
+| `module-calendar` | Framework, Auth (0.3.0+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
+| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.3.0+ ako je instaliran), Menu, Theme, Calendar, Workspace, Task, Comment |
 | `module-email` | Framework, Auth, ORM | — |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
-| `module-workspace` | Framework, Auth, ORM | Backup (0.1.4+ ako je instaliran), HTML Editor, Menu, Notification; Email samo posredno kroz Notification |
-| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.1.5+ ako je instaliran) |
-| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.1.5+ ako je instaliran) |
+| `module-workspace` | Framework, Auth, ORM | Backup (0.3.0+ ako je instaliran), HTML Editor, Menu, Notification; Email samo posredno kroz Notification |
+| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.3.0+ ako je instaliran) |
+| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.3.0+ ako je instaliran) |
 | `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
 | `module-audit` | Framework, Auth, ORM | Menu za Postavke, Backup za prenosivi dnevnik aktivnosti, API za `audit:read` te svi instalirani proizvođači poslovnih događaja |
 | `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |

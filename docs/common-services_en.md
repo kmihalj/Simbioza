@@ -23,18 +23,20 @@ namespace App\Controllers;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use HeartPhrame\Http\ResponseFactory;
 
 class HomeController
 {
     public function __construct(
         protected readonly LoggerInterface $logger,
+        protected readonly ResponseFactory $responses,
     ) {
     }
-    
+
     public function index(ServerRequestInterface $request): ResponseInterface
     {
-        $this->logger->debug('Request data: ', $request->getParsedBody() ?? []);
-        // ... return a response
+        $this->logger->debug('Home response.', ['module' => 'application', 'method' => $request->getMethod()]);
+        return $this->responses->text('Hello.');
     }
 }
 ```
@@ -95,7 +97,10 @@ your application.
 
 ```php
 // An event is a simple object that holds data
-class UserRegisteredEvent { ... }
+final class UserRegisteredEvent
+{
+    public function __construct(public readonly int $userId) {}
+}
 $event = new UserRegisteredEvent($userId);
 
 /** @var Psr\EventDispatcher\EventDispatcherInterface $eventDispatcher */

@@ -1,5 +1,7 @@
 # Simbioza 0.1.98
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo korektivno izdanje prilagođava sinkronizaciju aplikacijskih datoteka i
 povratak nadogradnje direktorijima u vlasništvu namjenskoga PHP-FPM korisnika.
 Nadograđivač više ne pokušava kao zaseban deploy korisnik mijenjati vrijeme

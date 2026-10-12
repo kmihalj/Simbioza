@@ -264,12 +264,13 @@ test.describe.serial('Workspace API and ACL lifecycle', () => {
     expect((await expectData(visible)).permissions.can_view).toBe(true);
 
     /*
-     * HR: I GET pristupi kroz stateless API moraju nositi stvarnog izvršitelja,
-     *     ne oznaku gosta. Provjeravamo administratorsko i obično korisničko
-     *     čitanje istoga područja.
      * EN: Stateless API GET access must also carry the real actor rather than
      *     a guest label. Verify both administrator and regular-user reads of
      *     the same workspace.
+     *
+     * HR: I GET pristupi kroz stateless API moraju nositi stvarnog izvršitelja,
+     *     ne oznaku gosta. Provjeravamo administratorsko i obično korisničko
+     *     čitanje istoga područja.
      */
     const readAudit = await expectData(await request.get(
       `/api/v1/audit?page[limit]=100&event_key=workspace.view&channel=api&target=${encodeURIComponent(workspaceSlug)}`,

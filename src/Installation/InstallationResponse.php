@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Installation;
 
 /**
- * HR: Neovisan HTTP odgovor instalera koji se može provjeriti bez web-poslužitelja.
  * EN: Framework-independent installer HTTP response that can be tested without a web server.
+ *
+ * HR: Neovisan HTTP odgovor instalera koji se može provjeriti bez web-poslužitelja.
  */
 final readonly class InstallationResponse
 {
     /**
-     * HR: Sprema status, zaglavlja i tijelo odgovora.
      * EN: Stores response status, headers, and body.
+     *
+     * HR: Sprema status, zaglavlja i tijelo odgovora.
      *
      * @param array<string, string> $headers
      */

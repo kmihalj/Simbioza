@@ -19,8 +19,9 @@ final class RequestMetricsMiddlewareTest extends TestCase
     private string $logPath;
 
     /**
-     * HR: Priprema praznu ciljnu datoteku za jedan izolirani request.
      * EN: Prepares an empty target file for one isolated request.
+     *
+     * HR: Priprema praznu ciljnu datoteku za jedan izolirani request.
      */
     protected function setUp(): void
     {
@@ -31,8 +32,9 @@ final class RequestMetricsMiddlewareTest extends TestCase
     }
 
     /**
-     * HR: Uklanja samo testnu datoteku i performance varijablu.
      * EN: Removes only the test file and the performance environment variable.
+     *
+     * HR: Uklanja samo testnu datoteku i performance varijablu.
      */
     protected function tearDown(): void
     {
@@ -43,8 +45,9 @@ final class RequestMetricsMiddlewareTest extends TestCase
     }
 
     /**
-     * HR: Zapis sadrži mjerljive metapodatke bez query stringa i tijela.
      * EN: The record contains measurable metadata without query string or body.
+     *
+     * HR: Zapis sadrži mjerljive metapodatke bez query stringa i tijela.
      */
     public function testWritesSafeRequestMetrics(): void
     {

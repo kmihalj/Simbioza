@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Module;
 
-/** HR: Izvršava već sastavljen argumentni niz bez ljuske. EN: Executes a pre-built argument vector without a shell. */
+/**
+ * EN: Executes a pre-built argument vector without a shell.
+ *
+ * HR: Izvršava već sastavljen argumentni niz bez ljuske.
+ */
 interface ProcessRunnerInterface
 {
     /**
-     * HR: Pokreće samo predane argumente u zadanom direktoriju.
      * EN: Runs only the supplied arguments in the requested working directory.
+     *
+     * HR: Pokreće samo predane argumente u zadanom direktoriju.
      *
      * @param list<string> $command
      */

@@ -1,0 +1,53 @@
+# EN: Build only the sanitized context produced by scripts/build_container_context.php.
+# Never send HFC private configuration, data, credentials or live vendor links to Docker.
+#
+# HR: Graditi samo očišćeni kontekst iz scripts/build_container_context.php.
+# Privatni HFC config, podatke, tajne i žive vendor linkove nikada ne slati Dockeru.
+ARG PHP_IMAGE=php:8.4-apache-bookworm@sha256:9e811795a606ca7f8586dee48d32acf444985c19ac252d70d181cd71a4603898
+FROM ${PHP_IMAGE} AS php-runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libicu-dev libzip-dev libpq-dev libonig-dev libsqlite3-dev \
+    libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j2 intl mbstring zip pdo_pgsql pdo_mysql pdo_sqlite gd opcache pcntl \
+    && a2enmod rewrite headers \
+    && rm -r /var/lib/apt/lists/*
+
+FROM php-runtime AS builder
+COPY --from=composer:2@sha256:af98f42dfff7c68ba8d53c2164fd9fde1087b7d449514baa38c418b1f6bc4bac /usr/bin/composer /usr/local/bin/composer
+WORKDIR /opt/simbioza
+COPY app/ ./
+COPY packages/ /opt/simbioza-build/packages/
+RUN composer update --no-dev --no-interaction --no-progress --no-scripts --prefer-dist \
+    --optimize-autoloader && composer check-platform-reqs --no-dev \
+    && test ! -L vendor/aaieduhr/heartphrame-framework
+
+FROM php-runtime AS application
+ARG VERSION=0.3.0
+ARG REVISION=unknown
+LABEL org.opencontainers.image.title="Simbioza" \
+    org.opencontainers.image.source="https://github.com/kmihalj/Simbioza" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.revision="${REVISION}" \
+    org.opencontainers.image.licenses="EUPL-1.2"
+WORKDIR /opt/simbioza
+COPY --from=builder /opt/simbioza /opt/simbioza
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/php.ini /usr/local/etc/php/conf.d/simbioza.ini
+RUN mkdir -p /opt/simbioza/data /runtime /opt/simplesamlphp \
+    && find /opt/simbioza -type d -exec chmod 0755 {} + \
+    && find /opt/simbioza -type f -exec chmod 0644 {} + \
+    && chmod -R a-w /opt/simbioza \
+    && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
+ENV HPH_APP_PATH=/opt/simbioza \
+    HPH_CONFIG_PATH=/opt/simbioza/config \
+    HPH_CONFIG_OVERRIDE_PATHS=/runtime/config \
+    HPH_DEPLOYMENT_MODE=immutable \
+    APACHE_RUN_DIR=/tmp/apache2 \
+    APACHE_LOCK_DIR=/tmp/apache2 \
+    APACHE_PID_FILE=/tmp/apache2/apache2.pid \
+    SIMPLESAMLPHP_CONFIG_DIR=/runtime/saml/config
+USER 33:33
+EXPOSE 8080
+ENTRYPOINT ["php", "/opt/simbioza/docker/entrypoint.php"]
+CMD ["serve"]

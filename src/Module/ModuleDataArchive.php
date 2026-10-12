@@ -37,14 +37,19 @@ use const LOCK_EX;
 use const SORT_STRING;
 
 /**
- * HR: Izvozi podatke opcionalnog modula u čitljiv NDJSON prije uklanjanja
- *     njegove sheme te ih može vratiti nakon ponovne instalacije modula.
  * EN: Exports optional-module data to readable NDJSON before dropping its
  *     schema and can restore it after the module is installed again.
+ *
+ * HR: Izvozi podatke opcionalnog modula u čitljiv NDJSON prije uklanjanja
+ *     njegove sheme te ih može vratiti nakon ponovne instalacije modula.
  */
 final readonly class ModuleDataArchive
 {
-    /** HR: Prima bazu i korijen aplikacije. EN: Receives the database and application root. */
+    /**
+     * EN: Receives the database and application root.
+     *
+     * HR: Prima bazu i korijen aplikacije.
+     */
     public function __construct(
         private Database $database,
         private string $appRoot,
@@ -52,8 +57,9 @@ final readonly class ModuleDataArchive
     }
 
     /**
-     * HR: Stvara novu nepromjenjivu sigurnosnu kopiju svih postojećih tablica modula.
      * EN: Creates a new immutable backup of every existing module table.
+     *
+     * HR: Stvara novu nepromjenjivu sigurnosnu kopiju svih postojećih tablica modula.
      *
      * @param list<string> $tables
      */
@@ -129,7 +135,11 @@ final readonly class ModuleDataArchive
         return $directory;
     }
 
-    /** HR: Vraća najnoviju valjanu kopiju modula. EN: Returns the newest valid module backup. */
+    /**
+     * EN: Returns the newest valid module backup.
+     *
+     * HR: Vraća najnoviju valjanu kopiju modula.
+     */
     public function latest(string $slug): ?string
     {
         $paths = glob($this->root($slug) . '/*/manifest.json');
@@ -140,8 +150,9 @@ final readonly class ModuleDataArchive
     }
 
     /**
-     * HR: Vraća dostupne kopije od najnovije prema starijima.
      * EN: Returns available backups from newest to oldest.
+     *
+     * HR: Vraća dostupne kopije od najnovije prema starijima.
      *
      * @return list<string>
      */
@@ -158,8 +169,9 @@ final readonly class ModuleDataArchive
     }
 
     /**
-     * HR: Vraća retke iz kopije u upravo kreirane prazne tablice modula.
      * EN: Restores backup rows into the module's newly created empty tables.
+     *
+     * HR: Vraća retke iz kopije u upravo kreirane prazne tablice modula.
      *
      * @param list<string> $allowedTables
      * @return array<string,int>
@@ -254,17 +266,22 @@ final readonly class ModuleDataArchive
         return $restored;
     }
 
-    /** HR: Vraća privatni korijen kopija jednog modula. EN: Returns the private backup root for one module. */
+    /**
+     * EN: Returns the private backup root for one module.
+     *
+     * HR: Vraća privatni korijen kopija jednog modula.
+     */
     private function root(string $slug): string
     {
         return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/module-backups/' . $slug;
     }
 
     /**
-     * HR: Priprema privatni backup korijen zapisiv FPM-u i CLI održavateljima
-     *     iz iste runtime grupe. Eksplicitni chmod poništava stroži process umask.
      * EN: Prepares a private backup root writable by FPM and CLI maintainers in
      *     the same runtime group. Explicit chmod overrides a stricter process umask.
+     *
+     * HR: Priprema privatni backup korijen zapisiv FPM-u i CLI održavateljima
+     *     iz iste runtime grupe. Eksplicitni chmod poništava stroži process umask.
      */
     private function prepareSharedRoot(string $slug): string
     {

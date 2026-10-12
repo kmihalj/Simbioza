@@ -1,5 +1,7 @@
 # Simbioza 0.1.93
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This maintenance release fixes the permissions of optional Composer packages installed or removed through the Setup GUI and CLI. The restricted FPM helper runs with a private umask; previously, a newly installed package could be marked enabled while its code was unreadable to the web process. After each successful package operation, Simbioza now makes vendor code readable and directories traversable without widening write permissions or exposing Git metadata. A regression test reproduces the restrictive permissions and verifies the result.
 
 The Setup module table also wraps long status labels inside their own column, so the “removed, data backup available” label is no longer obscured by action buttons.

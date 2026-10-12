@@ -21,8 +21,9 @@ final class QueryLogWriterTest extends TestCase
     private array $serverBackup;
 
     /**
-     * HR: Priprema praznu privremenu datoteku i čuva globalne server vrijednosti.
      * EN: Prepares an empty temporary file and preserves global server values.
+     *
+     * HR: Priprema praznu privremenu datoteku i čuva globalne server vrijednosti.
      */
     protected function setUp(): void
     {
@@ -33,8 +34,9 @@ final class QueryLogWriterTest extends TestCase
     }
 
     /**
-     * HR: Uklanja samo testnu datoteku i vraća prethodno server stanje.
      * EN: Removes only the test file and restores the previous server state.
+     *
+     * HR: Uklanja samo testnu datoteku i vraća prethodno server stanje.
      */
     protected function tearDown(): void
     {
@@ -45,8 +47,9 @@ final class QueryLogWriterTest extends TestCase
     }
 
     /**
-     * HR: Query zapis čuva mjerni kontekst i SQL predložak bez URL query stringa.
      * EN: A query record keeps measurement context and SQL without the URL query string.
+     *
+     * HR: Query zapis čuva mjerni kontekst i SQL predložak bez URL query stringa.
      */
     public function testWritesOneSafeJsonLineForMeasuredRequest(): void
     {
@@ -73,8 +76,9 @@ final class QueryLogWriterTest extends TestCase
     }
 
     /**
-     * HR: Writer odbija cilj čiji direktorij ne postoji.
      * EN: The writer rejects a target whose directory does not exist.
+     *
+     * HR: Writer odbija cilj čiji direktorij ne postoji.
      */
     public function testRejectsMissingTargetDirectory(): void
     {

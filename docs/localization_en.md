@@ -9,7 +9,14 @@ codes because they are not interface sentences.
 
 ## Configuration
 
-The localization system is configured in your `config/app.php` file:
+The localization defaults are defined by the application `config/app.php`.
+Installation choices are stored in `installation.php` and the complete language
+registry in `languages.php`, using `HPH_CONFIG_PATH` and its ordered override
+layers. GUI and CLI read the same effective settings and save in the last
+declared layer; `.languages.lock` serializes changes. The highest existing
+`languages.php` is a complete registry, not a partial key merge. See the
+[configuration guide](configuration_en.md#installation-module-selection-and-languages)
+for permissions, manual edits, and resource paths.
 
 Croatian is the default in a standard new installation, but the installer can
 select another primary language and even omit Croatian. The selected primary
@@ -38,11 +45,14 @@ change one another's language. Clearing site cookies restores browser-language
 detection. An installation may explicitly set `detect_browser_locale` to
 `false` to always start from its primary language until the user chooses one.
 
-## Language Files
+## Packaged language files
 
-Language files are simple PHP files that return an array of translations.
-They should be located in the directory specified by `translations_dir`,
-named after the locale (e.g., `en.php`, `de.php`).
+Application/module source catalogues are PHP files returning translation arrays.
+They are code resources in the `translations_dir`/module `lang` directories,
+named after the locale (e.g. `en.php`, `hr.php`). Developers edit these as part
+of code changes. Administrators install additional or replacement packs as JSON
+under `data/languages/catalogs/`, never as PHP in application `lang/`.
+See [runtime storage and backup](#runtime-storage-precedence-and-backup) below.
 
 ### Example `lang/en.php`
 
@@ -160,12 +170,13 @@ keys and placeholders with the source locale. An incomplete pack is rejected
 unless `--allow-missing` is deliberately supplied, and an existing locale is
 not overwritten without `--replace`.
 
-`add` installs one consolidated `lang/<locale>.php` file and enables the locale
-in the private installation configuration. The application-level file takes
-precedence over module translations. Every pack must include a safe SVG flag.
+`add` installs one consolidated JSON catalogue at
+`data/languages/catalogs/<locale>.json` and enables the locale in the private
+installation configuration. Installed values take precedence over packaged
+application and module translations. Every pack must include a safe SVG flag.
 The installed pack also supplies its native display name and flag to the
 application localization registry. The language selector therefore remains
-complete when an installation preserves an older private `config/menu.php`;
+complete with private `HPH_CONFIG_PATH/menu/menu.php`;
 explicit labels and paths in that file still take precedence as overrides.
 The last enabled language cannot be disabled or removed. In GUI Setup,
 installed languages remain in the table and published languages not yet
@@ -191,3 +202,98 @@ language. Stored timestamps, API fields, HTML machine-readable dates, and logs
 keep their stable formats. The installation time zone determines the displayed
 local time; switching language does not alter the underlying instant. A
 Cyrillic locale such as `sr-cyrl` can be packaged in UTF-8 in the same way.
+
+## Checking translation-only updates
+
+In Setup → Languages, **Check language updates** refreshes the public catalogue
+without installing code or language files. The table shows installed and
+available revisions and marks a known digest change as an update. A missing
+repository revision is shown as unknown, not as up-to-date. If the network
+check fails, the GUI does not report the stale cached catalogue as a successful
+check.
+
+Language installation, replacement, activation and removal do not change code
+and do not require the privileged package helper. GUI actions work on mod_php,
+FPM and secure FPM when the data directory and final configuration layer are
+writable. Existing administrator and CSRF guards still apply. If permissions
+prevent GUI changes, it displays these commands; run them from the Simbioza root
+as an authorized runtime/deploy user, with the site's same `HPH_CONFIG_PATH`:
+
+```bash
+vendor/bin/hph languages available --refresh
+vendor/bin/hph languages update
+```
+
+For a bundled/manually added locale with no revision record, explicitly install
+the published compatible pack once, for example:
+
+```bash
+vendor/bin/hph languages install hr --replace
+```
+
+Changing only translation values requires no application/module tag or Composer
+release. Publish the language JSON and its updated SHA-256 in the language
+repository's manifest; a new language revision is recommended. Detection uses
+the digest even when the revision string is unchanged. Pack checksum,
+placeholder/completeness validation and preservation of the prior enabled state
+still apply. A manually installed JSON pack clears its previous repository
+revision: a custom translation is not reported as an unchanged published pack.
+
+## Runtime storage, precedence and backup
+
+| Location | Purpose |
+| --- | --- |
+| Application/module `lang/<locale>.php` | Read-only packaged translations, replaced with code updates |
+| `data/languages/catalogs/<locale>.json` | Installed, consolidated translations; never PHP source |
+| `data/languages/flags/<locale>.svg` | Validated installed SVG flag |
+| `data/languages/repository-versions.json` | Published revision and source-pack digest, not configuration |
+| `HPH_CONFIG_PATH/languages.php` | Locale names and registry in the final declared layer |
+| `HPH_CONFIG_PATH/installation.php` | Enabled locales and primary locale in the final declared layer |
+
+`App\Localization\RuntimeTranslator` extends the existing Framework translator
+in the host application. The Framework is not modified. Its package directory
+remains named `lang`, so module lookup is unchanged. Exact installed keys win;
+missing keys still use the current application/module catalogue and the existing
+fallback locale. New requests read replaced JSON immediately, without PHP
+OPcache invalidation. A malformed installed catalogue raises an error rather
+than silently falling back to a stale translation.
+
+Install through JSON packs and the GUI/CLI, not by copying PHP to the data
+directory. The generated runtime document has this small, data-only shape:
+
+```json
+{
+  "format": "simbioza-runtime-translations",
+  "version": 1,
+  "locale": "de",
+  "translations": {"Jezici": "Sprachen"}
+}
+```
+
+This is an internal catalogue example, not a complete distributable language
+pack. Editing an already installed catalogue changes its values on the next
+request; adding a new locale also requires the registry and activation policy.
+Prefer `languages template`, `validate`, and `add` so names, placeholders and
+flags are checked together. Runtime files are limited to 2 MiB each. Subordinate
+symlink targets and invalid locale/path identifiers are rejected.
+
+GUI and CLI use the final configuration `.languages.lock`, followed by
+`data/languages/.packs.lock`. Installation/removal roll back all changed language
+resources and private language configuration if publication fails. Removal
+never deletes packaged application/module PHP files. Updates keep the prior
+enabled state; the last enabled language remains protected.
+
+Application-settings backup schema 3 includes locale registry, installed JSON,
+validated flags and revision records. Active/primary locales remain in the
+application settings. Site/component restore uses destination-local paths, not
+source paths, and never imports executable PHP catalogues. Explicit replace
+removes absent runtime packs; merge retains local-only locales. For an incoming
+locale, a bundled-only catalogue or flag replaces any destination runtime override,
+including during merge. If a later
+provider or database commit fails, configuration, JSON, flags and revisions are
+rolled back. Cache, downloads, templates and lock files are not backed up.
+Page/workspace-only backups do not carry installation languages.
+
+Keep the data and configuration mounts across image/code replacement; do not
+make application `lang/` writable for language administration. Simbioza 0.3.0
+uses fresh installation: no old PHP-pack migration is part of runtime startup.

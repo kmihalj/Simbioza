@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Localization;
 
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
 use App\Module\ModuleCatalog;
 use Composer\InstalledVersions;
 use DOMDocument;
@@ -12,26 +14,38 @@ use JsonException;
 use RuntimeException;
 
 /**
- * HR: Skuplja prijevode aplikacije i svih ugrađenih modula u jedan
- *     prenosivi paket te sigurno instalira provjereni prijevod.
  * EN: Collects application and bundled-module translations into one portable
  *     pack and safely installs a validated translation.
+ *
+ * HR: Skuplja prijevode aplikacije i svih ugrađenih modula u jedan
+ *     prenosivi paket te sigurno instalira provjereni prijevod.
  */
 final readonly class LanguagePackManager
 {
+    private ConfigurationPaths $configuration;
+
+    private PhpConfigurationReader $reader;
+
+    private RuntimeLanguageStorage $storage;
+
     /**
-     * HR: Prima korijen aplikacije i katalog ugrađenih modula.
      * EN: Receives the application root and bundled-module catalog.
+     *
+     * HR: Prima korijen aplikacije i katalog ugrađenih modula.
      */
     public function __construct(
         private string $appRoot,
         private ModuleCatalog $modules,
     ) {
+        $this->configuration = ConfigurationPaths::fromEnvironment($appRoot);
+        $this->reader = new PhpConfigurationReader($this->configuration);
+        $this->storage = new RuntimeLanguageStorage($appRoot);
     }
 
     /**
-     * HR: Navodi instalirane jezične datoteke i pokrivenost u odnosu na izvorni jezik.
      * EN: Lists installed language files and their coverage against the source locale.
+     *
+     * HR: Navodi instalirane jezične datoteke i pokrivenost u odnosu na izvorni jezik.
      *
      * @return list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float,active:bool}>
      */
@@ -42,7 +56,7 @@ final readonly class LanguagePackManager
         $active = $this->activeLocales();
         $result = [];
         foreach ($registry as $locale => $definition) {
-            if (!is_file($this->languageDirectory() . '/' . $locale . '.php')) {
+            if (!$this->installed($locale)) {
                 continue;
             }
 
@@ -61,10 +75,11 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Izrađuje urediv JSON predložak sa svim jedinstvenim ključevima
-     *     aplikacije i modula, uz očuvane zamjenske oznake.
      * EN: Creates an editable JSON template containing every unique application
      *     and module key while preserving placeholder tokens.
+     *
+     * HR: Izrađuje urediv JSON predložak sa svim jedinstvenim ključevima
+     *     aplikacije i modula, uz očuvane zamjenske oznake.
      */
     public function createTemplate(string $locale, string $sourceLocale, ?string $output = null): string
     {
@@ -107,8 +122,9 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Provjerava format, potpunost i zamjenske oznake bez zapisivanja.
      * EN: Validates pack format, completeness, and placeholders without writing.
+     *
+     * HR: Provjerava format, potpunost i zamjenske oznake bez zapisivanja.
      *
      * @return array{
      *     locale:string,
@@ -147,10 +163,11 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Instalira objedinjeni prijevod kao jednu aplikacijsku jezičnu
-     *     datoteku i dodaje jezik na popis dostupnih jezika sitea.
-     * EN: Installs the consolidated translation as one application language
-     *     file and adds the locale to the site's available locales.
+     * EN: Installs consolidated translations as runtime JSON data and adds
+     *     the locale to the site's available locales without modifying code.
+     *
+     * HR: Instalira objedinjene prijevode kao runtime JSON podatke i dodaje
+     *     jezik na popis dostupnih jezika sitea, bez mijenjanja koda.
      *
      * @return array{
      *     locale:string,
@@ -160,13 +177,46 @@ final readonly class LanguagePackManager
      *     missing:list<string>,
      *     placeholder_errors:list<string>
      * }
+     * @param array{version:string,sha256:string}|null $repositoryRevision
      */
     public function install(
         string $path,
         bool $replace = false,
         bool $allowMissing = false,
         bool $activate = true,
+        ?array $repositoryRevision = null,
     ): array {
+        // EN: One lock covers resources, registry, and activation for GUI and CLI.
+        //
+        // HR: Jedan lock pokriva resurse, registar i aktivaciju za GUI i CLI.
+        return $this->withConfigurationLock(fn(): array => $this->withLocaleRollback(
+            $this->readPack($path)['locale'],
+            $activate,
+            fn(): array => $this->installInternal($path, $replace, $allowMissing, $activate, $repositoryRevision),
+        ));
+    }
+
+    /**
+     * EN: Installs only after checking every configuration destination.
+     *
+     * HR: Provodi instalaciju tek nakon provjere svih konfiguracijskih ciljeva.
+     *
+     * @return array{locale:string,native_name:string,translated:int,reference:int,missing:list<string>,placeholder_errors:list<string>}
+     * @param array{version:string,sha256:string}|null $repositoryRevision
+     */
+    private function installInternal(
+        string $path,
+        bool $replace,
+        bool $allowMissing,
+        bool $activate,
+        ?array $repositoryRevision,
+    ): array {
+        $this->configuration->writableFile('languages.php');
+        if ($activate) {
+            $this->configuration->writableFile('installation.php');
+            $this->reader->read('installation.php');
+        }
+
         $validation = $this->validate($path);
         if ($validation['placeholder_errors'] !== []) {
             throw new RuntimeException(
@@ -183,52 +233,64 @@ final readonly class LanguagePackManager
         }
 
         $pack = $this->readPack($path);
-        $target = $this->languageDirectory() . '/' . $pack['locale'] . '.php';
-        if (is_file($target) && !$replace) {
+        $versions = $this->storage->versions();
+        unset($versions[$pack['locale']]);
+        if ($repositoryRevision !== null) {
+            $versions += RuntimeLanguageStorage::validateVersions([$pack['locale'] => $repositoryRevision]);
+        }
+        $this->storage->assertWritable('repository-versions.json');
+        if ($this->installed($pack['locale']) && !$replace) {
             throw new RuntimeException('Language already exists; pass --replace to overwrite it.');
         }
 
-        $translations = $pack['translations'];
-        ksort($translations, SORT_STRING);
-        $contents = "<?php\n\ndeclare(strict_types=1);\n\n"
-        . "// HR: Objedinjeni jezični paket generiran alatom Simbioze.\n"
-        . "// EN: Consolidated language pack generated by the Simbioza tool.\n"
-        . 'return ' . var_export($translations, true) . ";\n";
-        $this->atomicWrite($target, $contents, 0644);
-        $flagTarget = $this->flagDirectory() . '/' . $pack['locale'] . '.svg';
-        $this->atomicWrite($flagTarget, $pack['flag_svg'] . "\n", 0644);
+        $this->storage->assertWritable('catalogs/' . $pack['locale'] . '.json');
+        $this->storage->assertWritable('flags/' . $pack['locale'] . '.svg');
+        $this->storage->install($pack['locale'], $pack['translations']);
+        $this->storage->write('flags/' . $pack['locale'] . '.svg', $pack['flag_svg'] . "\n");
         $this->registerLanguage(
             $pack['locale'],
             $pack['names'],
             $pack['native_name'],
-            basename($flagTarget),
+            $pack['locale'] . '.svg',
         );
         if ($activate) {
-            $this->setActive($pack['locale'], true);
+            $this->setActiveInternal($pack['locale'], true);
         }
+
+        $this->storage->writeVersions($versions);
 
         return $validation;
     }
 
     /**
-     * HR: Uključuje ili isključuje već instalirani jezik uz barem jedan aktivni jezik.
      * EN: Enables or disables an installed locale while keeping at least one active locale.
+     *
+     * HR: Uključuje ili isključuje već instalirani jezik uz barem jedan aktivni jezik.
      */
     public function setActive(string $locale, bool $enabled): void
+    {
+        $this->withConfigurationLock(function () use ($locale, $enabled): void {
+            $this->setActiveInternal($locale, $enabled);
+        });
+    }
+
+    /**
+     * EN: Changes selection while holding the shared lock.
+     *
+     * HR: Mijenja odabir pod zajedničkim lockom.
+     */
+    private function setActiveInternal(string $locale, bool $enabled): void
     {
         $locale = $this->assertLocale($locale);
         if (
             !isset($this->languageRegistry()[$locale])
-            || !is_file($this->languageDirectory() . '/' . $locale . '.php')
+            || !$this->installed($locale)
         ) {
             throw new RuntimeException('The language is not installed.');
         }
 
-        $path = $this->appRoot . '/config/installation.php';
-        $configuration = is_file($path) ? require $path : [];
-        if (!is_array($configuration)) {
-            $configuration = [];
-        }
+        $path = $this->configuration->writableFile('installation.php');
+        $configuration = $this->reader->read('installation.php');
 
         $locales = $this->activeLocales();
         if ($enabled && !in_array($locale, $locales, true)) {
@@ -254,10 +316,25 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Uklanja registraciju jezika; ugrađene izvorne datoteke ostaju u kodu.
      * EN: Removes a locale registration; bundled source files remain in the codebase.
+     *
+     * HR: Uklanja registraciju jezika; ugrađene izvorne datoteke ostaju u kodu.
      */
     public function uninstall(string $locale): void
+    {
+        $this->withConfigurationLock(function () use ($locale): void {
+            $this->withLocaleRollback($this->assertLocale($locale), true, function () use ($locale): void {
+                $this->uninstallInternal($locale);
+            });
+        });
+    }
+
+    /**
+     * EN: Removes registration and resources under the same lock.
+     *
+     * HR: Uklanja registraciju i resurse pod istim lockom.
+     */
+    private function uninstallInternal(string $locale): void
     {
         $locale = $this->assertLocale($locale);
         $registry = $this->languageRegistry();
@@ -265,37 +342,34 @@ final readonly class LanguagePackManager
             throw new RuntimeException('The language is not installed.');
         }
 
+        $this->configuration->writableFile('languages.php');
+
         if (in_array($locale, $this->activeLocales(), true)) {
-            $this->setActive($locale, false);
+            $this->setActiveInternal($locale, false);
         }
 
         unset($registry[$locale]);
         $this->writeRegistry($registry);
-        if (!in_array($locale, ['en', 'hr'], true)) {
-            $languageFile = $this->languageDirectory() . '/' . $locale . '.php';
-            if (is_file($languageFile) && !unlink($languageFile)) {
-                throw new RuntimeException('Unable to remove the language file.');
-            }
-        }
-
-        $flag = $this->flagDirectory() . '/' . $locale . '.svg';
-        if (is_file($flag) && !unlink($flag)) {
-            throw new RuntimeException('Unable to remove the language flag.');
-        }
+        $this->storage->remove('catalogs/' . $locale . '.json');
+        $this->storage->remove('flags/' . $locale . '.svg');
+        $versions = $this->storage->versions();
+        unset($versions[$locale]);
+        $this->storage->writeVersions($versions);
     }
 
     /**
-     * HR: Skuplja katalog jednoga jezika uz isti prioritet kojim runtime
-     *     daje prednost aplikaciji ispred modula.
      * EN: Collects one locale using the same precedence that gives application
      *     translations priority over module translations at runtime.
+     *
+     * HR: Skuplja katalog jednoga jezika uz isti prioritet kojim runtime
+     *     daje prednost aplikaciji ispred modula.
      *
      * @return array<string,string>
      */
     public function catalog(string $locale): array
     {
         $locale = $this->assertLocale($locale);
-        $result = [];
+        $result = $this->storage->catalog($locale);
         foreach ($this->translationFiles($locale) as $file) {
             $values = require $file;
             if (!is_array($values)) {
@@ -313,8 +387,9 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Vraća datoteke aplikacije i instaliranih modula po prioritetu.
      * EN: Returns application and installed-module files in precedence order.
+     *
+     * HR: Vraća datoteke aplikacije i instaliranih modula po prioritetu.
      *
      * @return list<string>
      */
@@ -342,8 +417,9 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Pretvara ugniježdene prijevode u stabilne ključeve s točkama.
      * EN: Flattens nested translations into stable dot-separated keys.
+     *
+     * HR: Pretvara ugniježdene prijevode u stabilne ključeve s točkama.
      *
      * @param array<array-key,mixed> $values
      * @return array<string,string>
@@ -364,8 +440,9 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Učitava i strogo provjerava strukturu JSON paketa.
      * EN: Reads and strictly validates the JSON pack structure.
+     *
+     * HR: Učitava i strogo provjerava strukturu JSON paketa.
      *
      * @return array{
      *     locale:string,
@@ -429,7 +506,7 @@ final readonly class LanguagePackManager
         }
 
         $flagSvg = is_string($payload['flag_svg'] ?? null) ? $payload['flag_svg'] : '';
-        $flagSvg = $this->validatedFlagSvg($flagSvg);
+        $flagSvg = self::validatedFlagSvg($flagSvg);
 
         $translations = [];
         foreach (is_array($payload['translations'] ?? null) ? $payload['translations'] : [] as $key => $value) {
@@ -449,8 +526,9 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Vraća sortirani multiskup zamjenskih oznaka.
      * EN: Returns a sorted placeholder multiset.
+     *
+     * HR: Vraća sortirani multiskup zamjenskih oznaka.
      *
      * @return list<string>
      */
@@ -464,10 +542,11 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Strogo provjerava mali, statični podskup SVG-a dopušten za zastavice.
      * EN: Strictly validates the small static SVG subset allowed for flags.
+     *
+     * HR: Strogo provjerava mali, statični podskup SVG-a dopušten za zastavice.
      */
-    private function validatedFlagSvg(string $svg): string
+    public static function validatedFlagSvg(string $svg): string
     {
         $svg = trim($svg);
         if ($svg === '' || strlen($svg) > 65536 || str_contains($svg, '<!')) {
@@ -537,17 +616,17 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Vraća provjereni registar jezika instalacije.
      * EN: Returns the validated installation language registry.
+     *
+     * HR: Vraća provjereni registar jezika instalacije.
      *
      * @return array<string,array{names:array<string,string>,native_name:string,flag:string}>
      */
-    private function languageRegistry(): array
+    public function languageRegistry(): array
     {
-        $path = $this->languageRegistryPath();
-        $source = is_file($path) ? require $path : [];
+        $source = $this->reader->readDocument('languages.php');
         $result = [];
-        foreach (is_array($source) ? $source : [] as $locale => $definition) {
+        foreach ($source as $locale => $definition) {
             if (!is_string($locale) || !$this->validLocale($locale) || !is_array($definition)) {
                 continue;
             }
@@ -580,8 +659,10 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Atomski dodaje metapodatke jezika.
      * EN: Atomically appends language metadata.
+     *
+     * HR: Atomski dodaje metapodatke jezika.
+     *
      * @param array<string,string> $names
      */
     private function registerLanguage(string $locale, array $names, string $nativeName, string $flag): void
@@ -596,23 +677,26 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Atomski zapisuje normalizirani registar jezika.
      * EN: Atomically writes the normalized language registry.
+     *
+     * HR: Atomski zapisuje normalizirani registar jezika.
+     *
      * @param array<string,array{names:array<string,string>,native_name:string,flag:string}> $registry
      */
-    private function writeRegistry(array $registry): void
+    public function writeRegistry(array $registry): void
     {
         ksort($registry, SORT_STRING);
         $contents = "<?php\n\ndeclare(strict_types=1);\n\n"
+        . "// EN: Language registry maintained by the Simbioza tool.\n//\n"
         . "// HR: Registar jezika održava alat Simbioze.\n"
-        . "// EN: Language registry maintained by the Simbioza tool.\n"
         . 'return ' . $this->exportArray($registry) . ";\n";
-        $this->atomicWrite($this->languageRegistryPath(), $contents, 0640);
+        $this->atomicWrite($this->configuration->writableFile('languages.php'), $contents, 0660);
     }
 
     /**
-     * HR: Izvozi privatnu konfiguraciju u stabilnu PHP sintaksu kratkih polja.
      * EN: Exports private configuration using stable PHP short-array syntax.
+     *
+     * HR: Izvozi privatnu konfiguraciju u stabilnu PHP sintaksu kratkih polja.
      *
      * @param array<array-key,mixed> $values
      */
@@ -639,17 +723,15 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Vraća uključene jezike iz privatne instalacijske konfiguracije.
      * EN: Returns enabled locales from private installation configuration.
+     *
+     * HR: Vraća uključene jezike iz privatne instalacijske konfiguracije.
+     *
      * @return list<string>
      */
     private function activeLocales(): array
     {
-        $path = $this->appRoot . '/config/installation.php';
-        $configuration = is_file($path) ? require $path : [];
-        if (!is_array($configuration)) {
-            $configuration = [];
-        }
+        $configuration = $this->reader->read('installation.php');
 
         $configured = is_array($configuration['supported_locales'] ?? null)
         ? array_values(array_filter($configuration['supported_locales'], is_string(...)))
@@ -658,15 +740,16 @@ final readonly class LanguagePackManager
             return $configured;
         }
 
-        // HR: Instalacija bez privatne konfiguracije već učinkovito koristi
-        //     ugrađene HR i EN jezike. Prvo uključivanje dodatnog jezika mora
-        //     zadržati te zadane jezike umjesto da ih nehotice zamijeni.
         // EN: An installation without private configuration already effectively
         //     uses the bundled HR and EN locales. Enabling the first additional
         //     locale must preserve those defaults instead of replacing them.
+        //
+        // HR: Instalacija bez privatne konfiguracije već učinkovito koristi
+        //     ugrađene HR i EN jezike. Prvo uključivanje dodatnog jezika mora
+        //     zadržati te zadane jezike umjesto da ih nehotice zamijeni.
         $registry = $this->languageRegistry();
         $installed = fn(string $locale): bool => isset($registry[$locale])
-            && is_file($this->languageDirectory() . '/' . $locale . '.php');
+            && $this->installed($locale);
         $defaults = array_values(array_filter(['hr', 'en'], $installed));
         if ($defaults !== []) {
             return $defaults;
@@ -682,8 +765,9 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * HR: Atomski zapisuje datoteku sa zadanim pravima.
      * EN: Atomically writes a file with the requested permissions.
+     *
+     * HR: Atomski zapisuje datoteku sa zadanim pravima.
      */
     private function atomicWrite(string $path, string $contents, int $mode): void
     {
@@ -701,6 +785,10 @@ final readonly class LanguagePackManager
             if (!rename($temporary, $path)) {
                 throw new RuntimeException('Unable to activate the language file.');
             }
+
+            if (str_ends_with($path, '.php') && function_exists('opcache_invalidate')) {
+                opcache_invalidate($path, true);
+            }
         } finally {
             if (is_file($temporary)) {
                 unlink($temporary);
@@ -708,7 +796,11 @@ final readonly class LanguagePackManager
         }
     }
 
-    /** HR: Izrađuje roditeljski direktorij kada nedostaje. EN: Creates the parent directory when missing. */
+    /**
+     * EN: Creates the parent directory when missing.
+     *
+     * HR: Izrađuje roditeljski direktorij kada nedostaje.
+     */
     private function ensureParentDirectory(string $path): void
     {
         $directory = dirname($path);
@@ -717,7 +809,11 @@ final readonly class LanguagePackManager
         }
     }
 
-    /** HR: Provjerava sigurnu BCP-47 sličnu oznaku jezika. EN: Validates a safe BCP-47-like locale identifier. */
+    /**
+     * EN: Validates a safe BCP-47-like locale identifier.
+     *
+     * HR: Provjerava sigurnu BCP-47 sličnu oznaku jezika.
+     */
     private function assertLocale(string $locale): string
     {
         $locale = strtolower(trim($locale));
@@ -728,27 +824,117 @@ final readonly class LanguagePackManager
         return $locale;
     }
 
-    /** HR: Provjerava oblik jezične oznake. EN: Checks the locale identifier shape. */
+    /**
+     * EN: Checks the locale identifier shape.
+     *
+     * HR: Provjerava oblik jezične oznake.
+     */
     private function validLocale(string $locale): bool
     {
         return preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) === 1 && strlen($locale) <= 32;
     }
 
-    /** HR: Vraća aplikacijski direktorij prijevoda. EN: Returns the application translation directory. */
+    /**
+     * EN: Returns the application translation directory.
+     *
+     * HR: Vraća aplikacijski direktorij prijevoda.
+     */
     private function languageDirectory(): string
     {
         return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/lang';
     }
 
-    /** HR: Vraća privatni registar jezika. EN: Returns the private language registry path. */
-    private function languageRegistryPath(): string
+    /**
+     * EN: Serializes every language change without ever writing to a lower layer.
+     *
+     * HR: Serijalizira sve promjene jezika; nikada ne zapisuje u niži sloj.
+     *
+     * @template T
+     * @param callable():T $operation
+     * @return T
+     */
+    private function withConfigurationLock(callable $operation): mixed
     {
-        return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/config/languages.php';
+        $path = $this->configuration->writableFile('.languages.lock');
+        $handle = fopen($path, 'c+b');
+        if ($handle === false) {
+            throw new RuntimeException('Unable to open the language configuration lock.');
+        }
+
+        try {
+            if (((fileperms($path) & 0777) !== 0660 && !chmod($path, 0660)) || !flock($handle, LOCK_EX)) {
+                throw new RuntimeException('Unable to secure or acquire the language configuration lock.');
+            }
+
+            $runtimeLock = $this->storage->lock();
+            try {
+                return $operation();
+            } finally {
+                flock($runtimeLock, LOCK_UN);
+                fclose($runtimeLock);
+            }
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
     }
 
-    /** HR: Vraća direktorij instaliranih zastavica. EN: Returns the installed-flags directory. */
-    private function flagDirectory(): string
+    /**
+     * EN: An installed runtime catalogue or packaged application catalogue supplies the locale.
+     *
+     * HR: Jezik pruža instalirani runtime katalog ili paketni aplikacijski katalog.
+     */
+    private function installed(string $locale): bool
     {
-        return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/languages/flags';
+        return $this->storage->installed($locale)
+        || is_file($this->languageDirectory() . '/' . $locale . '.php');
+    }
+
+    /**
+     * EN: Validates every destination and restores all changed bytes after an incomplete install/remove.
+     * The caller holds both locks; package files and unrelated configuration are never targets.
+     *
+     * HR: Provjerava svaki cilj i vraća sve izmijenjene bajtove nakon nepotpune instalacije/uklanjanja.
+     * Pozivatelj drži oba locka; paketne datoteke i nepovezane postavke nikada nisu ciljevi.
+     *
+     * @template T
+     * @param callable():T $operation
+     * @return T
+     */
+    private function withLocaleRollback(string $locale, bool $installation, callable $operation): mixed
+    {
+        $resources = ['catalogs/' . $locale . '.json', 'flags/' . $locale . '.svg', 'repository-versions.json'];
+        $original = [];
+        foreach ($resources as $relative) {
+            $this->storage->assertWritable($relative);
+            $path = $this->storage->path($relative);
+            $original[$relative] = ['bytes' => $this->storage->bytes($relative),
+                'mode' => is_file($path) ? fileperms($path) & 0777 : 0660];
+        }
+        $config = [];
+        foreach ($installation ? ['languages.php', 'installation.php'] : ['languages.php'] as $file) {
+            $path = $this->configuration->writableFile($file);
+            $config[$path] = ['bytes' => is_file($path) ? (string)file_get_contents($path) : null,
+                'mode' => is_file($path) ? fileperms($path) & 0777 : 0660];
+        }
+
+        try {
+            return $operation();
+        } catch (\Throwable $error) {
+            foreach ($original as $relative => $entry) {
+                if ($this->storage->bytes($relative) !== $entry['bytes']) {
+                    $entry['bytes'] === null ? $this->storage->remove($relative)
+                    : $this->storage->write($relative, $entry['bytes'], $entry['mode']);
+                }
+            }
+            foreach ($config as $path => $entry) {
+                $current = is_file($path) ? file_get_contents($path) : null;
+                if ($current !== $entry['bytes']) {
+                    $entry['bytes'] === null ? unlink($path)
+                    : $this->atomicWrite($path, $entry['bytes'], $entry['mode']);
+                }
+            }
+            throw $error;
+        }
     }
 }

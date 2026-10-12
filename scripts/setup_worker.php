@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
+use App\Deployment\DeploymentPolicy;
 use App\Localization\LanguagePackManager;
 use App\Localization\LanguageRepository;
 use App\Localization\RepositoryLanguageManager;
@@ -10,34 +13,43 @@ use App\Module\ModuleCatalog;
 use App\Module\NativeProcessRunner;
 use App\Setup\SetupRequestStore;
 
-// HR: Worker se smije pokrenuti samo kroz CLI/helper, nikada kao web skripta.
 // EN: The worker may run only through CLI/helper, never as a web script.
+//
+// HR: Worker se smije pokrenuti samo kroz CLI/helper, nikada kao web skripta.
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit(1);
 }
 
 $root = dirname(__DIR__);
+// EN: Private parameters must also be loaded when the helper clears the environment.
+//
+// HR: Privatni parametri moraju biti učitani i kad helper očisti okruženje.
+if (is_file($root . '/bootstrap.php')) {
+    require_once $root . '/bootstrap.php';
+}
+
 require $root . '/vendor/autoload.php';
-$setup = require $root . '/config/setup.php';
-$requestDirectory = is_array($setup) && is_string($setup['request_dir'] ?? null)
-    ? $setup['request_dir']
-    : $root . '/data/setup-requests';
+$setup = (new PhpConfigurationReader(ConfigurationPaths::fromEnvironment($root)))->read('setup.php');
+$requestDirectory = is_string($setup['request_dir'] ?? null)
+? $setup['request_dir']
+: $root . '/data/setup-requests';
 $requests = new SetupRequestStore($requestDirectory);
-$id = trim((string)($argv[1] ?? ''));
+$id = trim($argv[1] ?? '');
 $resultPath = '';
 
 try {
     $requestPath = $requests->requestPath($id);
     $resultPath = $requests->resultPath($id);
     $request = is_file($requestPath)
-        ? json_decode((string)file_get_contents($requestPath), true, 512, JSON_THROW_ON_ERROR)
-        : null;
+    ? json_decode((string)file_get_contents($requestPath), true, 512, JSON_THROW_ON_ERROR)
+    : null;
     if (!is_array($request) || ($request['id'] ?? null) !== $id) {
         throw new RuntimeException('Setup request is missing or invalid.');
     }
 
     $action = is_string($request['action'] ?? null) ? $request['action'] : '';
+    (new DeploymentPolicy($root))->assertWorkerActionAllowed($action);
     $parameters = is_array($request['parameters'] ?? null) ? $request['parameters'] : [];
     $catalog = new ModuleCatalog();
     $runner = new NativeProcessRunner();
@@ -73,8 +85,9 @@ try {
 }
 
 /**
- * HR: Instalira ili uklanja samo katalogizirane opcionalne pakete.
  * EN: Installs or removes only catalogued optional packages.
+ *
+ * HR: Instalira ili uklanja samo katalogizirane opcionalne pakete.
  *
  * @param array<string,mixed> $parameters
  */
@@ -96,18 +109,20 @@ function packageOperation(
         } else {
             $packages->uninstall($slug);
         }
+
         $handled[] = $slug;
     }
 
     return ($install ? 'Prepared packages: ' : 'Removed packages: ')
-        . ($handled === [] ? 'none' : implode(', ', $handled));
+    . ($handled === [] ? 'none' : implode(', ', $handled));
 }
 
 /**
- * HR: Mijenja jedan katalogizirani paket bez pokretanja aplikacijskog
- *     bootstrapa pod ovlastima deploy korisnika.
  * EN: Changes one catalogued package without running the application
  *     bootstrap with deploy-user privileges.
+ *
+ * HR: Mijenja jedan katalogizirani paket bez pokretanja aplikacijskog
+ *     bootstrapa pod ovlastima deploy korisnika.
  *
  * @param array<string,mixed> $parameters
  */
@@ -132,8 +147,9 @@ function singlePackageOperation(
 }
 
 /**
- * HR: Instalira samo prethodno spremljeni JSON paket iz privatnog request direktorija.
  * EN: Installs only a previously stored JSON pack from the private request directory.
+ *
+ * HR: Instalira samo prethodno spremljeni JSON paket iz privatnog request direktorija.
  *
  * @param array<string,mixed> $parameters
  */
@@ -157,26 +173,29 @@ function languageOperation(
         $languages = new LanguagePackManager($root, $catalog);
         $languages->install($path, !empty($parameters['replace']));
     } finally {
-        if (is_file($path)) {
-            unlink($path);
-        }
+        unlink($path);
     }
 
     return 'Language installed.';
 }
 
 /**
- * HR: Izvršava samo dopuštenu radnju nad jednim provjerenim jezikom.
  * EN: Performs only an allowlisted operation on one validated locale.
+ *
+ * HR: Izvršava samo dopuštenu radnju nad jednim provjerenim jezikom.
+ *
  * @param array<string,mixed> $parameters
  */
 function repositoryLanguageOperation(ModuleCatalog $catalog, string $root, string $action, array $parameters): string
 {
     $locale = $parameters['locale'] ?? null;
-    if (!is_string($locale) || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
-        || strlen($locale) > 32) {
+    if (
+        !is_string($locale) || preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) !== 1
+        || strlen($locale) > 32
+    ) {
         throw new RuntimeException('Setup request contains an invalid locale.');
     }
+
     $languages = new LanguagePackManager($root, $catalog);
     $manager = new RepositoryLanguageManager(new LanguageRepository($root), $languages, $root);
     return match ($action) {
@@ -197,8 +216,9 @@ function repositoryLanguageOperation(ModuleCatalog $catalog, string $root, strin
 }
 
 /**
- * HR: Instalira ograničen skup jedinstvenih jezika iz objavljenog kataloga.
  * EN: Installs a bounded set of unique languages from the published catalogue.
+ *
+ * HR: Instalira ograničen skup jedinstvenih jezika iz objavljenog kataloga.
  *
  * @param array<string,mixed> $parameters
  */
@@ -230,8 +250,9 @@ function repositoryLanguageBatchInstall(ModuleCatalog $catalog, string $root, ar
 }
 
 /**
- * HR: Izvršava samo read-only provjeru postojećeg samostalnog updatera.
  * EN: Runs only the existing standalone updater's read-only check.
+ *
+ * HR: Izvršava samo read-only provjeru postojećeg samostalnog updatera.
  *
  * @param array<string,mixed> $parameters
  */
@@ -246,7 +267,11 @@ function applicationUpdateCheck(NativeProcessRunner $runner, string $root, array
     return trim($result->stdout) !== '' ? trim($result->stdout) : 'Provjera ažuriranja je dovršena.';
 }
 
-/** HR: Provjerava CLI mogućnosti potrebne sigurnom pozadinskom updateru. EN: Checks CLI capabilities required by the safe background updater. */
+/**
+ * EN: Checks CLI capabilities required by the safe background updater.
+ *
+ * HR: Provjerava CLI mogućnosti potrebne sigurnom pozadinskom updateru.
+ */
 function applicationUpdateRuntimeCheck(): string
 {
     foreach (['pcntl_fork', 'pcntl_exec', 'posix_setsid', 'posix_kill'] as $function) {
@@ -259,12 +284,13 @@ function applicationUpdateRuntimeCheck(): string
 }
 
 /**
- * HR: Pokreće updater u odvojenoj pozadinskoj sesiji i odmah vraća kontrolu
- *     FPM zahtjevu. Argumenti su strogo validirani, a ljuska dobiva samo
- *     programski sastavljene i escapeane vrijednosti.
  * EN: Starts the updater in a detached background session and immediately
  *     returns control to the FPM request. Arguments are strictly validated,
  *     and the shell receives only programmatically built escaped values.
+ *
+ * HR: Pokreće updater u odvojenoj pozadinskoj sesiji i odmah vraća kontrolu
+ *     FPM zahtjevu. Argumenti su strogo validirani, a ljuska dobiva samo
+ *     programski sastavljene i escapeane vrijednosti.
  *
  * @param array<string,mixed> $parameters
  */
@@ -273,6 +299,7 @@ function applicationUpdateStart(string $root, array $parameters): string
     if (!function_exists('pcntl_fork') || !function_exists('posix_setsid') || !function_exists('pcntl_exec')) {
         throw new RuntimeException('The CLI pcntl and posix extensions are required for background updates.');
     }
+
     $locale = updateLocale($parameters);
     $tag = is_string($parameters['tag'] ?? null) ? trim($parameters['tag']) : '';
     if ($tag !== '' && preg_match('/\A(?:v)?\d+\.\d+\.\d+\z/D', $tag) !== 1) {
@@ -295,6 +322,7 @@ function applicationUpdateStart(string $root, array $parameters): string
     if (!is_dir($logDirectory) && !mkdir($logDirectory, 0770, true) && !is_dir($logDirectory)) {
         throw new RuntimeException('Application log directory could not be created.');
     }
+
     $logPath = $logDirectory . '/application-update.log';
     $arguments = ['--lang=' . $locale];
     if ($tag !== '') {
@@ -305,12 +333,14 @@ function applicationUpdateStart(string $root, array $parameters): string
     if (!is_array($sockets) || count($sockets) !== 2) {
         throw new RuntimeException('Application update synchronization channel could not be created.');
     }
+
     $pid = pcntl_fork();
     if ($pid < 0) {
         fclose($sockets[0]);
         fclose($sockets[1]);
         throw new RuntimeException('Application update process could not be created.');
     }
+
     if ($pid === 0) {
         fclose($sockets[0]);
         fread($sockets[1], 1);
@@ -318,9 +348,10 @@ function applicationUpdateStart(string $root, array $parameters): string
         if (posix_setsid() < 0) {
             exit(127);
         }
+
         $parts = [PHP_BINARY, $root . '/scripts/application_update_job.php', ...$arguments];
         $command = 'exec ' . implode(' ', array_map(escapeshellarg(...), $parts))
-            . ' >> ' . escapeshellarg($logPath) . ' 2>&1 < /dev/null';
+        . ' >> ' . escapeshellarg($logPath) . ' 2>&1 < /dev/null';
         pcntl_exec('/bin/sh', ['-c', $command]);
         exit(127);
     }
@@ -333,25 +364,38 @@ function applicationUpdateStart(string $root, array $parameters): string
         fclose($sockets[0]);
         throw $throwable;
     }
+
     fwrite($sockets[0], '1');
     fclose($sockets[0]);
 
     return 'Application update started in the background.';
 }
 
-/** HR: Ograničava jezik updatera. EN: Restricts the updater locale. */
+/**
+ * EN: Restricts the updater locale.
+ *
+ * HR: Ograničava jezik updatera.
+ */
 function updateLocale(array $parameters): string
 {
     return ($parameters['locale'] ?? null) === 'en' ? 'en' : 'hr';
 }
 
-/** HR: Provjerava postoji li još odvojeni proces. EN: Checks whether a detached process still exists. */
+/**
+ * EN: Checks whether a detached process still exists.
+ *
+ * HR: Provjerava postoji li još odvojeni proces.
+ */
 function processExists(int $pid): bool
 {
     return function_exists('posix_kill') && $pid > 0 && @posix_kill($pid, 0);
 }
 
-/** HR: Atomski bilježi da je pozadinski updater predan. EN: Atomically records that the background updater was submitted. */
+/**
+ * EN: Atomically records that the background updater was submitted.
+ *
+ * HR: Atomski bilježi da je pozadinski updater predan.
+ */
 function writeUpdateLaunchStatus(string $path, int $pid): void
 {
     $current = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;
@@ -362,10 +406,12 @@ function writeUpdateLaunchStatus(string $path, int $pid): void
     ) {
         return;
     }
+
     $temporary = tempnam(dirname($path), '.application-update-launch-');
     if (!is_string($temporary)) {
         throw new RuntimeException('Application update launch status could not be prepared.');
     }
+
     try {
         $json = json_encode([
             'state' => 'queued',
@@ -379,6 +425,7 @@ function writeUpdateLaunchStatus(string $path, int $pid): void
         if (file_put_contents($temporary, $json . "\n", LOCK_EX) === false || !chmod($temporary, 0640)) {
             throw new RuntimeException('Application update launch status could not be written.');
         }
+
         if (!rename($temporary, $path)) {
             throw new RuntimeException('Application update launch status could not be activated.');
         }
@@ -389,7 +436,11 @@ function writeUpdateLaunchStatus(string $path, int $pid): void
     }
 }
 
-/** HR: Atomski zapisuje mali rezultat bez tehničkog tracea. EN: Atomically writes a small result without a technical trace. */
+/**
+ * EN: Atomically writes a small result without a technical trace.
+ *
+ * HR: Atomski zapisuje mali rezultat bez tehničkog tracea.
+ */
 function writeResult(string $path, bool $ok, string $message): void
 {
     $temporary = $path . '.tmp-' . bin2hex(random_bytes(6));
@@ -400,6 +451,7 @@ function writeResult(string $path, bool $ok, string $message): void
     if (file_put_contents($temporary, $json . "\n", LOCK_EX) === false || !chmod($temporary, 0640)) {
         throw new RuntimeException('Setup result could not be written.');
     }
+
     if (!rename($temporary, $path)) {
         @unlink($temporary);
         throw new RuntimeException('Setup result could not be activated.');

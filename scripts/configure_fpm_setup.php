@@ -2,14 +2,22 @@
 
 declare(strict_types=1);
 
-// HR: Ovaj alat mijenja sistemske račune i FPM samo uz izričiti --install ili
-//     --finalize. Zadani --check je potpuno read-only.
 // EN: This tool changes system accounts and FPM only with explicit --install
 //     or --finalize. The default --check mode is entirely read-only.
+//
+// HR: Ovaj alat mijenja sistemske račune i FPM samo uz izričiti --install ili
+//     --finalize. Zadani --check je potpuno read-only.
 
 if (PHP_SAPI !== 'cli') {
     fwrite(STDERR, "This tool is CLI-only.\n");
     exit(2);
+}
+
+// EN: Isolated tests load functions only, without system mutations.
+//
+// HR: Izolirani testovi učitavaju samo funkcije, bez sistemskih promjena.
+if (defined('SIMBIOZA_FPM_SETUP_LIBRARY') && SIMBIOZA_FPM_SETUP_LIBRARY === true) {
+    return;
 }
 
 $options = getopt('', [
@@ -40,10 +48,11 @@ HELP . PHP_EOL);
     exit(0);
 }
 
-// HR: Prazna oznaka zadržava sva dosadašnja sistemska imena; posebna oznaka
-//     izolira više instalacija na istom računalu bez prepisivanja prve.
 // EN: An empty instance keeps all legacy system names; a named instance
 //     isolates multiple installations on one host without overwriting the first.
+//
+// HR: Prazna oznaka zadržava sva dosadašnja sistemska imena; posebna oznaka
+//     izolira više instalacija na istom računalu bez prepisivanja prve.
 $instance = trim((string)($options['instance'] ?? ''));
 $instanceWasRequested = in_array('--instance', $argv, true);
 foreach ($argv as $argument) {
@@ -52,10 +61,14 @@ foreach ($argv as $argument) {
         break;
     }
 }
-if (($instanceWasRequested && $instance === '')
-    || ($instance !== '' && preg_match('/\A[a-z][a-z0-9-]{0,11}\z/D', $instance) !== 1)) {
+
+if (
+    ($instanceWasRequested && $instance === '')
+    || ($instance !== '' && preg_match('/\A[a-z][a-z0-9-]{0,11}\z/D', $instance) !== 1)
+) {
     fail('Use --instance with 1-12 lowercase letters, digits, or hyphens, starting with a letter.');
 }
+
 $suffix = $instance === '' ? '' : '-' . $instance;
 define('FPM_INSTANCE_SUFFIX', $suffix);
 define('FPM_APP_GROUP', 'app-simbioza' . $suffix);
@@ -75,20 +88,25 @@ $root = realpath((string)($options['app-root'] ?? dirname(__DIR__)));
 if (!is_string($root) || $root === '/' || !is_file($root . '/composer.json')) {
     fail('Use --app-root with a valid Simbioza installation directory.');
 }
+
 if (is_dir($root . '/.git') && $mode !== 'check') {
     fail('Refusing to change ownership of a Git working copy. Use a separate release installation.');
 }
+
 $maintainer = trim((string)($options['maintainer'] ?? getenv('SUDO_USER') ?: getenv('USER')));
 assertIdentity($maintainer, 'maintainer');
 $listen = trim((string)($options['listen'] ?? '127.0.0.1:9075'));
 if (preg_match('/\A127\.0\.0\.1:[1-9][0-9]{2,4}\z/D', $listen) !== 1) {
     fail('The FPM listener must be a non-privileged 127.0.0.1 TCP endpoint.');
 }
+
 $phpFpm = trim((string)($options['php-fpm'] ?? defaultPhpFpm()));
 if ($phpFpm === '' || !is_file($phpFpm) || !is_executable($phpFpm)) {
     fail('PHP-FPM executable was not found; pass --php-fpm=/absolute/path.');
 }
+
 $simpleSamlConfig = simpleSamlConfigDirectory($options['simplesaml-config-dir'] ?? null, $root);
+configurationEnvironment($root);
 
 $platform = PHP_OS_FAMILY === 'Darwin' ? 'darwin' : (PHP_OS_FAMILY === 'Linux' ? 'linux' : 'unsupported');
 if ($platform === 'unsupported') {
@@ -99,6 +117,7 @@ if ($mode === 'check') {
     printChecks($root, $maintainer, $phpFpm, $listen, $platform, $simpleSamlConfig);
     exit(0);
 }
+
 if (!function_exists('posix_geteuid') || posix_geteuid() !== 0) {
     fail('Run --' . $mode . ' once as root. Normal maintenance does not require root afterwards.');
 }
@@ -120,14 +139,22 @@ if ($mode === 'install') {
 
 printChecks($root, $maintainer, $phpFpm, $listen, $platform, $simpleSamlConfig);
 
-/** HR: Zaustavlja alat jasnom porukom. EN: Stops the tool with a clear message. */
+/**
+ * EN: Stops the tool with a clear message.
+ *
+ * HR: Zaustavlja alat jasnom porukom.
+ */
 function fail(string $message): never
 {
     fwrite(STDERR, $message . PHP_EOL);
     exit(2);
 }
 
-/** HR: Odbija identitete koji nisu sigurni argumenti sistemskih alata. EN: Rejects identities unsafe for system-tool arguments. */
+/**
+ * EN: Rejects identities unsafe for system-tool arguments.
+ *
+ * HR: Odbija identitete koji nisu sigurni argumenti sistemskih alata.
+ */
 function assertIdentity(string $value, string $label): void
 {
     if (preg_match('/\A[a-z_][a-z0-9_-]{0,30}\z/D', $value) !== 1) {
@@ -135,7 +162,11 @@ function assertIdentity(string $value, string $label): void
     }
 }
 
-/** HR: Pronalazi Homebrew ili sistemski php-fpm. EN: Finds Homebrew or system PHP-FPM. */
+/**
+ * EN: Finds Homebrew or system PHP-FPM.
+ *
+ * HR: Pronalazi Homebrew ili sistemski php-fpm.
+ */
 function defaultPhpFpm(): string
 {
     $candidates = [
@@ -154,10 +185,11 @@ function defaultPhpFpm(): string
 }
 
 /**
- * HR: Prihvaća samo već pripremljenu privatnu SimpleSAMLphp konfiguraciju
- *     unutar trajnog data direktorija. Alat nikada ne kopira zajedničke tajne.
  * EN: Accepts only a pre-created private SimpleSAMLphp configuration inside
  *     the persistent data directory. The tool never copies shared secrets.
+ *
+ * HR: Prihvaća samo već pripremljenu privatnu SimpleSAMLphp konfiguraciju
+ *     unutar trajnog data direktorija. Alat nikada ne kopira zajedničke tajne.
  */
 function simpleSamlConfigDirectory(mixed $value, string $root): ?string
 {
@@ -181,7 +213,11 @@ function simpleSamlConfigDirectory(mixed $value, string $root): ?string
     return $directory;
 }
 
-/** HR: Vraća Homebrew-specifičan ili Linux deploy home. EN: Returns the Homebrew-specific or Linux deploy home. */
+/**
+ * EN: Returns the Homebrew-specific or Linux deploy home.
+ *
+ * HR: Vraća Homebrew-specifičan ili Linux deploy home.
+ */
 function deployHome(string $platform, string $phpFpm): string
 {
     if ($platform !== 'darwin') {
@@ -192,8 +228,9 @@ function deployHome(string $platform, string $phpFpm): string
 }
 
 /**
- * HR: Razlikuje Apple Silicon i Intel Homebrew prefiks prema stvarnom FPM-u.
  * EN: Distinguishes Apple Silicon and Intel Homebrew prefixes from the actual FPM binary.
+ *
+ * HR: Razlikuje Apple Silicon i Intel Homebrew prefiks prema stvarnom FPM-u.
  */
 function darwinPrefix(string $phpFpm): string
 {
@@ -201,10 +238,11 @@ function darwinPrefix(string $phpFpm): string
 }
 
 /**
- * HR: Prije promjene sistemskih računa odbija oznaku instance koja već pripada
- *     drugoj instalaciji; ponavljanje na istoj putanji ostaje dopušteno.
  * EN: Before touching system accounts, rejects an instance label already
  *     assigned to another installation; rerunning for the same path remains safe.
+ *
+ * HR: Prije promjene sistemskih računa odbija oznaku instance koja već pripada
+ *     drugoj instalaciji; ponavljanje na istoj putanji ostaje dopušteno.
  */
 function assertInstanceNotReused(string $platform, string $root, string $phpFpm): void
 {
@@ -217,8 +255,8 @@ function assertInstanceNotReused(string $platform, string $root, string $phpFpm)
     }
 
     $config = $platform === 'darwin'
-        ? darwinPrefix($phpFpm) . '/etc/' . FPM_CONFIG_NAME . '/pool.conf'
-        : '/etc/php/' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '/' . FPM_SYSTEMD_RUN . '/php-fpm.conf';
+    ? darwinPrefix($phpFpm) . '/etc/' . FPM_CONFIG_NAME . '/pool.conf'
+    : '/etc/php/' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '/' . FPM_SYSTEMD_RUN . '/php-fpm.conf';
     if (is_file($config)) {
         $contents = file_get_contents($config);
         if (!is_string($contents) || !str_contains($contents, 'env[HPH_APP_PATH] = ' . $root)) {
@@ -228,8 +266,9 @@ function assertInstanceNotReused(string $platform, string $root, string $phpFpm)
 }
 
 /**
- * HR: Pokreće naredbu bez ljuske i po želji dopušta neuspjeh provjere.
  * EN: Runs a command without a shell and optionally tolerates probe failure.
+ *
+ * HR: Pokreće naredbu bez ljuske i po želji dopušta neuspjeh provjere.
  *
  * @param list<string> $command
  * @return array{code:int,stdout:string,stderr:string}
@@ -245,6 +284,7 @@ function runCommand(array $command, bool $allowFailure = false): array
     if (!is_resource($process)) {
         throw new RuntimeException('Unable to start: ' . implode(' ', $command));
     }
+
     fclose($pipes[0]);
     $stdout = stream_get_contents($pipes[1]);
     $stderr = stream_get_contents($pipes[2]);
@@ -263,12 +303,17 @@ function runCommand(array $command, bool $allowFailure = false): array
     return $result;
 }
 
-/** HR: Stvara potrebne korisnike, odvojene grupe i članstva. EN: Creates required users, separated groups, and memberships. */
+/**
+ * EN: Creates required users, separated groups, and memberships.
+ *
+ * HR: Stvara potrebne korisnike, odvojene grupe i članstva.
+ */
 function installIdentities(string $platform, string $maintainer, string $deployHome): void
 {
     foreach ([FPM_APP_GROUP, FPM_DEPLOY_GROUP, FPM_RUNTIME_GROUP] as $group) {
         ensureGroup($platform, $group);
     }
+
     ensureUser($platform, FPM_USER, FPM_APP_GROUP, '/var/empty');
     ensureUser(
         $platform,
@@ -279,11 +324,16 @@ function installIdentities(string $platform, string $maintainer, string $deployH
     foreach ([FPM_USER, FPM_DEPLOY_USER, $maintainer] as $user) {
         ensureMembership($platform, $user, FPM_RUNTIME_GROUP);
     }
+
     ensureMembership($platform, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP);
     ensureMembership($platform, $maintainer, FPM_DEPLOY_GROUP);
 }
 
-/** HR: Idempotentno stvara sistemsku grupu. EN: Idempotently creates a system group. */
+/**
+ * EN: Idempotently creates a system group.
+ *
+ * HR: Idempotentno stvara sistemsku grupu.
+ */
 function ensureGroup(string $platform, string $group): void
 {
     assertIdentity($group, 'group');
@@ -291,18 +341,25 @@ function ensureGroup(string $platform, string $group): void
         if (runCommand(['getent', 'group', $group], true)['code'] !== 0) {
             runCommand(['groupadd', '--system', $group]);
         }
+
         return;
     }
+
     if (runCommand(['dscl', '.', '-read', '/Groups/' . $group], true)['code'] === 0) {
         return;
     }
+
     $gid = nextDarwinId('/Groups', 'PrimaryGroupID');
     runCommand(['dscl', '.', '-create', '/Groups/' . $group]);
     runCommand(['dscl', '.', '-create', '/Groups/' . $group, 'PrimaryGroupID', (string)$gid]);
     runCommand(['dscl', '.', '-create', '/Groups/' . $group, 'RealName', 'Simbioza ' . $group]);
 }
 
-/** HR: Idempotentno stvara zaključani sistemski račun. EN: Idempotently creates a locked system account. */
+/**
+ * EN: Idempotently creates a locked system account.
+ *
+ * HR: Idempotentno stvara zaključani sistemski račun.
+ */
 function ensureUser(string $platform, string $user, string $primaryGroup, string $home): void
 {
     assertIdentity($user, 'user');
@@ -313,10 +370,11 @@ function ensureUser(string $platform, string $user, string $primaryGroup, string
                 '--create-home', '--shell', '/usr/sbin/nologin', $user,
             ]);
         } else {
-            // HR: Ponovljeno pokretanje migrira raniji raspored grupa na
-            //     odvojene deploy/read uloge bez stvaranja novog računa.
             // EN: A repeated run migrates the earlier group layout to separate
             //     deploy/read roles without creating another account.
+            //
+            // HR: Ponovljeno pokretanje migrira raniji raspored grupa na
+            //     odvojene deploy/read uloge bez stvaranja novog računa.
             runCommand(['usermod', '--gid', $primaryGroup, $user]);
         }
     } else {
@@ -326,25 +384,33 @@ function ensureUser(string $platform, string $user, string $primaryGroup, string
         if (preg_match('/PrimaryGroupID:\s*(\d+)/', $group['stdout'], $matches) !== 1) {
             throw new RuntimeException('Unable to resolve primary group: ' . $primaryGroup);
         }
+
         if (!$exists) {
             runCommand(['dscl', '.', '-create', '/Users/' . $user]);
             runCommand(['dscl', '.', '-create', '/Users/' . $user, 'UniqueID', (string)$uid]);
         }
+
         runCommand(['dscl', '.', '-create', '/Users/' . $user, 'PrimaryGroupID', $matches[1]]);
         runCommand(['dscl', '.', '-create', '/Users/' . $user, 'UserShell', '/usr/bin/false']);
         runCommand(['dscl', '.', '-create', '/Users/' . $user, 'NFSHomeDirectory', $home]);
         runCommand(['dscl', '.', '-create', '/Users/' . $user, 'IsHidden', '1']);
         runCommand(['dscl', '.', '-create', '/Users/' . $user, 'Password', '*']);
     }
+
     if (!is_dir($home) && $home !== '/var/empty') {
         mkdir($home, 0750, true);
     }
+
     if ($home !== '/var/empty') {
         applyMetadata($home, $user, $primaryGroup, 0750);
     }
 }
 
-/** HR: Nalazi slobodan skriveni macOS ID. EN: Finds an unused hidden macOS ID. */
+/**
+ * EN: Finds an unused hidden macOS ID.
+ *
+ * HR: Nalazi slobodan skriveni macOS ID.
+ */
 function nextDarwinId(string $recordType, string $attribute): int
 {
     $result = runCommand(['dscl', '.', '-list', $recordType, $attribute]);
@@ -354,29 +420,37 @@ function nextDarwinId(string $recordType, string $attribute): int
             $used[(int)$matches[1]] = true;
         }
     }
+
     for ($id = 450; $id < 500; ++$id) {
         if (!isset($used[$id])) {
             return $id;
         }
     }
+
     throw new RuntimeException('No free macOS system identity ID is available in 450-499.');
 }
 
-/** HR: Dodaje račun u grupu bez uklanjanja postojećih članstava. EN: Adds an account to a group without removing existing memberships. */
+/**
+ * EN: Adds an account to a group without removing existing memberships.
+ *
+ * HR: Dodaje račun u grupu bez uklanjanja postojećih članstava.
+ */
 function ensureMembership(string $platform, string $user, string $group): void
 {
     if ($platform === 'linux') {
         runCommand(['usermod', '--append', '--groups', $group, $user]);
         return;
     }
+
     runCommand(['dseditgroup', '-o', 'edit', '-a', $user, '-t', 'user', $group]);
 }
 
 /**
- * HR: Postavlja vlasništvo koda i odvojena runtime prava. Prije web-installera
- *     zapisivi su samo ciljani instalacijski direktoriji; finalize ih sužava.
  * EN: Applies code ownership and separated runtime permissions. Before the web
  *     installer only targeted install directories are writable; finalize narrows them.
+ *
+ * HR: Postavlja vlasništvo koda i odvojena runtime prava. Prije web-installera
+ *     zapisivi su samo ciljani instalacijski direktoriji; finalize ih sužava.
  */
 function installFilesystem(
     string $platform,
@@ -384,21 +458,32 @@ function installFilesystem(
     bool $finalize,
     ?string $simpleSamlConfig,
 ): void {
-    // HR: Samo deploy grupa piše kod. FPM ga čita kroz read-only systemd bind
-    //     i world-read bit, ali ga ne može mijenjati.
     // EN: Only the deploy group writes code. FPM reads it through the read-only
     //     systemd bind and world-read bit, but cannot modify it.
-    applyTree($root, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP, 02775, 0664, ['data']);
-    foreach (
-        ['data', 'data/cache', 'data/config', 'data/logs', 'data/tmp', 'data/sessions', 'data/setup-requests']
-        as $relative
-    ) {
+    //
+    // HR: Samo deploy grupa piše kod. FPM ga čita kroz read-only systemd bind
+    //     i world-read bit, ali ga ne može mijenjati.
+    $privateDirectories = externalConfigurationDirectories($root);
+    applyTree($root, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP, 02775, 0664, ['data'], $privateDirectories);
+    foreach (['data', 'data/cache', 'data/logs', 'data/tmp', 'data/sessions', 'data/setup-requests'] as $relative) {
         $path = $root . '/' . $relative;
         if (!is_dir($path) && !mkdir($path, 02770, true) && !is_dir($path)) {
             throw new RuntimeException('Unable to create runtime directory: ' . $path);
         }
     }
-    applyTree($root . '/data', FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660);
+
+    applyTree($root . '/data', FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660, [], $privateDirectories);
+    // EN: Private module configuration needs atomic writes without permission over code.
+    // Backup also publishes provider descriptors inside its own configuration directory.
+    //
+    // HR: Modulne privatne konfiguracije trebaju atomski zapis bez prava nad kodom.
+    // Backup također objavljuje zapise providera u vlastitom konfiguracijskom direktoriju.
+    foreach (['auth', 'email', 'editor-html', 'workspace', 'menu', 'theme', 'backup'] as $module) {
+        $directory = $root . '/config/' . $module;
+        if (is_dir($directory) && !is_link($root . '/config') && !is_link($directory)) {
+            applyTree($directory, FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660, [], $privateDirectories);
+        }
+    }
     if ($simpleSamlConfig !== null) {
         applyTree($simpleSamlConfig, FPM_DEPLOY_USER, FPM_DEPLOY_GROUP, 02750, 0640);
         grantReadOnlyGroupAccess($platform, $simpleSamlConfig, FPM_APP_GROUP);
@@ -406,32 +491,30 @@ function installFilesystem(
 
     $runtimeFiles = [
         'config/database.php', 'config/env.php', 'config/installation.php',
-        'config/editor-html.php', 'config/email.php', 'config/workspace.php',
+        'config/modules.php', 'config/.modules.lock',
+        'config/languages.php', 'config/.languages.lock',
     ];
     foreach ($runtimeFiles as $relative) {
         $path = $root . '/' . $relative;
-        if (is_file($path)) {
+        if (is_file($path) && !is_link($root . '/config')) {
             applyMetadata($path, FPM_USER, FPM_RUNTIME_GROUP, 0660);
         }
     }
 
-    $mutableDirectories = [
-        'resources/config/menu', 'resources/config/theme',
-    ];
-    foreach ($mutableDirectories as $relative) {
-        $path = $root . '/' . $relative;
-        if (is_dir($path)) {
-            applyTree($path, FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660);
-        }
-    }
-
-    // HR: Sticky direktorij dopušta FPM-u atomske zamjene samo vlastitih
-    //     runtime datoteka. Ne može zamijeniti release konfiguraciju čiji je
-    //     vlasnik deploy korisnik, iako obje vrste datoteka dijele direktorij.
     // EN: The sticky directory lets FPM atomically replace only its own
     //     runtime files. It cannot replace deploy-owned release configuration
     //     even though both kinds of files share the directory.
+    //
+    // HR: Sticky direktorij dopušta FPM-u atomske zamjene samo vlastitih
+    //     runtime datoteka. Ne može zamijeniti release konfiguraciju čiji je
+    //     vlasnik deploy korisnik, iako obje vrste datoteka dijele direktorij.
     $configDirectory = $root . '/config';
+    if (is_link($configDirectory)) {
+        // EN: The installation owner manages the private target.
+        //
+        // HR: Privatni cilj administrira vlasnik instalacije.
+        return;
+    }
     applyMetadata($configDirectory, FPM_DEPLOY_USER, FPM_RUNTIME_GROUP, 03770);
     foreach ($runtimeFiles as $relative) {
         $path = $root . '/' . $relative;
@@ -442,18 +525,20 @@ function installFilesystem(
 }
 
 /**
- * HR: Privatnom konfiguracijskom stablu daje samo čitanje za FPM grupu.
- *     Linux koristi imenovani POSIX ACL kako deploy grupa zadržava pisanje.
  * EN: Grants the FPM group read-only access to a private configuration tree.
  *     Linux uses a named POSIX ACL so the deploy group retains write access.
+ *
+ * HR: Privatnom konfiguracijskom stablu daje samo čitanje za FPM grupu.
+ *     Linux koristi imenovani POSIX ACL kako deploy grupa zadržava pisanje.
  */
 function grantReadOnlyGroupAccess(string $platform, string $root, string $group): void
 {
     if ($platform !== 'linux') {
-        // HR: Na razvojnom macOS-u deploy račun ostaje vlasnik, a FPM grupa
-        //     čita privatni config. Kod aplikacije i dalje nije zapisiv FPM-u.
         // EN: On development macOS the deploy account remains the owner and
         //     the FPM group reads private config. FPM still cannot write code.
+        //
+        // HR: Na razvojnom macOS-u deploy račun ostaje vlasnik, a FPM grupa
+        //     čita privatni config. Kod aplikacije i dalje nije zapisiv FPM-u.
         applyTree($root, FPM_DEPLOY_USER, $group, 02750, 0640);
         return;
     }
@@ -462,6 +547,7 @@ function grantReadOnlyGroupAccess(string $platform, string $root, string $group)
     if (!is_file($setfacl) || !is_executable($setfacl)) {
         throw new RuntimeException('Install the acl package before configuring private SimpleSAMLphp access.');
     }
+
     runCommand([$setfacl, '-R', '-P', '-m', 'g:' . $group . ':r-X', $root]);
     runCommand([$setfacl, '-m', 'd:g:' . $group . ':r-X', $root]);
     $iterator = new RecursiveIteratorIterator(
@@ -476,10 +562,12 @@ function grantReadOnlyGroupAccess(string $platform, string $root, string $group)
 }
 
 /**
- * HR: Rekurzivno primjenjuje vlasništvo i prava, bez praćenja poveznica.
  * EN: Recursively applies ownership and modes without following symlinks.
  *
+ * HR: Rekurzivno primjenjuje vlasništvo i prava, bez praćenja poveznica.
+ *
  * @param list<string> $skipTopLevel
+ * @param list<string> $protectedPaths
  */
 function applyTree(
     string $root,
@@ -488,13 +576,36 @@ function applyTree(
     int $directoryMode,
     int $fileMode,
     array $skipTopLevel = [],
+    array $protectedPaths = [],
 ): void {
     if (!is_dir($root)) {
         return;
     }
+
     applyMetadata($root, $owner, $group, $directoryMode);
-    $iterator = new RecursiveIteratorIterator(
+    $filtered = new RecursiveCallbackFilterIterator(
         new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
+        static function (SplFileInfo $entry) use ($root, $skipTopLevel, $protectedPaths): bool {
+            if ($entry->isLink()) {
+                return false;
+            }
+
+            $relative = substr($entry->getPathname(), strlen(rtrim($root, '/')) + 1);
+            if (in_array(explode(DIRECTORY_SEPARATOR, $relative)[0] ?? '', $skipTopLevel, true)) {
+                return false;
+            }
+
+            foreach ($protectedPaths as $path) {
+                if ($entry->getPathname() === $path || str_starts_with($entry->getPathname(), $path . DIRECTORY_SEPARATOR)) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
+    );
+    $iterator = new RecursiveIteratorIterator(
+        $filtered,
         RecursiveIteratorIterator::SELF_FIRST,
     );
     foreach ($iterator as $entry) {
@@ -503,6 +614,7 @@ function applyTree(
         if (in_array($top, $skipTopLevel, true) || $entry->isLink()) {
             continue;
         }
+
         if ($entry->isDir()) {
             applyMetadata($entry->getPathname(), $owner, $group, $directoryMode);
         } else {
@@ -513,16 +625,18 @@ function applyTree(
 }
 
 /**
- * HR: Primjenjuje i ponovno provjerava vlasnika, grupu i prava; datotečni
- *     sustav s isključenim vlasništvom zato ne može dati lažni uspjeh.
  * EN: Applies and rechecks owner, group, and mode so a filesystem with disabled
  *     ownership cannot report a false success.
+ *
+ * HR: Primjenjuje i ponovno provjerava vlasnika, grupu i prava; datotečni
+ *     sustav s isključenim vlasništvom zato ne može dati lažni uspjeh.
  */
 function applyMetadata(string $path, string $owner, string $group, int $mode): void
 {
     if (!chown($path, $owner) || !chgrp($path, $group) || !chmod($path, $mode)) {
         throw new RuntimeException('Unable to set ownership or permissions: ' . $path);
     }
+
     clearstatcache(true, $path);
     $ownerEntry = posix_getpwnam($owner);
     $groupEntry = posix_getgrnam($group);
@@ -543,18 +657,26 @@ function applyMetadata(string $path, string $owner, string $group, int $mode): v
     }
 }
 
-/** HR: Instalira fiksni helper i minimalno sudoers pravilo za FPM račun. EN: Installs a fixed helper and minimal sudoers rule for the FPM account. */
+/**
+ * EN: Installs a fixed helper and minimal sudoers rule for the FPM account.
+ *
+ * HR: Instalira fiksni helper i minimalno sudoers pravilo za FPM račun.
+ */
 function installHelper(string $root, string $phpFpm, string $home): void
 {
+    $environment = configurationEnvironment($root);
+    $policy = fpmFilesystemPolicy($root);
     $php = dirname($phpFpm) . '/php';
     if (!is_file($php)) {
         $php = PHP_BINARY;
     }
+
     $worker = $root . '/scripts/setup_worker.php';
     if (PHP_OS_FAMILY === 'Linux') {
         if (!is_file('/usr/bin/systemd-run') || !is_executable('/usr/bin/systemd-run')) {
             throw new RuntimeException('systemd-run is required for the isolated Setup worker.');
         }
+
         $helper = <<<'SH'
 #!/bin/sh
 set -eu
@@ -570,11 +692,15 @@ result=__REQUEST_DIRECTORY__/"$1.result.json"
   --property=ExitType=cgroup \
   --property=SupplementaryGroups=__RUNTIME_GROUP__ \
   --property=ProtectSystem=full --property=ProtectHome=true \
+  --property=BindReadOnlyPaths=__READ_ONLY_CONFIG__ \
+  --property=BindPaths=__WRITABLE_CONFIG__ \
   --property=PrivateTmp=true --property=PrivateDevices=true \
   --property=NoNewPrivileges=true --property=UMask=0007 \
   --working-directory=__ROOT__ \
   --setenv=HOME=__HOME__ --setenv=COMPOSER_HOME=__HOME__/.composer \
   --setenv=PATH=/usr/local/bin:/usr/bin:/bin \
+  --setenv=HPH_APP_PATH=__ROOT__ --setenv=HPH_CONFIG_PATH=__CONFIG_PATH__ \
+  --setenv=HPH_CONFIG_OVERRIDE_PATHS=__CONFIG_OVERRIDES__ \
   __PHP__ __WORKER__ "$1"
 
 # HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
@@ -606,17 +732,20 @@ esac
 export HOME=__HOME__
 export COMPOSER_HOME="$HOME/.composer"
 export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
-exec /usr/bin/sudo -n -u __DEPLOY_USER__ -- __PHP__ __WORKER__ "$1"
+exec /usr/bin/sudo -n -u __DEPLOY_USER__ -- /usr/bin/env HPH_APP_PATH=__ROOT__ HPH_CONFIG_PATH=__CONFIG_PATH__ HPH_CONFIG_OVERRIDE_PATHS=__CONFIG_OVERRIDES__ __PHP__ __WORKER__ "$1"
 SH;
     }
+
     $helper = str_replace(
         [
             '__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__',
             '__DEPLOY_USER__', '__DEPLOY_GROUP__', '__RUNTIME_GROUP__', '__SETUP_UNIT_PREFIX__',
+            '__CONFIG_PATH__', '__CONFIG_OVERRIDES__',
+            '__READ_ONLY_CONFIG__', '__WRITABLE_CONFIG__',
         ],
         [
             escapeshellarg($root),
-            escapeshellarg($root . '/data/setup-requests'),
+            escapeshellarg(setupRequestDirectory($root)),
             escapeshellarg($home),
             escapeshellarg($php),
             escapeshellarg($worker),
@@ -624,6 +753,10 @@ SH;
             FPM_DEPLOY_GROUP,
             FPM_RUNTIME_GROUP,
             'simbioza-setup' . FPM_INSTANCE_SUFFIX,
+            escapeshellarg($environment['HPH_CONFIG_PATH']),
+            escapeshellarg($environment['HPH_CONFIG_OVERRIDE_PATHS']),
+            escapeshellarg(implode(' ', array_map(systemdQuote(...), $policy['read_only_config']))),
+            escapeshellarg(implode(' ', array_map(systemdQuote(...), $policy['write_bind']))),
         ],
         $helper,
     );
@@ -634,7 +767,11 @@ SH;
     runCommand(['visudo', '-cf', FPM_SUDOERS]);
 }
 
-/** HR: Instalira platformsku konfiguraciju namjenskog FPM poola. EN: Installs the platform-specific dedicated FPM pool configuration. */
+/**
+ * EN: Installs the platform-specific dedicated FPM pool configuration.
+ *
+ * HR: Instalira platformsku konfiguraciju namjenskog FPM poola.
+ */
 function installFpm(
     string $platform,
     string $root,
@@ -650,6 +787,7 @@ function installFpm(
         if (!is_dir('/etc/php/' . $version . '/fpm')) {
             throw new RuntimeException('Install the php' . $version . '-fpm package before running this tool.');
         }
+
         $configuration = "[global]\n"
         . 'pid = /run/' . FPM_SYSTEMD_RUN . "/php-fpm.pid\n"
         . 'error_log = ' . $root . "/data/logs/php-fpm.log\n"
@@ -659,31 +797,36 @@ function installFpm(
         writeSystemFile($configurationPath, $configuration, 0644, 'root', 'root');
         runCommand([$phpFpm, '--test', '--fpm-config', $configurationPath]);
 
-        $readWritePaths = [
+        $policy = fpmFilesystemPolicy($root);
+        $readWritePaths = array_values(array_unique([
             $root . '/data',
-            $root . '/config',
-            $root . '/resources/config/menu',
-            $root . '/resources/config/theme',
             '/run/' . FPM_SYSTEMD_RUN,
-        ];
+            ...$policy['write_bind'],
+        ]));
         $unit = "[Unit]\nDescription=Isolated PHP-FPM for Simbioza\nAfter=network.target\n\n"
         . "[Service]\nType=notify\n"
         . 'ExecStart=' . $phpFpm . ' --nodaemonize --fpm-config ' . $configurationPath . "\n"
         . "ExecReload=/bin/kill -USR2 \$MAINPID\nRestart=on-failure\n"
         . 'RuntimeDirectory=' . FPM_SYSTEMD_RUN . "\nRuntimeDirectoryMode=0755\nUMask=0007\n"
         . "ProtectSystem=strict\nProtectHome=true\nPrivateTmp=true\nPrivateDevices=true\n"
-            // HR: FPM smije preko jednog root-owned helpera zatražiti od
-            //     systemd-a zaseban worker. Worker ponovno uključuje
-            //     NoNewPrivileges i radi kao neprivilegirani deploy račun.
             // EN: FPM may request a separate worker from systemd through one
             //     root-owned helper. The worker re-enables NoNewPrivileges
             //     and runs as the unprivileged deploy account.
+            //
+            // HR: FPM smije preko jednog root-owned helpera zatražiti od
+            //     systemd-a zaseban worker. Worker ponovno uključuje
+            //     NoNewPrivileges i radi kao neprivilegirani deploy račun.
         . "ProtectProc=invisible\n"
         . "TemporaryFileSystem=/data:ro /var/www:ro\n"
-        . 'BindReadOnlyPaths=' . systemdQuote($root) . "\n"
-        . 'InaccessiblePaths=/usr/share/simplesamlphp-aai/config '
-        . "/usr/share/simplesamlphp-aai/cert /usr/share/simplesamlphp-aai/cache /var/lib/php /run/php\n"
-        . 'ReadWritePaths=' . implode(' ', array_map('systemdQuote', $readWritePaths)) . "\n"
+        . 'BindReadOnlyPaths='
+        . implode(' ', array_map(systemdQuote(...), [$root, ...$policy['read_only_config']])) . "\n"
+        . 'BindPaths=' . implode(' ', array_map(systemdQuote(...), $policy['write_bind'])) . "\n"
+        // EN: Optional absent paths must not prevent service startup.
+        //
+        // HR: Opcionalne nepostojeće putanje ne smiju zaustaviti servis.
+        . 'InaccessiblePaths=-/usr/share/simplesamlphp-aai/config '
+        . "-/usr/share/simplesamlphp-aai/cert -/usr/share/simplesamlphp-aai/cache -/var/lib/php -/run/php\n"
+        . 'ReadWritePaths=' . implode(' ', array_map(systemdQuote(...), $readWritePaths)) . "\n"
         . "MemoryHigh=768M\nMemoryMax=1G\nTasksMax=64\n\n"
         . "[Install]\nWantedBy=multi-user.target\n";
         writeSystemFile(
@@ -706,8 +849,10 @@ function installFpm(
         if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
             throw new RuntimeException('Unable to create ' . $directory);
         }
+
         applyMetadata($directory, FPM_USER, FPM_RUNTIME_GROUP, 0750);
     }
+
     writeSystemFile($configurationDirectory . '/pool.conf', $pool, 0644, 'root', 'wheel');
     $global = "[global]\n"
     . 'pid = ' . $runDirectory . "/php-fpm.pid\n"
@@ -715,12 +860,13 @@ function installFpm(
     . "daemonize = no\n"
     . 'include = ' . $configurationDirectory . "/pool.conf\n";
     writeSystemFile($configurationDirectory . '/php-fpm.conf', $global, 0644, 'root', 'wheel');
-    // HR: Alat se u instalacijskom koraku izvršava kao root, dok launchd
-    //     stvarni proces pokreće kao fpm-simbioza. -R vrijedi samo za ovu
-    //     sintaktičku provjeru i ne ulazi u servisnu konfiguraciju.
     // EN: The installer runs as root while launchd starts the real process as
     //     fpm-simbioza. -R applies only to this syntax check and is not stored
     //     in the service configuration.
+    //
+    // HR: Alat se u instalacijskom koraku izvršava kao root, dok launchd
+    //     stvarni proces pokreće kao fpm-simbioza. -R vrijedi samo za ovu
+    //     sintaktičku provjeru i ne ulazi u servisnu konfiguraciju.
     runCommand([$phpFpm, '--test', '--allow-to-run-as-root', '--fpm-config', $configurationDirectory . '/php-fpm.conf']);
 
     $plist = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
@@ -739,13 +885,14 @@ function installFpm(
     $plistPath = '/Library/LaunchDaemons/' . FPM_SERVICE_LABEL . '.plist';
     writeSystemFile($plistPath, $plist, 0644, 'root', 'wheel');
     runCommand(['launchctl', 'bootout', 'system/' . FPM_SERVICE_LABEL], true);
-    // HR: launchd na macOS-u može kratko zadržati upravo uklonjenu oznaku.
-    //     Ponovni install zato kontrolirano pričeka samo taj prijelaz.
     // EN: launchd on macOS can briefly retain the just-removed label. A
     //     repeated install therefore waits only for that controlled transition.
+    //
+    // HR: launchd na macOS-u može kratko zadržati upravo uklonjenu oznaku.
+    //     Ponovni install zato kontrolirano pričeka samo taj prijelaz.
     $bootstrapped = false;
     $failure = null;
-    for ($attempt = 0; $attempt < 10; $attempt++) {
+    for ($attempt = 0; $attempt < 10; ++$attempt) {
         try {
             runCommand(['launchctl', 'bootstrap', 'system', $plistPath]);
             $bootstrapped = true;
@@ -755,16 +902,18 @@ function installFpm(
             usleep(200_000);
         }
     }
+
     if (!$bootstrapped) {
         throw $failure ?? new RuntimeException('Unable to start the Simbioza PHP-FPM launchd service.');
     }
 }
 
 /**
- * HR: Prije root sintaktičke provjere stvara FPM logove s runtime vlasnikom.
- *     Inače bi sama provjera ostavila root-only datoteku koju servis ne može otvoriti.
  * EN: Creates FPM logs with the runtime owner before the root syntax check.
  *     Otherwise the check itself would leave a root-only file the service cannot open.
+ *
+ * HR: Prije root sintaktičke provjere stvara FPM logove s runtime vlasnikom.
+ *     Inače bi sama provjera ostavila root-only datoteku koju servis ne može otvoriti.
  */
 function prepareFpmLogFiles(string $root): void
 {
@@ -773,11 +922,16 @@ function prepareFpmLogFiles(string $root): void
         if (!is_file($path) && !touch($path)) {
             throw new RuntimeException('Unable to create FPM log: ' . $path);
         }
+
         applyMetadata($path, FPM_USER, FPM_RUNTIME_GROUP, 0660);
     }
 }
 
-/** HR: Sigurno navodi apsolutnu putanju u systemd direktivi. EN: Safely quotes an absolute path in a systemd directive. */
+/**
+ * EN: Safely quotes an absolute path in a systemd directive.
+ *
+ * HR: Sigurno navodi apsolutnu putanju u systemd direktivi.
+ */
 function systemdQuote(string $path): string
 {
     if ($path === '' || $path[0] !== '/' || str_contains($path, "\n") || str_contains($path, "\r")) {
@@ -787,9 +941,14 @@ function systemdQuote(string $path): string
     return '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $path) . '"';
 }
 
-/** HR: Gradi zaključani pool s jasnom aplikacijskom oznakom. EN: Builds a locked-down pool with an explicit application marker. */
+/**
+ * EN: Builds a locked-down pool with an explicit application marker.
+ *
+ * HR: Gradi zaključani pool s jasnom aplikacijskom oznakom.
+ */
 function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $simpleSamlConfig): string
 {
+    $environment = configurationEnvironment($root);
     $identity = $includeIdentity ? 'user = ' . FPM_USER . "\ngroup = " . FPM_APP_GROUP . "\n" : '';
     $simpleSamlEnvironment = $simpleSamlConfig === null
     ? ''
@@ -799,56 +958,208 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
     . 'listen = ' . $listen . "\n"
     . "listen.allowed_clients = 127.0.0.1\n"
     . "pm = ondemand\npm.max_children = 8\npm.process_idle_timeout = 10s\npm.max_requests = 500\n"
-        // HR: Instalacija i Composer radnje mogu trajati dulje od zadanih 30
-        //     sekundi. Ograničeni Setup worker i dalje prihvaća samo unaprijed
-        //     dopuštene radnje, pa ih namjenski pool ne prekida usred promjene.
         // EN: Installation and Composer operations can exceed the default 30
         //     seconds. The restricted Setup worker still accepts only
         //     allowlisted actions, so the dedicated pool does not terminate
         //     those operations mid-change.
+        //
+        // HR: Instalacija i Composer radnje mogu trajati dulje od zadanih 30
+        //     sekundi. Ograničeni Setup worker i dalje prihvaća samo unaprijed
+        //     dopuštene radnje, pa ih namjenski pool ne prekida usred promjene.
     . "request_terminate_timeout = 0\n"
     . "clear_env = yes\ncatch_workers_output = yes\ndecorate_workers_output = no\n"
     . "security.limit_extensions = .php\n"
     . "env[SIMBIOZA_SETUP_POOL] = 1\n"
     . 'env[SIMBIOZA_SETUP_HELPER] = ' . FPM_HELPER . "\n"
     . 'env[HPH_APP_PATH] = ' . $root . "\n"
+    . 'env[HPH_CONFIG_PATH] = "' . addcslashes($environment['HPH_CONFIG_PATH'], '\\"') . "\"\n"
+    . 'env[HPH_CONFIG_OVERRIDE_PATHS] = "' . addcslashes($environment['HPH_CONFIG_OVERRIDE_PATHS'], '\\"') . "\"\n"
     . $simpleSamlEnvironment
     . 'env[TMPDIR] = ' . $root . "/data/tmp\n"
     . "env[PATH] = /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\n"
     . 'php_admin_value[session.save_path] = ' . $root . "/data/sessions\n"
     . 'php_admin_value[upload_tmp_dir] = ' . $root . "/data/tmp\n"
     . 'php_admin_value[sys_temp_dir] = ' . $root . "/data/tmp\n"
-        // HR: Na nekim PHP-FPM izdanjima vrijednost 0 ipak prekida zahtjev
-        //     nakon 60 sekundi. Eksplicitnih 900 s pokriva GUI instalaciju,
-        //     dok zasebni Setup worker ostaje ograničen dopuštenim radnjama.
         // EN: Some PHP-FPM builds still terminate a request after 60 seconds
         //     when this value is 0. An explicit 900 s covers GUI installation;
         //     the separate Setup worker remains restricted to allowed actions.
+        //
+        // HR: Na nekim PHP-FPM izdanjima vrijednost 0 ipak prekida zahtjev
+        //     nakon 60 sekundi. Eksplicitnih 900 s pokriva GUI instalaciju,
+        //     dok zasebni Setup worker ostaje ograničen dopuštenim radnjama.
     . "php_admin_value[max_execution_time] = 900\n"
-        // HR: Dinamičke config datoteke mijenjaju se atomskim renameom kroz
-        //     Setup GUI. Namjenski pool mora ih provjeriti u svakom zahtjevu.
         // EN: Setup GUI changes dynamic config files through atomic renames.
         //     The dedicated pool must revalidate them on every request.
+        //
+        // HR: Dinamičke config datoteke mijenjaju se atomskim renameom kroz
+        //     Setup GUI. Namjenski pool mora ih provjeriti u svakom zahtjevu.
     . "php_admin_flag[opcache.validate_timestamps] = On\n"
     . "php_admin_value[opcache.revalidate_freq] = 0\n"
     . "php_admin_value[expose_php] = Off\n";
 }
 
-/** HR: Atomski zapisuje root-owned sistemsku datoteku. EN: Atomically writes a root-owned system file. */
+/**
+ * EN: Passes the same fixed configuration parameters to FPM and the restricted helper; never copies secrets.
+ *
+ * HR: Iste fiksne konfiguracijske parametre prenosi u FPM i ograničeni helper; ne kopira tajne.
+ *
+ * @return array{HPH_CONFIG_PATH:string,HPH_CONFIG_OVERRIDE_PATHS:string}
+ */
+function configurationEnvironment(string $root): array
+{
+    if (is_file($root . '/bootstrap.php')) {
+        require_once $root . '/bootstrap.php';
+    }
+
+    $environment = [];
+    foreach (['HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $key) {
+        $value = getenv($key);
+        $value = is_string($value) ? trim($value) : '';
+        if (str_contains($value, "\n") || str_contains($value, "\r") || str_contains($value, "\0")) {
+            throw new RuntimeException('Invalid FPM configuration parameter: ' . $key);
+        }
+
+        $environment[$key] = $value;
+    }
+
+    if ($environment['HPH_CONFIG_PATH'] === '') {
+        $environment['HPH_CONFIG_PATH'] = $root . '/config';
+    }
+
+    return $environment;
+}
+
+/**
+ * EN: Reads only configuration classes; the helper neither relocates external layers nor changes their permissions.
+ *
+ * HR: Čita samo konfiguracijske klase; vanjske slojeve helper ne premješta i ne mijenja im prava.
+ *
+ * @return list<string>
+ */
+function externalConfigurationDirectories(string $root): array
+{
+    foreach (
+        [
+        'HeartPhrame\\CodeBook\\EnvKeyEnum' => 'CodeBook/EnvKeyEnum.php',
+        'HeartPhrame\\Config\\ConfigPathResolver' => 'Config/ConfigPathResolver.php',
+        'HeartPhrame\\Config\\ConfigArrayMerger' => 'Config/ConfigArrayMerger.php',
+        ] as $class => $relative
+    ) {
+        $file = $root . '/vendor/aaieduhr/heartphrame-framework/src/' . $relative;
+        if (!class_exists($class, false) && !enum_exists($class, false) && is_file($file)) {
+            require_once $file;
+        }
+    }
+
+    if (!class_exists(\HeartPhrame\Config\ConfigPathResolver::class, false)) {
+        $environment = configurationEnvironment($root);
+        if ($environment['HPH_CONFIG_PATH'] !== $root . '/config' || $environment['HPH_CONFIG_OVERRIDE_PATHS'] !== '') {
+            throw new RuntimeException('Framework resolver is required for external FPM configuration.');
+        }
+
+        return [];
+    }
+
+    $paths = \HeartPhrame\Config\ConfigPathResolver::fromEnvironment($root);
+    $resolved = [];
+    $application = realpath($root);
+    foreach ($paths as $path) {
+        $directory = realpath($path);
+        if (
+            $directory === false || !is_readable($directory) || !is_dir($directory)
+            || $directory === $application
+            || (is_string($application) && str_starts_with($application, $directory . '/'))
+        ) {
+            throw new RuntimeException('Unsafe or unreadable FPM configuration directory: ' . $path);
+        }
+
+        if ($directory !== realpath($root . '/config') || is_link($root . '/config')) {
+            $resolved[] = $directory;
+        }
+    }
+
+    return $resolved;
+}
+
+/**
+ * EN: The fixed helper uses the same request directory as the GUI and worker.
+ *
+ * HR: Fiksni helper prati isti request direktorij kao GUI i worker.
+ */
+function setupRequestDirectory(string $root): string
+{
+    externalConfigurationDirectories($root);
+    foreach (['ConfigurationPaths', 'PhpConfigurationReader'] as $class) {
+        $relative = $class . '.php';
+        $file = $root . '/src/Configuration/' . $relative;
+        if (!is_file($file)) {
+            return $root . '/data/setup-requests';
+        }
+
+        if (!class_exists('App\\Configuration\\' . $class, false)) {
+            require_once $file;
+        }
+    }
+
+    $setup = (new \App\Configuration\PhpConfigurationReader(
+        \App\Configuration\ConfigurationPaths::fromEnvironment($root),
+    ))->read('setup.php');
+    return is_string($setup['request_dir'] ?? null) ? $setup['request_dir'] : $root . '/data/setup-requests';
+}
+
+/**
+ * EN: The sandbox sees every layer; lower layers are read-only, final writes depend on Unix permissions.
+ *
+ * HR: Sandbox vidi sve slojeve; niži su read-only, zadnji zapis ovisi o Unix pravima.
+ *
+ * @return array{read_only_config:list<string>,write_bind:list<string>}
+ */
+function fpmFilesystemPolicy(string $root): array
+{
+    configurationEnvironment($root);
+    externalConfigurationDirectories($root);
+    $paths = class_exists(\HeartPhrame\Config\ConfigPathResolver::class, false)
+    ? \HeartPhrame\Config\ConfigPathResolver::fromEnvironment($root) : [$root . '/config'];
+    $paths = array_map(static fn(string $path): string => realpath($path) ?: $path, $paths);
+    $last = array_pop($paths);
+    if (!is_string($last)) {
+        throw new RuntimeException('No configuration directory is selected for FPM.');
+    }
+    $requests = setupRequestDirectory($root);
+    if (
+        $requests === '' || $requests[0] !== '/' || str_contains($requests, "\n")
+        || str_contains($requests, "\r") || str_contains($requests, "\0")
+    ) {
+        throw new RuntimeException('The FPM Setup request directory must be an absolute local path.');
+    }
+    $readOnly = array_values(array_unique(array_filter($paths, static fn(string $path): bool => $path !== $last)));
+    return ['read_only_config' => $readOnly, 'write_bind' => array_values(array_unique([
+        $last, realpath($requests) ?: $requests,
+    ]))];
+}
+
+/**
+ * EN: Atomically writes a root-owned system file.
+ *
+ * HR: Atomski zapisuje root-owned sistemsku datoteku.
+ */
 function writeSystemFile(string $path, string $contents, int $mode, string $owner, string $group): void
 {
     $directory = dirname($path);
     if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
         throw new RuntimeException('Unable to create ' . $directory);
     }
+
     $temporary = tempnam($directory, '.simbioza-');
     if (!is_string($temporary)) {
         throw new RuntimeException('Unable to prepare ' . $path);
     }
+
     try {
         if (file_put_contents($temporary, $contents, LOCK_EX) === false) {
             throw new RuntimeException('Unable to write ' . $path);
         }
+
         applyMetadata($temporary, $owner, $group, $mode);
         if (!rename($temporary, $path)) {
             throw new RuntimeException('Unable to activate ' . $path);
@@ -861,10 +1172,11 @@ function writeSystemFile(string $path, string $contents, int $mode, string $owne
 }
 
 /**
- * HR: Provjerava stvarnu delegaciju helpera i kada obični održavatelj ne smije
- *     čitati root-only direktorij /etc/sudoers.d.
  * EN: Checks actual helper delegation even when an ordinary maintainer may not
  *     read the root-only /etc/sudoers.d directory.
+ *
+ * HR: Provjerava stvarnu delegaciju helpera i kada obični održavatelj ne smije
+ *     čitati root-only direktorij /etc/sudoers.d.
  */
 function sudoersRuleAvailable(): bool
 {
@@ -888,7 +1200,11 @@ function sudoersRuleAvailable(): bool
     return $probe['code'] === 64;
 }
 
-/** HR: Ispisuje provjere potrebne prije i poslije instalacije. EN: Prints checks required before and after installation. */
+/**
+ * EN: Prints checks required before and after installation.
+ *
+ * HR: Ispisuje provjere potrebne prije i poslije instalacije.
+ */
 function printChecks(
     string $root,
     string $maintainer,
@@ -915,14 +1231,20 @@ function printChecks(
                 && is_readable($simpleSamlConfig . '/authsources.php'),
         ];
     }
+
     fwrite(STDOUT, "\nSimbioza FPM check ({$listen}, {$phpFpm})\n");
     foreach ($checks as [$label, $passed]) {
         fwrite(STDOUT, sprintf("  [%s] %s\n", $passed ? 'OK' : '--', $label));
     }
+
     fwrite(STDOUT, "  Platform: {$platform}\n");
 }
 
-/** HR: Provjerava postoji li korisnik ili grupa. EN: Checks whether a user or group exists. */
+/**
+ * EN: Checks whether a user or group exists.
+ *
+ * HR: Provjerava postoji li korisnik ili grupa.
+ */
 function identityExists(string $platform, string $identity, bool $group): bool
 {
     $command = $platform === 'linux'
@@ -931,12 +1253,17 @@ function identityExists(string $platform, string $identity, bool $group): bool
     return runCommand($command, true)['code'] === 0;
 }
 
-/** HR: Provjerava trajno članstvo, ne samo trenutni shell. EN: Checks persistent membership, not only the current shell. */
+/**
+ * EN: Checks persistent membership, not only the current shell.
+ *
+ * HR: Provjerava trajno članstvo, ne samo trenutni shell.
+ */
 function membershipExists(string $platform, string $user, string $group): bool
 {
     if (!identityExists($platform, $group, true)) {
         return false;
     }
+
     $result = $platform === 'linux'
     ? runCommand(['id', '-nG', $user], true)
     : runCommand(['dseditgroup', '-o', 'checkmember', '-m', $user, $group], true);

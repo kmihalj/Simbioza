@@ -7,18 +7,21 @@ namespace App\Update;
 use RuntimeException;
 
 /**
- * HR: Uvezeni javno posluživi sadržaj nasljeđuje runtime grupu, a root postupak
- *     može uskladiti i vlasnika. Odvojeni deploy korisnik ne treba chown ovlasti.
  * EN: Imported web-served content inherits the runtime group, while a root-run
  *     process may also align the owner. A separate deploy user needs no chown privilege.
+ *
+ * HR: Uvezeni javno posluživi sadržaj nasljeđuje runtime grupu, a root postupak
+ *     može uskladiti i vlasnika. Odvojeni deploy korisnik ne treba chown ovlasti.
  */
 final class BundledAssetPermissions
 {
     /**
-     * HR: Usklađuje grupu provjerenih datoteka i roditelja. Vlasnika mijenja samo
-     *     root, pa sigurno radi i iz neprivilegiranog GUI updatera.
      * EN: Aligns the group of validated files and parents. It changes ownership
      *     only as root, so the unprivileged GUI updater remains safe.
+     *
+     * HR: Usklađuje grupu provjerenih datoteka i roditelja. Vlasnika mijenja samo
+     *     root, pa sigurno radi i iz neprivilegiranog GUI updatera.
+     *
      * @param list<string> $relativePaths
      */
     public static function inheritOwnership(string $storageRoot, array $relativePaths): bool
@@ -37,8 +40,9 @@ final class BundledAssetPermissions
             throw new RuntimeException('The bundled-asset storage ownership is unavailable.');
         }
 
-        // HR: Najprije provjerava sve putanje, da neispravan zapis ne uzrokuje djelomičan popravak.
         // EN: Validate every path first so an invalid record cannot cause a partial repair.
+        //
+        // HR: Najprije provjerava sve putanje, da neispravan zapis ne uzrokuje djelomičan popravak.
         $paths = [];
         foreach ($relativePaths as $relative) {
             $relative = str_replace('\\', '/', $relative);

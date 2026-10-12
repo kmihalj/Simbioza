@@ -9,10 +9,13 @@ document describes how to configure and use encryption within the application.
 The encryption configuration is managed through the environment configuration
 file.
 
-1. **Configuration File**: The encryption key is defined in `config/env.php`.
-If this file does not exist, copy it from `config/env.php.dist`.
+1. **Configuration File**: The encryption key is defined in
+`<HPH_CONFIG_PATH>/env.php` (default `config/env.php`). Its PHP format remains
+current. If it does not exist, start from `config/env.php.dist` in the intended
+configuration layer; never overwrite an existing key with an example.
 
-2. **Setting the Key**: Locate the `encryption_key` setting in `config/env.php`:
+2. **Setting the Key**: Locate `encryption_key` in the effective `env.php`;
+see [configuration layers](configuration_en.md) for external paths and overrides:
 
     ```php
     return [
@@ -33,7 +36,7 @@ Run the following command from the project root:
 vendor/bin/hph encryption:generate-key
 ```
 
-Copy the output key and paste it into your `config/env.php` file as the value
+Copy the output key into the chosen configuration layer's `env.php` as the value
 for `encryption_key`.
 
 ## Usage

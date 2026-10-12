@@ -1,5 +1,7 @@
 # Simbioza
 
+> Release 0.3.0 preparation: the tagged installation commands below apply after coordinated publication of the application and modules. Development verification uses local packages; older releases cannot replace this configuration and schema.
+
 [Croatian version](README_hr.md)
 
 > Knowledge that lives together.
@@ -134,7 +136,7 @@ dependencies automatically.
 ## Dependency policy
 
 The Framework is constrained to `^0.0.25`, while Simbioza modules use the
-compatible `^0.1.0` release line. This application does not commit
+compatible `^0.3.0` release line. This application does not commit
 `composer.lock`; each CI run resolves the latest compatible tagged releases and
 executes the complete quality suite. Production deployments may retain their
 own verified lock file outside the source repository.
@@ -146,32 +148,43 @@ variable; do not commit local `path` repositories into the shared manifest.
 
 ## Installation and verification
 
+The classical installer remains supported. An additional tested immutable
+Docker/Colima candidate uses one runtime volume for private configuration/data
+and a separate PostgreSQL volume. See the [Docker guide](docs/docker_en.md)
+for image builds, initialization, explicit migrations and optional SimpleSAMLphp.
+No public image or 0.3.0 release is implied by these candidate instructions.
+
 ```bash
 composer update --with-all-dependencies
 composer check-platform-reqs
-composer on-commit
 npm install --no-package-lock
 npx playwright install chromium
 composer e2e
 ```
 
+Production dependencies intentionally exclude QA tools. In an isolated developer
+copy, prepare the QA manifest before running static analysis and unit tests:
+
+```bash
+php scripts/build_ci_composer.php
+COMPOSER=composer.ci.json composer update --with-all-dependencies
+COMPOSER=composer.ci.json composer on-commit
+```
+
+Use `--local` with `build_ci_composer.php` to verify unpublished sibling modules;
+`HPH_LOCAL_MODULE_ROOT` selects their parent directory when the QA copy lives
+elsewhere. This does not change the production manifest or replace the Framework.
+See [E2E and local verification](docs/end-to-end-testing_en.md).
+
 A deployed release may intentionally omit `.git` and retain its own verified
 `composer.lock`.
 
-**Required upgrade step for every installation older than 0.2.12:** first
-update explicitly to **0.2.12**, which introduces updater self-updates:
+**0.3.0 is the clean initial release.** Use a new database and the current
+configuration/data layout. Upgrades from 0.2.x and old Simbioza backup archives
+are not supported. Demo and test sites must be reinstalled; external Confluence
+exports remain supported.
 
-```bash
-php update.php --tag=0.2.12
-```
-
-Do not skip this bridge release. Direct upgrades from an older version to a
-later release are unsupported. On older dedicated FPM sites, use the CLI
-maintainer's restricted helper; on mod_php, use the installation's code owner.
-For locally managed demos, use the demo host's controlled update procedure
-targeting 0.2.12 so its baseline/reset remains valid.
-
-After this step, GUI and CLI updates first check the latest stable updater.
+From 0.3.0 onward, GUI and CLI updates first check the latest stable updater.
 When needed, they replace it atomically and continue in a **new PHP process**
 before changing application code, modules, configuration, or database schemas.
 Then check and install application and compatible module tags normally:
@@ -188,20 +201,74 @@ Application configuration, migrations, module order, and API integration are
 described in the [English documentation](docs/index_en.md). The Croatian
 documentation has a separate [Croatian index](docs/index_hr.md).
 
+Installation settings, module selection, and language administration use the
+shared configuration paths described in the [configuration guide](docs/configuration_en.md).
+Installed language packs are data-only JSON in `data/languages/catalogs/`;
+packaged `lang/` stays read-only code. Language GUI/CLI changes and application-settings
+backup use this runtime storage; see [localization](docs/localization_en.md).
+Auth, Email, HTML Editor and Workspace store active settings under `HPH_CONFIG_PATH`
+in `auth/auth.json`, `email/email.json`, `editor-html/editor-html.json` and
+`workspace/workspace.json`. Generic modules allow manual configuration without the
+Simbioza GUI; Workspace remains a Simbioza module with its existing GUI.
+Documented starting examples are [auth.json.dist](config/auth.json.dist),
+[email.json.dist](config/email.json.dist),
+[editor-html.json.dist](config/editor-html.json.dist), and
+[workspace.json.dist](config/workspace.json.dist). Each contains bilingual
+`_documentation` descriptions. Copy only the needed example to its module's
+active path when configuring a new installation; never overwrite migrated
+settings. See [example rules](docs/configuration_en.md#examples).
+Calendar retains its GUI, database and PHP format; it now reads
+`HPH_CONFIG_PATH/calendar/calendar.php` and the configured override layers. Its current
+example is [calendar.php.dist](config/calendar.php.dist). GUI disablement is
+optional only where meaningful, not a requirement for every module.
+Menu and Theme keep their GUI and read valid manual edits from their own
+`HPH_CONFIG_PATH/menu/` and `HPH_CONFIG_PATH/theme/` folders. Global JSON and
+PHP options are configuration; special menus and theme assets remain data.
+Workspace-owned HTML, attachments, special menus and private theme files use
+`data/workspaces/<storage-slug>--<ID>/`, with page payloads below
+`pages/<page-label>--<document-UUID>/`. Readable labels are retained independently
+of later public slug/title changes; the ID and full UUID prevent collisions.
+Database HTML stays in the database. See [workspace data storage](docs/workspace-data_en.md)
+for upgrades, Confluence imports, driver changes and portable backups.
+There are no Menu/Theme `.dist` templates. Backup/import accepts existing JSON
+archives and resolves destination-local paths. See [Menu and Theme settings](docs/configuration_en.md#data-is-separate-from-configuration).
+Backup policy and host providers use `HPH_CONFIG_PATH/backup/`, and API installation
+policy uses `HPH_CONFIG_PATH/api/api.php`. Both can be configured without a GUI.
+Audit uses shared application/log settings; ORM and the framework share root-level
+`HPH_CONFIG_PATH/database.php`. See [current module paths](docs/configuration_en.md#configuration-ownership).
+Comment, Task and Notification keep necessary document/user state in the database;
+Accessibility keeps personal choices in the browser. They have no separate global
+configuration files or empty module config directories. Shared host settings and
+module selection already follow `HPH_CONFIG_PATH`; their existing GUI remains.
+See [configuration and data boundaries](docs/configuration_en.md#modules-without-separate-policy-files).
+The updater and application settings backup/restore also follow these paths;
+restore preserves dynamic bootstrap code and writes approved settings into the
+final layer. The [configuration guide](docs/configuration_en.md) describes the
+current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
+is a historical implementation record; the [pre-release audit](docs/pre-release-audit-0.3.0_en.md)
+is the current publication checklist.
+
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
-- [Release 0.2.12: required updater self-update bridge](docs/release-0.2.12_en.md)
+- [Clean initial release 0.3.0](docs/initial-release-0.3.0_en.md)
 - [Dedicated PHP-FPM installation](docs/installation_fpm_en.md)
 - [Apache mod_php installation](docs/installation_mod_php_en.md)
 - [Six clean installations and screenshots](docs/installation-lab_en.md)
 - [Module dependencies](docs/module-dependencies_en.md)
 - [Database configuration](docs/database_en.md)
+- [Framework parameters and module configuration](docs/configuration_en.md)
+- [Unified configuration plan and continuation point](docs/configuration-migration-plan_en.md)
 - [API v1 contract](docs/api-v1-contract_en.md)
 - [End-to-end testing](docs/end-to-end-testing_en.md)
 - [Brand identity and theme](docs/branding_en.md)
+
+### Historical release notes
+
+These notes describe older releases, not the fresh 0.3.0 installation or upgrade procedure.
+
 - [Release 0.2.8: notifications stay clear of the accessibility widget](docs/release-0.2.8_en.md)
 - [Release 0.2.7: expanded first-party accessibility widget in six languages](docs/release-0.2.7_en.md)
 - [Release 0.2.6: complete installation guides and all modules selected by default](docs/release-0.2.6_en.md)
@@ -221,6 +288,8 @@ documentation has a separate [Croatian index](docs/index_hr.md).
 - [FPM-safe persistent settings update in 0.1.74](docs/release-0.1.74_en.md)
 - [Attachment layout, safe settings merge, and release checks in 0.1.73](docs/release-0.1.73_en.md)
 - [Meeting planning and bundled guides in release 0.1.68](docs/release-0.1.68_en.md)
+
+## Verification
 
 The E2E suite includes non-sensitive ORM and HTTP measurements plus durable
 budgets for SQL count, request duration, peak memory, and response size. The

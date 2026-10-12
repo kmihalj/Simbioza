@@ -27,14 +27,15 @@ test.describe('complete Backup workflow', () => {
     await expect(page.getByRole('heading', { name: /Backup (i vraćanje|and restore)/i })).toBeVisible();
 
     /*
-     * HR: Sučelje prikazuje potpune poslovne cjeline, a interne tehničke
-     *     providere namjerno ne izlaže korisniku. Kod potpunog backupa cjeline
-     *     su informativne i automatski uključene pa njihove kvačice moraju biti
-     *     onemogućene.
      * EN: The UI exposes complete business components and intentionally hides
      *     internal technical providers. A full-site backup includes every
      *     component automatically, so their checkboxes are informational and
      *     must remain disabled.
+     *
+     * HR: Sučelje prikazuje potpune poslovne cjeline, a interne tehničke
+     *     providere namjerno ne izlaže korisniku. Kod potpunog backupa cjeline
+     *     su informativne i automatski uključene pa njihove kvačice moraju biti
+     *     onemogućene.
      */
     const componentCheckboxes = page.locator('#backup-create-form input[name="components[]"]');
     await expect(componentCheckboxes).toHaveCount(6);
@@ -44,10 +45,11 @@ test.describe('complete Backup workflow', () => {
     await expect(componentCheckboxes.first()).toBeDisabled();
 
     /*
-     * HR: Izrada i vraćanje su jedan vertikalni accordion. Otvaranje vraćanja
-     *     zatvara izradu, a ponovno otvaranje izrade vraća obrazac za nastavak.
      * EN: Create and restore form one vertical accordion. Opening restore
      *     closes create, and reopening create returns the form for this flow.
+     *
+     * HR: Izrada i vraćanje su jedan vertikalni accordion. Otvaranje vraćanja
+     *     zatvara izradu, a ponovno otvaranje izrade vraća obrazac za nastavak.
      */
     const createAccordion = page.locator('.backup-accordion').nth(0);
     const restoreAccordion = page.locator('.backup-accordion').nth(1);
@@ -56,8 +58,9 @@ test.describe('complete Backup workflow', () => {
     await restoreAccordion.locator(':scope > summary').click();
     await expect(createAccordion).not.toHaveAttribute('open', '');
     await expect(restoreAccordion).toHaveAttribute('open', '');
-    // HR: Pogreška bez arhiva ne pokreće posao; poruka ne nestaje tijekom čitanja.
     // EN: Missing archives start no job; the error remains available while reading.
+    //
+    // HR: Pogreška bez arhiva ne pokreće posao; poruka ne nestaje tijekom čitanja.
     await page.locator('#backup-upload').focus();
     await page.locator('#backup-upload').press('Enter');
     await expect(page.locator('#backup-toast')).toContainText(/Choose a backup archive|Odaberite backup arhiv/i);
@@ -79,12 +82,13 @@ test.describe('complete Backup workflow', () => {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.zip$/i);
     /*
-     * HR: Interna Playwright putanja nema izvorni `.zip` sufiks, dok stvarni
-     *     korisnički download ima. Spremamo ga pod predloženim nazivom kako bi
-     *     test vjerno prošao istu validaciju naziva kao preglednik.
      * EN: Playwright's internal path lacks the original `.zip` suffix while a
      *     real user download has it. Save under the suggested name so the test
      *     exercises the same filename validation as the browser workflow.
+     *
+     * HR: Interna Playwright putanja nema izvorni `.zip` sufiks, dok stvarni
+     *     korisnički download ima. Spremamo ga pod predloženim nazivom kako bi
+     *     test vjerno prošao istu validaciju naziva kao preglednik.
      */
     const archivePath = testInfo.outputPath(download.suggestedFilename());
     await download.saveAs(archivePath);
@@ -112,12 +116,13 @@ test.describe('complete Backup workflow', () => {
     );
     expect(secondDownload.status()).toBe(404);
     /*
-     * HR: Jezik sučelja mijenja se istom lokalizacijskom rutom koju koristi
-     *     izbornik u zaglavlju. Parametar `lang` pripada jeziku sadržaja i ne
-     *     smije utjecati na format datuma administracijskog sučelja.
      * EN: Switch the interface language through the same locale route used by
      *     the header selector. The `lang` parameter belongs to content language
      *     and must not control the administration UI date format.
+     *
+     * HR: Jezik sučelja mijenja se istom lokalizacijskom rutom koju koristi
+     *     izbornik u zaglavlju. Parametar `lang` pripada jeziku sadržaja i ne
+     *     smije utjecati na format datuma administracijskog sučelja.
      */
     await page.goto(`/locale/hr?next=${encodeURIComponent('/settings/backups')}`);
     const hrJobs = await (await page.request.get('/settings/backups/jobs')).json();
@@ -132,12 +137,13 @@ test.describe('complete Backup workflow', () => {
     );
 
     /*
-     * HR: Izrada je nakon preuzimanja i dalje otvorena, stoga prije rada s
-     *     uploadom otvaramo accordion za vraćanje. Time test slijedi isti
-     *     korisnički tijek kao stvarno sučelje.
      * EN: Create remains open after the download, so open the restore
      *     accordion before interacting with its upload controls. This keeps
      *     the test aligned with the real user flow.
+     *
+     * HR: Izrada je nakon preuzimanja i dalje otvorena, stoga prije rada s
+     *     uploadom otvaramo accordion za vraćanje. Time test slijedi isti
+     *     korisnički tijek kao stvarno sučelje.
      */
     await restoreAccordion.locator(':scope > summary').click();
     await expect(createAccordion).not.toHaveAttribute('open', '');
@@ -156,20 +162,40 @@ test.describe('complete Backup workflow', () => {
     await expect(page.locator('#backup-result')).toContainText('"errors": []', { timeout: 60_000 });
     await expect(page.locator('#backup-restore')).toBeEnabled();
 
+    // EN: Delay the post-restore job response: success must wait for its session cookie.
+    //
+    // HR: Odgodi job odgovor nakon restorea: uspjeh mora pričekati njegov sesijski cookie.
+    let restoreResponseSeen = false;
+    let postRestoreJobsSettled = false;
+    page.on('response', (response) => {
+      if (new URL(response.url()).pathname === '/settings/backups/restore' && response.ok()) {
+        restoreResponseSeen = true;
+      }
+    });
+    await page.route('**/settings/backups/jobs', async (route) => {
+      const afterRestore = restoreResponseSeen;
+      const response = await route.fetch();
+      if (afterRestore) await new Promise((resolve) => setTimeout(resolve, 750));
+      await route.fulfill({ response });
+      if (afterRestore) postRestoreJobsSettled = true;
+    });
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#backup-restore').click();
     await expect(page.locator('#backup-result')).toContainText('"restored": true', { timeout: 90_000 });
+    expect(postRestoreJobsSettled).toBe(true);
     await expect(page.locator('#backup-result')).toContainText('"uploaded_archive_deleted": true');
     await expect(page.locator('#backup-result')).toContainText('safety_snapshot');
     await expect(page.locator('#backup-toast')).toContainText(
       /Vraćanje je dovršeno|Restore completed/i,
     );
+    await page.unrouteAll({ behavior: 'wait' });
 
     /*
-     * HR: Tema je datotečna backup cjelina. Nakon stvarnog vraćanja provjeravamo
-     *     i nova svojstva hero ukrasa, a ne samo prisutnost teme.
      * EN: Themes are a filesystem-backed backup component. After a real restore,
      *     verify the new hero-artwork properties as well as the theme itself.
+     *
+     * HR: Tema je datotečna backup cjelina. Nakon stvarnog vraćanja provjeravamo
+     *     i nova svojstva hero ukrasa, a ne samo prisutnost teme.
      */
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/theme?theme=dabar');
@@ -182,10 +208,11 @@ test.describe('complete Backup workflow', () => {
     await expect(themeEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
 
     /*
-     * HR: Povrat podataka ne smije pretvoriti dinamički bootstrap u statički.
-     *     GUI i CLI moraju i dalje stvarno isključiti te ponovno učitati temu.
      * EN: Data restoration must not flatten the dynamic bootstrap. Both GUI
      *     and CLI must still genuinely unload and reload the Theme module.
+     *
+     * HR: Povrat podataka ne smije pretvoriti dinamički bootstrap u statički.
+     *     GUI i CLI moraju i dalje stvarno isključiti te ponovno učitati temu.
      */
     expect(await readFile(join(project, 'config/app.php'), 'utf8')).toBe(applicationSource);
     const cliModule = (action) => execFileSync('php', ['vendor/bin/hph', 'modules', action, 'theme'], {
@@ -241,10 +268,11 @@ test.describe('complete Backup workflow', () => {
     const adminHeaders = apiHeaders(adminApiToken);
 
     /*
-     * HR: Scenarij sam izrađuje izvorno područje i objavljenu stranicu kako
-     *     ne bi ovisio o redoslijedu drugih E2E datoteka ili testnim seedovima.
      * EN: The scenario creates its own source Workspace and published page so
      *     it does not depend on other E2E file ordering or seeded fixtures.
+     *
+     * HR: Scenarij sam izrađuje izvorno područje i objavljenu stranicu kako
+     *     ne bi ovisio o redoslijedu drugih E2E datoteka ili testnim seedovima.
      */
     await expectData(await page.request.post('/api/v1/workspaces', {
       headers: apiHeaders(adminApiToken, {
@@ -335,10 +363,11 @@ test.describe('complete Backup workflow', () => {
     expect(await copiedView.text()).toContain(searchTerm);
 
     /*
-     * HR: Indeks se namjerno ne prenosi. Završni Search provider mora ga
-     *     izgraditi za novi slug nakon uspješnog DB i datotečnog importa.
      * EN: The index is intentionally not transferred. The Search finalizer
      *     must rebuild it for the new slug after the DB and file import succeeds.
+     *
+     * HR: Indeks se namjerno ne prenosi. Završni Search provider mora ga
+     *     izgraditi za novi slug nakon uspješnog DB i datotečnog importa.
      */
     const search = await page.request.get(
       `/api/v1/workspace-search?q=${encodeURIComponent(searchTerm)}&workspace=${targetWorkspace}&lang=hr`,

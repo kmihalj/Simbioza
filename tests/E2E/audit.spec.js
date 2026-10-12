@@ -17,22 +17,30 @@ const {
 
 test.describe('separated activity and technical logs', () => {
   test('administrator filters and exports the business audit without exposing the technical log', async ({ page, request }) => {
+    // EN: This multi-page workflow also runs on a cold single-process PHP server.
+    // Request performance budgets remain enforced by the separate performance suite.
+    //
+    // HR: Ovaj višestranični tok radi i na hladnom PHP poslužitelju s jednim procesom.
+    // Zasebni performance skup i dalje provjerava ograničenja pojedinih zahtjeva.
+    test.setTimeout(120_000);
     /*
-     * HR: Najprije stvaramo stvarni gostujući pregled, a zatim isti pregled
-     *     prijavljenog administratora. Time regresijski pokrivamo razliku koja
-     *     je prije sve opće HTTP zapise pogrešno označavala kao gostujuće.
      * EN: First create a real guest view, then the same view as the signed-in
      *     administrator. This covers the regression that previously marked all
      *     generic HTTP events as guest activity.
+     *
+     * HR: Najprije stvaramo stvarni gostujući pregled, a zatim isti pregled
+     *     prijavljenog administratora. Time regresijski pokrivamo razliku koja
+     *     je prije sve opće HTTP zapise pogrešno označavala kao gostujuće.
      */
     const guestView = await page.goto('/about');
     expect(guestView?.status()).toBe(200);
 
     /*
-     * HR: Otvaranje osobnog profila osigurava da izolirana instalacija ima
-     *     stvarno osobno područje prije provjere njegove zbirne stavke.
      * EN: Opening the personal profile ensures that the isolated installation
      *     has a real personal Workspace before its aggregate option is tested.
+     *
+     * HR: Otvaranje osobnog profila osigurava da izolirana instalacija ima
+     *     stvarno osobno područje prije provjere njegove zbirne stavke.
      */
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
@@ -47,11 +55,12 @@ test.describe('separated activity and technical logs', () => {
     expect(editorDocument).toBeTruthy();
 
     /*
-     * HR: Običan HTML pregled stvara neutralni poslovni audit događaj kroz
-     *     globalni middleware. Ne šaljemo tijela, query parametre ili tajne.
      * EN: A normal HTML view creates a neutral business audit event through
      *     the global middleware. Bodies, query parameters, and secrets are
      *     never submitted.
+     *
+     * HR: Običan HTML pregled stvara neutralni poslovni audit događaj kroz
+     *     globalni middleware. Ne šaljemo tijela, query parametre ili tajne.
      */
     for (const path of [
       '/about',
@@ -67,10 +76,11 @@ test.describe('separated activity and technical logs', () => {
     }
 
     /*
-     * HR: Reprezentativni pristupi jezgrenim dijelovima moraju imati istoga
-     *     prijavljenog izvršitelja, neovisno o modulu koji je renderirao HTML.
      * EN: Representative access to core areas must carry the same signed-in
      *     actor regardless of which module rendered the HTML response.
+     *
+     * HR: Reprezentativni pristupi jezgrenim dijelovima moraju imati istoga
+     *     prijavljenog izvršitelja, neovisno o modulu koji je renderirao HTML.
      */
     const expectedAccess = [
       ['application.view', 'about'],
@@ -100,12 +110,13 @@ test.describe('separated activity and technical logs', () => {
     await expect(page.locator('main').getByRole('link', { name: /Tehnički log|Technical log/i }).first()).toBeVisible();
 
     /*
-     * HR: Veliki popisi korisnika, područja i stranica učitavaju se udaljeno u
-     *     stranicama od najviše 25 opcija. Globalna stranica uključuje područje
-     *     u oznaci, dok ga odabrano područje više ne ponavlja.
      * EN: Large user, workspace, and page lists are loaded remotely in pages
      *     of no more than 25 options. Global page labels include the workspace,
      *     while a selected workspace is not repeated in its page labels.
+     *
+     * HR: Veliki popisi korisnika, područja i stranica učitavaju se udaljeno u
+     *     stranicama od najviše 25 opcija. Globalna stranica uključuje područje
+     *     u oznaci, dok ga odabrano područje više ne ponavlja.
      */
     for (const kind of ['users', 'workspaces', 'pages']) {
       const response = await page.request.get(`/settings/logs/audit/lookups/${kind}?page=1&per_page=25`);
@@ -163,10 +174,11 @@ test.describe('separated activity and technical logs', () => {
     await expect(applicationViews.filter({ hasText: /Gost|Guest/i }).first()).toBeVisible();
 
     /*
-     * HR: Mobilni audit koristi kartice bez horizontalnog rezanja, dva dovoljno
-     *     široka datumska polja i jasno imenovane akcije izvoza.
      * EN: The mobile audit uses unclipped cards, two sufficiently wide date
      *     fields, and clearly named export actions.
+     *
+     * HR: Mobilni audit koristi kartice bez horizontalnog rezanja, dva dovoljno
+     *     široka datumska polja i jasno imenovane akcije izvoza.
      */
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByRole('link', { name: /Izvezi CSV|Export CSV/i })).toBeVisible();

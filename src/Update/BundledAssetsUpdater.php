@@ -20,8 +20,9 @@ use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use RuntimeException;
 
 /**
- * HR: Ažurira uključenu temu Simbioza i pojedinačne isporučene stranice uputa.
  * EN: Updates the enabled Simbioza theme and individual bundled guide pages.
+ *
+ * HR: Ažurira uključenu temu Simbioza i pojedinačne isporučene stranice uputa.
  */
 final readonly class BundledAssetsUpdater
 {
@@ -68,7 +69,11 @@ final readonly class BundledAssetsUpdater
         ],
     ];
 
-    /** HR: Prima javne servise modula. EN: Receives the modules' public services. */
+    /**
+     * EN: Receives the modules' public services.
+     *
+     * HR: Prima javne servise modula.
+     */
     public function __construct(
         private Database $database,
         private ?BackupManager $backups,
@@ -77,13 +82,14 @@ final readonly class BundledAssetsUpdater
         private ?ThemeArchiveService $themeArchives,
         private AuthUserService $users,
         private EditorHtmlConfig $editorConfig,
-        private EditorHtmlDocumentFormatter $formatter,
     ) {
     }
 
     /**
-     * HR: Primjenjuje izmijenjene pakete jednom i čuva privatne povratne točke.
      * EN: Applies changed packages once and keeps private recovery points.
+     *
+     * HR: Primjenjuje izmijenjene pakete jednom i čuva privatne povratne točke.
+     *
      * @param list<string> $skippedGuideProviders
      * @return list<string>
      */
@@ -198,6 +204,7 @@ final readonly class BundledAssetsUpdater
                 [],
                 $skippedGuideProviders,
                 [
+                    'site_base_url' => self::guideSiteUrl($basePath),
                     'workspace-scope' => ['target_slug' => 'korisnicke-upute', 'preserve_name_on_copy' => true],
                     'comment-workspace' => ['fallback_users_to_actor' => true],
                     'task-workspace' => ['fallback_users_to_actor' => true],
@@ -256,8 +263,10 @@ final readonly class BundledAssetsUpdater
     }
 
     /**
-     * HR: Sigurno zamjenjuje jednu upravljanu stranicu i prije toga izrađuje povratnu točku.
      * EN: Safely replaces one managed page after first creating a recovery point.
+     *
+     * HR: Sigurno zamjenjuje jednu upravljanu stranicu i prije toga izrađuje povratnu točku.
+     *
      * @param array{file:string,slug:string,parent:?string,recovery:string,message:string} $definition
      * @param array<string,mixed> $state
      * @param list<string> $skippedGuideProviders
@@ -289,7 +298,11 @@ final readonly class BundledAssetsUpdater
             $pageId !== null ? BackupImportContext::CONFLICT_REPLACE : BackupImportContext::CONFLICT_COPY,
             [],
             $skippedGuideProviders,
-            ['page-transfer' => $options, 'editor-html-workspace' => $options],
+            [
+                'site_base_url' => self::guideSiteUrl($basePath),
+                'page-transfer' => $options,
+                'editor-html-workspace' => $options,
+            ],
             $actorId,
             self::PASSPHRASE,
         );
@@ -305,6 +318,7 @@ final readonly class BundledAssetsUpdater
                 new BackupScope(BackupScope::PAGE, (string)$pageId),
                 [],
                 [
+                    'site_base_url' => self::guideSiteUrl($basePath),
                     'page-transfer' => ['include_history' => true, 'include_permissions' => true],
                     'editor-html-workspace' => ['include_history' => true, 'include_permissions' => true],
                 ],
@@ -326,7 +340,11 @@ final readonly class BundledAssetsUpdater
         $this->normalizeDocumentPaths($key, $basePath);
     }
 
-    /** HR: Provjerava paket prije vraćanja. EN: Validates the archive before restoring it. */
+    /**
+     * EN: Validates the archive before restoring it.
+     *
+     * HR: Provjerava paket prije vraćanja.
+     */
     private function restoreChecked(string $archive, BackupImportContext $context): void
     {
         $backups = $this->backupManager();
@@ -338,7 +356,11 @@ final readonly class BundledAssetsUpdater
         $backups->restore($archive, $context);
     }
 
-    /** HR: Za operacije uputa zahtijeva instalirani opcionalni Backup servis. EN: Requires the optional Backup service for guide operations. */
+    /**
+     * EN: Requires the optional Backup service for guide operations.
+     *
+     * HR: Za operacije uputa zahtijeva instalirani opcionalni Backup servis.
+     */
     private function backupManager(): BackupManager
     {
         if (!$this->backups instanceof BackupManager) {
@@ -349,8 +371,9 @@ final readonly class BundledAssetsUpdater
     }
 
     /**
-     * HR: Usklađuje samo datoteke privitaka odabranog dokumenta, nikada privatne backup artefakte.
      * EN: Aligns only the selected document's attachment files, never private backup artifacts.
+     *
+     * HR: Usklađuje samo datoteke privitaka odabranog dokumenta, nikada privatne backup artefakte.
      */
     private function normalizeDocumentAssetOwnership(string $key): bool
     {
@@ -361,20 +384,29 @@ final readonly class BundledAssetsUpdater
         }
 
         $paths = [];
+        $ownedPaths = [];
         $assets = $this->database->table(ModuleEditorHtml::TABLE_ASSETS)
             ->where('document_id', '=', $document['id'])->get();
         foreach ($assets as $asset) {
             if (($asset['storage_driver'] ?? '') === 'filesystem' && is_string($asset['content_path'] ?? null)) {
-                $paths[] = $asset['content_path'];
+                if (str_starts_with($asset['content_path'], '@data/')) {
+                    $this->editorConfig->attachmentPayloadPath($asset['content_path']);
+                    $ownedPaths[] = substr($asset['content_path'], strlen('@data/'));
+                } else {
+                    $paths[] = $asset['content_path'];
+                }
             }
         }
 
-        return BundledAssetPermissions::inheritOwnership($this->editorConfig->uploadsRoot(), $paths);
+        $standaloneChanged = BundledAssetPermissions::inheritOwnership($this->editorConfig->uploadsRoot(), $paths);
+        $ownedChanged = BundledAssetPermissions::inheritOwnership($this->editorConfig->dataRoot(), $ownedPaths);
+        return $standaloneChanged || $ownedChanged;
     }
 
     /**
-     * HR: Usklađuje samo uvezeni dokument s instalacijskim poddirektorijem.
      * EN: Adjusts only the imported document for the installation subdirectory.
+     *
+     * HR: Usklađuje samo uvezeni dokument s instalacijskim poddirektorijem.
      */
     private function normalizeDocumentPaths(string $key, string $basePath): void
     {
@@ -391,28 +423,42 @@ final readonly class BundledAssetsUpdater
         $versions = $this->database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
             ->where('document_id', '=', $document['id'])->get();
         foreach ($versions as $version) {
+            $file = ($version['storage_driver'] ?? null) === 'filesystem'
+            ? $this->editorConfig->documentPayloadPath(
+                is_string($version['content_path'] ?? null) ? $version['content_path'] : '',
+            ) : null;
+            $sourceHtml = $file !== null ? file_get_contents($file) : ($version['content_html'] ?? '');
+            if (!is_string($sourceHtml)) {
+                throw new RuntimeException('Bundled guide HTML is unavailable.');
+            }
+
             $html = preg_replace_callback(
                 '~\b(href|src|poster|data-editor-html-web-(?:href|src|poster))=(["\x27])(/(?!/)[^"\x27]*)\2~i',
                 static fn(array $m): string => $m[1] . '=' . $m[2]
                     . (str_starts_with($m[3], $basePath . '/') ? '' : $basePath) . $m[3] . $m[2],
-                self::guideVersionHtml($version, $this->editorConfig->documentsRoot(), $this->formatter),
+                $sourceHtml,
             );
             if (!is_string($html)) {
                 throw new RuntimeException('Bundled guide links could not be normalized.');
             }
 
-            $this->database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
-                ->where('id', '=', $version['id'])->update([
-                    'content_html' => $html, 'storage_driver' => 'database', 'content_path' => null,
-                ]);
+            if ($file !== null) {
+                if (file_put_contents($file, $html, LOCK_EX) !== strlen($html)) {
+                    throw new RuntimeException('Bundled guide HTML could not be normalized.');
+                }
+            } else {
+                $this->database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+                    ->where('id', '=', $version['id'])->update(['content_html' => $html]);
+            }
         }
     }
 
     /**
-     * HR: Završni korak novog izdanja dodaje samo pravo čitanja manifestu kako bi
-     *     nadogradnja pokrenuta starijim FPM updaterom ostavila ispravan web runtime.
      * EN: The new release finalization adds only manifest read permission so an
      *     update started by an older FPM updater leaves a working web runtime.
+     *
+     * HR: Završni korak novog izdanja dodaje samo pravo čitanja manifestu kako bi
+     *     nadogradnja pokrenuta starijim FPM updaterom ostavila ispravan web runtime.
      */
     public static function normalizeComposerManifestMetadata(string $root): void
     {
@@ -439,12 +485,13 @@ final readonly class BundledAssetsUpdater
     }
 
     /**
-     * HR: Završni korak novog izdanja čini release stablo čitljivim FPM-u čak
-     *     kada je nadogradnju pokrenula starija verzija updatera. Privatni data,
-     *     config i administratorski resource zapisi ostaju potpuno netaknuti.
      * EN: New-release finalization makes the release tree FPM-readable even when
      *     an older updater started the upgrade. Private data, config, and
      *     administrator-managed resource records remain completely untouched.
+     *
+     * HR: Završni korak novog izdanja čini release stablo čitljivim FPM-u čak
+     *     kada je nadogradnju pokrenula starija verzija updatera. Privatni data,
+     *     config i administratorski resource zapisi ostaju potpuno netaknuti.
      */
     public static function normalizeReleaseTreeMetadata(string $root): void
     {
@@ -502,7 +549,11 @@ final readonly class BundledAssetsUpdater
         }
     }
 
-    /** HR: Prepoznaje trajne privatne putanje. EN: Recognizes persistent private paths. */
+    /**
+     * EN: Recognizes persistent private paths.
+     *
+     * HR: Prepoznaje trajne privatne putanje.
+     */
     private static function isPrivateReleasePath(string $relativePath): bool
     {
         foreach (['.git', 'config', 'data', 'vendor', 'resources/config'] as $directory) {
@@ -514,7 +565,11 @@ final readonly class BundledAssetsUpdater
         return in_array($relativePath, ['composer.local.json', 'composer.local.lock'], true);
     }
 
-    /** HR: Odbija neispravni base path. EN: Rejects an invalid base path. */
+    /**
+     * EN: Rejects an invalid base path.
+     *
+     * HR: Odbija neispravni base path.
+     */
     public static function validatedBasePath(string $value): string
     {
         $value = rtrim(str_replace('\\', '/', trim($value)), '/');
@@ -528,7 +583,25 @@ final readonly class BundledAssetsUpdater
         return $value;
     }
 
-    /** HR: Iz javnog URL-a instalacije izvodi siguran poddirektorij. EN: Derives a safe subdirectory from the installation public URL. */
+    /**
+     * EN: Gives bundled public guides an explicit virtual origin for local route relocation.
+     * Only its base path is used in generated links; it is never contacted or persisted
+     * as the site's public address. User backups still require the real configured URL.
+     *
+     * HR: Ugrađenim javnim uputama daje izričit virtualni origin za prijenos lokalnih ruta.
+     * Generirani linkovi koriste samo osnovnu putanju; origin se ne dohvaća niti sprema
+     * kao javna adresa sitea. Korisnički backup i dalje zahtijeva stvarni konfigurirani URL.
+     */
+    public static function guideSiteUrl(string $basePath): string
+    {
+        return 'https://bundled-guides.invalid' . self::validatedBasePath($basePath);
+    }
+
+    /**
+     * EN: Derives a safe subdirectory from the installation public URL.
+     *
+     * HR: Iz javnog URL-a instalacije izvodi siguran poddirektorij.
+     */
     public static function basePathFromApplicationUrl(string $url): string
     {
         $parts = parse_url(trim($url));
@@ -542,36 +615,15 @@ final readonly class BundledAssetsUpdater
     }
 
     /**
-     * HR: Otkriva base path iz postojećih internih slika uputa starih instalacija.
-     * EN: Discovers the base path from existing guide images in older installations.
-     * @param list<string> $htmlVersions
-     */
-    public static function basePathFromGuideHtml(array $htmlVersions): string
-    {
-        $paths = [];
-        foreach ($htmlVersions as $html) {
-            if (preg_match_all('#\bsrc=["\x27]((?:/[A-Za-z0-9._~-]+)*)/editor-html/asset/#i', $html, $matches)) {
-                foreach ($matches[1] as $path) {
-                    $paths[$path] = true;
-                }
-            }
-        }
-
-        if (count($paths) > 1) {
-            throw new RuntimeException('Stored guides use inconsistent base paths; run with --base-path explicitly.');
-        }
-
-        return self::validatedBasePath((string)(array_key_first($paths) ?? ''));
-    }
-
-    /**
-     * HR: Čita staru verziju uputa iz baze ili sigurnog puta datoteke unutar editor spremišta.
-     * EN: Reads a legacy guide version from the database or a safe file inside editor storage.
+     * EN: Reads a current guide version from SQL or its canonical, bounded payload path.
+     *
+     * HR: Čita aktualnu verziju uputa iz SQL-a ili njezine kanonske, ograničene putanje sadržaja.
+     *
      * @param array<string,mixed> $version
      */
     public static function guideVersionHtml(
         array $version,
-        string $documentsRoot,
+        EditorHtmlConfig $documentsRoot,
         EditorHtmlDocumentFormatter $formatter,
     ): string {
         if (($version['storage_driver'] ?? '') !== 'filesystem') {
@@ -584,29 +636,31 @@ final readonly class BundledAssetsUpdater
             $relative === '' || str_starts_with($relative, '/')
             || preg_match('#(?:^|/)(?:\.|\.\.)(?:/|$)#', $relative) === 1
         ) {
-            throw new RuntimeException('A legacy guide file has an invalid storage path.');
+            throw new RuntimeException('A guide file has an invalid storage path.');
         }
 
-        $root = realpath($documentsRoot);
-        $path = is_string($root) ? realpath($root . DIRECTORY_SEPARATOR . $relative) : false;
+        $root = realpath($documentsRoot->dataRoot());
+        $path = realpath($documentsRoot->documentPayloadPath($relative));
         if (
             !is_string($root) || !is_string($path)
             || !str_starts_with($path, $root . DIRECTORY_SEPARATOR) || !is_file($path)
         ) {
-            throw new RuntimeException('A legacy guide file is missing or outside editor storage.');
+            throw new RuntimeException('A guide file is missing or outside editor storage.');
         }
 
         $html = file_get_contents($path);
         if (!is_string($html)) {
-            throw new RuntimeException('A legacy guide file cannot be read.');
+            throw new RuntimeException('A guide file cannot be read.');
         }
 
         return $formatter->extractFragment($html);
     }
 
     /**
-     * HR: Čuva privatno stanje tek nakon uspješne pojedinačne radnje.
      * EN: Saves private state only after each individual successful action.
+     *
+     * HR: Čuva privatno stanje tek nakon uspješne pojedinačne radnje.
+     *
      * @param array<string,mixed> $state
      */
     private function saveState(string $path, array $state): void
@@ -615,7 +669,11 @@ final readonly class BundledAssetsUpdater
         $this->privateWrite($path, $json . PHP_EOL);
     }
 
-    /** HR: Atomski zapisuje privatni artefakt. EN: Atomically writes a private artifact. */
+    /**
+     * EN: Atomically writes a private artifact.
+     *
+     * HR: Atomski zapisuje privatni artefakt.
+     */
     private function privateWrite(string $path, string $contents): void
     {
         $temporary = tempnam(dirname($path), '.bundled-assets-');

@@ -1,5 +1,7 @@
 # Simbioza
 
+> Priprema izdanja 0.3.0: navedene naredbe za označena izdanja vrijede nakon koordinirane objave aplikacije i modula. Razvojna provjera koristi lokalne pakete; starija izdanja nisu zamjena za ovu konfiguraciju i shemu.
+
 [Engleska verzija](README.md)
 
 > Znanje koje živi zajedno.
@@ -135,7 +137,7 @@ ovisnosti.
 ## Politika ovisnosti
 
 Framework je ograničen na `^0.0.25`, a Simbioza moduli koriste kompatibilnu
-liniju izdanja `^0.1.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
+liniju izdanja `^0.3.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
 najnovija kompatibilna označena izdanja i pokreće cijeli skup provjera kvalitete.
 Produkcijski deployment može izvan izvornog repozitorija čuvati vlastiti
 provjereni lock.
@@ -147,32 +149,43 @@ modulima koristi se nespremljeni `composer.local.json` preko varijable
 
 ## Instalacija i provjera
 
+Klasična instalacija ostaje podržana. Dodatni provjereni Docker/Colima kandidat
+koristi jedan runtime volumen za privatni config/podatke i zaseban PostgreSQL
+volumen. [Docker upute](docs/docker_hr.md) opisuju gradnju, inicijalizaciju,
+izričite migracije i opcionalni SimpleSAMLphp. Candidate upute ne znače da je
+objavljen javni image ili release 0.3.0.
+
 ```bash
 composer update --with-all-dependencies
 composer check-platform-reqs
-composer on-commit
 npm install --no-package-lock
 npx playwright install chromium
 composer e2e
 ```
 
+Produkcijske ovisnosti namjerno ne uključuju QA alate. U izoliranoj razvojnoj
+kopiji prvo pripremite QA manifest pa pokrenite statičku analizu i jedinične testove:
+
+```bash
+php scripts/build_ci_composer.php
+COMPOSER=composer.ci.json composer update --with-all-dependencies
+COMPOSER=composer.ci.json composer on-commit
+```
+
+Opcija `--local` uz `build_ci_composer.php` provjerava neobjavljene susjedne module;
+`HPH_LOCAL_MODULE_ROOT` određuje njihov nadređeni direktorij ako je QA kopija drugdje.
+To ne mijenja produkcijski manifest niti zamjenjuje Framework.
+Vidi [E2E i lokalne provjere](docs/end-to-end-testing_hr.md).
+
 Poslužiteljska release instalacija smije namjerno biti bez `.git` direktorija i
 čuvati vlastiti provjereni `composer.lock`.
 
-**Obvezan prijelaz za svaku instalaciju stariju od 0.2.12:** prvo je izričito
-nadogradite na **0.2.12**, koji uvodi nadogradnju samog updatera:
+**0.3.0 je čisto početno izdanje.** Koristite novu bazu i aktualni raspored
+konfiguracije/podataka. Nadogradnje s 0.2.x i stare Simbiozine backup arhive
+nisu podržane. Demo i testni site treba ponovno instalirati; vanjski Confluence
+izvozi ostaju podržani.
 
-```bash
-php update.php --tag=0.2.12
-```
-
-Ne preskačite ovo prijelazno izdanje. Izravne nadogradnje sa starije verzije na
-kasnije izdanje nisu podržane. Na starijem namjenskom FPM-u koristite CLI
-održavatelja i ograničeni helper, a na mod_php-u vlasnika aplikacijskog koda.
-Lokalni demo nadogradite kontroliranim postupkom njegova hosta, uz ciljno
-izdanje 0.2.12, kako bi početna kopija i automatski reset ostali valjani.
-
-Nakon toga GUI i CLI prvo provjeravaju updater iz najnovijeg stabilnog izdanja.
+Od 0.3.0 nadalje GUI i CLI prvo provjeravaju updater najnovijeg stabilnog izdanja.
 Ako je potrebno, atomski ga zamjenjuju i nastavljaju u **novom PHP procesu**,
 prije promjena aplikacijskog koda, modula, konfiguracija ili sheme baze.
 Zatim provjeravajte i instalirajte izdanja aplikacije i kompatibilnih modula:
@@ -191,9 +204,75 @@ Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
 su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima
 zaseban [engleski indeks](docs/index_en.md).
 
+Instalacijske postavke, odabir modula i administracija jezika koriste zajedničke
+config putanje opisane u [konfiguracijskoj uputi](docs/configuration_hr.md).
+Instalirani jezični paketi su podatkovni JSON u `data/languages/catalogs/`;
+paketni `lang/` ostaje read-only kod. GUI/CLI za jezike i backup postavki aplikacije
+koriste tu runtime pohranu; vidi [lokalizaciju](docs/localization_hr.md).
+Auth, Email, HTML Editor i Workspace spremaju aktivne postavke pod `HPH_CONFIG_PATH`
+u `auth/auth.json`, `email/email.json`, `editor-html/editor-html.json` i
+`workspace/workspace.json`. Generički moduli mogu se ručno podesiti bez Simbiozina
+GUI-ja; Workspace ostaje Simbiozin modul s postojećim GUI-jem.
+Dokumentirani početni primjeri su [auth.json.dist](config/auth.json.dist),
+[email.json.dist](config/email.json.dist),
+[editor-html.json.dist](config/editor-html.json.dist) i
+[workspace.json.dist](config/workspace.json.dist). Svaki sadrži dvojezične opise
+`_documentation`. Potrebni primjer kopiraj na aktivnu putanju modula samo pri
+novom podešavanju; ne prepisuj migrirane postavke. Vidi
+[pravila za primjere](docs/configuration_hr.md#primjeri).
+Calendar zadržava GUI, bazu i PHP format; sada čita
+`HPH_CONFIG_PATH/calendar/calendar.php` i podešene override slojeve. Aktualni primjer je
+[calendar.php.dist](config/calendar.php.dist). Isključivanje GUI-ja opcionalno
+je samo gdje ima smisla, ne zahtjev za svaki modul.
+Menu i Theme zadržavaju GUI i čitaju ispravne ručne izmjene iz vlastitih
+direktorija `HPH_CONFIG_PATH/menu/` i `HPH_CONFIG_PATH/theme/`. Globalni JSON i
+PHP postavke su konfiguracija; posebni meniji i asseti tema ostaju podaci.
+
+HTML, privitci, posebni meniji i privatne teme koji pripadaju području koriste
+`data/workspaces/<oznaka-pohrane>--<ID>/`, a datoteke stranice nalaze se pod
+`pages/<oznaka-stranice>--<UUID-dokumenta>/`. Čitljive oznake ne mijenjaju se s
+kasnijim javnim slugom/naslovom; ID i potpuni UUID sprječavaju sukobe.
+HTML u baznom driveru ostaje u bazi. Raspored, promjena drivera, Confluence uvoz
+i backup opisani su u [organizaciji podataka](docs/workspace-data_hr.md).
+Nema Menu/Theme `.dist` predložaka. Backup/import prihvaća postojeće JSON arhive
+i koristi lokalne putanje odredišta. Vidi [postavke Menija i Tema](docs/configuration_hr.md#podatci-su-odvojeni-od-konfiguracije).
+Backup politika i host provideri koriste `HPH_CONFIG_PATH/backup/`, a API politika
+instalacije koristi `HPH_CONFIG_PATH/api/api.php`. Obje se podešavaju i bez GUI-ja.
+Audit koristi zajedničke aplikacijske/log postavke; ORM i framework dijele
+`HPH_CONFIG_PATH/database.php` u korijenu. Vidi [aktualne putanje modula](docs/configuration_hr.md#vlasništvo-konfiguracije).
+Comment, Task i Notification čuvaju nužno stanje dokumenata/korisnika u bazi;
+Accessibility čuva osobne odabire u pregledniku. Nemaju zasebne globalne datoteke
+konfiguracije niti prazne config direktorije. Zajedničke postavke i odabir modula
+već prate `HPH_CONFIG_PATH`; njihov postojeći GUI ostaje.
+Vidi [granice konfiguracije i podataka](docs/configuration_hr.md#moduli-bez-zasebne-politike).
+Updater i backup/vraćanje aplikacijskih postavki također prate te putanje;
+povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni sloj.
+[Konfiguracijske upute](docs/configuration_hr.md) opisuju aktualni raspored čiste
+instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
+povijesni je zapis implementacije; [audit prije releasea](docs/pre-release-audit-0.3.0_hr.md)
+aktualni je popis provjera prije objave.
+
 ## Dokumentacija
 
-- [Izdanje 0.2.12: obvezan prijelaz na updater koji nadograđuje sam sebe](docs/release-0.2.12_hr.md)
+- [Čisto početno izdanje 0.3.0](docs/initial-release-0.3.0_hr.md)
+
+- Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
+- Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
+- [Instalacija](docs/installation_hr.md)
+- [Instalacija s namjenskim PHP-FPM-om](docs/installation_fpm_hr.md)
+- [Instalacija s Apache mod_php modulom](docs/installation_mod_php_hr.md)
+- [Zapis šest čistih instalacija i screenshotovi](docs/installation-lab_hr.md)
+- [Ovisnosti modula](docs/module-dependencies_hr.md)
+- [Konfiguracija baze](docs/database_hr.md)
+- [Framework parametri i konfiguracija modula](docs/configuration_hr.md)
+- [Plan jedinstvene konfiguracije i točka nastavka](docs/configuration-migration-plan_hr.md)
+- [API v1 ugovor](docs/api-v1-contract_hr.md)
+- [End-to-end testiranje](docs/end-to-end-testing_hr.md)
+- [Vizualni identitet i tema](docs/branding_hr.md)
+
+### Povijesne bilješke izdanja
+
+Ove bilješke opisuju starija izdanja, ne instalaciju ni nadogradnju čiste osnove 0.3.0.
 
 - [Izdanje 0.2.8: obavijesti više ne prekriva widget pristupačnosti](docs/release-0.2.8_hr.md)
 - [Izdanje 0.2.7: prošireni vlastiti widget pristupačnosti na šest jezika](docs/release-0.2.7_hr.md)
@@ -208,18 +287,9 @@ zaseban [engleski indeks](docs/index_en.md).
 - [Izdanje 0.1.97: sigurno istodobno uređivanje i zapamćeni jezik](docs/release-0.1.97_hr.md)
 - [Izdanje 0.1.96: postavke prate instalaciju modula](docs/release-0.1.96_hr.md)
 - [Izdanje 0.1.95: pouzdane postavke modula i provjere instalacije](docs/release-0.1.95_hr.md)
-- Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
-- Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
 - [Planiranje sastanaka i isporučene upute u izdanju 0.1.68](docs/release-0.1.68_hr.md)
-- [Instalacija](docs/installation_hr.md)
-- [Instalacija s namjenskim PHP-FPM-om](docs/installation_fpm_hr.md)
-- [Instalacija s Apache mod_php modulom](docs/installation_mod_php_hr.md)
-- [Zapis šest čistih instalacija i screenshotovi](docs/installation-lab_hr.md)
-- [Ovisnosti modula](docs/module-dependencies_hr.md)
-- [Konfiguracija baze](docs/database_hr.md)
-- [API v1 ugovor](docs/api-v1-contract_hr.md)
-- [End-to-end testiranje](docs/end-to-end-testing_hr.md)
-- [Vizualni identitet i tema](docs/branding_hr.md)
+
+## Provjere
 
 E2E skup uključuje neosjetljiva ORM i HTTP mjerenja te trajne budžete za broj
 SQL upita, trajanje zahtjeva, vršnu memoriju i veličinu odgovora. Isti potpuni

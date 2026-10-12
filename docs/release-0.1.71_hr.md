@@ -1,5 +1,7 @@
 # Simbioza 0.1.71
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Uključuje sve popravke, temu i dvojezične upute iz 0.1.70 te Calendar 0.1.17.
 
 ## Zaseban pregled Mojih sastanaka

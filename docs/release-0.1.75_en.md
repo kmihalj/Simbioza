@@ -1,5 +1,11 @@
 # Simbioza 0.1.75
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
+This is a historical release note. The module-state path described below was
+later migrated to `HPH_CONFIG_PATH/modules.php`; use the
+[current configuration guide](configuration_en.md), not the former `data/` path.
+
 This release completes the effective optional-module lifecycle in both the GUI
 and CLI, consistently on dedicated FPM and non-FPM installations.
 

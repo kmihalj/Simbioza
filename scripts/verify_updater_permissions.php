@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-// HR: Root je dopušten samo za ovaj test na privremenoj Linux instalaciji.
 // EN: Root is allowed only for this test against a temporary Linux installation.
+//
+// HR: Root je dopušten samo za ovaj test na privremenoj Linux instalaciji.
 if (PHP_OS_FAMILY !== 'Linux' || !function_exists('posix_geteuid') || posix_geteuid() !== 0) {
     fwrite(STDERR, "Required: root inside an isolated Linux test environment.\n");
     exit(1);

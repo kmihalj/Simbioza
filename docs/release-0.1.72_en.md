@@ -1,5 +1,7 @@
 # Simbioza 0.1.72
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release adds module and language management, secure GUI Setup through a
 dedicated PHP-FPM pool, and complete, clearer attachment versioning.
 

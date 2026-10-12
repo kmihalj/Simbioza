@@ -13,7 +13,11 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
 {
     private string $root;
 
-    /** HR: Priprema izolirani privatni statusni direktorij. EN: Prepares an isolated private status directory. */
+    /**
+     * EN: Prepares an isolated private status directory.
+     *
+     * HR: Priprema izolirani privatni statusni direktorij.
+     */
     protected function setUp(): void
     {
         $this->root = sys_get_temp_dir() . '/simbioza-update-status-' . bin2hex(random_bytes(8));
@@ -21,7 +25,11 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
         file_put_contents($this->root . '/VERSION', "1.2.3\n");
     }
 
-    /** HR: Uklanja samo izolirane testne datoteke. EN: Removes only the isolated test files. */
+    /**
+     * EN: Removes only the isolated test files.
+     *
+     * HR: Uklanja samo izolirane testne datoteke.
+     */
     protected function tearDown(): void
     {
         foreach (['data/application-update-status.json', 'VERSION'] as $file) {
@@ -35,8 +43,9 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
     }
 
     /**
-     * HR: Živi proces zadržava stanje pokrenute nadogradnje.
      * EN: A live process keeps the update in its running state.
+     *
+     * HR: Živi proces zadržava stanje pokrenute nadogradnje.
      */
     public function testLiveUpdateProcessRemainsRunning(): void
     {
@@ -52,8 +61,9 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
     }
 
     /**
-     * HR: Nestali proces više ne smije zauvijek zaključati GUI u redu čekanja.
      * EN: A missing process must no longer leave the GUI queued forever.
+     *
+     * HR: Nestali proces više ne smije zauvijek zaključati GUI u redu čekanja.
      */
     public function testMissingUpdateProcessBecomesFailed(): void
     {
@@ -69,8 +79,9 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
     }
 
     /**
-     * HR: GUI dobiva ograničenu fazu i postotak, a završeno starije stanje sigurno se normalizira.
      * EN: The GUI receives a restricted stage and percentage while legacy completed state is normalized safely.
+     *
+     * HR: GUI dobiva ograničenu fazu i postotak, a završeno starije stanje sigurno se normalizira.
      */
     public function testProgressIsNormalizedForCurrentAndLegacyStatusPayloads(): void
     {
@@ -91,7 +102,11 @@ final class ApplicationUpdateStatusStoreTest extends TestCase
         $this->assertSame(100, $success['progress']);
     }
 
-    /** HR: Zapisuje jedan kontrolirani status. EN: Writes one controlled status record. */
+    /**
+     * EN: Writes one controlled status record.
+     *
+     * HR: Zapisuje jedan kontrolirani status.
+     */
     private function writeStatus(string $state, int $pid, ?string $stage = null, ?int $progress = null): void
     {
         file_put_contents($this->root . '/data/application-update-status.json', json_encode([

@@ -60,6 +60,31 @@ radnim podacima, ali ne i po cijelom izdanju, te postavlja strogo ograničeni
 pomoćni program za paketne radnje. Stvara i grupe za održavanje i rad.
 Prije nastavka pregledajte sve rezultate provjere. Ne koristite `chmod 777`.
 
+Uz zadani aplikacijski konfiguracijski direktorij, Auth, Email, HTML Editor,
+Workspace, Menu, Theme i Backup imaju runtime-zapisive modulne direktorije.
+Backup to treba za atomsku objavu zapisa providera. PHP servisna konfiguracija
+kojom upravlja izdanje ostaje u vlasništvu deploy računa i read-only FPM-u.
+Alat ne stvara ponovno `data/config` niti daje runtime prava uklonjenim starim
+datotekama `editor-html.php`, `email.php` ili `workspace.php`.
+
+### Vanjski konfiguracijski slojevi
+
+Prije odabira u privatnom `framework.php` pripremite cijelu konfiguraciju.
+Generirani pool i fiksni helper prenose isti bazni i override parametar; ne ovise
+o očuvanju naslijeđenih varijabli kroz `clear_env` ili `sudo`. Linux izolacija
+veže niže slojeve read-only, a završni sloj i podešeni direktorij Setup zahtjeva
+čini dostupnima. Pisanje je dopušteno samo gdje ga Unix prava već dopuštaju;
+alat ne mijenja vlasništvo ni prava vanjskih slojeva.
+
+FPM-u i deploy računu dajte čitanje/prolaz. PHP servisni kod neka pripada deploy
+računu i bude read-only FPM-u; runtime podatkovne datoteke/lockovi trebaju
+dijeljenu runtime grupu i pravo atomske zamjene. Privatnu konfiguraciju ne
+stavljajte u zaštićeni home niti javni web-korijen. Nestandardni direktorij
+zahtjeva unaprijed stvorite s potrebnim dijeljenim pravima. Nakon promjene putanja
+ponovite `--install`, zatim `--finalize`, uz istu instancu, port i SAML opcije.
+Sam `--finalize` osvježava helper/vlasništvo, ne FPM pool. Pogledajte
+[konfiguracijsku uputu](configuration_hr.md).
+
 ## 3. Podesite web-poslužitelj
 
 Odaberite **jednu** konfiguraciju. Primjeri služe zasebnoj domeni na `/`;
@@ -162,11 +187,11 @@ opcionalni paketi instaliraju se kroz GUI.
 Ako svjesno ne koristite namjenski pomoćni program, prije nastavka obrasca
 kao deploy korisnik pripremite odabrane opcionalne pakete naredbom
 `php scripts/installation_packages.php prepare` (svi moduli) ili navedite
-`--modules=theme,calendar` za uži izbor, a
-dodatne jezike naredbom
-`php scripts/installation_languages.php prepare --locales=de,es,fr,it`.
-Popise prilagodite stvarnom odabiru i osvježite instalacijski obrazac. Bez
-pomoćnog programa kasnije GUI upravljanje paketima i jezicima nije dostupno.
+`--modules=theme,calendar` za uži izbor. Popis prilagodite stvarnom odabiru i
+osvježite instalacijski obrazac. Bez pomoćnog programa kasnije GUI izmjene
+paketa nisu dostupne. Instalacija/ažuriranje/uklanjanje jezika piše samo
+runtime podatke i konfiguraciju te ne treba taj helper. Osigurajte da PHP
+može pisati u te direktorije; vidi [lokalizaciju](localization_hr.md).
 
 Nakon instalacije prijavite se kao administrator. U **Postavke → Setup i
 moduli** provjerite da su namjenski pool, pomoćni program i radna prava u

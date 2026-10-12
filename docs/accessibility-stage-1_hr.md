@@ -2,6 +2,10 @@
 
 Datum: 24. rujna 2026. Polazište: Simbioza `0.1.89`.
 
+Povijesni razvojni zapis: putanja stanja modula i opažanja o backupu ispod odnose
+se na tadašnju verziju. Aktualna konfiguracija koristi `HPH_CONFIG_PATH/modules.php`;
+vidjeti [konfiguracijske upute](configuration_hr.md) i [plan migracije](configuration-migration-plan_hr.md).
+
 [Engleska verzija](accessibility-stage-1_en.md) · [Plan svih etapa](accessibility-implementation-plan_hr.md)
 
 ## Opseg i stanje

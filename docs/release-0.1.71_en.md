@@ -1,5 +1,7 @@
 # Simbioza 0.1.71
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 Includes all fixes, the theme, and bilingual guides from 0.1.70, plus Calendar 0.1.17.
 
 ## Separate My meetings calendar

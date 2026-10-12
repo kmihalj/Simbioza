@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 /*
- * HR: Samo lokalni testni poslužitelj preslikava stvarne rute resursa modula.
  * EN: Only the local test server maps the module's real asset routes.
+ *
+ * HR: Samo lokalni testni poslužitelj preslikava stvarne rute resursa modula.
  */
 $root = dirname(__DIR__, 3) . '/heartphrame-module-accessibility/resources';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);

@@ -2,7 +2,7 @@
 
 Simbioza ima end-to-end skup testova preglednika i HTTP API-ja za sastavljenu
 aplikaciju. Za razliku od jediničnog testa modula, ovaj test instalira označeno
-izdanje Frameworka `^0.0.25` i kompatibilna izdanja modula iz `^0.1.0` u novi
+izdanje Frameworka `^0.0.25` i kompatibilna izdanja modula iz `^0.3.0` u novi
 privremeni projekt, pokreće sve
 službene migracije zadano nad novom SQLite bazom, podiže stvarni HTTP
 poslužitelj i upravlja Chromiumom kroz Playwright. Isti runner prihvaća izričito
@@ -23,7 +23,7 @@ ne kopiraju u Simbiozu, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-Svih 56 scenarija pokriva svaki modul koji Simbioza isporučuje. Provjerava se
+Svih 80 scenarija pokriva svaki modul koji Simbioza isporučuje. Provjerava se
 javno ponašanje, a ne privatni detalji implementacije.
 
 | Područje | End-to-end pokrivenost |
@@ -123,6 +123,22 @@ composer e2e -- --local
 Lokalni način koristi path repozitorije samo za module koji pripadaju ovom
 projektu. Nikada ne zamjenjuje uzvodni Framework ni Demo modul.
 
+Lokalni način dopušta razvojnu stabilnost posrednih aliasa modula, uz prednost
+stabilnim ovisnostima. To vrijedi samo za generirani testni manifest, ne za
+produkcijski manifest.
+
+Za cijeli skup PHP provjera kvalitete koristite izoliranu kopiju izvornog koda:
+
+```bash
+HPH_LOCAL_MODULE_ROOT=/apsolutna/putanja/do/roditelja-modula php scripts/build_ci_composer.php --local
+COMPOSER=composer.ci.json composer update --with-all-dependencies
+COMPOSER=composer.ci.json composer on-commit
+```
+
+Ne zamjenjujte vendor direktorij aktivne aplikacije samo radi instalacije QA alata.
+Generirani manifest uključuje sve opcionalne module i alate navedene pod
+`extra.simbioza.development-tools`.
+
 Lokalni prolaz obavezan je kada se zajedno mijenjaju dva ili više susjednih
 modula. Zadani prolaz zatim mora proći i nakon što su odgovarajući release
 tagovi tih modula dostupni na udaljenim repozitorijima.
@@ -142,6 +158,25 @@ videozapisi i HTML izvještaj zapisuju se ispod `build/`, izlaz PHP poslužitelj
 primjerice `build/e2e-server-mysql.log`, `build/e2e-query-log-mysql.jsonl` i
 `build/e2e-request-log-mysql.jsonl`. Git ignorira sve te putanje. Sačuvani
 projekt uklonite nakon pregleda ili ponovno pokrenite test bez `--keep`.
+
+Rezultati pregledničkih provjera također su odvojeni po driveru: SQLite koristi
+`build/test-results/` i `build/playwright-report/`, a MySQL, MariaDB i PostgreSQL
+dodaju `-mysql`, `-mariadb` ili `-pgsql`. Ne pokrećite istovremeno dva skupa za isti
+driver. Privremeni PHP razvojni poslužitelj isključuje opcode cache jer testovi
+stvaraju i mijenjaju generirane PHP fixture datoteke. Postavke opcode cachea
+redovnih instalacija ostaju nepromijenjene.
+
+Višestranični audit i browser tokovi postavki imaju izričite rokove od 90–300
+sekundi kako bi stigli završiti hladni PHP zahtjevi i obvezno čišćenje. Granice
+trajanja pojedinačnog zahtjeva, broja upita, memorije i veličine odgovora nisu
+promijenjene. Sintetička browser fixture izričito uključuje Simbiozinu temu,
+umjesto da naslijedi njezino isključivanje u razvojnoj instalaciji.
+
+Scenarij potpunog restorea odgađa sljedeći odgovor popisa backup poslova i
+zahtijeva da završi prije GUI potvrde uspjeha, a zatim provjerava novu prijavu.
+Time sprječava kasnu promjenu sesijskog kolačića tijekom restorea. Testovi pravila
+naslovnice vraćaju izvorni fixture JSON u `finally`, uključujući grešku ili istek
+roka, tako da kasniji testovi zadrže ugrađenu naslovnicu.
 
 ## CI
 

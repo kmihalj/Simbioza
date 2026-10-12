@@ -60,6 +60,31 @@ runtime data, not to the whole release, and installs a narrowly restricted
 helper for package changes. It also creates the deploy and runtime groups.
 Check every diagnostic result before continuing. Do not use `chmod 777`.
 
+With the default application configuration directory, Auth, Email, HTML Editor,
+Workspace, Menu, Theme and Backup have runtime-writable module directories.
+Backup needs this for atomic provider-descriptor publication. Release-managed
+PHP service configuration remains deploy-owned and read-only to FPM. The tool
+does not recreate `data/config` or grant runtime rights to removed legacy
+`editor-html.php`, `email.php` or `workspace.php` files.
+
+### External configuration layers
+
+Prepare the complete configuration before selecting it in private `framework.php`.
+The generated pool and fixed helper pin the same base and override parameters;
+they do not rely on inherited variables surviving `clear_env` or `sudo`. Linux
+sandbox rules bind lower layers read-only and expose the final layer plus the
+configured Setup request directory. This permits writes only where Unix rights
+already allow them; the tool does not chown/chmod external layers.
+
+Give the FPM and deploy accounts read/search access. Keep PHP service code
+deploy-owned and read-only to FPM; give runtime-owned writable data files/locks
+the shared runtime group and atomic-replacement permissions. Do not use a
+protected home directory or a public document root for private configuration.
+Pre-create a nondefault request directory with the required shared permissions.
+After changing paths on an existing site, repeat `--install`, then `--finalize`,
+using the same instance, port, and SAML options. `--finalize` alone refreshes the
+helper/ownership, not the FPM pool. See the [configuration guide](configuration_en.md).
+
 ## 3. Configure the web server
 
 Choose **one** of these configurations. They serve a dedicated hostname at
@@ -163,11 +188,11 @@ installed through the GUI.
 If you intentionally omit the dedicated helper, prepare the selected optional
 packages as the deploy user with
 `php scripts/installation_packages.php prepare` for all modules, or add
-`--modules=theme,calendar` for a smaller selection, and prepare
-additional languages with
-`php scripts/installation_languages.php prepare --locales=de,es,fr,it` before
-continuing. Match both lists to your selections and reload the installer.
-Without the helper, later GUI package and language management is unavailable.
+`--modules=theme,calendar` for a smaller selection. Match the list to your
+selections and reload the installer. Without the helper, later GUI package
+changes are unavailable. Language installation/update/removal writes only
+runtime data and configuration and does not require this helper. Ensure those
+directories are writable by PHP; see [localization](localization_en.md).
 
 After installation, sign in as the administrator. In **Settings → Setup and
 modules**, verify that the dedicated pool, helper, and runtime permissions are

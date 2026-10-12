@@ -9,11 +9,11 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * HR: Zapisuje neosjetljive ORM query događaje kao JSONL za ponovljivu analizu
- *     broja i trajanja upita tijekom performance testova.
- *
  * EN: Writes non-sensitive ORM query events as JSONL for repeatable query-count
  *     and duration analysis during performance tests.
+ *
+ * HR: Zapisuje neosjetljive ORM query događaje kao JSONL za ponovljivu analizu
+ *     broja i trajanja upita tijekom performance testova.
  */
 final class QueryLogWriter
 {
@@ -21,11 +21,11 @@ final class QueryLogWriter
     private array $records = [];
 
     /**
-     * HR: Provjerava ciljnu datoteku; direktorij mora unaprijed postojati kako
-     *     pogrešna varijabla okruženja ne bi stvarala proizvoljne putanje.
-     *
      * EN: Validates the target file; its directory must already exist so a bad
      *     environment variable cannot create arbitrary paths.
+     *
+     * HR: Provjerava ciljnu datoteku; direktorij mora unaprijed postojati kako
+     *     pogrešna varijabla okruženja ne bi stvarala proizvoljne putanje.
      */
     public function __construct(private readonly string $path)
     {
@@ -37,11 +37,11 @@ final class QueryLogWriter
     }
 
     /**
-     * HR: Dodaje jedan JSON red pod file lockom. SQL bind vrijednosti nisu dio
-     *     QueryExecuted događaja i zato se ne mogu slučajno zapisati.
-     *
      * EN: Appends one JSON line under a file lock. SQL bindings are absent from
      *     QueryExecuted and therefore cannot be written accidentally.
+     *
+     * HR: Dodaje jedan JSON red pod file lockom. SQL bind vrijednosti nisu dio
+     *     QueryExecuted događaja i zato se ne mogu slučajno zapisati.
      *
      * @throws \JsonException
      */
@@ -63,11 +63,11 @@ final class QueryLogWriter
     }
 
     /**
-     * HR: Zapisuje cijeli request u jednom zaključanom diskovnom pozivu kako
-     *     profiler ne bi sam dominirao mjerenim vremenom velikih zahtjeva.
-     *
      * EN: Writes the complete request in one locked disk operation so the
      *     profiler itself does not dominate large-request measurements.
+     *
+     * HR: Zapisuje cijeli request u jednom zaključanom diskovnom pozivu kako
+     *     profiler ne bi sam dominirao mjerenim vremenom velikih zahtjeva.
      */
     public function flush(): void
     {
@@ -84,11 +84,11 @@ final class QueryLogWriter
     }
 
     /**
-     * HR: Koristi oznaku konkretnog mjerenja iz zaglavlja ili stabilnu oznaku
-     *     trenutačnog PHP zahtjeva kada zaglavlje nije poslano.
-     *
      * EN: Uses the measurement marker from the request header, or a stable
      *     marker for the current PHP request when no header was sent.
+     *
+     * HR: Koristi oznaku konkretnog mjerenja iz zaglavlja ili stabilnu oznaku
+     *     trenutačnog PHP zahtjeva kada zaglavlje nije poslano.
      */
     private function requestId(): string
     {

@@ -130,10 +130,11 @@ if (is_array($fallbackUser)) {
 }
 
 /*
- * HR: Globalne flash poruke pripremamo prije ispisa <head> elementa kako bi
- *     zajednički Auth partial mogao registrirati tematske CSS i JavaScript assete.
  * EN: Prepare global flash messages before writing the <head> element so the
  *     shared Auth partial can register its themed CSS and JavaScript assets.
+ *
+ * HR: Globalne flash poruke pripremamo prije ispisa <head> elementa kako bi
+ *     zajednički Auth partial mogao registrirati tematske CSS i JavaScript assete.
  */
 $layoutToastHtml = '';
 $layoutMessages = $this->alertHandler->getAllAndForget();
@@ -154,10 +155,11 @@ if (is_array($layoutMessages) && $layoutMessages !== []) {
 }
 
 /*
- * HR: Strukturne dijelove pripremamo prije ispisa layouta. Theme i Menu moduli
- *     ostaju opcionalni: svaki od njih može nedostajati bez prekida prikaza.
  * EN: Structural parts are prepared before layout output. Theme and Menu modules
  *     remain optional: either may be absent without breaking the page.
+ *
+ * HR: Strukturne dijelove pripremamo prije ispisa layouta. Theme i Menu moduli
+ *     ostaju opcionalni: svaki od njih može nedostajati bez prekida prikaza.
  */
 $layoutThemeEnabled = isset($themeLayoutRenderer)
 && is_object($themeLayoutRenderer)
@@ -184,8 +186,9 @@ if ($layoutThemeEnabled) {
 }
 
 /*
- * HR: Osnovna navigacija tipkovnicom ne ovisi o opcionalnoj temi ni njenim postavkama.
  * EN: Baseline keyboard navigation does not depend on the optional theme or its settings.
+ *
+ * HR: Osnovna navigacija tipkovnicom ne ovisi o opcionalnoj temi ni njenim postavkama.
  */
 if ($layoutSkipLinkHtml === '') {
     $layoutSkipLinkHtml = '<a class="simbioza-skip-link" href="#main-content">'
@@ -209,8 +212,9 @@ if (
             $topMenuCandidate = $menuRenderer->renderTopMenu($layoutNavigationPresentation);
         } catch (\ArgumentCountError) {
             /*
-             * HR: Tijekom lokalne nadogradnje stariji Menu može još imati metodu bez parametra.
              * EN: During a local upgrade, an older Menu may still expose a parameterless method.
+             *
+             * HR: Tijekom lokalne nadogradnje stariji Menu može još imati metodu bez parametra.
              */
             $topMenuCandidate = $menuRenderer->renderTopMenu();
         }
@@ -233,8 +237,9 @@ if (
 }
 
 /*
- * HR: Fallback navigacija postoji samo za instalacije bez menu modula.
  * EN: Fallback navigation exists only for installations without the menu module.
+ *
+ * HR: Fallback navigacija postoji samo za instalacije bez menu modula.
  */
 if ($renderedTopMenu === '') {
     $fallbackShowBrand = (bool)($layoutNavigationPresentation['show_brand'] ?? true);
@@ -323,10 +328,11 @@ if (
     && trim((string)$title) !== ''
 ) {
     /*
-     * HR: Unutarnje stranice automatski dobivaju hero iz naslova layouta. Kontroler
-     *     i dalje može poslati bogatiji `$themeHero` ili vrijednost `false` za isključivanje.
      * EN: Inner pages automatically receive a hero from the layout title. A controller
      *     may still supply richer `$themeHero` data or `false` to suppress it.
+     *
+     * HR: Unutarnje stranice automatski dobivaju hero iz naslova layouta. Kontroler
+     *     i dalje može poslati bogatiji `$themeHero` ili vrijednost `false` za isključivanje.
      */
     $layoutHeroContext = [
         'is_home' => false,
@@ -390,10 +396,11 @@ if (!is_string($layoutDuplicateInnerTitleJson)) {
 }
 
 /*
- * HR: Kada runtime tema nije aktivna, osnovni layout sam osigurava razmak između
- *     navigacije i sadržaja. Uključena tema razmak oblikuje kroz Hero i vlastiti CSS.
  * EN: When the runtime theme is inactive, the base layout provides spacing between
  *     navigation and content. An enabled theme controls that spacing through Hero and its CSS.
+ *
+ * HR: Kada runtime tema nije aktivna, osnovni layout sam osigurava razmak između
+ *     navigacije i sadržaja. Uključena tema razmak oblikuje kroz Hero i vlastiti CSS.
  */
 $layoutMainClasses = 'container-fluid px-4' . ($layoutThemeEnabled ? '' : ' pt-3');
 $layoutMainSurface = 'plain';
@@ -449,8 +456,9 @@ if (
     ?>
 
     <?php
-    // HR: Opcionalni modul izričito zauzima head slot, bez prepisivanja rasporeda.
     // EN: The optional module explicitly uses the head slot without rewriting the layout.
+    //
+    // HR: Opcionalni modul izričito zauzima head slot, bez prepisivanja rasporeda.
     if (isset($accessibilityRenderer)) {
         echo $accessibilityRenderer->renderHead(); // phpcs:ignore
     }
@@ -682,10 +690,11 @@ if (
     <?php if ($layoutHeroHtml !== '') : ?>
         <?php
         /*
-         * HR: Hero i sadržaj ostaju u zajedničkom sloju kako bi tema mogla napraviti
-         *     stabilno preklapanje bez ovisnosti o visini sadržaja pojedine rute.
          * EN: Hero and content share one stage so the theme can provide stable overlap
          *     without depending on the content height of an individual route.
+         *
+         * HR: Hero i sadržaj ostaju u zajedničkom sloju kako bi tema mogla napraviti
+         *     stabilno preklapanje bez ovisnosti o visini sadržaja pojedine rute.
          */
         ?>
         <div class="<?= $this->escape($layoutPageStageClasses) ?>">
@@ -722,8 +731,9 @@ if (
 
         <?php if ($layoutToastHtml !== '') : ?>
             <?php
-            // HR: Toast je pripremljen prije layouta, ali se vizualno prikazuje uz sadržaj.
             // EN: The toast is prepared before the layout but is visually rendered alongside content.
+            //
+            // HR: Toast je pripremljen prije layouta, ali se vizualno prikazuje uz sadržaj.
             ?>
             <?= $layoutToastHtml ?>
         <?php endif; ?>
@@ -1125,8 +1135,9 @@ if (
     </footer>
 
     <?php
-    // HR: Panel je izvan glavnog sadržaja i postoji samo dok je modul uključen.
     // EN: The panel is outside main content and exists only while the module is enabled.
+    //
+    // HR: Panel je izvan glavnog sadržaja i postoji samo dok je modul uključen.
     if (isset($accessibilityRenderer)) {
         echo $accessibilityRenderer->renderPanel(); // phpcs:ignore
     }

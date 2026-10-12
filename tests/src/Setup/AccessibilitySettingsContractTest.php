@@ -12,8 +12,9 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
 /**
- * HR: Postavke su u aplikaciji dok je paket instaliran, čak i ako je isključen.
  * EN: Settings remain in the host while the package is installed, even if disabled.
+ *
+ * HR: Postavke su u aplikaciji dok je paket instaliran, čak i ako je isključen.
  */
 #[CoversNothing]
 final class AccessibilitySettingsContractTest extends TestCase

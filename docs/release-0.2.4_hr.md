@@ -1,5 +1,7 @@
 # Simbioza 0.2.4
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Izolirani PHP-FPM pool sada izričito dopušta zahtjev do 900 sekundi tijekom
 početne instalacije i radnji nad modulima. Na lokalnom macOS-u s PHP-om 8.5
 prethodna vrijednost `max_execution_time = 0` ipak je prekidala zahtjev nakon

@@ -8,8 +8,9 @@ use App\Localization\LanguageRepository;
 use App\Module\ModuleCatalog;
 
 /**
- * HR: Normalizira i provjerava sve podatke web-čarobnjaka prije zapisivanja.
  * EN: Normalizes and validates all wizard data before anything is written.
+ *
+ * HR: Normalizira i provjerava sve podatke web-čarobnjaka prije zapisivanja.
  */
 final readonly class InstallationInputValidator
 {
@@ -17,14 +18,19 @@ final readonly class InstallationInputValidator
 
     private const SUPPORTED_LOCALES = ['hr', 'en'];
 
-    /** HR: Po želji uključuje objavljene jezike iz vanjskog kataloga. EN: Optionally includes released locales from the external catalogue. */
+    /**
+     * EN: Optionally includes released locales from the external catalogue.
+     *
+     * HR: Po želji uključuje objavljene jezike iz vanjskog kataloga.
+     */
     public function __construct(private ?LanguageRepository $languages = null)
     {
     }
 
     /**
-     * HR: Provjerava i normalizira postavke baze.
      * EN: Validates and normalizes database settings.
+     *
+     * HR: Provjerava i normalizira postavke baze.
      *
      * @param array<array-key, mixed> $input
      * @return array{driver:'sqlite'}|array{driver:'mysql'|'pgsql',host:string,port:int,database:string,username:string,password:string}
@@ -91,8 +97,9 @@ final readonly class InstallationInputValidator
     }
 
     /**
-     * HR: Provjerava i normalizira identitet, jezike i vremensku zonu aplikacije.
      * EN: Validates and normalizes application identity, locales, and timezone.
+     *
+     * HR: Provjerava i normalizira identitet, jezike i vremensku zonu aplikacije.
      *
      * @param array<array-key, mixed> $input
      * @return array{name:string,primary_locale:string,supported_locales:list<string>,timezone:string,optional_modules:list<string>}
@@ -161,8 +168,9 @@ final readonly class InstallationInputValidator
     }
 
     /**
-     * HR: Provjerava podatke i čvrstoću lozinke prvog administratora.
      * EN: Validates the first administrator and password strength.
+     *
+     * HR: Provjerava podatke i čvrstoću lozinke prvog administratora.
      *
      * @param array<array-key, mixed> $input
      * @return array{login:string,display_name:string,first_name:string,last_name:string,email:string,password:string}
@@ -217,8 +225,9 @@ final readonly class InstallationInputValidator
     }
 
     /**
-     * HR: Traži dugu lozinku s najmanje tri skupine znakova koja ne sadrži identitet računa.
      * EN: Requires a long password with three character groups that does not contain account identity.
+     *
+     * HR: Traži dugu lozinku s najmanje tri skupine znakova koja ne sadrži identitet računa.
      */
     private function isStrongPassword(string $password, string $login, string $email): bool
     {
@@ -248,7 +257,11 @@ final readonly class InstallationInputValidator
         return true;
     }
 
-    /** HR: Sigurno pretvara samo skalaran HTTP unos. EN: Safely converts scalar HTTP input only. */
+    /**
+     * EN: Safely converts scalar HTTP input only.
+     *
+     * HR: Sigurno pretvara samo skalaran HTTP unos.
+     */
     private function scalarString(mixed $value): string
     {
         return is_scalar($value) ? (string)$value : '';

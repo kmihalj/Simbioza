@@ -10,7 +10,7 @@ Ovaj presjek nastavlja etape 1–2. Ne predstavlja dovršen accessibility modul 
 
 Potvrđeni uzrok bio je u strukturiranom vraćanju konfiguracije: izračunate vrijednosti zamijenile su dinamički `config/app.php`. CLI je zatim mijenjao stanje modula, ali aplikacija više nije čitala tu datoteku.
 
-Backup provider sada podržava lokalno definirana odredišta i mapiranje ključeva. Simbioza vraća instalacijske postavke u `config/installation.php`, a uključene module u `data/config/modules.php`; `config/app.php` ostaje netaknut. Prenosive opcije sesije čitaju se kroz ograničen popis ključeva. Jezici se i dalje provjeravaju prema stvarno instaliranim paketima, a rezervni jezik prati zadani jezik aplikacije.
+Backup provider podržava lokalno definirana odredišta i mapiranje ključeva. Simbioza vraća instalacijske postavke u `installation.php`, a uključene module u `modules.php` završnog sloja `HPH_CONFIG_PATH`/`HPH_CONFIG_OVERRIDE_PATHS`; dinamički `app.php` ostaje netaknut. Vanjski backup/povrat konfiguracije implementiran je; aktualna pravila nalaze se u [konfiguracijskoj uputi](configuration_hr.md). Prenosive opcije sesije čitaju se kroz ograničen popis ključeva. Jezici se i dalje provjeravaju prema stvarno instaliranim paketima, a rezervni jezik prati zadani jezik aplikacije.
 
 Arhiva ne određuje putanje i ne donosi izvršivi kod. Sačuvane su neodabrane lokalne vrijednosti i grupni povrat pri pogrešci. Format zapisa ostaje kompatibilan sa starim kopijama. Test pokriva i tekst koji izgleda kao PHP kod, ali mora ostati običan podatak.
 

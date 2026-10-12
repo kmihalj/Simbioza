@@ -8,19 +8,25 @@ use PDO;
 use RuntimeException;
 
 /**
- * HR: Otvara stvarnu PDO vezu odabrane vrste baze i izvršava probni upit.
  * EN: Opens a real PDO connection for the selected database and executes a probe query.
+ *
+ * HR: Otvara stvarnu PDO vezu odabrane vrste baze i izvršava probni upit.
  */
 final readonly class InstallationDatabaseTester
 {
-    /** HR: Inicijalizira normalizaciju veze. EN: Initializes connection normalization. */
+    /**
+     * EN: Initializes connection normalization.
+     *
+     * HR: Inicijalizira normalizaciju veze.
+     */
     public function __construct(private InstallationConfigWriter $configWriter)
     {
     }
 
     /**
-     * HR: Provjerava stvarnu vezu bez vraćanja ili zapisivanja vjerodajnica.
      * EN: Verifies the real connection without returning or logging credentials.
+     *
+     * HR: Provjerava stvarnu vezu bez vraćanja ili zapisivanja vjerodajnica.
      *
      * @param array<array-key, mixed> $database
      */
@@ -56,8 +62,9 @@ final readonly class InstallationDatabaseTester
     }
 
     /**
-     * HR: Gradi PDO DSN iz već provjerenih vrijednosti.
      * EN: Builds a PDO DSN from already validated values.
+     *
+     * HR: Gradi PDO DSN iz već provjerenih vrijednosti.
      *
      * @param array{driver:'sqlite',database:string}|array{
      *     driver:'mysql'|'pgsql',
@@ -99,8 +106,9 @@ final readonly class InstallationDatabaseTester
     }
 
     /**
-     * HR: Odbija bazu koja već sadrži korisničke tablice kako migracije ne bi pregazile podatke.
      * EN: Rejects a database with existing user tables so migrations cannot overwrite data.
+     *
+     * HR: Odbija bazu koja već sadrži korisničke tablice kako migracije ne bi pregazile podatke.
      */
     private function assertEmptyDatabase(PDO $pdo, string $driver): void
     {

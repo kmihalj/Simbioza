@@ -2,6 +2,15 @@
 
 [Engleska verzija](installation_en.md)
 
+[Docker/Colima candidate upute](docker_hr.md) opisuju dodatni način instalacije.
+Klasični installeri u nastavku ostaju; Docker koristi zamjenu imagea i izričite
+migracije, ne Composer/updater nadogradnju koda unutar containera.
+
+Šest ugrađenih vodiča koristi aktualni format-2 backup spremnik. Instalacija
+koristi rezerviranu adresu koja nije mrežni cilj samo za razrješavanje poveznica
+prema odabranoj osnovnoj putanji instalacije; ne dohvaća tu adresu i ne sprema je
+kao javnu adresu sitea. Korisničke kopije zahtijevaju stvarne izvornu i ciljnu adresu.
+
 Način izvršavanja PHP-a odaberite **prije** podešavanja web-poslužitelja.
 Slijedite jedan cjelovit postupak; nemojte miješati direktive ili prava iz
 različitih načina:
@@ -38,11 +47,12 @@ ili FPM izvršavaju istu PHP verziju.
 ### 2. Dohvatite označeno izdanje
 
 Označeno izdanje instalirajte u direktorij **bez** `.git` direktorija.
-Odaberite aktualni stabilni tag na [stranici izdanja](https://github.com/kmihalj/Simbioza/releases)
-i zamijenite `0.2.4` ako je dostupno novije izdanje:
+Nakon koordinirane objave koristite `0.3.0` ili noviji kompatibilni stabilni tag na
+[stranici izdanja](https://github.com/kmihalj/Simbioza/releases). Ove upute opisuju
+osnovu 0.3.0; tijekom pripreme izdanja nemojte umjesto nje uzeti tag 0.2.x:
 
 ```bash
-SIMBIOZA_TAG=0.2.4
+SIMBIOZA_TAG=0.3.0
 SIMBIOZA_FETCH_DIR="$(mktemp -d)"
 mkdir "$SIMBIOZA_FETCH_DIR/release"
 git -C "$SIMBIOZA_FETCH_DIR/release" init -q
@@ -134,13 +144,22 @@ instalaciju ili povrat. Obvezne module nije moguće ukloniti; ovisnosti se
 provjeravaju. Već uvezene Confluence stranice rade bez import-modula, ali se
 uklanjanje blokira dok postoje nerazriješene privremene import-referencije.
 
+Odabir modula sprema se u `HPH_CONFIG_PATH/modules.php` (zadano
+`config/modules.php`), ne pod `data/`. GUI i CLI koriste istu datoteku; kod
+override slojeva zapis ide samo u zadnji deklarirani sloj. U
+[konfiguracijskim uputama](configuration_hr.md) opisani su `.dist` predložak,
+aktualne putanje modula i potrebna prava. Instaler također koristi
+ove zajedničke putanje, kao i upravljanje jezicima, updater i backup/vraćanje
+aplikacijskih postavki. Prije odabira vanjskog korijena pripremite potpunu aktualnu konfiguraciju.
+
 ### Jezici
 
 Instaler dohvaća objavljene jezike iz
 [repozitorija jezika](https://github.com/kmihalj/simbioza-languages).
 Hrvatski i engleski unaprijed su označeni, ali ih možete odznačiti ako
-ostane barem jedan jezik. Administrator može upravljati objavljenim paketima
-u namjenskom FPM GUI-ju; inače koristite:
+ostane barem jedan jezik. Administrator upravlja objavljenim paketima u GUI-ju
+na mod_php ili FPM instalaciji ako su runtime podaci i završni konfiguracijski sloj zapisivi.
+Instalirani katalozi su podatkovni JSON, ne kod aplikacije. Dostupan je i CLI:
 
 ```bash
 vendor/bin/hph languages list
@@ -160,9 +179,7 @@ postoje prijevodi svih uputa.
 
 ### Nadogradnje aplikacije
 
-**Prije daljnjih nadogradnji svaka verzija starija od 0.2.12 mora prvo izvršiti
-`php update.php --tag=0.2.12`.** To obvezno prijelazno izdanje uvodi nadogradnju
-samog updatera. Preskakanje nije podržano; pogledajte [napomene za 0.2.12](release-0.2.12_hr.md).
+Simbioza 0.3.0 zahtijeva novu instalaciju. Nadogradnje s 0.2.x i stare Simbioza backup arhive nisu podržane. Buduće nadogradnje 0.3.x+ koriste samonadogradivi updater.
 
 Na ispravno podešenom namjenskom FPM-u administrator može provjeriti i
 pokrenuti nadogradnju u GUI Setupu. Stvarni posao radi ograničeni deploy
@@ -176,7 +193,7 @@ php update.php --check
 php update.php
 ```
 
-Za određeni objavljeni tag koristite `php update.php --tag=<TAG>`. Od 0.2.12
+Za određeni objavljeni tag koristite `php update.php --tag=<TAG>`. Aktualni
 updater prvo provjerava updater iz najnovijeg stabilnog izdanja, čak i ako
 odaberete drugi aplikacijski tag. Novi updater dobiva privatnu sigurnosnu
 kopiju, atomski se zamjenjuje i pokreće u svježem PHP procesu uz isto
@@ -192,7 +209,7 @@ Kopije updatera nalaze se u `data/backups/updater/` s pravima `0600`.
 Privremeni rad i podaci predaje ostaju unutar `data/` i uklanjaju se po završetku.
 Povrat aplikacijskog koda ne vraća zastarjeli updater. `--check` je samo
 read-only provjera; `--updater-info` prikazuje verziju updatera i protokol predaje
-bez aplikacijskih ovisnosti. Izdanja starija od obveznog prijelaznog izdanja
+bez aplikacijskih ovisnosti. Izdanja starija od 0.3.0
 nisu valjani ciljevi ovog updatera.
 
 Greška **prije** migracija automatski vraća kod i Composer pakete. Kada
@@ -203,8 +220,16 @@ pregledate dnevnik i putanju kopije. Nakon svake nadogradnje potvrdite
 završni status, nula migracija na čekanju te stvarnu prijavu i prikaz
 sadržaja. Bazu, postavke, datoteke i teme kopirajte i zasebno.
 
-Starije namjenske FPM instalacije podešene izdanjem 0.1.77 ili starijim
-trebaju jednom ponoviti `--finalize` iz FPM upute nakon nadogradnje, kako bi
-CLI održavatelji i pozadinske nadogradnje dobili nova ograničena pravila
-helpera. Ne koristite redovno `sudo php update.php` i ne pokrećite updater
+Ne koristite redovno `sudo php update.php` i ne pokrećite updater
 kao web/FPM račun.
+
+Aktualni updater prati `framework.php`, `HPH_CONFIG_PATH` i uređene override
+slojeve bez pokretanja aplikacije prije osvježavanja samog updatera. Zastarjelo
+spremište odabira modula prenosi prije aplikacijskog preflighta i može vratiti taj
+prijenos prije početka migracija baze. Privatni vanjski slojevi izuzeti su iz
+sinkronizacije i arhiva za povrat koda; kopirajte ih zasebno sigurnim postupkom.
+Povrat aplikacijskih postavki cilja aktivni završni sloj i ne zamjenjuje dinamički
+`app.php` izračunatim podacima. Pogledajte
+[konfiguracijsku uputu](configuration_hr.md#backup-i-prava).
+Nakon promjene putanja namjenskog FPM-a izričito ponovno stvorite pool/helper uz
+istu instancu/opcije i pripremite prava vanjske konfiguracije.

@@ -7,15 +7,18 @@ use AaiEduHr\HeartPhrameModuleMenu\Middleware\RequireSettingsAdminWhenAuthEnable
 // Global middleware for all routes.
 $middleware = [
     \HeartPhrame\Middleware\TrustedProxyMiddleware::class,
+    \HeartPhrame\Middleware\SecurityHeadersMiddleware::class,
+    \HeartPhrame\Middleware\ErrorHandlerMiddleware::class,
     \HeartPhrame\Middleware\StartSessionMiddleware::class,
     \HeartPhrame\Middleware\CheckCsrfMiddleware::class,
     \HeartPhrame\Middleware\DeferredModuleLoaderMiddleware::class,
 ];
 
-// HR: Privatni middleware jedne instalacije ide prije administratorske provjere;
-//     pogrešna konfiguracija ruši zatvoren sustav umjesto da ukine zaštitu.
 // EN: Installation-private middleware runs before the admin gate; invalid
 //     configuration fails closed instead of silently dropping protection.
+//
+// HR: Privatni middleware jedne instalacije ide prije administratorske provjere;
+//     pogrešna konfiguracija ruši zatvoren sustav umjesto da ukine zaštitu.
 $localMiddlewareFile = __DIR__ . '/middleware.local.php';
 if (is_file($localMiddlewareFile)) {
     $localMiddleware = require $localMiddlewareFile;
@@ -35,21 +38,28 @@ if (is_file($localMiddlewareFile)) {
     }
 }
 
-// HR: Ponovna settings provjera nakon odgođenih modula primjenjuje Simbioza
-//     admin elevaciju, ali minimalne instalacije smiju raditi bez Menu modula.
 // EN: Rechecking settings after deferred modules applies the Simbioza admin
 //     elevation policy, while minimal installations may omit the Menu module.
+//
+// HR: Ponovna settings provjera nakon odgođenih modula primjenjuje Simbioza
+//     admin elevaciju, ali minimalne instalacije smiju raditi bez Menu modula.
 $settingsAdminMiddleware = RequireSettingsAdminWhenAuthEnabledMiddleware::class;
 if (class_exists($settingsAdminMiddleware)) {
     $middleware[] = $settingsAdminMiddleware;
 }
 
-// HR: Performance middleware u produkciji nije ni registriran; E2E runner ga
-//     uključuje samo sigurnom ciljnom datotekom.
 // EN: Performance middleware is not even registered in production; the E2E
 //     runner enables it only with a safe target file.
+//
+// HR: Performance middleware u produkciji nije ni registriran; E2E runner ga
+//     uključuje samo sigurnom ciljnom datotekom.
 if (trim((string)getenv('HPH_REQUEST_LOG')) !== '') {
-    array_unshift($middleware, \App\Performance\RequestMetricsMiddleware::class);
+    // EN: Keep the framework's security/error pair adjacent and outermost;
+    // metrics must not bypass headers on an error response.
+    //
+    // HR: Frameworkov security/error par ostaje susjedan i izvana;
+    // metrike ne smiju zaobići zaglavlja odgovora pogreške.
+    array_splice($middleware, 3, 0, [\App\Performance\RequestMetricsMiddleware::class]);
 }
 
 return $middleware;

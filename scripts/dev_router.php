@@ -1,14 +1,14 @@
 <?php
 
 /**
- * HR: Router za PHP razvojni poslužitelj. Postojeće javne datoteke prepušta
- *     ugrađenom poslužitelju, a ostale zahtjeve šalje kroz aplikacijsku ulaznu
- *     točku. Produkcijski poslužitelj treba koristiti vlastita rewrite pravila.
- *
  * EN: Router for PHP's development server. Existing public files are delegated
  *     to the built-in server, while every other request is sent through the
  *     application entry point. A production server should use its own rewrite
  *     rules.
+ *
+ * HR: Router za PHP razvojni poslužitelj. Postojeće javne datoteke prepušta
+ *     ugrađenom poslužitelju, a ostale zahtjeve šalje kroz aplikacijsku ulaznu
+ *     točku. Produkcijski poslužitelj treba koristiti vlastita rewrite pravila.
  */
 
 declare(strict_types=1);

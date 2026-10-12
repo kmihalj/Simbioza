@@ -1,5 +1,7 @@
 # Simbioza 0.2.12
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 ## Obvezno prijelazno izdanje updatera
 
 Svaku instalaciju stariju od 0.2.12 **prvo izričito nadogradite na 0.2.12**:

@@ -1,5 +1,7 @@
 # Simbioza 0.2.9
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 The optional Confluence Import module is upgraded to 0.1.42.
 
 Dates stored only in an empty Confluence `time` element's `datetime` attribute now become visible text before HTML sanitization. This preserves dates in tables, paragraphs, and supported rich-text macros, including after editing and saving the imported page. Existing visible date labels are retained; date values and time zones are not changed.

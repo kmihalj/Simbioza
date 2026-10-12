@@ -7,6 +7,9 @@ namespace Tests\Module;
 use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\Blueprint;
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
+use App\Deployment\DeploymentPolicy;
 use App\Module\CommandResult;
 use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
@@ -14,10 +17,12 @@ use App\Module\ModuleDataArchive;
 use App\Module\ModuleLifecycleManager;
 use App\Module\ModuleStateStore;
 use App\Module\NativeProcessRunner;
+use App\Module\OptionalModuleRoutes;
 use App\Module\ProcessRunnerInterface;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -25,11 +30,15 @@ use RuntimeException;
 use SplFileInfo;
 
 #[CoversClass(ModuleLifecycleManager::class)]
+#[UsesClass(DeploymentPolicy::class)]
 #[CoversClass(ComposerPackageManager::class)]
 #[CoversClass(CommandResult::class)]
 #[CoversClass(ModuleDataArchive::class)]
 #[CoversClass(ModuleStateStore::class)]
 #[CoversClass(ModuleCatalog::class)]
+#[UsesClass(ConfigurationPaths::class)]
+#[UsesClass(PhpConfigurationReader::class)]
+#[UsesClass(OptionalModuleRoutes::class)]
 final class ModuleLifecycleManagerTest extends TestCase
 {
     private string $root;
@@ -40,18 +49,34 @@ final class ModuleLifecycleManagerTest extends TestCase
 
     private ModuleLifecycleManager $manager;
 
+    /** @var array<string,string|false> */
+    private array $environment = [];
+
     /**
-     * HR: Priprema izoliranu SQLite instalaciju s uključenim E-mail modulom.
      * EN: Prepares an isolated SQLite installation with the E-mail module enabled.
+     *
+     * HR: Priprema izoliranu SQLite instalaciju s uključenim E-mail modulom.
      */
     protected function setUp(): void
     {
+        foreach (['HPH_APP_PATH', 'HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $name) {
+            $this->environment[$name] = getenv($name);
+            putenv($name);
+        }
+
         $this->root = sys_get_temp_dir() . '/simbioza-module-test-' . bin2hex(random_bytes(8));
         foreach (['config', 'data', 'database/migrations'] as $directory) {
             if (!mkdir($this->root . '/' . $directory, 0770, true) && !is_dir($this->root . '/' . $directory)) {
                 throw new RuntimeException('Unable to create module lifecycle test directory.');
             }
         }
+
+        // EN: Migrations generate Auth configuration only inside the test-owned installation.
+        //
+        // HR: Migracije generiraju Auth config samo u vlastitoj testnoj instalaciji.
+        putenv('HPH_APP_PATH=' . $this->root);
+        putenv('HPH_CONFIG_PATH=' . $this->root . '/config');
+        file_put_contents($this->root . '/config/app.php', '<?php return [];');
 
         $projectRoot = dirname(__DIR__, 3);
         foreach (
@@ -98,7 +123,7 @@ final class ModuleLifecycleManagerTest extends TestCase
         $catalog = new ModuleCatalog();
         $this->state = new ModuleStateStore($this->root, $catalog);
         $this->state->initialize(['email']);
-        $this->assertSame(0660, fileperms($this->root . '/data/config/modules.php') & 0777);
+        $this->assertSame(0660, fileperms($this->root . '/config/modules.php') & 0777);
 
         $archives = new ModuleDataArchive($this->database, $this->root);
         $this->manager = new ModuleLifecycleManager(
@@ -110,9 +135,17 @@ final class ModuleLifecycleManagerTest extends TestCase
         );
     }
 
-    /** HR: Uklanja samo privremenu instalaciju izrađenu testom. EN: Removes only the temporary installation created by the test. */
+    /**
+     * EN: Removes only the temporary installation created by the test.
+     *
+     * HR: Uklanja samo privremenu instalaciju izrađenu testom.
+     */
     protected function tearDown(): void
     {
+        foreach ($this->environment as $name => $value) {
+            is_string($value) ? putenv($name . '=' . $value) : putenv($name);
+        }
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->root, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST,
@@ -134,10 +167,11 @@ final class ModuleLifecycleManagerTest extends TestCase
     }
 
     /**
-     * HR: Uklanjanje čuva podatke u NDJSON-u, briše shemu te ih nakon ponovnog
-     *     dodavanja transakcijski vraća zajedno sa stanjem modula.
      * EN: Removal stores data in NDJSON, drops the schema, and a later add
      *     transactionally restores both data and module state.
+     *
+     * HR: Uklanjanje čuva podatke u NDJSON-u, briše shemu te ih nakon ponovnog
+     *     dodavanja transakcijski vraća zajedno sa stanjem modula.
      */
     public function testRemoveAndRestoreOptionalModuleData(): void
     {
@@ -185,7 +219,11 @@ final class ModuleLifecycleManagerTest extends TestCase
         $this->assertSame('recipient@example.test', $row['recipient_email'] ?? null);
     }
 
-    /** HR: Isključivanje ostavlja shemu i podatke, a uključivanje ih ponovno izlaže. EN: Disabling retains schema and data, and enabling exposes them again. */
+    /**
+     * EN: Disabling retains schema and data, and enabling exposes them again.
+     *
+     * HR: Isključivanje ostavlja shemu i podatke, a uključivanje ih ponovno izlaže.
+     */
     public function testDisableAndEnableKeepsSchema(): void
     {
         $this->manager->disable('email');
@@ -197,10 +235,11 @@ final class ModuleLifecycleManagerTest extends TestCase
     }
 
     /**
-     * HR: Neuspjela Composer radnja ne smije prije vremena isključiti modul ni
-     *     ukloniti njegovu shemu, a privatni cache mora biti počišćen.
      * EN: A failed Composer operation must not disable the module or drop its
      *     schema prematurely, and its private cache must be cleaned up.
+     *
+     * HR: Neuspjela Composer radnja ne smije prije vremena isključiti modul ni
+     *     ukloniti njegovu shemu, a privatni cache mora biti počišćen.
      */
     public function testPackageFailureLeavesEnabledSchemaIntact(): void
     {
@@ -211,7 +250,11 @@ final class ModuleLifecycleManagerTest extends TestCase
         $runner = new class implements ProcessRunnerInterface {
             public ?string $composerCache = null;
 
-            /** HR: Bilježi privatni cache i simulira Composer kvar. EN: Records the private cache and simulates a Composer failure. */
+            /**
+             * EN: Records the private cache and simulates a Composer failure.
+             *
+             * HR: Bilježi privatni cache i simulira Composer kvar.
+             */
             public function run(array $command, string $workingDirectory): CommandResult
             {
                 $cache = getenv('COMPOSER_CACHE_DIR');
@@ -245,10 +288,11 @@ final class ModuleLifecycleManagerTest extends TestCase
     }
 
     /**
-     * HR: Globalna migracija preskače omotač opcionalnog paketa koji nije
-     *     instaliran, ali i dalje primjenjuje aplikacijsku migraciju bez vlasnika.
      * EN: Global migration skips the wrapper of an absent optional package
      *     while still applying an unowned application migration.
+     *
+     * HR: Globalna migracija preskače omotač opcionalnog paketa koji nije
+     *     instaliran, ali i dalje primjenjuje aplikacijsku migraciju bez vlasnika.
      */
     public function testInstalledMigrationSetSkipsAbsentOptionalPackages(): void
     {
@@ -333,10 +377,11 @@ PHP,
     }
 
     /**
-     * HR: Uklanjanje Confluence modula staje dok povijest stranica još sadrži
-     *     proxy koji bi bez tog modula postao neupotrebljiv.
      * EN: Confluence removal stops while page history still contains a proxy
      *     that would become unusable without that module.
+     *
+     * HR: Uklanjanje Confluence modula staje dok povijest stranica još sadrži
+     *     proxy koji bi bez tog modula postao neupotrebljiv.
      */
     public function testConfluenceRemovalRejectsUnresolvedRuntimeReferences(): void
     {
@@ -350,6 +395,35 @@ PHP,
         $this->database->table('editor_html_document_versions')->insert([
             'content_html' => '<a href="/confluence-import/link/42">Legacy link</a>',
         ]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('unresolved import references');
+        $this->manager->remove('confluence-import');
+    }
+
+    /**
+     * EN: Removal protection uses the layered external content-path setting.
+     *
+     * HR: Zaštita uklanjanja koristi slojevitu vanjsku putanju sadržaja.
+     */
+    public function testConfluenceRemovalChecksExternalEditorConfiguration(): void
+    {
+        mkdir($this->root . '/external/editor-html', 0770, true);
+        mkdir($this->root . '/config/editor-html', 0770);
+        mkdir($this->root . '/data/custom-documents', 0770);
+        file_put_contents(
+            $this->root . '/config/editor-html/editor-html.json',
+            '{"storage":{"filesystem_path":"unused"}}',
+        );
+        file_put_contents(
+            $this->root . '/external/editor-html/editor-html.json',
+            '{"storage":{"filesystem_path":"custom-documents"}}',
+        );
+        file_put_contents(
+            $this->root . '/data/custom-documents/page.html',
+            '<a href="/confluence-import/link/42">Legacy link</a>',
+        );
+        putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $this->root . '/external');
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('unresolved import references');

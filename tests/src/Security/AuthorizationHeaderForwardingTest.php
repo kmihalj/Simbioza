@@ -14,9 +14,9 @@ use function file_get_contents;
 final class AuthorizationHeaderForwardingTest extends TestCase
 {
     /**
-     * HR: Apache mora proslijediti Bearer zaglavlje PHP-u kako bi API autentikacija radila.
-     *
      * EN: Apache must forward the Bearer header to PHP so API authentication can work.
+     *
+     * HR: Apache mora proslijediti Bearer zaglavlje PHP-u kako bi API autentikacija radila.
      */
     public function testPublicHtaccessForwardsAuthorizationHeader(): void
     {

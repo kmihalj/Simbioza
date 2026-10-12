@@ -1,5 +1,7 @@
 # Simbioza 0.1.92
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release fixes installation of the optional Accessibility module from the Setup GUI. The module was listed correctly, but the installer used a separate Composer-constraint list that omitted Accessibility and rejected it before Composer ran. GUI and CLI module operations now read every optional module's version constraint from the release manifest. A regression test exercises the Accessibility installation path and checks the complete optional-module catalogue.
 
 The installation documentation has also been reorganized into separate, step-by-step guides for dedicated PHP-FPM and Apache mod_php. The initial graphical installer works in both modes; later GUI package changes and application updates require the dedicated FPM setup. The active GitHub Sponsors profile is now linked from the repository funding configuration and README.

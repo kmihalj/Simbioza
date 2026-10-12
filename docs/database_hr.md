@@ -6,13 +6,16 @@ MariaDB-kompatibilnim vezama.
 
 ## Lokalna datoteka
 
-Prije uređivanja kopirajte ignorirani predložak:
+PHP format ostaje aktualan. Verzionirani predložak prije uređivanja kopirajte
+u odabrani sloj `HPH_CONFIG_PATH`. Za zadani aplikacijski `config/`:
 
 ```bash
 cp config/database.php.dist config/database.php
 ```
 
-Nikada ne spremajte `config/database.php` u Git i ne ispisujte produkcijske
+Uz vanjski korijen cilj je `<HPH_CONFIG_PATH>/database.php`; pravila slojeva su
+u [konfiguracijskoj uputi](configuration_hr.md). Primjerom ne prepisujte postojeće
+vjerodajnice baze. Nikada ne spremajte aktivni `database.php` u Git i ne ispisujte produkcijske
 pristupne podatke u CI zapis. U produkciji koristite deployment tajne ili
 varijable okruženja.
 
@@ -29,7 +32,7 @@ return [
     'connections' => [
         'default' => [
             'driver' => 'sqlite',
-            'database' => dirname(__DIR__) . '/data/app.sqlite',
+            'database' => rtrim((string)getenv('HPH_APP_PATH'), '/') . '/data/app.sqlite',
         ],
     ],
 ];

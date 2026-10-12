@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-// HR: Pozadinski omotač bilježi samo sažetak ishoda; puni izlaz preusmjerava
-//     pokretač u privatni log. Smije ga pokrenuti samo Setup worker/CLI.
 // EN: The background wrapper records only an outcome summary; its launcher
 //     redirects full output to a private log. Only Setup worker/CLI may run it.
+//
+// HR: Pozadinski omotač bilježi samo sažetak ishoda; puni izlaz preusmjerava
+//     pokretač u privatni log. Smije ga pokrenuti samo Setup worker/CLI.
 
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
@@ -64,7 +65,11 @@ writeApplicationUpdateStatus($statusPath, [
 ]);
 exit($exitCode);
 
-/** HR: Atomski zapisuje mali status izvan web korijena. EN: Atomically writes a small status outside the web root. */
+/**
+ * EN: Atomically writes a small status outside the web root.
+ *
+ * HR: Atomski zapisuje mali status izvan web korijena.
+ */
 function writeApplicationUpdateStatus(string $path, array $status): void
 {
     $directory = dirname($path);
@@ -90,7 +95,11 @@ function writeApplicationUpdateStatus(string $path, array $status): void
     }
 }
 
-/** HR: Čuva početno vrijeme iz zapisa koji je izradio launcher. EN: Preserves the start time written by the launcher. */
+/**
+ * EN: Preserves the start time written by the launcher.
+ *
+ * HR: Čuva početno vrijeme iz zapisa koji je izradio launcher.
+ */
 function readApplicationUpdateStartedAt(string $path): string
 {
     $payload = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;
@@ -100,7 +109,11 @@ function readApplicationUpdateStartedAt(string $path): string
         : gmdate(DATE_ATOM);
 }
 
-/** HR: Čuva zadnji potvrđeni postotak za prikaz neuspjele faze. EN: Preserves the last confirmed percentage for a failed-stage display. */
+/**
+ * EN: Preserves the last confirmed percentage for a failed-stage display.
+ *
+ * HR: Čuva zadnji potvrđeni postotak za prikaz neuspjele faze.
+ */
 function readApplicationUpdateProgress(string $path): ?int
 {
     $payload = is_file($path) ? json_decode((string)file_get_contents($path), true) : null;

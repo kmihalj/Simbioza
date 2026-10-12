@@ -2,6 +2,15 @@
 
 [Croatian version](installation_hr.md)
 
+The [Docker/Colima candidate guide](docker_en.md) is an additional installation
+option. It preserves the classical installers below and uses image replacement
+plus explicit migrations, not in-place Composer/updater operations.
+
+The six bundled guides use the current format-2 backup container. Their installer
+uses a reserved, non-network destination origin only to resolve links to the selected
+installation base path; it never fetches that origin or stores it as the site's public
+address. User-created backups require the real source and destination addresses.
+
 Choose the PHP mode **before** configuring the web server. Follow one complete
 path rather than mixing directives or permissions from different modes:
 
@@ -37,11 +46,12 @@ does not prove that Apache or FPM runs the same PHP build.
 ### 2. Fetch a tagged release
 
 Install a tagged release into a directory **without** a `.git` checkout.
-Choose the current stable tag on the [release page](https://github.com/kmihalj/Simbioza/releases)
-and replace `0.2.4` below if a newer one exists:
+After coordinated publication, use `0.3.0` or a newer compatible stable tag on the
+[release page](https://github.com/kmihalj/Simbioza/releases). This guide describes
+the 0.3.0 baseline; do not substitute a 0.2.x tag while 0.3.0 is being prepared:
 
 ```bash
-SIMBIOZA_TAG=0.2.4
+SIMBIOZA_TAG=0.3.0
 SIMBIOZA_FETCH_DIR="$(mktemp -d)"
 mkdir "$SIMBIOZA_FETCH_DIR/release"
 git -C "$SIMBIOZA_FETCH_DIR/release" init -q
@@ -134,13 +144,22 @@ checked. Already imported Confluence pages remain usable without the import
 module, but removal is blocked while unresolved temporary import references
 remain.
 
+The selected module list is stored in `HPH_CONFIG_PATH/modules.php` (the
+default is `config/modules.php`), not under `data/`. The GUI and CLI use the
+same file; with configuration overrides, writes go only to the final declared
+layer. See the [configuration guide](configuration_en.md) for the `.dist`
+template, current module paths, and required permissions. The installer
+also uses these shared paths. Language management, the updater, and application
+settings backup/restore use them too. Prepare the complete current configuration before selecting an external root.
+
 ### Languages
 
 The installer reads published languages from the
 [language repository](https://github.com/kmihalj/simbioza-languages).
 Croatian and English are preselected, but either can be deselected as long as
-at least one language remains. An administrator may manage published packs in
-the dedicated FPM GUI; otherwise use:
+at least one language remains. Administrators manage published packs in the GUI
+on mod_php or FPM when runtime data and the final configuration layer are writable.
+Installed catalogues are data-only JSON, not application code. CLI is also available:
 
 ```bash
 vendor/bin/hph languages list
@@ -160,9 +179,7 @@ guides to exist yet.
 
 ### Application updates
 
-**Before any later upgrade, every version older than 0.2.12 must first run
-`php update.php --tag=0.2.12`.** This required bridge installs the self-updating
-updater. Skipping it is unsupported; see the [0.2.12 release notes](release-0.2.12_en.md).
+Simbioza 0.3.0 requires a fresh installation. Updates from 0.2.x and old Simbioza backup formats are not supported. Future 0.3.x+ updates use the self-updating updater.
 
 On a correctly configured dedicated FPM installation, the administrator may
 check and start an update in GUI Setup. The actual job runs as the restricted
@@ -177,8 +194,7 @@ php update.php --check
 php update.php
 ```
 
-To request a specific published tag, use `php update.php --tag=<TAG>`. Since
-0.2.12, the updater first validates the updater from the latest stable release,
+To request a specific published tag, use `php update.php --tag=<TAG>`. The updater first validates the updater from the latest stable release,
 even if you request a different application tag. A changed updater is backed
 up privately, replaced atomically, and started in a fresh PHP process with the
 same update lock, deployment identity, language, target tag, and GUI progress
@@ -202,10 +218,18 @@ temporary work and handoff files stay inside `data/` and are removed when the
 job finishes. Application rollback does not downgrade the refreshed updater.
 `--check` is read-only; `--updater-info` displays the installed updater version
 and handoff protocol without requiring application dependencies. Releases
-older than the required bridge are not valid targets for this updater.
+older than 0.3.0 are not valid targets for this updater.
 
-Older dedicated FPM installations configured with release 0.1.77 or earlier
-need the FPM guide's `--finalize` step once after updating so that CLI
-maintainers and background updates receive the current restricted helper
-rules. Avoid routine `sudo php update.php` and never run the updater as the
+Avoid routine `sudo php update.php` and never run the updater as the
 web/FPM account.
+
+The current updater follows `framework.php`, `HPH_CONFIG_PATH`, and ordered
+configuration overrides without initializing the application before its own
+refresh. It migrates obsolete module-selection storage before application
+preflight and can undo that transition before database migrations start. Private
+external layers are excluded from code synchronization and code-recovery archives;
+keep a separate secure backup of them. Application settings restore targets the
+active final layer and never replaces dynamic `app.php` with evaluated data. See
+the [configuration guide](configuration_en.md#backup-and-permissions).
+After changing a dedicated FPM installation's paths, explicitly regenerate its
+pool/helper with the same instance/options and prepare external permissions.

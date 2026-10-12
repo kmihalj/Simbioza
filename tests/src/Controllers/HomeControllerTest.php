@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace Tests\Controllers;
 
 use App\Controllers\HomeController;
+use App\Localization\RuntimeTranslator;
 use HeartPhrame\Http\ResponseFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(HomeController::class)]
+#[UsesClass(RuntimeTranslator::class)]
 final class HomeControllerTest extends TestCase
 {
     /**
-     * HR: Dokazuje da aplikacija ostaje na ugrađenoj naslovnici bez Workspace resolvera.
      * EN: Proves that the application retains its built-in homepage without a Workspace resolver.
+     *
+     * HR: Dokazuje da aplikacija ostaje na ugrađenoj naslovnici bez Workspace resolvera.
      */
     public function testBuiltInHomepageRemainsWhenResolverIsUnavailable(): void
     {
@@ -36,8 +40,9 @@ final class HomeControllerTest extends TestCase
     }
 
     /**
-     * HR: Dokazuje privremeni, privatni redirect na rezultat opcionalnog resolvera.
      * EN: Proves the temporary private redirect to the optional resolver result.
+     *
+     * HR: Dokazuje privremeni, privatni redirect na rezultat opcionalnog resolvera.
      */
     public function testWorkspaceResolverRedirectsWithoutCachingUserChoice(): void
     {
@@ -56,8 +61,9 @@ final class HomeControllerTest extends TestCase
             ->willReturn($response);
         $resolver = new class {
             /**
-             * HR: Vraća sigurnu internu testnu putanju.
              * EN: Returns a safe internal test path.
+             *
+             * HR: Vraća sigurnu internu testnu putanju.
              */
             public function resolvePath(): string
             {

@@ -32,10 +32,11 @@ $routes = [
     new Route(HttpMethodsEnum::POST, '/settings/setup', [SetupController::class, 'change'], 'setup.change', []),
 ];
 
-// HR: Postavke dodatka ostaju dostupne kada je instaliran, čak i ako je isključen.
-//     Uklonjen paket ne smije ostaviti rutu ni stavku izbornika.
 // EN: Extension settings remain available while installed, even if disabled.
 //     A removed package must leave neither a route nor a visible menu entry.
+//
+// HR: Postavke dodatka ostaju dostupne kada je instaliran, čak i ako je isključen.
+//     Uklonjen paket ne smije ostaviti rutu ni stavku izbornika.
 return [
     ...$routes,
     ...OptionalModuleRoutes::whenInstalled('aaieduhr/heartphrame-module-accessibility', [

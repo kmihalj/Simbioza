@@ -1,5 +1,8 @@
 # Simbioza 0.1.79
 
+Historical release note: current installations use `HPH_CONFIG_PATH/modules.php`,
+not `data/config/modules.php`. Follow the [current configuration guide](configuration_en.md).
+
 This corrective release completes the transition of older installations to
 the secure dedicated FPM Setup.
 

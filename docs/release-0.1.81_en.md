@@ -1,5 +1,7 @@
 # Simbioza 0.1.81
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This corrective release introduces a persistent GUI update progress screen.
 
 After an update starts, Setup immediately displays a dedicated screen with the

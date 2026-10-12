@@ -17,16 +17,18 @@ use function strtolower;
 use function trim;
 
 /**
- * HR: Središnji katalog ugrađenih Simbioza modula, njihovih ovisnosti,
- *     migracija i tablica kojima pojedini opcionalni modul isključivo upravlja.
  * EN: Central catalog of bundled Simbioza modules, their dependencies,
  *     migrations, and tables exclusively owned by each optional module.
+ *
+ * HR: Središnji katalog ugrađenih Simbioza modula, njihovih ovisnosti,
+ *     migracija i tablica kojima pojedini opcionalni modul isključivo upravlja.
  */
 final readonly class ModuleCatalog
 {
     /**
-     * HR: Vraća kanonski redoslijed modula potreban za ispravan bootstrap.
      * EN: Returns the canonical module order required for a valid bootstrap.
+     *
+     * HR: Vraća kanonski redoslijed modula potreban za ispravan bootstrap.
      *
      * @return array<string,array{package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,dependencies:list<string>,migrations:list<string>,tables:list<string>}>
      */
@@ -59,10 +61,11 @@ final readonly class ModuleCatalog
                 ['20260814110000_install_audit_module_schema'],
                 ['audit_events'],
             ),
-            // HR: API i Task nisu dio minimalne instalacije. Mogu se dodati
-            //     zasebno, a katalog pritom provjerava njihove tvrde ovisnosti.
             // EN: API and Task are not part of the minimal installation. They
             //     can be added separately while the catalog checks hard dependencies.
+            //
+            // HR: API i Task nisu dio minimalne instalacije. Mogu se dodati
+            //     zasebno, a katalog pritom provjerava njihove tvrde ovisnosti.
             'api' => $this->definition(
                 'aaieduhr/heartphrame-module-api',
                 'Aplikacijski API',
@@ -94,8 +97,6 @@ final readonly class ModuleCatalog
                 dependencies: ['auth'],
                 migrations: [
                     '20260625174127_install_editor_html_module_schema',
-                    '20260821160000_add_editor_document_includes',
-                    '20260915170000_add_editor_asset_versions',
                 ],
             ),
             'task' => $this->definition(
@@ -127,22 +128,7 @@ final readonly class ModuleCatalog
                 dependencies: ['auth', 'editor-html'],
                 migrations: [
                     '20260717120804_install_workspace_module_schema',
-                    '20260815110000_add_workspace_backlinks',
-                    '20260821102216_add_workspace_homepage_view_options',
-                    '20260821163942_add_workspace_node_labels',
-                    '20260821220000_add_workspace_node_properties',
-                    '20260826161934_add_workspace_node_direct_permissions',
-                    '20260826190000_remove_workspace_owner',
-                    '20260828100000_add_workspace_metadata_translations',
-                    '20260905223000_add_workspace_tree_hiding',
-                    // HR: Migracija prilagođava zajedničke JSON postavke, ali ne
-                    //     stvara shemu Theme modula i mora ostati evidentirana i
-                    //     kada se opcionalni Theme modul ukloni.
-                    // EN: This migration adjusts shared JSON settings but does not
-                    //     create Theme schema, so it must remain recorded when the
-                    //     optional Theme module is removed.
-                    '20260911160000_add_theme_component_heights',
-                ],
+                        ],
             ),
             'workspace-search' => $this->definition(
                 'aaieduhr/simbioza-module-workspace-search',
@@ -151,7 +137,6 @@ final readonly class ModuleCatalog
                 dependencies: ['workspace'],
                 migrations: [
                     '20260812130000_install_workspace_search_schema',
-                    '20260909120000_add_workspace_search_modification_metadata',
                 ],
             ),
             'calendar' => $this->definition(
@@ -162,9 +147,6 @@ final readonly class ModuleCatalog
                 ['auth', 'notification'],
                 [
                     '20260608000212_install_calendar_module_schema',
-                    '20260905213000_scope_calendar_event_uid_to_calendar',
-                    '20260911123000_ensure_calendar_manager_group',
-                    '20260911193000_add_calendar_meeting_scheduler',
                 ],
                 [
                     'calendar_calendars',
@@ -187,9 +169,6 @@ final readonly class ModuleCatalog
                 dependencies: ['auth', 'workspace'],
                 migrations: [
                     '20260818120000_install_simbioza_user_schema',
-                    '20260818170000_add_simbioza_user_follow_exclusions',
-                    '20260820150000_add_simbioza_user_personal_workspaces',
-                    '20260901223000_add_simbioza_user_theme_mode',
                 ],
             ),
             'confluence-import' => $this->definition(
@@ -200,8 +179,6 @@ final readonly class ModuleCatalog
                 ['auth', 'editor-html', 'workspace', 'simbioza-user'],
                 [
                     '20260820170000_install_simbioza_confluence_import_schema',
-                    '20260824120000_scope_confluence_attachment_identity_to_import_job',
-                    '20260915170100_add_confluence_attachment_audit',
                 ],
                 [
                     'simbioza_confluence_import_jobs',
@@ -222,8 +199,9 @@ final readonly class ModuleCatalog
                 ['20260813100000_install_backup_schema'],
                 ['backup_jobs', 'backup_uploads'],
             ),
-            // HR: Opcionalni modul osobnih prilagodbi ne stvara tablice.
             // EN: The optional personal-adjustments module does not create tables.
+            //
+            // HR: Opcionalni modul osobnih prilagodbi ne stvara tablice.
             'accessibility' => $this->definition(
                 'aaieduhr/heartphrame-module-accessibility',
                 'Pristupačnost',
@@ -234,8 +212,9 @@ final readonly class ModuleCatalog
     }
 
     /**
-     * HR: Vraća jednu provjerenu definiciju po kratkom nazivu.
      * EN: Returns one validated definition by short name.
+     *
+     * HR: Vraća jednu provjerenu definiciju po kratkom nazivu.
      *
      * @return array{package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,dependencies:list<string>,migrations:list<string>,tables:list<string>}
      */
@@ -251,8 +230,9 @@ final readonly class ModuleCatalog
     }
 
     /**
-     * HR: Vraća kratke nazive opcionalnih modula.
      * EN: Returns optional module slugs.
+     *
+     * HR: Vraća kratke nazive opcionalnih modula.
      *
      * @return list<string>
      */
@@ -265,8 +245,10 @@ final readonly class ModuleCatalog
     }
 
     /**
-     * HR: Vraća opcionalne module preporučene za novu instalaciju.
      * EN: Returns optional modules recommended for a new installation.
+     *
+     * HR: Vraća opcionalne module preporučene za novu instalaciju.
+     *
      * @return list<string>
      */
     public function recommendedSlugs(): array
@@ -278,10 +260,11 @@ final readonly class ModuleCatalog
     }
 
     /**
-     * HR: Čita ograničenje opcionalnog paketa iz manifesta izdanja; tako GUI i
-     *     CLI koriste isti tag bez zasebnog popisa koji može zastarjeti.
      * EN: Reads an optional package constraint from the release manifest so
      *     GUI and CLI use the same tag without a separately drifting list.
+     *
+     * HR: Čita ograničenje opcionalnog paketa iz manifesta izdanja; tako GUI i
+     *     CLI koriste isti tag bez zasebnog popisa koji može zastarjeti.
      */
     public function constraintFor(string $slug): string
     {
@@ -317,8 +300,9 @@ final readonly class ModuleCatalog
     }
 
     /**
-     * HR: Vraća kratke nazive obaveznih modula.
      * EN: Returns required module slugs.
+     *
+     * HR: Vraća kratke nazive obaveznih modula.
      *
      * @return list<string>
      */
@@ -331,8 +315,9 @@ final readonly class ModuleCatalog
     }
 
     /**
-     * HR: Pretvara instalacijski odabir u potpun, pravilno poredan popis paketa.
      * EN: Converts installer selection into a complete, correctly ordered package list.
+     *
+     * HR: Pretvara instalacijski odabir u potpun, pravilno poredan popis paketa.
      *
      * @param list<string> $optionalSlugs
      * @return list<string>
@@ -359,7 +344,11 @@ final readonly class ModuleCatalog
         return $packages;
     }
 
-    /** HR: Vraća kratki naziv paketa ili NULL za nepoznati paket. EN: Returns a package slug or NULL for an unknown package. */
+    /**
+     * EN: Returns a package slug or NULL for an unknown package.
+     *
+     * HR: Vraća kratki naziv paketa ili NULL za nepoznati paket.
+     */
     public function slugForPackage(string $package): ?string
     {
         foreach ($this->definitions() as $slug => $definition) {
@@ -371,7 +360,11 @@ final readonly class ModuleCatalog
         return null;
     }
 
-    /** HR: Vraća vlasnika migracije ili NULL. EN: Returns a migration owner or NULL. */
+    /**
+     * EN: Returns a migration owner or NULL.
+     *
+     * HR: Vraća vlasnika migracije ili NULL.
+     */
     public function slugForMigration(string $migration): ?string
     {
         foreach ($this->definitions() as $slug => $definition) {
@@ -385,27 +378,40 @@ final readonly class ModuleCatalog
         return null;
     }
 
-    /** HR: Uspoređuje migracije neovisno o vremenskoj oznaci instalacijskog omotača. EN: Compares migrations independently of an installer wrapper timestamp. */
+    /**
+     * EN: Compares migrations independently of an installer wrapper timestamp.
+     *
+     * HR: Uspoređuje migracije neovisno o vremenskoj oznaci instalacijskog omotača.
+     */
     public function migrationMatches(string $catalogMigration, string $actualMigration): bool
     {
         return $this->migrationIdentity($catalogMigration) === $this->migrationIdentity($actualMigration);
     }
 
-    /** HR: Normalizira i provjerava kratki naziv. EN: Normalizes and validates a short name. */
+    /**
+     * EN: Normalizes and validates a short name.
+     *
+     * HR: Normalizira i provjerava kratki naziv.
+     */
     public function normalizeSlug(string $slug): string
     {
         return strtolower(trim($slug));
     }
 
-    /** HR: Vraća stabilni dio naziva migracije bez početne vremenske oznake. EN: Returns the stable migration name without its leading timestamp. */
+    /**
+     * EN: Returns the stable migration name without its leading timestamp.
+     *
+     * HR: Vraća stabilni dio naziva migracije bez početne vremenske oznake.
+     */
     private function migrationIdentity(string $migration): string
     {
         return preg_replace('/\A\d{14}_/', '', trim($migration)) ?? trim($migration);
     }
 
     /**
-     * HR: Gradi strogo tipiziranu internu definiciju modula.
      * EN: Builds a strictly typed internal module definition.
+     *
+     * HR: Gradi strogo tipiziranu internu definiciju modula.
      *
      * @param list<string> $dependencies
      * @param list<string> $migrations

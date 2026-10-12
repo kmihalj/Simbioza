@@ -2,7 +2,7 @@
 
 Simbioza has a browser and HTTP API end-to-end suite for the assembled
 application. Unlike a module unit test, it installs the tagged Framework
-`^0.0.25` release and compatible module releases from `^0.1.0` into a new
+`^0.0.25` release and compatible module releases from `^0.3.0` into a new
 temporary project, runs all official
 migrations against a new SQLite database by default, starts a real HTTP server,
 and drives Chromium through Playwright. The same runner accepts an explicitly
@@ -24,7 +24,7 @@ copied into Simbioza, a module package, or an administrator's installation.
 
 ## What is covered
 
-All 56 scenarios cover every module shipped by Simbioza. They exercise public
+All 80 scenarios cover every module shipped by Simbioza. They exercise public
 behavior rather than private implementation details.
 
 | Area | End-to-end coverage |
@@ -123,6 +123,22 @@ composer e2e -- --local
 The local mode uses path repositories only for the modules that belong to this
 project. It never substitutes the upstream Framework or Demo module.
 
+Local mode allows development stability for transitive module aliases, while
+preferring stable dependencies. This policy applies only to the generated test
+manifest, not the production manifest.
+
+For the complete PHP quality suite, use an isolated source copy and run:
+
+```bash
+HPH_LOCAL_MODULE_ROOT=/absolute/path/to/module-parent php scripts/build_ci_composer.php --local
+COMPOSER=composer.ci.json composer update --with-all-dependencies
+COMPOSER=composer.ci.json composer on-commit
+```
+
+Do not replace the running application's vendor directory just to install QA
+tools. The generated manifest enables every optional module and the tools declared
+in `extra.simbioza.development-tools`.
+
 The local run is the required check whenever two or more sibling modules are
 changed together. The default run must then pass as well after the corresponding
 module release tags are available remotely.
@@ -142,6 +158,25 @@ in `build/e2e-server.log`, and non-sensitive query measurements are in
 for example `build/e2e-server-mysql.log`, `build/e2e-query-log-mysql.jsonl`, and
 `build/e2e-request-log-mysql.jsonl`. All these paths are ignored by Git. Remove
 a retained project after inspection or rerun without `--keep`.
+
+Browser artifacts are also separated by driver: SQLite uses
+`build/test-results/` and `build/playwright-report/`; MySQL, MariaDB and PostgreSQL
+append `-mysql`, `-mariadb` or `-pgsql`. Do not run two suites for the same driver
+concurrently. The temporary PHP development server disables opcode caching because
+the suite creates and changes generated fixture PHP files. Normal deployments retain
+their existing opcode-cache settings.
+
+Multi-page audit and browser settings workflows have explicit 90–300 second
+test deadlines to allow cold PHP requests and mandatory cleanup. The individual
+request-duration, query-count, memory and response-size budgets are unchanged.
+The synthetic browser fixture explicitly enables the Simbioza theme rather than
+inheriting whether the development installation has disabled it.
+
+The full-site restore scenario delays the subsequent backup-job response and
+requires it to finish before the GUI announces success, then verifies a fresh
+login. This guards against a late session-cookie change during restore. Homepage
+policy tests restore the original fixture JSON in `finally`, including on failure
+or timeout, so later tests retain the built-in homepage.
 
 ## CI
 

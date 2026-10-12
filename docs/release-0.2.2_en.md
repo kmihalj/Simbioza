@@ -1,5 +1,7 @@
 # Simbioza 0.2.2
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 Large Confluence imports now reconcile links and included pages in bounded,
 resumable finalization steps. This prevents a single expensive final request
 from exceeding a typical reverse-proxy timeout. The importer also reduces the

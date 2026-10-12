@@ -9,21 +9,37 @@ use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 
 /**
- * HR: Sprema strogo tipizirane Setup zahtjeve izvan web korijena. ID je
- *     nasumičan, a sadržaj će ponovno provjeriti privilegirani worker.
  * EN: Stores strictly typed Setup requests outside the web root. The ID is
  *     random and the privileged worker validates the content again.
+ *
+ * HR: Sprema strogo tipizirane Setup zahtjeve izvan web korijena. ID je
+ *     nasumičan, a sadržaj će ponovno provjeriti privilegirani worker.
  */
 final readonly class SetupRequestStore
 {
-    /** HR: Prima isključivo privatni direktorij zahtjeva. EN: Receives only the private request directory. */
+    /**
+     * EN: Receives only the private request directory.
+     *
+     * HR: Prima isključivo privatni direktorij zahtjeva.
+     */
     public function __construct(private string $directory)
     {
     }
 
     /**
-     * HR: Stvara zahtjev i vraća njegov nepredvidivi ID.
+     * EN: Exposes only the actual path for diagnostics.
+     *
+     * HR: Otkriva samo stvarnu putanju za dijagnostiku.
+     */
+    public function directory(): string
+    {
+        return $this->directory;
+    }
+
+    /**
      * EN: Creates a request and returns its unpredictable ID.
+     *
+     * HR: Stvara zahtjev i vraća njegov nepredvidivi ID.
      *
      * @param array<string,mixed> $payload
      */
@@ -51,8 +67,9 @@ final readonly class SetupRequestStore
     }
 
     /**
-     * HR: Sprema ograničeni JSON jezični paket u privatni direktorij workera.
      * EN: Stores a size-limited JSON language pack in the worker's private directory.
+     *
+     * HR: Sprema ograničeni JSON jezični paket u privatni direktorij workera.
      */
     public function storeLanguagePack(UploadedFileInterface $upload): string
     {
@@ -80,7 +97,11 @@ final readonly class SetupRequestStore
         return $file;
     }
 
-    /** HR: Uklanja privremeni jezični paket nakon neuspjeha. EN: Removes a temporary language pack after failure. */
+    /**
+     * EN: Removes a temporary language pack after failure.
+     *
+     * HR: Uklanja privremeni jezični paket nakon neuspjeha.
+     */
     public function discardLanguagePack(string $file): void
     {
         if (preg_match('/\A[a-f0-9]{48}\.language\.json\z/D', $file) !== 1) {
@@ -93,7 +114,11 @@ final readonly class SetupRequestStore
         }
     }
 
-    /** HR: Vraća sigurnu apsolutnu putanju privremenog jezičnog paketa. EN: Returns a safe absolute temporary language-pack path. */
+    /**
+     * EN: Returns a safe absolute temporary language-pack path.
+     *
+     * HR: Vraća sigurnu apsolutnu putanju privremenog jezičnog paketa.
+     */
     public function languagePackPath(string $file): string
     {
         if (preg_match('/\A[a-f0-9]{48}\.language\.json\z/D', $file) !== 1) {
@@ -104,8 +129,9 @@ final readonly class SetupRequestStore
     }
 
     /**
-     * HR: Čita rezultat workera i uklanja samo završene datoteke zahtjeva.
      * EN: Reads the worker result and removes only completed request files.
+     *
+     * HR: Čita rezultat workera i uklanja samo završene datoteke zahtjeva.
      *
      * @return array{ok:bool,message:string}
      */
@@ -124,7 +150,11 @@ final readonly class SetupRequestStore
         return ['ok' => $payload['ok'], 'message' => $payload['message']];
     }
 
-    /** HR: Uklanja završene ili neuspjele datoteke jednog zahtjeva. EN: Removes completed or failed files for one request. */
+    /**
+     * EN: Removes completed or failed files for one request.
+     *
+     * HR: Uklanja završene ili neuspjele datoteke jednog zahtjeva.
+     */
     public function discard(string $id): void
     {
         $requestPath = $this->requestPath($id);
@@ -138,19 +168,31 @@ final readonly class SetupRequestStore
         }
     }
 
-    /** HR: Vraća putanju ulaznog zahtjeva. EN: Returns an input-request path. */
+    /**
+     * EN: Returns an input-request path.
+     *
+     * HR: Vraća putanju ulaznog zahtjeva.
+     */
     public function requestPath(string $id): string
     {
         return $this->directory . '/' . $this->validId($id) . '.json';
     }
 
-    /** HR: Vraća putanju izlaznog rezultata. EN: Returns an output-result path. */
+    /**
+     * EN: Returns an output-result path.
+     *
+     * HR: Vraća putanju izlaznog rezultata.
+     */
     public function resultPath(string $id): string
     {
         return $this->directory . '/' . $this->validId($id) . '.result.json';
     }
 
-    /** HR: Osigurava privatni direktorij bez javnog pristupa. EN: Ensures a private non-public directory. */
+    /**
+     * EN: Ensures a private non-public directory.
+     *
+     * HR: Osigurava privatni direktorij bez javnog pristupa.
+     */
     private function ensureDirectory(): void
     {
         if (!is_dir($this->directory) && !mkdir($this->directory, 0770, true) && !is_dir($this->directory)) {
@@ -158,7 +200,11 @@ final readonly class SetupRequestStore
         }
     }
 
-    /** HR: Prihvaća samo 192-bitni heksadecimalni ID. EN: Accepts only a 192-bit hexadecimal ID. */
+    /**
+     * EN: Accepts only a 192-bit hexadecimal ID.
+     *
+     * HR: Prihvaća samo 192-bitni heksadecimalni ID.
+     */
     private function validId(string $id): string
     {
         $id = strtolower(trim($id));

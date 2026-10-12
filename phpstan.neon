@@ -6,6 +6,14 @@ parameters:
 		- config
 		- views
 		- update.php
+	scanFiles:
+		# EN: Resolve current HFC contracts rather than dependencies of a borrowed analyser.
+		#
+		# HR: Koristi aktualne HFC ugovore umjesto ovisnosti posuđenog analizatora.
+		- vendor/aaieduhr/heartphrame-module-backup/src/Value/BackupProviderMetadata.php
+		- vendor/aaieduhr/heartphrame-module-backup/src/Service/StructuredConfigBackupProvider.php
+		- vendor/aaieduhr/heartphrame-module-backup/src/Service/BackupConfig.php
+		- vendor/aaieduhr/heartphrame-module-api/src/Service/ApiConfiguration.php
 	ignoreErrors:
 		-
 			identifier: property.protected

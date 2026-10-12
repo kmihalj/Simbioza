@@ -6,8 +6,14 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Početno izdanje 0.3.0 i popis provjera](initial-release-0.3.0_hr.md)
+- [Prošireni audit prije releasea i nastavak](pre-release-audit-0.3.0_hr.md)
+- [Aktualna konfiguracija i datoteke u vlasništvu modula](configuration_hr.md)
+- [Provjere dokumentacije, primjera i jezika komentara](documentation-quality_hr.md)
+- [Docker instalacija, volumeni, nadogradnja imagea i opcionalni SAML](docker_hr.md)
+- [Spremnost za containere i granice provjere](container-readiness_hr.md)
 - [Vizualni identitet i tema Simbioza](branding_hr.md)
-- [Izdanje 0.2.11: video prijelaza iz Confluencea i prenosive upute](release-0.2.11_hr.md)
+
 
 Dokumentacija je strukturirana za početnike i napredne korisnike. Svaka tema
 ima zasebnu hrvatsku i englesku datoteku.
@@ -68,6 +74,8 @@ composer e2e
 - [Ovisnosti modula](module-dependencies_hr.md)
 - [API v1 ugovor](api-v1-contract_hr.md)
 - [Plan implementacije API-ja](api-implementation-plan_hr.md)
+- [Plan jedinstvene konfiguracije i točka nastavka](configuration-migration-plan_hr.md)
+- [Organizacija podataka područja i stranica](workspace-data_hr.md)
 - [Šifriranje](encryption_hr.md)
 - [Dispečer događaja](event-dispatcher_hr.md)
 - [End-to-end testiranje](end-to-end-testing_hr.md)
@@ -92,3 +100,9 @@ uvjetni ekran API ključeva.
 ## English version
 
 - [English documentation](index_en.md)
+
+### Povijesne bilješke izdanja
+
+Ove bilješke opisuju starija izdanja, ne instalaciju ni nadogradnju čiste osnove 0.3.0.
+
+- [Zapis izdanja 0.2.11](release-0.2.11_hr.md)

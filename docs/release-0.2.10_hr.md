@@ -1,5 +1,7 @@
 # Simbioza 0.2.10
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo izdanje usklađuje HTML Editor 0.1.39, opcionalni modul Confluence Import
 0.1.43 i dopunjene prijevode u svih šest podržanih jezika.
 

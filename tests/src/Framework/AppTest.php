@@ -22,10 +22,11 @@ use PHPUnit\Framework\TestCase;
 final class AppTest extends TestCase
 {
     /**
-     * HR: Stvarno konstruira aplikaciju s našim servisima i rutama u zasebnom
-     *     procesu, bez privatnih postavki, baze i promjena frameworkova izvora.
      * EN: Actually constructs the app with our services and routes in a separate
      *     process, without private settings, a database, or framework source changes.
+     *
+     * HR: Stvarno konstruira aplikaciju s našim servisima i rutama u zasebnom
+     *     procesu, bez privatnih postavki, baze i promjena frameworkova izvora.
      */
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
@@ -56,8 +57,9 @@ final class AppTest extends TestCase
     }
 
     /**
-     * HR: Settings zaštita mora se ponoviti nakon učitavanja Simbioza dekoratora prava.
      * EN: Settings protection must run again after the Simbioza rights decorator is loaded.
+     *
+     * HR: Settings zaštita mora se ponoviti nakon učitavanja Simbioza dekoratora prava.
      */
     public function testSettingsAuthorizationRunsAfterDeferredModules(): void
     {
@@ -73,8 +75,9 @@ final class AppTest extends TestCase
     }
 
     /**
-     * HR: Lokalna zaštita ulazi prije postavki, a pogrešna klasa mora srušiti zatvoren bootstrap.
      * EN: Local protection precedes the settings gate, while a missing class must fail boot closed.
+     *
+     * HR: Lokalna zaštita ulazi prije postavki, a pogrešna klasa mora srušiti zatvoren bootstrap.
      */
     public function testLocalMiddlewareOrderAndFailClosedConfiguration(): void
     {
@@ -110,10 +113,11 @@ final class AppTest extends TestCase
     }
 
     /**
-     * HR: Integrirani testovi ne smiju ovisiti o brzini baze i pogoditi
-     *     produkcijski API limit dok dijele jedan administratorski ključ.
      * EN: Integrated tests must not depend on database speed and hit the
      *     production API limit while sharing one administrator key.
+     *
+     * HR: Integrirani testovi ne smiju ovisiti o brzini baze i pogoditi
+     *     produkcijski API limit dok dijele jedan administratorski ključ.
      */
     public function testEndToEndSuiteUsesDedicatedApiRateLimit(): void
     {

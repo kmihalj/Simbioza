@@ -8,14 +8,19 @@ use JsonException;
 use RuntimeException;
 
 /**
- * HR: Čita javni katalog jezičnih paketa kao podatke i provjerava SHA-256 prije instalacije.
  * EN: Reads the public language-pack catalogue as data and verifies SHA-256 before installation.
+ *
+ * HR: Čita javni katalog jezičnih paketa kao podatke i provjerava SHA-256 prije instalacije.
  */
 final readonly class LanguageRepository
 {
     private const DEFAULT_MANIFEST = 'https://raw.githubusercontent.com/kmihalj/simbioza-languages/main/manifest.json';
 
-    /** HR: Prima korijen aplikacije i neobavezni testni URL. EN: Receives the application root and optional test URL. */
+    /**
+     * EN: Receives the application root and optional test URL.
+     *
+     * HR: Prima korijen aplikacije i neobavezni testni URL.
+     */
     public function __construct(
         private string $appRoot,
         private string $manifestUrl = self::DEFAULT_MANIFEST,
@@ -23,8 +28,11 @@ final readonly class LanguageRepository
     }
 
     /**
-     * HR: Vraća samo objavljene, strogo provjerene zapise iz svježeg ili predmemoriranog kataloga.
-     * EN: Returns only published, strictly validated entries from a fresh or cached catalogue.
+     * EN: Returns released, validated records from a current or cached catalogue.
+     * An explicit refresh fetches now and reports failure instead of silently using stale cache.
+     *
+     * HR: Vraća objavljene, provjerene zapise iz aktualnog ili predmemoriranog kataloga.
+     * Izričito osvježavanje dohvaća odmah i prijavljuje grešku umjesto prešutnog starog cachea.
      *
      * @return array<string,array{locale:string,native_name:string,version:string,file:string,sha256:string}>
      */
@@ -41,10 +49,11 @@ final readonly class LanguageRepository
                 $raw = $this->fetch($this->manifestUrl, 262144);
                 $directory = dirname($cache);
                 if (is_dir($directory) || mkdir($directory, 0770, true)) {
-                    // HR: FPM i deploy korisnik smiju zamijeniti predmemoriju bez
-                    //     preuzimanja vlasništva nad datotekom drugog korisnika.
                     // EN: FPM and deploy users may replace the cache without
                     //     taking ownership of each other's existing file.
+                    //
+                    // HR: FPM i deploy korisnik smiju zamijeniti predmemoriju bez
+                    //     preuzimanja vlasništva nad datotekom drugog korisnika.
                     $temporary = tempnam($directory, '.language-catalog-');
                     if (is_string($temporary)) {
                         try {
@@ -59,7 +68,13 @@ final readonly class LanguageRepository
                         }
                     }
                 }
-            } catch (RuntimeException) {
+            } catch (RuntimeException $error) {
+                // EN: An explicit check must not silently claim a stale cache is current.
+                //
+                // HR: Izričita provjera ne smije prešutno prikazati stari cache kao aktualan.
+                if ($refresh) {
+                    throw new RuntimeException('Unable to refresh the language catalogue; try again later.', 0, $error);
+                }
                 $raw = is_file($cache) ? file_get_contents($cache) : null;
                 if (!is_string($raw) || $raw === '') {
                     return [];
@@ -69,7 +84,10 @@ final readonly class LanguageRepository
 
         try {
             $payload = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
+        } catch (JsonException $error) {
+            if ($refresh) {
+                throw new RuntimeException('The refreshed language catalogue is not valid JSON.', 0, $error);
+            }
             return [];
         }
 
@@ -79,6 +97,9 @@ final readonly class LanguageRepository
             || ($payload['version'] ?? null) !== 1
             || !is_array($payload['languages'] ?? null)
         ) {
+            if ($refresh) {
+                throw new RuntimeException('The refreshed language catalogue has an invalid format.');
+            }
             return [];
         }
 
@@ -117,8 +138,9 @@ final readonly class LanguageRepository
     }
 
     /**
-     * HR: Dohvaća paket ograničene veličine i provjerava sadržaj prema manifestu.
      * EN: Fetches a size-limited pack and verifies its bytes against the manifest.
+     *
+     * HR: Dohvaća paket ograničene veličine i provjerava sadržaj prema manifestu.
      */
     public function download(string $locale): string
     {
@@ -146,19 +168,24 @@ final readonly class LanguageRepository
         return $path;
     }
 
-    /** HR: Čita najviše zadani broj bajtova uz kratak timeout. EN: Reads at most the requested bytes with a short timeout. */
+    /**
+     * EN: Reads at most the requested bytes with a short timeout.
+     *
+     * HR: Čita najviše zadani broj bajtova uz kratak timeout.
+     */
     private function fetch(string $url, int $limit): string
     {
         if ($limit < 1 || $limit > 2_097_152) {
             throw new RuntimeException('The requested language download limit is invalid.');
         }
 
-        // HR: macOS mod_php radi u Apacheovu forkiranom procesu. Mrežni PHP
-        //     stream ondje može srušiti proces tijekom sustavnog DNS poziva;
-        //     zaseban curl proces zadržava isti TLS i veličinski limit.
         // EN: macOS mod_php runs in a forked Apache process. A PHP network
         //     stream can crash it during system DNS resolution; a separate curl
         //     process preserves the same TLS and size limits.
+        //
+        // HR: macOS mod_php radi u Apacheovu forkiranom procesu. Mrežni PHP
+        //     stream ondje može srušiti proces tijekom sustavnog DNS poziva;
+        //     zaseban curl proces zadržava isti TLS i veličinski limit.
         if (PHP_OS_FAMILY === 'Darwin' && PHP_SAPI === 'apache2handler' && str_starts_with($url, 'https://')) {
             return $this->fetchWithSystemCurl($url, $limit);
         }
@@ -176,8 +203,9 @@ final readonly class LanguageRepository
     }
 
     /**
-     * HR: Na macOS Apacheu izdvojeno dohvaća javni HTTPS sadržaj bez ljuske.
      * EN: Fetches public HTTPS content out of process on macOS Apache, without a shell.
+     *
+     * HR: Na macOS Apacheu izdvojeno dohvaća javni HTTPS sadržaj bez ljuske.
      */
     private function fetchWithSystemCurl(string $url, int $limit): string
     {

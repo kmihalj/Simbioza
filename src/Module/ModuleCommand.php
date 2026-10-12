@@ -21,10 +21,18 @@ use const STDERR;
 use const STDIN;
 use const STDOUT;
 
-/** HR: Izlaže upravljanje ugrađenim modulima kroz jednu predvidljivu CLI naredbu. EN: Exposes bundled-module management through one predictable CLI command. */
+/**
+ * EN: Exposes bundled-module management through one predictable CLI command.
+ *
+ * HR: Izlaže upravljanje ugrađenim modulima kroz jednu predvidljivu CLI naredbu.
+ */
 final readonly class ModuleCommand
 {
-    /** HR: Prima životni ciklus i opcionalni FPM helper za paketne radnje. EN: Receives lifecycle and the optional FPM helper for package operations. */
+    /**
+     * EN: Receives lifecycle and the optional FPM helper for package operations.
+     *
+     * HR: Prima životni ciklus i opcionalni FPM helper za paketne radnje.
+     */
     public function __construct(
         private ModuleLifecycleManager $modules,
         private ?SetupGateway $gateway = null,
@@ -32,8 +40,9 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: Obrađuje životni ciklus modula i migracije instaliranih paketa.
      * EN: Handles module lifecycle and migrations for installed packages.
+     *
+     * HR: Obrađuje životni ciklus modula i migracije instaliranih paketa.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -57,7 +66,11 @@ final readonly class ModuleCommand
         };
     }
 
-    /** HR: Ispisuje stanje svih modula. EN: Prints every module state. */
+    /**
+     * EN: Prints every module state.
+     *
+     * HR: Ispisuje stanje svih modula.
+     */
     private function list(): int
     {
         fwrite(STDOUT, "MODULE              TYPE       STATE          BACKUP\n");
@@ -75,8 +88,9 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: Dodaje modul s praznom instalacijom ili povratom kopije.
      * EN: Adds a module as fresh installation or backup restore.
+     *
+     * HR: Dodaje modul s praznom instalacijom ili povratom kopije.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -110,8 +124,9 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: Omogućuje modul.
      * EN: Enables a module.
+     *
+     * HR: Omogućuje modul.
      *
      * @param list<string> $arguments
      */
@@ -125,8 +140,9 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: Isključuje modul bez gubitka podataka.
      * EN: Disables a module without data loss.
+     *
+     * HR: Isključuje modul bez gubitka podataka.
      *
      * @param list<string> $arguments
      */
@@ -140,8 +156,9 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: Potvrđeno uklanja modul nakon sigurnosne kopije.
      * EN: Removes a confirmed module after backup.
+     *
+     * HR: Potvrđeno uklanja modul nakon sigurnosne kopije.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -160,10 +177,11 @@ final readonly class ModuleCommand
             try {
                 $gateway->execute('package-uninstall', ['module' => $slug]);
             } catch (Throwable $throwable) {
-                // HR: Ako deploy helper zakaže, vrati paket, shemu, podatke i
-                //     enabled stanje iz upravo stvorene kopije prije prijave greške.
                 // EN: If the deploy helper fails, restore package, schema, data,
                 //     and enabled state from the just-created backup before reporting.
+                //
+                // HR: Ako deploy helper zakaže, vrati paket, shemu, podatke i
+                //     enabled stanje iz upravo stvorene kopije prije prijave greške.
                 $gateway->execute('package-install', ['module' => $slug]);
                 $this->modules->addPrepared($slug, true);
                 throw new RuntimeException('Package removal failed; module state was restored.', 0, $throwable);
@@ -178,8 +196,9 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: Ispisuje dostupne kopije modula.
      * EN: Prints available module backups.
+     *
+     * HR: Ispisuje dostupne kopije modula.
      *
      * @param list<string> $arguments
      */
@@ -200,10 +219,11 @@ final readonly class ModuleCommand
     }
 
     /**
-     * HR: FPM CLI koristi isti ograničeni deploy helper kao GUI; obična
-     *     instalacija pada natrag na izravnu paketnu radnju trenutačnog vlasnika.
      * EN: FPM CLI uses the same restricted deploy helper as GUI; a regular
      *     installation falls back to a direct package operation by its owner.
+     *
+     * HR: FPM CLI koristi isti ograničeni deploy helper kao GUI; obična
+     *     instalacija pada natrag na izravnu paketnu radnju trenutačnog vlasnika.
      */
     private function packageGateway(): ?SetupGateway
     {
@@ -218,7 +238,11 @@ final readonly class ModuleCommand
         return $this->gateway;
     }
 
-    /** HR: Primjenjuje samo migracije stvarno instaliranih paketa. EN: Applies migrations only for actually installed packages. */
+    /**
+     * EN: Applies migrations only for actually installed packages.
+     *
+     * HR: Primjenjuje samo migracije stvarno instaliranih paketa.
+     */
     private function migrateUp(): int
     {
         $applied = $this->modules->migrateInstalled();
@@ -236,7 +260,11 @@ final readonly class ModuleCommand
         return 0;
     }
 
-    /** HR: Ispisuje migracije samo stvarno instaliranih paketa. EN: Prints migrations only for actually installed packages. */
+    /**
+     * EN: Prints migrations only for actually installed packages.
+     *
+     * HR: Ispisuje migracije samo stvarno instaliranih paketa.
+     */
     private function migrateStatus(): int
     {
         $status = $this->modules->installedMigrationStatus();
@@ -254,7 +282,11 @@ final readonly class ModuleCommand
         return 0;
     }
 
-    /** HR: Ispisuje kratku pomoć. EN: Prints concise help. */
+    /**
+     * EN: Prints concise help.
+     *
+     * HR: Ispisuje kratku pomoć.
+     */
     private function help(): int
     {
         fwrite(STDOUT, <<<'HELP'
@@ -276,7 +308,11 @@ HELP . PHP_EOL);
         return 0;
     }
 
-    /** HR: Odbija nepoznatu podnaredbu. EN: Rejects an unknown subcommand. */
+    /**
+     * EN: Rejects an unknown subcommand.
+     *
+     * HR: Odbija nepoznatu podnaredbu.
+     */
     private function unknown(string $subcommand): int
     {
         fwrite(STDERR, 'Unknown modules subcommand: ' . $subcommand . PHP_EOL);
@@ -285,8 +321,9 @@ HELP . PHP_EOL);
     }
 
     /**
-     * HR: Vraća obavezni kratki naziv modula.
      * EN: Returns the required module slug.
+     *
+     * HR: Vraća obavezni kratki naziv modula.
      *
      * @param list<string> $arguments
      */
@@ -300,7 +337,11 @@ HELP . PHP_EOL);
         return $slug;
     }
 
-    /** HR: Sigurno čita potvrdu samo iz interaktivnog terminala. EN: Safely reads confirmation only from an interactive terminal. */
+    /**
+     * EN: Safely reads confirmation only from an interactive terminal.
+     *
+     * HR: Sigurno čita potvrdu samo iz interaktivnog terminala.
+     */
     private function confirm(string $question): bool
     {
         if (!function_exists('posix_isatty') || !posix_isatty(STDIN)) {

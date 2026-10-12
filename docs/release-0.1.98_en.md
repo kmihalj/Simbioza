@@ -1,5 +1,7 @@
 # Simbioza 0.1.98
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This corrective release makes both application-file synchronization and its
 rollback compatible with writable directories owned by a dedicated PHP-FPM
 account. The updater no longer attempts to change those directories' modification

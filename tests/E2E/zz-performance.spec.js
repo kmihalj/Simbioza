@@ -18,8 +18,9 @@ if (!queryLogPath || !requestLogPath) {
 }
 
 /**
- * HR: Vraća SQL događaje označenog HTTP zahtjeva bez bind vrijednosti.
  * EN: Returns SQL events for one marked HTTP request without binding values.
+ *
+ * HR: Vraća SQL događaje označenog HTTP zahtjeva bez bind vrijednosti.
  */
 function queryEvents(marker) {
   return readFileSync(queryLogPath, 'utf8')
@@ -30,8 +31,9 @@ function queryEvents(marker) {
 }
 
 /**
- * HR: Vraća HTTP metriku označenog zahtjeva.
  * EN: Returns the HTTP metric for one marked request.
+ *
+ * HR: Vraća HTTP metriku označenog zahtjeva.
  */
 function requestEvent(marker) {
   const events = readFileSync(requestLogPath, 'utf8')
@@ -45,8 +47,9 @@ function requestEvent(marker) {
 }
 
 /**
- * HR: Provjerava zajednički SQL budžet i zabrane regresija označenog zahtjeva.
  * EN: Verifies the shared SQL budget and regression guards for a marked request.
+ *
+ * HR: Provjerava zajednički SQL budžet i zabrane regresija označenog zahtjeva.
  */
 function expectRecordedBudget(name, marker, budget) {
   const events = queryEvents(marker);
@@ -60,8 +63,8 @@ function expectRecordedBudget(name, marker, budget) {
     ).toBeLessThanOrEqual(2);
     expect(
       lowerSql.filter((statement) => statement.includes('from "auth_provider_settings"')).length,
-      `${name} repeated Auth provider-settings reads`,
-    ).toBeLessThanOrEqual(2);
+      `${name} obsolete Auth provider-settings reads`,
+    ).toBe(0);
   expect(
     lowerSql.some((statement) => statement.startsWith('update "auth_groups"')),
     `${name} triggered an unexpected Auth group repair write`,
@@ -82,8 +85,9 @@ function expectRecordedBudget(name, marker, budget) {
 }
 
 /**
- * HR: Provjerava trajanje, vršnu memoriju i veličinu tijela odgovora.
  * EN: Verifies duration, peak memory, and response-body size budgets.
+ *
+ * HR: Provjerava trajanje, vršnu memoriju i veličinu tijela odgovora.
  */
 function expectRequestBudget(name, marker, budget) {
   const event = requestEvent(marker);
@@ -96,8 +100,9 @@ function expectRequestBudget(name, marker, budget) {
 }
 
 /**
- * HR: Izvršava jedan GET i provjerava njegov trajni SQL budžet.
  * EN: Executes one GET request and verifies its durable SQL budget.
+ *
+ * HR: Izvršava jedan GET i provjerava njegov trajni SQL budžet.
  */
 async function expectQueryBudget(
   request,
@@ -121,19 +126,21 @@ async function expectQueryBudget(
 test('representative read paths remain inside measured SQL budgets', async ({ request }) => {
   const apiReadBudget = { durationMs: 500, peakMemoryBytes: 32 * 1024 * 1024, responseBytes: 32 * 1024 };
   /*
-   * HR: Prethodni backup/restore scenarij namjerno vraća i audit vremena
-   *     uporabe API ključa. Jedan neoznačeni zahtjev osvježava taj audit kako
-   *     bi mjerenje provjeravalo stabilno stanje, a ne jednokratno auditno
-   *     pisanje nakon stvarnog restorea.
    * EN: The preceding backup/restore scenario intentionally restores the API
    *     key usage audit timestamp. One unmarked request refreshes that audit
    *     so the measurement checks steady state rather than the one-time audit
    *     write following a real restore.
+   *
+   * HR: Prethodni backup/restore scenarij namjerno vraća i audit vremena
+   *     uporabe API ključa. Jedan neoznačeni zahtjev osvježava taj audit kako
+   *     bi mjerenje provjeravalo stabilno stanje, a ne jednokratno auditno
+   *     pisanje nakon stvarnog restorea.
    */
-  // HR: Zagrijavanje mora imati isti mjerni kontekst kao sljedeći označeni GET;
-  //     inače se jednokratni zapis uporabe ključa može pojaviti tek u mjerenju.
   // EN: Warm up under the same measurement context as the next marked GET;
   //     otherwise the one-off key-usage audit can first appear in the measurement.
+  //
+  // HR: Zagrijavanje mora imati isti mjerni kontekst kao sljedeći označeni GET;
+  //     inače se jednokratni zapis uporabe ključa može pojaviti tek u mjerenju.
   const warmup = await request.get('/api/v1/me', {
     headers: apiHeaders(adminApiToken, {
       'X-HPH-Performance-Run': `warmup-current-user-${Date.now()}`,
@@ -320,10 +327,11 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     },
   }), 201);
   /*
-   * HR: Dva odvojena audit INSERT-a trajno bilježe nastanak HTML dokumenta i
-   *     njegovo vezanje u stablo područja; generički HTTP duplikat se preskače.
    * EN: Two separate audit INSERTs durably record creation of the HTML document
    *     and its Workspace-tree binding; the generic HTTP duplicate is skipped.
+   *
+   * HR: Dva odvojena audit INSERT-a trajno bilježe nastanak HTML dokumenta i
+   *     njegovo vezanje u stablo područja; generički HTTP duplikat se preskače.
    */
   expectRecordedBudget('page-create', createMarker, 70);
   expectRequestBudget('page-create', createMarker, {
@@ -347,10 +355,11 @@ test('page creation, publication, and public rendering stay inside measured SQL 
     data: {},
   }));
   /*
-   * HR: Dodatnih upita sinkronizira objavljeni čvor i jezik u Workspace Search
-   *     bez skeniranja cijelog područja.
    * EN: Additional bounded queries synchronize the published node and language
    *     into Workspace Search without scanning the complete Workspace.
+   *
+   * HR: Dodatnih upita sinkronizira objavljeni čvor i jezik u Workspace Search
+   *     bez skeniranja cijelog područja.
    */
   expectRecordedBudget('page-publish', publishMarker, 72);
   expectRequestBudget('page-publish', publishMarker, {
@@ -365,26 +374,29 @@ test('page creation, publication, and public rendering stay inside measured SQL 
   });
   expect(publicResponse.status()).toBe(200);
   /*
-   * HR: Dva dodatna ograničena upita pronalaze stranice koje dinamički uključuju
-   *     prikazanu stranicu, bez skeniranja dokumenata ili cijelog područja.
    * EN: Two additional bounded queries find pages that dynamically include the
    *     displayed page, without scanning documents or the complete Workspace.
+   *
+   * HR: Dva dodatna ograničena upita pronalaze stranice koje dinamički uključuju
+   *     prikazanu stranicu, bez skeniranja dokumenata ili cijelog područja.
    */
   expectRecordedBudget('page-public', publicMarker, 37);
   expectRequestBudget('page-public', publicMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,
     /*
+     * EN: The view now includes themed backlinks and included-page references;
+     *     plus the runtime for independently sticky header and navigation;
+     *     88 KiB remains a firm guard against accidentally embedding large content.
+     *
      * HR: Prikaz sada uključuje tematski oblikovane povratne poveznice i
      *     reference uključenih stranica i runtime za neovisno ljepljivo
      *     zaglavlje i navigaciju; 88 KiB ostaje čvrsta granica koja otkriva
      *     nenamjerno ugrađivanje velikog sadržaja.
-     * EN: The view now includes themed backlinks and included-page references;
-     *     plus the runtime for independently sticky header and navigation;
-     *     88 KiB remains a firm guard against accidentally embedding large content.
      */
-    // HR: Opcionalni panel dodaje oko 4 KiB HTML-a svakoj javnoj stranici.
     // EN: The optional panel adds about 4 KiB of HTML to each public page.
+    //
+    // HR: Opcionalni panel dodaje oko 4 KiB HTML-a svakoj javnoj stranici.
     responseBytes: 96 * 1024,
   });
 });

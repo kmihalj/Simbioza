@@ -34,8 +34,9 @@ final class UpdaterSelfUpdateTest extends TestCase
     }
 
     /**
-     * HR: Testira stvarni CLI i GUI omotač pod tipičnim i restriktivnim pravima.
      * EN: Exercises the real CLI and GUI wrapper under ordinary and restrictive permissions.
+     *
+     * HR: Testira stvarni CLI i GUI omotač pod tipičnim i restriktivnim pravima.
      *
      * @return iterable<string,array{string,int,int}>
      */
@@ -48,18 +49,22 @@ final class UpdaterSelfUpdateTest extends TestCase
         yield 'private demo CLI' => ['cli', 0700, 0077];
     }
 
-    /** HR: Novo učitani kod mora izvršiti sve sljedeće faze, a lock i GUI status moraju ostati važeći. EN: Freshly loaded code must run all subsequent phases while lock and GUI status remain valid. */
+    /**
+     * EN: Freshly loaded code must run all subsequent phases while lock and GUI status remain valid.
+     *
+     * HR: Novo učitani kod mora izvršiti sve sljedeće faze, a lock i GUI status moraju ostati važeći.
+     */
     #[DataProvider('installationModes')]
     public function testNewProcessCompletesUpdate(string $entry, int $mode, int $mask): void
     {
         [$root, $repository, $tools] = $this->fixture();
-        $this->release($repository, '0.2.12', $this->candidate($repository));
+        $this->release($repository, '0.3.1', $this->candidate($repository));
         chmod($root . '/update.php', $mode);
         $configuration = (string)file_get_contents($root . '/config/private.php');
         $metadata = stat($root . '/update.php');
         [$exit, $output] = $this->runUpdater($root, $tools, $entry, [], $mask);
         $this->assertSame(0, $exit, $output);
-        $this->assertSame('0.2.12', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.3.1', trim((string)file_get_contents($root . '/VERSION')));
         $proof = json_decode((string)file_get_contents($root . '/data/fresh-updater.json'), true);
         $this->assertSame('1.0.1', $proof['version']);
         $this->assertTrue($proof['lock_held']);
@@ -89,29 +94,37 @@ final class UpdaterSelfUpdateTest extends TestCase
         }
     }
 
-    /** HR: Zadnji updater ima prednost i uz izričito odabran raniji aplikacijski tag. EN: The latest updater takes priority even for an explicitly selected older application tag. */
+    /**
+     * EN: The latest updater takes priority even for an explicitly selected older application tag.
+     *
+     * HR: Zadnji updater ima prednost i uz izričito odabran raniji aplikacijski tag.
+     */
     public function testLatestUpdaterIsNotDowngradedBySelectedApplicationTag(): void
     {
         [$root, $repository, $tools] = $this->fixture();
-        $this->release($repository, '0.2.12', (string)file_get_contents($root . '/update.php'));
+        $this->release($repository, '0.3.1', (string)file_get_contents($root . '/update.php'));
         $candidate = $this->candidate($repository);
-        $this->release($repository, '0.2.13', $candidate);
-        [$exit, $output] = $this->runUpdater($root, $tools, 'cli', ['--tag=0.2.12']);
+        $this->release($repository, '0.3.2', $candidate);
+        [$exit, $output] = $this->runUpdater($root, $tools, 'cli', ['--tag=0.3.1']);
         $this->assertSame(0, $exit, $output);
-        $this->assertSame('0.2.12', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.3.1', trim((string)file_get_contents($root . '/VERSION')));
         $this->assertSame($candidate, file_get_contents($root . '/update.php'));
     }
 
-    /** HR: Povrat aplikacijskog koda ne vraća zastarjeli updater. EN: Application rollback never restores the obsolete updater. */
+    /**
+     * EN: Application rollback never restores the obsolete updater.
+     *
+     * HR: Povrat aplikacijskog koda ne vraća zastarjeli updater.
+     */
     public function testRollbackRetainsFreshUpdaterAndGuiFailure(): void
     {
         [$root, $repository, $tools] = $this->fixture();
         $candidate = $this->candidate($repository);
-        $this->release($repository, '0.2.12', $candidate);
+        $this->release($repository, '0.3.1', $candidate);
         file_put_contents($root . '/data/fail-platform', '1');
         [$exit, $output] = $this->runUpdater($root, $tools, 'gui');
         $this->assertSame(1, $exit, $output);
-        $this->assertSame('0.2.11', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.3.0', trim((string)file_get_contents($root . '/VERSION')));
         $this->assertSame($candidate, file_get_contents($root . '/update.php'));
         $database = new \PDO('sqlite:' . $root . '/data/database.sqlite');
         $this->assertSame(0, (int)$database->query('SELECT updates FROM fixture')->fetchColumn());
@@ -120,11 +133,15 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertFileDoesNotExist($root . '/data/update-maintenance.json');
     }
 
-    /** HR: Pad nakon početka migracija ne smije ukloniti zaštitu održavanja. EN: A failure after migration start must not clear the maintenance guard. */
+    /**
+     * EN: A failure after migration start must not clear the maintenance guard.
+     *
+     * HR: Pad nakon početka migracija ne smije ukloniti zaštitu održavanja.
+     */
     public function testMigrationFailureSurvivesParentHandoff(): void
     {
         [$root, $repository, $tools] = $this->fixture();
-        $this->release($repository, '0.2.12', $this->candidate($repository));
+        $this->release($repository, '0.3.1', $this->candidate($repository));
         file_put_contents($root . '/data/fail-migration', '1');
         [$exit, $output] = $this->runUpdater($root, $tools, 'gui');
         $this->assertSame(1, $exit, $output);
@@ -133,36 +150,48 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertSame('failed', $status['state']);
     }
 
-    /** HR: Isti updater ne pokreće predaju ni stvara posebni backup. EN: An unchanged updater neither restarts nor creates a self-update backup. */
+    /**
+     * EN: An unchanged updater neither restarts nor creates a self-update backup.
+     *
+     * HR: Isti updater ne pokreće predaju ni stvara posebni backup.
+     */
     public function testUnchangedUpdaterDoesNotRestart(): void
     {
         [$root, $repository, $tools] = $this->fixture();
-        $this->release($repository, '0.2.12', (string)file_get_contents($root . '/update.php'));
+        $this->release($repository, '0.3.1', (string)file_get_contents($root . '/update.php'));
         [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
         $this->assertSame(0, $exit, $output);
         $this->assertFileDoesNotExist($root . '/data/fresh-updater.json');
         $this->assertDirectoryDoesNotExist($root . '/data/backups/updater');
     }
 
-    /** HR: Nevaljani updater zaustavlja nadogradnju prije promjene aplikacije. EN: An invalid updater stops the update before application changes. */
+    /**
+     * EN: An invalid updater stops the update before application changes.
+     *
+     * HR: Nevaljani updater zaustavlja nadogradnju prije promjene aplikacije.
+     */
     public function testInvalidUpdaterStopsBeforeApplicationChanges(): void
     {
         [$root, $repository, $tools] = $this->fixture();
         $previous = (string)file_get_contents($root . '/update.php');
-        $this->release($repository, '0.2.12', $this->candidate($repository) . "\nsyntax error");
+        $this->release($repository, '0.3.1', $this->candidate($repository) . "\nsyntax error");
         [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
         $this->assertSame(1, $exit, $output);
         $this->assertSame($previous, file_get_contents($root . '/update.php'));
-        $this->assertSame('0.2.11', trim((string)file_get_contents($root . '/VERSION')));
+        $this->assertSame('0.3.0', trim((string)file_get_contents($root . '/VERSION')));
         $this->assertFileDoesNotExist($root . '/data/phases.log');
         $this->assertFileDoesNotExist($root . '/data/update-maintenance.json');
     }
 
-    /** HR: Read-only provjera i odbijanje druge nadogradnje ne smiju brisati postojeće održavanje. EN: Read-only checks and rejecting a concurrent update must preserve existing maintenance. */
+    /**
+     * EN: Read-only checks and rejecting a concurrent update must preserve existing maintenance.
+     *
+     * HR: Read-only provjera i odbijanje druge nadogradnje ne smiju brisati postojeće održavanje.
+     */
     public function testCheckAndConcurrentUpdateDoNotMutateInstallation(): void
     {
         [$root, $repository, $tools] = $this->fixture();
-        $this->release($repository, '0.2.12', $this->candidate($repository));
+        $this->release($repository, '0.3.1', $this->candidate($repository));
         $previous = (string)file_get_contents($root . '/update.php');
         file_put_contents($root . '/data/update-maintenance.json', '{"existing":true}');
         $lock = fopen($root . '/data/update.lock', 'c+');
@@ -181,7 +210,11 @@ final class UpdaterSelfUpdateTest extends TestCase
         }
     }
 
-    /** HR: Ručni interni argument bez privatnih deskriptora nije valjana nadogradnja. EN: A manually supplied internal flag without private descriptors is not a valid update. */
+    /**
+     * EN: A manually supplied internal flag without private descriptors is not a valid update.
+     *
+     * HR: Ručni interni argument bez privatnih deskriptora nije valjana nadogradnja.
+     */
     public function testForgedHandoffIsRejected(): void
     {
         [$root, , $tools] = $this->fixture();
@@ -190,24 +223,32 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertFileDoesNotExist($root . '/data/phases.log');
     }
 
-    /** HR: Kod istog broja verzije ili drugog protokola ne smije zamijeniti updater. EN: Different code with the same version or another protocol must not replace the updater. */
+    /**
+     * EN: Different code with the same version or another protocol must not replace the updater.
+     *
+     * HR: Kod istog broja verzije ili drugog protokola ne smije zamijeniti updater.
+     */
     public function testAmbiguousVersionAndIncompatibleProtocolAreRejected(): void
     {
         [$root, $repository, $tools] = $this->fixture();
         $previous = (string)file_get_contents($root . '/update.php');
-        $this->release($repository, '0.2.12', $previous . "\n// different code\n");
+        $this->release($repository, '0.3.1', $previous . "\n// different code\n");
         [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
         $this->assertSame(1, $exit, $output);
         $this->assertSame($previous, file_get_contents($root . '/update.php'));
         $candidate = str_replace('HANDOFF_PROTOCOL = 1;', 'HANDOFF_PROTOCOL = 2;', $this->candidate($repository));
-        $this->release($repository, '0.2.13', $candidate);
+        $this->release($repository, '0.3.2', $candidate);
         [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
         $this->assertSame(1, $exit, $output);
         $this->assertSame($previous, file_get_contents($root . '/update.php'));
         $this->assertFileDoesNotExist($root . '/data/phases.log');
     }
 
-    /** HR: Izolirani Linux root test pokreće deploy kao drugi UID i čuva FPM-ovo vlasništvo postavki. EN: An isolated Linux root test runs deployment as another UID and preserves FPM-owned settings. */
+    /**
+     * EN: An isolated Linux root test runs deployment as another UID and preserves FPM-owned settings.
+     *
+     * HR: Izolirani Linux root test pokreće deploy kao drugi UID i čuva FPM-ovo vlasništvo postavki.
+     */
     public function testSeparateRuntimeOwnerSurvivesGuiSelfUpdate(): void
     {
         if (PHP_OS_FAMILY !== 'Linux' || !function_exists('posix_geteuid') || posix_geteuid() !== 0) {
@@ -215,12 +256,12 @@ final class UpdaterSelfUpdateTest extends TestCase
         }
 
         [$root, $repository, $tools] = $this->fixture();
-        mkdir($root . '/resources/config/menu', 0770, true);
-        mkdir($repository . '/resources/config/menu', 0770, true);
-        $menu = $root . '/resources/config/menu/settings.json';
+        mkdir($root . '/config/menu', 0770, true);
+        mkdir($repository . '/config/menu', 0770, true);
+        $menu = $root . '/config/menu/settings.json';
         file_put_contents($menu, '[]');
-        file_put_contents($repository . '/resources/config/menu/settings.json', '[{"id":"new-item","order":10}]');
-        $this->release($repository, '0.2.12', $this->candidate($repository));
+        file_put_contents($repository . '/config/menu/settings.json', '[{"id":"new-item","order":10}]');
+        $this->release($repository, '0.3.1', $this->candidate($repository));
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($this->temporaryRoot, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::SELF_FIRST,
@@ -254,7 +295,11 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertTrue($proof['lock_held']);
     }
 
-    /** HR: Stvarni worker odvaja GUI posao i vraća kontrolu prije završetka nadogradnje. EN: The real worker detaches the GUI job and returns control before update completion. */
+    /**
+     * EN: The real worker detaches the GUI job and returns control before update completion.
+     *
+     * HR: Stvarni worker odvaja GUI posao i vraća kontrolu prije završetka nadogradnje.
+     */
     public function testWorkerStartsFreshUpdaterInBackground(): void
     {
         if (!function_exists('pcntl_fork') || !function_exists('pcntl_exec')) {
@@ -263,10 +308,10 @@ final class UpdaterSelfUpdateTest extends TestCase
 
         [$root, $repository, $tools] = $this->fixture();
         $this->prepareWorker($root);
-        $this->release($repository, '0.2.12', $this->candidate($repository));
+        $this->release($repository, '0.3.1', $this->candidate($repository));
         $id = bin2hex(random_bytes(24));
         file_put_contents($root . '/data/setup-requests/' . $id . '.json', json_encode([
-            'id' => $id, 'action' => 'application-update-start', 'parameters' => ['locale' => 'en', 'tag' => '0.2.12'],
+            'id' => $id, 'action' => 'application-update-start', 'parameters' => ['locale' => 'en', 'tag' => '0.3.1'],
         ]));
         $path = getenv('PATH');
         putenv('PATH=' . $tools . PATH_SEPARATOR . $path);
@@ -287,33 +332,11 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertFileExists($root . '/data/fresh-updater.json');
     }
 
-    /** HR: Stariji updater stvarno instalira prijelazno izdanje prije korištenja novog protokola. EN: The legacy updater really installs the bridge before using the new protocol. */
-    public function testLegacyUpdaterInstallsRequiredBridge(): void
-    {
-        [$legacyExit, $legacy] = $this->process(['git', '-C', dirname(__DIR__, 3), 'show', '0.2.11:update.php']);
-        if ($legacyExit !== 0) {
-            $this->markTestSkipped('Fetch the 0.2.11 tag to verify the required bridge.');
-        }
-
-        [$root, $repository, $tools] = $this->fixture();
-        $candidate = $this->candidate($repository);
-        $this->release($repository, '0.2.12', $candidate);
-        $legacy = str_replace('https://github.com/kmihalj/Simbioza.git', $repository, $legacy);
-        file_put_contents($root . '/update.php', $legacy);
-        // HR: Stariji rsync uspoređuje vrijeme; izbjegni umjetni isti timestamp testnih datoteka.
-        // EN: Legacy rsync compares times; avoid an artificial identical fixture timestamp.
-        touch($root . '/VERSION', time() - 60);
-        [$exit, $output] = $this->runUpdater($root, $tools, 'cli', ['--tag=0.2.12']);
-        $this->assertSame(0, $exit, $output);
-        $this->assertSame('0.2.12', trim((string)file_get_contents($root . '/VERSION')));
-        $this->assertSame($candidate, file_get_contents($root . '/update.php'));
-        $this->assertFileDoesNotExist($root . '/data/fresh-updater.json');
-        [$exit, $output] = $this->runUpdater($root, $tools, 'cli', ['--check']);
-        $this->assertSame(0, $exit, $output);
-        $this->assertStringContainsString('Updater: 1.0.1', $output);
-    }
-
-    /** HR: Fiksni helper predaje CLI posao drugom vlasniku koda, bez zadržavanja privilegija. EN: A fixed helper delegates the CLI job to another code owner without retaining privileges. */
+    /**
+     * EN: A fixed helper delegates the CLI job to another code owner without retaining privileges.
+     *
+     * HR: Fiksni helper predaje CLI posao drugom vlasniku koda, bez zadržavanja privilegija.
+     */
     public function testMaintainerCliDelegatesToDeploymentWorker(): void
     {
         if (PHP_OS_FAMILY !== 'Linux' || !function_exists('posix_geteuid') || posix_geteuid() !== 0) {
@@ -322,13 +345,17 @@ final class UpdaterSelfUpdateTest extends TestCase
 
         [$root, $repository, $tools] = $this->fixture();
         $this->prepareWorker($root, true);
-        $this->release($repository, '0.2.12', $this->candidate($repository));
+        $this->release($repository, '0.3.1', $this->candidate($repository));
         $helper = $this->temporaryRoot . '/fixed-helper';
         file_put_contents($helper, "#!/bin/sh\nPATH=" . escapeshellarg($tools . ':' . getenv('PATH'))
-            . "\nexport PATH\nexec setpriv --reuid=65534 --regid=65534 --clear-groups -- "
+            . "\nexport PATH\nexec env -i PATH=\"\$PATH\" setpriv --reuid=65534 --regid=65534 --clear-groups -- "
             . escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/setup_worker.php') . ' "$1"' . "\n");
         chmod($helper, 0755);
-        file_put_contents($root . '/config/setup.php', '<?php return ' . var_export([
+        mkdir($root . '/private-config', 0700);
+        file_put_contents($root . '/framework.php', '<?php return ' . var_export([
+            'HPH_CONFIG_PATH' => $root . '/config', 'HPH_CONFIG_OVERRIDE_PATHS' => $root . '/private-config',
+        ], true) . ';');
+        file_put_contents($root . '/private-config/setup.php', '<?php return ' . var_export([
             'helper' => $helper, 'request_dir' => $root . '/data/setup-requests', 'direct_local_testing' => false,
         ], true) . ';');
         $iterator = new \RecursiveIteratorIterator(
@@ -344,8 +371,21 @@ final class UpdaterSelfUpdateTest extends TestCase
         }
 
         chmod($root . '/data/setup-requests', 02770);
+        // EN: The initial root process reads its own fixture now owned by the deploy UID.
+        // Trust applies only to this repository and test, not global Git configuration.
+        //
+        // HR: Početni root proces čita vlastitu fixture sada u vlasništvu deploy UID-a.
+        // Povjerenje vrijedi samo za ovaj repozitorij i ovaj test, ne za globalni Git.
+        $gitConfig = $this->temporaryRoot . '/git-safe.config';
+        file_put_contents($gitConfig, '[safe]' . "\n\tdirectory = " . $repository . '/.git' . "\n");
+        $previousGitConfig = getenv('GIT_CONFIG_GLOBAL');
+        putenv('GIT_CONFIG_GLOBAL=' . $gitConfig);
+        try {
+            [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
+        } finally {
+            putenv($previousGitConfig === false ? 'GIT_CONFIG_GLOBAL' : 'GIT_CONFIG_GLOBAL=' . $previousGitConfig);
+        }
 
-        [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
         $this->assertSame(0, $exit, $output);
         $this->assertStringContainsString('handing the update to the restricted deploy helper', $output);
         $proof = json_decode((string)file_get_contents($root . '/data/fresh-updater.json'), true);
@@ -353,11 +393,19 @@ final class UpdaterSelfUpdateTest extends TestCase
         $this->assertTrue($proof['lock_held']);
     }
 
-    /** HR: Priprema pravi worker; drugi UID dobiva privatnu kopiju bez ovisnosti o pristupu CI korisnikovom homeu. EN: Prepares the real worker; another UID receives a private copy independent of access to the CI user's home. */
+    /**
+     * EN: Prepares the real worker; another UID receives a private copy independent of access to the CI user's home.
+     *
+     * HR: Priprema pravi worker; drugi UID dobiva privatnu kopiju bez ovisnosti o pristupu CI korisnikovom homeu.
+     */
     private function prepareWorker(string $root, bool $isolatedVendor = false): void
     {
         $sourceRoot = dirname(__DIR__, 3);
         if ($isolatedVendor) {
+            // EN: The isolated copy's autoload also needs the application bootstrap, not only vendor/src.
+            //
+            // HR: Autoload privatne kopije treba i aplikacijski bootstrap, ne samo vendor/src.
+            copy($sourceRoot . '/bootstrap.php', $root . '/bootstrap.php');
             foreach (['vendor', 'src'] as $directory) {
                 [$exit, $output] = $this->process([
                     'rsync', '--archive', '--copy-links', '--chmod=D0755,F0644',
@@ -366,7 +414,10 @@ final class UpdaterSelfUpdateTest extends TestCase
                 $this->assertSame(0, $exit, $output);
             }
         } else {
-            symlink($sourceRoot . '/vendor', $root . '/vendor');
+            // EN: The fixture already contains the minimal resolver; the worker needs real autoload.
+            //
+            // HR: Fixture već sadrži minimalni resolver; worker treba stvarni autoload.
+            symlink($sourceRoot . '/vendor/autoload.php', $root . '/vendor/autoload.php');
         }
 
         copy(dirname(__DIR__, 3) . '/scripts/setup_worker.php', $root . '/scripts/setup_worker.php');
@@ -376,7 +427,11 @@ final class UpdaterSelfUpdateTest extends TestCase
         ], true) . ';');
     }
 
-    /** HR: Čeka završetak samo vlastitog privremenog GUI posla. EN: Waits for completion only of this fixture's own GUI job. */
+    /**
+     * EN: Waits for completion only of this fixture's own GUI job.
+     *
+     * HR: Čeka završetak samo vlastitog privremenog GUI posla.
+     */
     private function waitForJob(string $root): void
     {
         $deadline = microtime(true) + 30;
@@ -393,8 +448,9 @@ final class UpdaterSelfUpdateTest extends TestCase
     }
 
     /**
-     * HR: Priprema izolirano Git spremište, instalaciju i testni Composer bez mreže.
      * EN: Prepares an isolated Git repository, installation, and test Composer without network access.
+     *
+     * HR: Priprema izolirano Git spremište, instalaciju i testni Composer bez mreže.
      *
      * @return array{string,string,string}
      */
@@ -405,19 +461,37 @@ final class UpdaterSelfUpdateTest extends TestCase
         $repository = $this->temporaryRoot . '/repository';
         $tools = $this->temporaryRoot . '/tools';
         $directories = [
-            $root . '/config', $root . '/public', $root . '/data/config', $root . '/scripts',
+            $root . '/config', $root . '/public', $root . '/data', $root . '/scripts',
             $repository . '/config', $repository . '/public', $repository . '/scripts', $tools,
         ];
         foreach ($directories as $directory) {
             mkdir($directory, 0700, true);
         }
 
+        // EN: The standalone updater uses the real resolver without full vendor/application bootstrap.
+        //
+        // HR: Samostalni updater koristi stvarni resolver, bez punog vendora/aplikacije.
+        $framework = $root . '/vendor/aaieduhr/heartphrame-framework/src';
+        $frameworkFiles = ['CodeBook/EnvKeyEnum.php', 'Config/ConfigPathResolver.php', 'Config/ConfigArrayMerger.php'];
+        foreach ($frameworkFiles as $file) {
+            if (!is_dir(dirname($framework . '/' . $file))) {
+                mkdir(dirname($framework . '/' . $file), 0700, true);
+            }
+
+            copy(dirname(__DIR__, 3) . '/vendor/aaieduhr/heartphrame-framework/src/' . $file, $framework . '/' . $file);
+            if (!is_dir(dirname($tools . '/framework/' . $file))) {
+                mkdir(dirname($tools . '/framework/' . $file), 0700, true);
+            }
+
+            copy($framework . '/' . $file, $tools . '/framework/' . $file);
+        }
+
         $updater = $this->updaterCode($repository, '1.0.0');
         file_put_contents($root . '/update.php', $updater);
-        file_put_contents($root . '/VERSION', '0.2.11');
+        file_put_contents($root . '/VERSION', '0.3.0');
         file_put_contents($root . '/composer.json', '{"name":"aaieduhr/simbioza","require":{}}');
         file_put_contents($root . '/config/app.php', '<?php return [];');
-        file_put_contents($root . '/data/config/modules.php', '<?php return ["enabled" => [], "removed" => []];');
+        file_put_contents($root . '/config/modules.php', '<?php return ["enabled" => [], "removed" => []];');
         file_put_contents($root . '/config/private.php', '<?php return ["keep" => true];');
         file_put_contents($root . '/public/index.php', '<?php echo "old";');
         file_put_contents($root . '/data/document.txt', 'kept');
@@ -432,8 +506,9 @@ final class UpdaterSelfUpdateTest extends TestCase
             . ' writeApplicationUpdateStatus($statusPath, [',
             $job,
         );
-        // HR: Varijabla root je u stvarnom callbacku zatvorena kroz use.
         // EN: Capture root in the real callback for test progress recording.
+        //
+        // HR: Varijabla root je u stvarnom callbacku zatvorena kroz use.
         $job = str_replace('use ($statusPath)', 'use ($statusPath, $root)', $job);
         file_put_contents($root . '/scripts/application_update_job.php', $job);
         copy($root . '/scripts/application_update_job.php', $repository . '/scripts/application_update_job.php');
@@ -457,11 +532,34 @@ if ($argv[1] === 'check-platform-reqs' && is_file($root . '/data/fail-platform')
 }
 if ($argv[1] === 'install') {
     if (!is_dir($root . '/vendor/bin')) { mkdir($root . '/vendor/bin', 0700, true); }
+    foreach (['CodeBook/EnvKeyEnum.php', 'Config/ConfigPathResolver.php', 'Config/ConfigArrayMerger.php'] as $file) {
+        $target = $root . '/vendor/aaieduhr/heartphrame-framework/src/' . $file;
+        if (!is_dir(dirname($target))) { mkdir(dirname($target), 0755, true); }
+        copy(__DIR__ . '/framework/' . $file, $target);
+    }
+    file_put_contents($root . '/vendor/autoload.php', <<<'AUTOLOAD'
+<?php
+spl_autoload_register(static function ($class) {
+    $prefixes = [
+        'App\\' => dirname(__DIR__) . '/src/',
+        'HeartPhrame\\' => __DIR__ . '/aaieduhr/heartphrame-framework/src/',
+    ];
+    foreach ($prefixes as $prefix => $directory) {
+        if (str_starts_with($class, $prefix)) {
+            $file = $directory . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+            if (is_file($file)) { require $file; }
+        }
+    }
+});
+AUTOLOAD);
     $hph = <<<'HPH'
 #!/usr/bin/env php
 <?php
 $root = getcwd();
 file_put_contents($root . '/data/phases.log', 'hph-' . $argv[2] . "\n", FILE_APPEND);
+if ($argv[2] === 'migrate-status' && is_file($root . '/data/fail-preflight')) {
+    exit(4);
+}
 if ($argv[2] === 'migrate-up') {
     if (is_file($root . '/data/fail-migration')) { exit(3); }
     (new PDO('sqlite:' . $root . '/data/database.sqlite'))->exec('UPDATE fixture SET updates = updates + 1');
@@ -479,7 +577,11 @@ PHP;
         return [$root, $repository, $tools];
     }
 
-    /** HR: Dodaje dokaz svježeg PHP procesa samo u novi updater. EN: Adds fresh-process evidence only to the new updater. */
+    /**
+     * EN: Adds fresh-process evidence only to the new updater.
+     *
+     * HR: Dodaje dokaz svježeg PHP procesa samo u novi updater.
+     */
     private function candidate(string $repository): string
     {
         $code = $this->updaterCode($repository, '1.0.1');
@@ -499,7 +601,11 @@ PHP;
         return str_replace('$this->receiveUpdaterHandoff();', '$this->receiveUpdaterHandoff();' . "\n" . $proof, $code);
     }
 
-    /** HR: Izolira URL i neovisnu testnu verziju updatera. EN: Isolates the repository URL and independent fixture updater version. */
+    /**
+     * EN: Isolates the repository URL and independent fixture updater version.
+     *
+     * HR: Izolira URL i neovisnu testnu verziju updatera.
+     */
     private function updaterCode(string $repository, string $version): string
     {
         $code = str_replace(
@@ -514,7 +620,11 @@ PHP;
         );
     }
 
-    /** HR: Stvara lokalni anotirani release tag. EN: Creates a local annotated release tag. */
+    /**
+     * EN: Creates a local annotated release tag.
+     *
+     * HR: Stvara lokalni anotirani release tag.
+     */
     private function release(string $repository, string $tag, string $updater): void
     {
         file_put_contents($repository . '/update.php', $updater);
@@ -525,8 +635,9 @@ PHP;
     }
 
     /**
-     * HR: Pokreće pravi entry point uz privremeni PATH i umask.
      * EN: Runs the real entry point with a temporary PATH and umask.
+     *
+     * HR: Pokreće pravi entry point uz privremeni PATH i umask.
      *
      * @param list<string> $arguments
      * @return array{int,string}
@@ -555,20 +666,118 @@ PHP;
     }
 
     /**
-     * HR: Hvata izlaz subprocessa kako testovi ne proizvode nekontrolirani ispis.
      * EN: Captures subprocess output so tests do not emit uncontrolled output.
+     *
+     * HR: Hvata izlaz subprocessa kako testovi ne proizvode nekontrolirani ispis.
      *
      * @param list<string> $command
      * @return array{int,string}
      */
     private function process(array $command, ?string $directory = null): array
     {
+        // EN: An isolated installation must not inherit HFC paths from the autoloader.
+        //
+        // HR: Izolirana instalacija ne smije naslijediti HFC putanje iz autoloadera.
+        $environment = getenv();
+        if ($directory !== null && is_dir($directory . '/config')) {
+            $environment['HPH_APP_PATH'] = $directory;
+            $environment['HPH_CONFIG_PATH'] = $directory . '/config';
+            $environment['HPH_CONFIG_OVERRIDE_PATHS'] = '';
+            if (is_file($directory . '/framework.php')) {
+                unset($environment['HPH_CONFIG_PATH'], $environment['HPH_CONFIG_OVERRIDE_PATHS']);
+            }
+        }
+
         $process = proc_open($command, [
             0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['redirect', 1],
-        ], $pipes, $directory);
+        ], $pipes, $directory, $environment);
         $this->assertIsResource($process);
         $output = (string)stream_get_contents($pipes[1]);
         fclose($pipes[1]);
         return [proc_close($process), $output];
+    }
+
+    /**
+     * EN: External current-format configuration remains intact on both success and rollback.
+     *
+     * HR: Vanjska konfiguracija u aktualnom formatu ostaje netaknuta nakon uspjeha i povrata.
+     */
+    #[DataProvider('configurationModes')]
+    public function testCurrentConfigurationIsPreserved(string $entry, bool $fail, bool $inside): void
+    {
+        [$root, $repository, $tools] = $this->fixture();
+        $external = $inside ? $root . '/private-config' : $this->temporaryRoot . '/external';
+        mkdir($external, 0700);
+        rename($root . '/config/modules.php', $external . '/modules.php');
+        foreach (
+            ['auth/auth.json' => '{"providers":{}}', 'api/api.php' => '<?php return ["rate_limit_per_minute"=>37];',
+            'backup/backup.php' => '<?php return ["archive_dir"=>"data/site-archives"];'] as $path => $bytes
+        ) {
+            mkdir(dirname($external . '/' . $path), 0700, true);
+            file_put_contents($external . '/' . $path, $bytes);
+            chmod($external . '/' . $path, 0640);
+        }
+
+        $before = [];
+        foreach (['modules.php', 'auth/auth.json', 'api/api.php', 'backup/backup.php'] as $path) {
+            $before[$path] = [file_get_contents($external . '/' . $path), stat($external . '/' . $path)];
+        }
+
+        copy(dirname(__DIR__, 3) . '/bootstrap.php', $root . '/bootstrap.php');
+        copy($root . '/bootstrap.php', $repository . '/bootstrap.php');
+        file_put_contents($root . '/framework.php', '<?php return ' . var_export([
+            'HPH_CONFIG_PATH' => $external, 'HPH_CONFIG_OVERRIDE_PATHS' => '',
+        ], true) . ';');
+        if ($fail) {
+            file_put_contents($root . '/data/fail-preflight', 'yes');
+        }
+
+        $this->release($repository, '0.3.1', $this->candidate($repository));
+        [$exit, $output] = $this->runUpdater($root, $tools, $entry);
+        $this->assertSame($fail ? 1 : 0, $exit, $output);
+        foreach ($before as $path => [$bytes, $metadata]) {
+            clearstatcache(true, $external . '/' . $path);
+            $this->assertSame($bytes, file_get_contents($external . '/' . $path));
+            foreach (['ino', 'uid', 'gid', 'mode', 'mtime', 'ctime'] as $key) {
+                $this->assertSame($metadata[$key], stat($external . '/' . $path)[$key]);
+            }
+        }
+
+        $database = new \PDO('sqlite:' . $root . '/data/database.sqlite');
+        $this->assertSame($fail ? 0 : 1, (int)$database->query('SELECT updates FROM fixture')->fetchColumn());
+        $this->assertFileDoesNotExist($root . '/data/update-maintenance.json');
+        if ($inside) {
+            $archives = glob($root . '/data/backups/application-updates/*.tar.gz');
+            [$tarExit, $entries] = $this->process(['tar', '-tzf', $archives[0]]);
+            $this->assertSame(0, $tarExit);
+            $this->assertStringNotContainsString('private-config', $entries);
+        }
+    }
+
+    /** @return iterable<string,array{string,bool,bool}> */
+    public static function configurationModes(): iterable
+    {
+        yield 'external CLI' => ['cli', false, false];
+        yield 'external GUI' => ['gui', false, false];
+        yield 'inside CLI' => ['cli', false, true];
+        yield 'external CLI rollback' => ['cli', true, false];
+        yield 'inside GUI rollback' => ['gui', true, true];
+    }
+
+    public function testConfigurationDirectorySymlinkSurvivesUpdate(): void
+    {
+        [$root, $repository, $tools] = $this->fixture();
+        $private = $this->temporaryRoot . '/private-linked-config';
+        rename($root . '/config', $private);
+        symlink($private, $root . '/config');
+        $original = file_get_contents($private . '/private.php');
+        $metadata = stat($private . '/private.php');
+        $this->release($repository, '0.3.1', $this->candidate($repository));
+        [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
+        $this->assertSame(0, $exit, $output);
+        $this->assertTrue(is_link($root . '/config'));
+        $this->assertSame($original, file_get_contents($private . '/private.php'));
+        $this->assertSame($metadata['ino'], fileinode($private . '/private.php'));
+        $this->assertSame($metadata['mode'], fileperms($private . '/private.php'));
     }
 }

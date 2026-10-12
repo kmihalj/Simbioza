@@ -1,5 +1,7 @@
 # Simbioza 0.2.0
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release makes permanent deletion of a large, previously deleted Workspace
 resumable. The administrator confirms the exact slug once; the browser then
 processes bounded batches and shows a persistent progress bar. If the browser

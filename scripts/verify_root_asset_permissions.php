@@ -1,10 +1,11 @@
 <?php
 
 /**
- * HR: Pokreće samo test promjene vlasnika u izoliranom Linux CI okruženju.
- *     Ne pokreće Composer, aplikaciju, migracije niti mijenja žive datoteke.
  * EN: Runs only the ownership-change test in an isolated Linux CI environment.
  *     Never runs Composer, the application, migrations, or touches live files.
+ *
+ * HR: Pokreće samo test promjene vlasnika u izoliranom Linux CI okruženju.
+ *     Ne pokreće Composer, aplikaciju, migracije niti mijenja žive datoteke.
  */
 
 declare(strict_types=1);

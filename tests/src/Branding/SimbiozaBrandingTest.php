@@ -20,18 +20,18 @@ use function str_starts_with;
 final class SimbiozaBrandingTest extends TestCase
 {
     /**
-     * HR: Dokazuje da aktivna administratorska tema postoji i da tvornički
-     *     Simbioza branding sadrži 24 cjelovita upravljana asseta.
-     *
      * EN: Proves the administrator-selected active theme exists and that the
      *     bundled Simbioza branding contains 24 complete managed assets.
+     *
+     * HR: Dokazuje da aktivna administratorska tema postoji i da tvornički
+     *     Simbioza branding sadrži 24 cjelovita upravljana asseta.
      */
     public function testSimbiozaThemeAndApprovedArtworkAreInstalled(): void
     {
         $root = $this->projectRoot();
         $app = $this->appConfig($root . '/config/app.php');
-        $settings = $this->decodeJsonFile($root . '/resources/config/theme/settings.json');
-        $themes = $this->decodeJsonFile($root . '/resources/config/theme/themes.json');
+        $settings = $this->decodeJsonFile($root . '/config/theme/settings.json');
+        $themes = $this->decodeJsonFile($root . '/config/theme/themes.json');
 
         $this->assertSame('Simbioza', $app['name']);
         $localization = $this->arrayValue($app, 'localization');
@@ -46,7 +46,7 @@ final class SimbiozaBrandingTest extends TestCase
             $this->assertNotSame('', trim($localeLabels[$supportedLocale]));
         }
 
-        $this->assertSame($root . '/config/../data/languages/flags', $localization['flags_dir'] ?? null);
+        $this->assertSame($root . '/data/languages/flags', $localization['flags_dir'] ?? null);
         $this->assertFileExists($root . '/lang/' . $locale . '.php');
         $activeThemeId = $settings['active_theme'] ?? null;
         $this->assertIsString($activeThemeId);
@@ -144,14 +144,14 @@ final class SimbiozaBrandingTest extends TestCase
     }
 
     /**
-     * HR: Dokazuje da partnerske teme koriste potpune lokalne pakete i dva logotipa.
-     *
      * EN: Proves that partner themes use complete local packages and two logos.
+     *
+     * HR: Dokazuje da partnerske teme koriste potpune lokalne pakete i dva logotipa.
      */
     public function testDabarAndAaiThemesUseManagedAssetsAndDualHeaderLogos(): void
     {
         $root = $this->projectRoot();
-        $themes = $this->decodeJsonFile($root . '/resources/config/theme/themes.json');
+        $themes = $this->decodeJsonFile($root . '/config/theme/themes.json');
         $themesById = [];
         foreach ($themes as $theme) {
             if (is_array($theme) && is_string($theme['id'] ?? null)) {
@@ -256,9 +256,9 @@ final class SimbiozaBrandingTest extends TestCase
     }
 
     /**
-     * HR: Učitava aplikacijsku PHP konfiguraciju kao polje.
-     *
      * EN: Loads the application PHP configuration as an array.
+     *
+     * HR: Učitava aplikacijsku PHP konfiguraciju kao polje.
      *
      * @return array<mixed>
      */
@@ -273,9 +273,9 @@ final class SimbiozaBrandingTest extends TestCase
     }
 
     /**
-     * HR: Čita JSON datoteku i zahtijeva objekt ili popis.
-     *
      * EN: Reads a JSON file and requires an object or list.
+     *
+     * HR: Čita JSON datoteku i zahtijeva objekt ili popis.
      *
      * @return array<mixed>
      */
@@ -295,9 +295,9 @@ final class SimbiozaBrandingTest extends TestCase
     }
 
     /**
-     * HR: Vraća obvezno ugniježđeno polje iz konfiguracije.
-     *
      * EN: Returns a required nested array from configuration.
+     *
+     * HR: Vraća obvezno ugniježđeno polje iz konfiguracije.
      *
      * @param array<mixed> $source
      * @return array<mixed>
@@ -313,9 +313,9 @@ final class SimbiozaBrandingTest extends TestCase
     }
 
     /**
-     * HR: Vraća korijen aplikacijskog projekta.
-     *
      * EN: Returns the application project root.
+     *
+     * HR: Vraća korijen aplikacijskog projekta.
      */
     private function projectRoot(): string
     {

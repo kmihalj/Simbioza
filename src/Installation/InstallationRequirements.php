@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Installation;
 
 /**
- * HR: Provjerava runtime, ekstenzije i privatne zapisive putanje prije instalacije.
  * EN: Checks the runtime, extensions, and private writable paths before installation.
+ *
+ * HR: Provjerava runtime, ekstenzije i privatne zapisive putanje prije instalacije.
  */
 final readonly class InstallationRequirements
 {
@@ -26,14 +27,19 @@ final readonly class InstallationRequirements
         'zip',
     ];
 
-    /** HR: Inicijalizira putanje provjere. EN: Initializes requirement paths. */
+    /**
+     * EN: Initializes requirement paths.
+     *
+     * HR: Inicijalizira putanje provjere.
+     */
     public function __construct(private InstallationPaths $paths)
     {
     }
 
     /**
-     * HR: Vraća sigurne rezultate svih provjera.
      * EN: Returns safe results for every requirement check.
+     *
+     * HR: Vraća sigurne rezultate svih provjera.
      *
      * @return list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool}>
      */
@@ -82,19 +88,44 @@ final readonly class InstallationRequirements
             'Private data directory is writable',
             true,
         );
-        $checks[] = $this->directoryCheck(
+        $configurationReady = true;
+        try {
+            $configuration = $this->paths->configuration();
+            $configuration->assertReadable();
+            foreach (
+                [
+                'app.php', 'bootstrap.php', 'commands.php', 'listeners.php',
+                'middleware.php', 'routes.php', 'services.php',
+                ] as $file
+            ) {
+                $configurationReady = $configurationReady && $configuration->effectiveFile($file) !== null;
+            }
+
+            foreach (['database.php', 'env.php', 'installation.php', 'modules.php'] as $file) {
+                $configuration->writableFile($file);
+            }
+        } catch (\RuntimeException | \InvalidArgumentException) {
+            $configurationReady = false;
+        }
+
+        $checks[] = [
+            'id' => 'configuration_ready',
+            'label_hr' => 'Svi konfiguracijski slojevi su pripremljeni, a instalacijski ciljevi zapisivi',
+            'label_en' => 'All configuration layers are prepared and installer targets are writable',
+            'passed' => $configurationReady,
+            'required' => true,
+        ];
+        $checks[] = $this->moduleConfigurationCheck(
             'theme_config_writable',
-            $this->paths->themeConfigDirectory(),
+            'theme/themes.json',
             'Spremište konfiguracije teme je zapisivo',
             'Theme configuration storage is writable',
-            true,
         );
-        $checks[] = $this->directoryCheck(
+        $checks[] = $this->moduleConfigurationCheck(
             'menu_config_writable',
-            $this->paths->menuConfigDirectory(),
+            'menu/settings.json',
             'Spremište konfiguracije izbornika je zapisivo',
             'Menu configuration storage is writable',
-            true,
         );
         $checks[] = $this->directoryCheck(
             'migrations_readable',
@@ -125,7 +156,31 @@ final readonly class InstallationRequirements
         return $checks;
     }
 
-    /** HR: Provjerava jesu li svi obvezni uvjeti zadovoljeni. EN: Checks whether all required items pass. */
+    /**
+     * EN: A missing module folder may be created in the highest writable layer; read-only targets fail safely.
+     *
+     * HR: Nedostajući folder modula može se stvoriti u najvišem zapisivom sloju; read-only cilj sigurno pada.
+     *
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool}
+     */
+    private function moduleConfigurationCheck(string $id, string $file, string $labelHr, string $labelEn): array
+    {
+        $passed = true;
+        try {
+            $this->paths->configuration()->writableFile($file);
+        } catch (\RuntimeException | \InvalidArgumentException) {
+            $passed = false;
+        }
+
+        return ['id' => $id, 'label_hr' => $labelHr, 'label_en' => $labelEn,
+            'passed' => $passed, 'required' => true];
+    }
+
+    /**
+     * EN: Checks whether all required items pass.
+     *
+     * HR: Provjerava jesu li svi obvezni uvjeti zadovoljeni.
+     */
     public function passes(?string $selectedDriver = null): bool
     {
         foreach ($this->checks($selectedDriver) as $check) {
@@ -138,8 +193,9 @@ final readonly class InstallationRequirements
     }
 
     /**
-     * HR: Gradi provjeru direktorija za čitanje ili zapisivanje.
      * EN: Builds a directory readability or writability check.
+     *
+     * HR: Gradi provjeru direktorija za čitanje ili zapisivanje.
      *
      * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool}
      */
@@ -165,8 +221,9 @@ final readonly class InstallationRequirements
     }
 
     /**
-     * HR: Gradi provjeru čitljive obvezne datoteke.
      * EN: Builds a readable required-file check.
+     *
+     * HR: Gradi provjeru čitljive obvezne datoteke.
      *
      * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool}
      */
@@ -181,7 +238,11 @@ final readonly class InstallationRequirements
         ];
     }
 
-    /** HR: Uspoređuje runtime s dokumentiranim minimumom. EN: Compares the runtime with the documented minimum. */
+    /**
+     * EN: Compares the runtime with the documented minimum.
+     *
+     * HR: Uspoređuje runtime s dokumentiranim minimumom.
+     */
     private function phpVersionSupported(string $version): bool
     {
         return version_compare($version, '8.2.0', '>=');

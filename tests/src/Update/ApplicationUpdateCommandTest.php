@@ -19,9 +19,32 @@ final class ApplicationUpdateCommandTest extends TestCase
     /** @var list<string> */
     private array $temporaryDirectories = [];
 
-    /** HR: Učitava samostalni updater bez njegova pokretanja. EN: Loads the standalone updater without running it. */
+    /** @var array<string,string|false> */
+    private array $environment = [];
+
+    /**
+     * EN: Fixtures never inherit HFC configuration.
+     *
+     * HR: Fixture ne nasljeđuje konfiguraciju HFC-a.
+     */
+    protected function setUp(): void
+    {
+        foreach (['HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $key) {
+            $this->environment[$key] = getenv($key);
+            putenv($key);
+        }
+    }
+
+    /**
+     * EN: Loads the standalone updater without running it.
+     *
+     * HR: Učitava samostalni updater bez njegova pokretanja.
+     */
     public static function setUpBeforeClass(): void
     {
+        class_exists(\HeartPhrame\Config\ConfigPathResolver::class);
+        class_exists(\HeartPhrame\Config\ConfigArrayMerger::class);
+        enum_exists(\HeartPhrame\CodeBook\EnvKeyEnum::class);
         require_once dirname(__DIR__, 3) . '/update.php';
     }
 
@@ -48,12 +71,15 @@ final class ApplicationUpdateCommandTest extends TestCase
         }
 
         $this->temporaryDirectories = [];
+        foreach ($this->environment as $key => $value) {
+            putenv($value === false ? $key : $key . '=' . $value);
+        }
     }
 
     /**
-     * HR: Updater bira najveći stabilni semantički tag i zanemaruje prerelease i dereferencirane tagove.
-     *
      * EN: The updater chooses the greatest stable semantic tag and ignores prerelease and dereferenced tags.
+     *
+     * HR: Updater bira najveći stabilni semantički tag i zanemaruje prerelease i dereferencirane tagove.
      */
     public function testGreatestStableTagIsSelected(): void
     {
@@ -69,9 +95,9 @@ TAGS;
     }
 
     /**
-     * HR: Updater jasno prepoznaje izlaz u kojem nema stabilnog izdanja.
-     *
      * EN: The updater clearly recognises output that contains no stable release.
+     *
+     * HR: Updater jasno prepoznaje izlaz u kojem nema stabilnog izdanja.
      */
     public function testMissingStableTagReturnsNull(): void
     {
@@ -79,8 +105,9 @@ TAGS;
     }
 
     /**
-     * HR: Lokalni demo-paket ostaje izvan javnog kataloga i ne smije zamijeniti ovisnost izdanja.
      * EN: A local demo package stays outside the public catalog and cannot replace a release dependency.
+     *
+     * HR: Lokalni demo-paket ostaje izvan javnog kataloga i ne smije zamijeniti ovisnost izdanja.
      */
     public function testLocalComposerRequirementsAreMergedWithoutOverridingRelease(): void
     {
@@ -107,7 +134,11 @@ TAGS;
         ApplicationUpdateCommand::mergeLocalComposerRequirements($release, $local);
     }
 
-    /** HR: Udaljeni privatni kod ne smije se prikriti kao lokalni path paket. EN: Remote private code cannot masquerade as a local path package. */
+    /**
+     * EN: Remote private code cannot masquerade as a local path package.
+     *
+     * HR: Udaljeni privatni kod ne smije se prikriti kao lokalni path paket.
+     */
     public function testLocalComposerOverrideRejectsRemoteRepository(): void
     {
         $this->expectException(\RuntimeException::class);
@@ -119,7 +150,11 @@ TAGS;
         ]);
     }
 
-    /** HR: Stvarni korak updatera vraća privatni paket i čitljive dozvole manifesta. EN: The updater step restores the private package and a web-readable manifest. */
+    /**
+     * EN: The updater step restores the private package and a web-readable manifest.
+     *
+     * HR: Stvarni korak updatera vraća privatni paket i čitljive dozvole manifesta.
+     */
     public function testLocalComposerRestorePreservesPrivatePackageOnDisk(): void
     {
         $root = sys_get_temp_dir() . '/simbioza-update-private-package-' . bin2hex(random_bytes(6));
@@ -151,10 +186,11 @@ TAGS;
     }
 
     /**
-     * HR: Nadogradnja čuva opcionalne module iz manifesta, locka i trajnog stanja.
      * EN: An update preserves optional modules from the manifest, lock, and persistent state.
+     *
+     * HR: Nadogradnja čuva opcionalne module iz manifesta, locka i trajnog stanja.
      */
-    public function testSelectedOptionalModulesSurviveLegacyAndDisabledStates(): void
+    public function testSelectedOptionalModulesSurviveDisabledStates(): void
     {
         $release = [
             'suggest' => ['vendor/api' => 'API', 'vendor/audit' => 'Audit', 'vendor/theme' => 'Theme'],
@@ -177,8 +213,9 @@ TAGS;
     }
 
     /**
-     * HR: Release sinkronizacija i rollback čuvaju instalirani jezik, ali ažuriraju ugrađene jezike.
      * EN: Release sync and rollback preserve an installed locale while updating bundled locales.
+     *
+     * HR: Release sinkronizacija i rollback čuvaju instalirani jezik, ali ažuriraju ugrađene jezike.
      */
     public function testSourceSyncPreservesInstalledLanguageFilesAndRegistry(): void
     {
@@ -194,15 +231,17 @@ PHP);
         $method = new \ReflectionMethod(ApplicationUpdateCommand::class, 'sourceSyncExcludes');
         $excludes = $method->invoke($command);
         $this->assertContains('/config/languages.php', $excludes);
-        $this->assertContains('/lang/de.php', $excludes);
-        $this->assertContains('/lang/sr-cyrl.php', $excludes);
+        $this->assertContains('/data/', $excludes);
+        $this->assertNotContains('/lang/de.php', $excludes);
+        $this->assertNotContains('/lang/sr-cyrl.php', $excludes);
         $this->assertNotContains('/lang/en.php', $excludes);
         $this->assertNotContains('/lang/hr.php', $excludes);
     }
 
     /**
-     * HR: Vraćanje opcionalnih modula ostavlja manifest čitljivim odvojenom FPM korisniku.
      * EN: Restoring optional modules leaves the manifest readable by a separate FPM user.
+     *
+     * HR: Vraćanje opcionalnih modula ostavlja manifest čitljivim odvojenom FPM korisniku.
      */
     public function testRestoredOptionalModulesLeaveComposerManifestWebReadable(): void
     {
@@ -237,10 +276,11 @@ PHP);
     }
 
     /**
-     * HR: FPM CLI delegira samo kada helper cilja istu instalaciju i pozivatelj
-     *     nije vlasnik koda; vlasnik i ne-FPM instalacija ostaju izravni.
      * EN: FPM CLI delegates only when the helper targets the same installation
      *     and the caller is not the code owner; owner and non-FPM runs remain direct.
+     *
+     * HR: FPM CLI delegira samo kada helper cilja istu instalaciju i pozivatelj
+     *     nije vlasnik koda; vlasnik i ne-FPM instalacija ostaju izravni.
      */
     public function testFpmUpdateDelegationIsBoundToOwnerAndInstallation(): void
     {
@@ -269,10 +309,11 @@ PHP);
     }
 
     /**
-     * HR: FPM konfigurator daje istom validirajućem helperu ograničeno pravo
-     *     i web korisniku i grupi održavatelja te ga osvježava pri finalizaciji.
      * EN: The FPM configurator grants the same validating helper narrowly to
      *     both the web user and maintainer group and refreshes it on finalize.
+     *
+     * HR: FPM konfigurator daje istom validirajućem helperu ograničeno pravo
+     *     i web korisniku i grupi održavatelja te ga osvježava pri finalizaciji.
      */
     public function testFpmConfiguratorAuthorizesGuiAndMaintainerCli(): void
     {
@@ -287,7 +328,7 @@ PHP);
         );
         $this->assertStringContainsString("FPM_HELPER,\n        'invalid',", $source);
         $this->assertStringContainsString("return \$probe['code'] === 64;", $source);
-        $this->assertStringContainsString("'data/config'", $source);
+        $this->assertStringNotContainsString("'data/config'", $source);
         $this->assertStringContainsString('assertInstanceNotReused($platform, $root, $phpFpm);', $source);
         $this->assertStringContainsString("'env[SIMBIOZA_SETUP_HELPER] = ' . FPM_HELPER", $source);
         $this->assertStringContainsString('php_admin_value[max_execution_time] = 900', $source);
@@ -301,8 +342,9 @@ PHP);
     }
 
     /**
-     * HR: Prazna oznaka instance ne smije tiho vratiti zadana sistemska imena.
      * EN: An empty instance must not silently fall back to legacy system names.
+     *
+     * HR: Prazna oznaka instance ne smije tiho vratiti zadana sistemska imena.
      */
     public function testFpmConfiguratorRejectsEmptyInstance(): void
     {
@@ -326,10 +368,11 @@ PHP);
     }
 
     /**
-     * HR: Dohvat taga odvaja fetch i checkout pa ni anotirani tag ne proizvodi
-     *     clone upozorenje; detached HEAD savjet se gasi samo pri checkoutu.
      * EN: Tag retrieval separates fetch and checkout so an annotated tag emits
      *     no clone warning; detached-HEAD advice is disabled only for checkout.
+     *
+     * HR: Dohvat taga odvaja fetch i checkout pa ni anotirani tag ne proizvodi
+     *     clone upozorenje; detached HEAD savjet se gasi samo pri checkoutu.
      */
     public function testReleaseFetchHandlesAnnotatedTagsWithoutDetachedHeadAdvice(): void
     {
@@ -345,8 +388,9 @@ PHP);
     }
 
     /**
-     * HR: Composer koristi privatni cache procesa, ne cache instalacije ili drugog Unix korisnika.
      * EN: Composer uses a private process cache, not the installation or another Unix user's cache.
+     *
+     * HR: Composer koristi privatni cache procesa, ne cache instalacije ili drugog Unix korisnika.
      */
     public function testComposerCacheIsPrivateAndEnvironmentIsRestored(): void
     {
@@ -394,9 +438,9 @@ PHP);
     }
 
     /**
-     * HR: Verzija izvornog koda i zaštita održavanja sastavni su dio release paketa.
-     *
      * EN: The source version and maintenance guard are part of the release package.
+     *
+     * HR: Verzija izvornog koda i zaštita održavanja sastavni su dio release paketa.
      */
     public function testReleaseMetadataAndMaintenanceGuardArePresent(): void
     {
@@ -413,21 +457,22 @@ PHP);
         $this->assertStringContainsString("'--no-install'", $updater);
         $this->assertStringContainsString("'COMPOSER_ALLOW_SUPERUSER=1'", $updater);
         $this->assertStringContainsString("'/data/update-vendor-'", $updater);
-        $this->assertStringContainsString("'/config/workspace.php'", $updater);
+        $this->assertStringContainsString("'/config/workspace/'", $updater);
         $this->assertStringContainsString("'--no-owner'", $updater);
         $this->assertStringContainsString("'--no-group'", $updater);
         $this->assertStringContainsString("'--no-perms'", $updater);
-        // HR: Sinkronizacija i povratak ne smiju mijenjati mtime tuđih FPM direktorija.
         // EN: Sync and rollback must not set mtimes on FPM-owned directories.
+        //
+        // HR: Sinkronizacija i povratak ne smiju mijenjati mtime tuđih FPM direktorija.
         $this->assertSame(2, substr_count($updater, "'--omit-dir-times'"));
-        $this->assertStringContainsString("'/resources/config/theme/'", $updater);
+        $this->assertStringContainsString("'/config/theme/'", $updater);
         $this->assertStringContainsString('captureRuntimeSettings', $updater);
         $this->assertStringContainsString('restoreRuntimeSettings', $updater);
         $this->assertStringContainsString('appendMissingMenuSettings', $updater);
-        $this->assertStringContainsString('normalizeStoredThemeComponentHeights', $updater);
+        $this->assertStringNotContainsString('migrateModuleConfiguration', $updater);
         $this->assertFileExists($root . '/resources/installation/theme/simbioza.zip');
         $preflightPosition = strpos($updater, '$this->progress(\'preflight\', 78, $this->message(\'preflight\'));');
-        $themeUpgradePosition = strpos($updater, '$this->normalizeStoredThemeComponentHeights();');
+        $themeUpgradePosition = strpos($updater, '$this->appendMissingMenuSettings($sourceDirectory);');
         $migrationPosition = strpos($updater, '$this->migrationStarted = true;');
         $this->assertIsInt($preflightPosition);
         $this->assertIsInt($themeUpgradePosition);
@@ -452,8 +497,9 @@ PHP);
     }
 
     /**
-     * HR: GUI izvjestitelj prima ograničenu fazu, postotak i poruku bez promjene CLI izlaza.
      * EN: The GUI reporter receives a restricted stage, percentage, and message without changing CLI output.
+     *
+     * HR: GUI izvjestitelj prima ograničenu fazu, postotak i poruku bez promjene CLI izlaza.
      */
     public function testProgressReporterReceivesNormalizedUpdateProgress(): void
     {
@@ -472,8 +518,9 @@ PHP);
     }
 
     /**
-     * HR: Updater vraća zatečena Unix prava zapisivih putanja umjesto nametanja web-korisnika.
      * EN: The updater restores captured Unix writable-path modes instead of imposing a web user.
+     *
+     * HR: Updater vraća zatečena Unix prava zapisivih putanja umjesto nametanja web-korisnika.
      */
     public function testWritablePathModesAreRestoredWithoutAPlatformSpecificUser(): void
     {
@@ -485,8 +532,8 @@ PHP);
         $this->temporaryDirectories[] = $root;
         $this->assertTrue(mkdir($root . '/config', 0770, true));
         $this->assertTrue(mkdir($root . '/data', 0770, true));
-        $this->assertTrue(mkdir($root . '/resources/config/menu', 0770, true));
-        $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
+        $this->assertTrue(mkdir($root . '/config/menu', 0770, true));
+        $this->assertTrue(mkdir($root . '/config/theme', 0770, true));
         file_put_contents($root . '/config/workspace.php', "<?php return [];\n");
         file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
         chmod($root . '/config', 0710);
@@ -509,8 +556,9 @@ PHP);
     }
 
     /**
-     * HR: Restriktivni FPM umask ne smije ostaviti novi Composer vendor nečitljivim web procesu.
      * EN: A restrictive FPM umask must not leave a new Composer vendor unreadable by the web process.
+     *
+     * HR: Restriktivni FPM umask ne smije ostaviti novi Composer vendor nečitljivim web procesu.
      */
     public function testComposerVendorBecomesWebReadableWithoutChangingWritePermissions(): void
     {
@@ -540,10 +588,11 @@ PHP);
     }
 
     /**
-     * HR: Restriktivni FPM umask ne smije nove datoteke izdanja ostaviti
-     *     nečitljivima web procesu niti proširiti prava privatnih postavki.
      * EN: A restrictive FPM umask must not leave new release files unreadable
      *     by the web process or widen private-setting permissions.
+     *
+     * HR: Restriktivni FPM umask ne smije nove datoteke izdanja ostaviti
+     *     nečitljivima web procesu niti proširiti prava privatnih postavki.
      */
     public function testReleaseTreeBecomesWebReadableWithoutChangingPrivateSettings(): void
     {
@@ -601,8 +650,9 @@ PHP);
     }
 
     /**
-     * HR: Sinkronizacija izdanja čuva sve postavke koje administratori mogu mijenjati kroz aplikaciju.
      * EN: Release synchronization preserves every setting administrators can change through the application.
+     *
+     * HR: Sinkronizacija izdanja čuva sve postavke koje administratori mogu mijenjati kroz aplikaciju.
      */
     public function testSourceSyncPreservesRuntimeSettingsAndUpdatesReleaseFiles(): void
     {
@@ -622,31 +672,37 @@ PHP);
 
         foreach ([$root, $source] as $directory) {
             $this->assertTrue(mkdir($directory . '/config', 0770, true));
-            $this->assertTrue(mkdir($directory . '/resources/config/menu', 0770, true));
-            $this->assertTrue(mkdir($directory . '/resources/config/theme', 0770, true));
-            $this->assertTrue(mkdir($directory . '/resources/config/extensions', 0770, true));
+            $this->assertTrue(mkdir($directory . '/config/menu', 0770, true));
+            $this->assertTrue(mkdir($directory . '/config/theme', 0770, true));
+            $this->assertTrue(mkdir($directory . '/config/custom', 0770, true));
         }
 
         $preservedFiles = [
-            'config/api.php',
-            'config/backup.php',
-            'config/calendar.php',
+            'config/api/api.php',
+            'config/backup/backup.php',
+            'config/backup/backup-providers.php',
+            'config/calendar/calendar.php',
             'config/database.php',
             'config/env.php',
             'config/installation.php',
-            'config/email.php',
-            'config/workspace.php',
-            'config/workspace-search.php',
-            'config/editor-html.php',
+            'config/email/email.json',
+            'config/workspace/workspace.json',
+            'config/modules.php',
+            'config/editor-html/editor-html.json',
             'config/site-only.php',
-            'resources/config/menu/top.json',
-            'resources/config/menu/settings.json',
-            'resources/config/menu/contexts.json',
-            'resources/config/theme/settings.json',
-            'resources/config/theme/themes.json',
-            'resources/config/extensions/site.json',
+            'config/menu/top.json',
+            'config/menu/settings.json',
+            'config/menu/menu.php',
+            'config/theme/settings.json',
+            'config/theme/themes.json',
+            'config/custom/site.json',
         ];
         foreach ($preservedFiles as $relativePath) {
+            if (!is_dir(dirname($root . '/' . $relativePath))) {
+                mkdir(dirname($root . '/' . $relativePath), 0770, true);
+                mkdir(dirname($source . '/' . $relativePath), 0770, true);
+            }
+
             file_put_contents($root . '/' . $relativePath, 'site:' . $relativePath);
             if (!str_contains($relativePath, 'site-only')) {
                 file_put_contents($source . '/' . $relativePath, 'release:' . $relativePath);
@@ -703,108 +759,11 @@ PHP);
     }
 
     /**
-     * HR: Stari statički app.php prije zamjene postaje trajni modules.php,
-     *     a postojeće stanje modula nikada se ne prepisuje.
-     * EN: A legacy static app.php becomes persistent modules.php before it is
-     *     replaced, while existing module state is never overwritten.
-     */
-    public function testLegacyModuleSelectionIsExtractedOnlyOnce(): void
-    {
-        $root = sys_get_temp_dir() . '/simbioza-update-modules-' . bin2hex(random_bytes(6));
-        $this->temporaryDirectories[] = $root;
-        $this->assertTrue(mkdir($root . '/config', 0770, true));
-        file_put_contents($root . '/config/app.php', <<<'PHP'
-<?php
-
-return [
-    'modules' => [
-        'enabled' => [
-            'aaieduhr/heartphrame-module-orm',
-            'aaieduhr/heartphrame-module-theme',
-        ],
-    ],
-];
-PHP);
-
-        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
-        $extract = new \ReflectionMethod($command, 'ensureModuleStateConfig');
-        $extract->invoke($command);
-
-        $statePath = $root . '/data/config/modules.php';
-        $state = require $statePath;
-        $this->assertSame([
-            'aaieduhr/heartphrame-module-orm',
-            'aaieduhr/heartphrame-module-theme',
-        ], $state['enabled']);
-        $this->assertSame([], $state['removed']);
-        $this->assertSame(0660, fileperms($statePath) & 0777);
-
-        file_put_contents($statePath, "<?php return ['enabled' => ['kept'], 'removed' => ['theme']];\n");
-        $extract->invoke($command);
-        $this->assertSame(['enabled' => ['kept'], 'removed' => ['theme']], require $statePath);
-    }
-
-    /**
-     * HR: Nadogradnja tema dodaje samo nedostajuće visine i čuva svaku postojeću postavku.
-     * EN: Theme upgrading adds only missing heights and preserves every existing setting.
-     */
-    public function testThemeHeightUpgradePreservesExistingConfiguration(): void
-    {
-        $root = sys_get_temp_dir() . '/simbioza-update-theme-heights-' . bin2hex(random_bytes(6));
-        $this->temporaryDirectories[] = $root;
-        $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
-        $path = $root . '/resources/config/theme/themes.json';
-        $themes = [
-            [
-                'id' => 'legacy',
-                'components' => [
-                    'header' => ['sticky' => true],
-                    'navigation' => ['height_px' => 61],
-                    'content' => ['surface' => 'title-card'],
-                ],
-                'light' => ['colors' => ['primary' => '#123456']],
-            ],
-            [
-                'id' => 'configured',
-                'components' => [
-                    'header' => ['height_px' => 94],
-                    'navigation' => ['height_px' => 65],
-                ],
-            ],
-        ];
-        file_put_contents($path, json_encode($themes, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
-        chmod($path, 0660);
-        clearstatcache(true, $path);
-        $originalInode = fileinode($path);
-        $originalOwner = fileowner($path);
-        $originalGroup = filegroup($path);
-
-        $command = new ApplicationUpdateCommand($root, ['--lang=en']);
-        $normalize = new \ReflectionMethod($command, 'normalizeStoredThemeComponentHeights');
-        $this->assertSame(1, $normalize->invoke($command));
-
-        $stored = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertIsArray($stored);
-        $this->assertSame(72, $stored[0]['components']['header']['height_px']);
-        $this->assertSame(61, $stored[0]['components']['navigation']['height_px']);
-        $this->assertTrue($stored[0]['components']['header']['sticky']);
-        $this->assertSame('title-card', $stored[0]['components']['content']['surface']);
-        $this->assertSame('#123456', $stored[0]['light']['colors']['primary']);
-        $this->assertSame(94, $stored[1]['components']['header']['height_px']);
-        $this->assertSame(65, $stored[1]['components']['navigation']['height_px']);
-        $this->assertSame(0, $normalize->invoke($command));
-        clearstatcache(true, $path);
-        $this->assertSame($originalInode, fileinode($path));
-        $this->assertSame($originalOwner, fileowner($path));
-        $this->assertSame($originalGroup, filegroup($path));
-        $this->assertSame(0660, fileperms($path) & 0777);
-    }
-
-    /**
-     * HR: Nadogradnja dodaje nove postavke modula na kraj bez promjene ijedne
-     *     zatečene stavke ili administratorskog redoslijeda.
      * EN: An update appends new module settings without changing any existing
      *     entry or administrator-defined order.
+     *
+     * HR: Nadogradnja dodaje nove postavke modula na kraj bez promjene ijedne
+     *     zatečene stavke ili administratorskog redoslijeda.
      */
     public function testMenuSettingsUpgradeAppendsOnlyMissingReleaseEntries(): void
     {
@@ -813,7 +772,7 @@ PHP);
         $this->temporaryDirectories[] = $root;
         $this->temporaryDirectories[] = $source;
         foreach ([$root, $source] as $directory) {
-            $this->assertTrue(mkdir($directory . '/resources/config/menu', 0770, true));
+            $this->assertTrue(mkdir($directory . '/config/menu', 0770, true));
         }
 
         $current = [
@@ -840,16 +799,16 @@ PHP);
             ['id' => 'future-module', 'order' => 15, 'enabled' => true],
         ];
         file_put_contents(
-            $root . '/resources/config/menu/settings.json',
+            $root . '/config/menu/settings.json',
             json_encode($current, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR),
         );
-        chmod($root . '/resources/config/menu/settings.json', 0660);
-        clearstatcache(true, $root . '/resources/config/menu/settings.json');
-        $originalInode = fileinode($root . '/resources/config/menu/settings.json');
-        $originalOwner = fileowner($root . '/resources/config/menu/settings.json');
-        $originalGroup = filegroup($root . '/resources/config/menu/settings.json');
+        chmod($root . '/config/menu/settings.json', 0660);
+        clearstatcache(true, $root . '/config/menu/settings.json');
+        $originalInode = fileinode($root . '/config/menu/settings.json');
+        $originalOwner = fileowner($root . '/config/menu/settings.json');
+        $originalGroup = filegroup($root . '/config/menu/settings.json');
         file_put_contents(
-            $source . '/resources/config/menu/settings.json',
+            $source . '/config/menu/settings.json',
             json_encode($release, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR),
         );
 
@@ -859,7 +818,7 @@ PHP);
         $this->assertSame(0, $append->invoke($command, $source));
 
         $stored = json_decode(
-            (string)file_get_contents($root . '/resources/config/menu/settings.json'),
+            (string)file_get_contents($root . '/config/menu/settings.json'),
             true,
             512,
             JSON_THROW_ON_ERROR,
@@ -874,16 +833,17 @@ PHP);
         $this->assertSame(40, $stored[2]['children'][1]['order']);
         $this->assertSame('future-module', $stored[3]['id']);
         $this->assertSame(85, $stored[3]['order']);
-        clearstatcache(true, $root . '/resources/config/menu/settings.json');
-        $this->assertSame($originalInode, fileinode($root . '/resources/config/menu/settings.json'));
-        $this->assertSame($originalOwner, fileowner($root . '/resources/config/menu/settings.json'));
-        $this->assertSame($originalGroup, filegroup($root . '/resources/config/menu/settings.json'));
-        $this->assertSame(0660, fileperms($root . '/resources/config/menu/settings.json') & 0777);
+        clearstatcache(true, $root . '/config/menu/settings.json');
+        $this->assertSame($originalInode, fileinode($root . '/config/menu/settings.json'));
+        $this->assertSame($originalOwner, fileowner($root . '/config/menu/settings.json'));
+        $this->assertSame($originalGroup, filegroup($root . '/config/menu/settings.json'));
+        $this->assertSame(0660, fileperms($root . '/config/menu/settings.json') & 0777);
     }
 
     /**
-     * HR: Nova release config datoteka zadržava vlasnika deploy procesa i ostaje čitljiva web-procesu.
      * EN: A new release-managed config file keeps the deploy-process owner and remains web-readable.
+     *
+     * HR: Nova release config datoteka zadržava vlasnika deploy procesa i ostaje čitljiva web-procesu.
      */
     public function testReleaseConfigurationFileInheritsSafeMetadata(): void
     {
@@ -895,8 +855,8 @@ PHP);
         $this->temporaryDirectories[] = $root;
         $this->assertTrue(mkdir($root . '/config', 0710, true));
         $this->assertTrue(mkdir($root . '/data', 0770, true));
-        $this->assertTrue(mkdir($root . '/resources/config/menu', 0770, true));
-        $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
+        $this->assertTrue(mkdir($root . '/config/menu', 0770, true));
+        $this->assertTrue(mkdir($root . '/config/theme', 0770, true));
         file_put_contents($root . '/config/workspace.php', "<?php return [];\n");
 
         $command = new ApplicationUpdateCommand($root, ['--lang=en']);
@@ -916,9 +876,33 @@ PHP);
     }
 
     /**
-     * HR: Updater zadržava prava postojećih trajnih konfiguracija i normalizira samo nove release datoteke.
      * EN: The updater keeps existing persistent-config modes and normalizes only new release files.
+     *
+     * HR: Updater zadržava prava postojećih trajnih konfiguracija i normalizira samo nove release datoteke.
      */
+    /**
+     * EN: Only the fresh 0.3.0 baseline and its future releases can be updated.
+     *
+     * HR: Nadograđuje se samo nova osnova 0.3.0 i njezina buduća izdanja.
+     */
+    public function testInitialReleaseBoundaryRejectsOlderAndUnknownInstallations(): void
+    {
+        $command = new ApplicationUpdateCommand('/unused', ['--lang=en']);
+        $check = new \ReflectionMethod($command, 'assertReleaseBoundary');
+        foreach ([null, '0.2.12', 'v0.2.11'] as $source) {
+            try {
+                $check->invoke($command, $source, '0.3.1');
+                $this->fail('An older installation was accepted.');
+            } catch (\RuntimeException $error) {
+                $this->assertStringContainsString('Install it afresh', $error->getMessage());
+            }
+        }
+
+        $this->assertNull($check->invoke($command, 'v0.3.0', '0.3.1'));
+        $this->expectException(\RuntimeException::class);
+        $check->invoke($command, '0.3.1', '0.2.12');
+    }
+
     public function testExistingRuntimeConfigurationMetadataIsPreserved(): void
     {
         if (PHP_OS_FAMILY === 'Windows') {
@@ -929,8 +913,8 @@ PHP);
         $this->temporaryDirectories[] = $root;
         $this->assertTrue(mkdir($root . '/config', 0710, true));
         $this->assertTrue(mkdir($root . '/data', 0770, true));
-        $this->assertTrue(mkdir($root . '/resources/config/menu', 0770, true));
-        $this->assertTrue(mkdir($root . '/resources/config/theme', 0770, true));
+        $this->assertTrue(mkdir($root . '/config/menu', 0770, true));
+        $this->assertTrue(mkdir($root . '/config/theme', 0770, true));
         file_put_contents($root . '/config/workspace.php', "<?php return [];\n");
         file_put_contents($root . '/config/editor-html.php', "<?php return [];\n");
         file_put_contents($root . '/config/api.php', "<?php return [];\n");

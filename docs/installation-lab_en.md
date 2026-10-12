@@ -1,6 +1,6 @@
 # Six clean installations: lab record
 
-[Hrvatska verzija](installation-lab_hr.md)
+[Croatian version](installation-lab_hr.md)
 
 This record documents real installations performed on 25 August 2026 on the
 local macOS development host. It is not a general production recipe. Every
@@ -51,15 +51,16 @@ rsync -a \
   --exclude='output/' --exclude='composer.local.json' \
   --exclude='composer.local.lock' --exclude='config/database.php' \
   --exclude='config/env.php' --exclude='config/installation.php' \
-  --exclude='config/email.php' --exclude='config/workspace.php' \
+  --exclude='framework.php' --exclude='/config/auth/' --exclude='/config/email/' \
+  --exclude='/config/editor-html/' --exclude='/config/workspace/' \
   /Volumes/Ext/Development/CR/HFClean/ "$install_root/"
 cp -al /Volumes/Ext/Development/CR/HFClean/vendor "$install_root/vendor"
 mkdir -p "$install_root/data/logs" "$install_root/data/cache" "$install_root/data/themes"
 chmod 750 \
   "$install_root/config" \
   "$install_root/data" \
-  "$install_root/resources/config/theme" \
-  "$install_root/resources/config/menu"
+  "$install_root/config/theme" \
+  "$install_root/config/menu"
 ```
 
 Both configuration stores must be writable: the installer imports the theme,

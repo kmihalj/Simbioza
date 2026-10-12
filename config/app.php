@@ -2,81 +2,39 @@
 
 declare(strict_types=1);
 
-// HR: CLI i web ne dijele OPcache. Runtime podaci moraju biti svježi čak i
-//     bez provjere vremenskih oznaka; ne poništavamo predmemoriju koda aplikacije.
-// EN: CLI and web do not share OPcache. Runtime data must be fresh even without
-//     timestamp validation; the application code cache is left untouched.
-foreach (['installation.php', 'languages.php', 'modules.php', '../data/config/modules.php'] as $runtimeFile) {
-    $runtimePath = __DIR__ . '/' . $runtimeFile;
-    clearstatcache(true, $runtimePath);
-    if (is_file($runtimePath) && function_exists('opcache_invalidate')) {
-        opcache_invalidate($runtimePath, true);
-    }
-}
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
+use App\Localization\RuntimeLanguageStorage;
+use App\Module\ModuleCatalog;
+use App\Module\ModuleStateStore;
 
-$installationFile = __DIR__ . '/installation.php';
-$installation = is_file($installationFile) ? require $installationFile : [];
-if (!is_array($installation)) {
-    $installation = [];
-}
+// EN: The code path is not the config path; the same rules apply before DI/GUI.
+//
+// HR: Putanja koda nije putanja configa; ista pravila vrijede prije DI/GUI-ja.
+$configuredRoot = getenv('HPH_APP_PATH');
+$appRoot = is_string($configuredRoot) && trim($configuredRoot) !== ''
+? rtrim($configuredRoot, DIRECTORY_SEPARATOR)
+: dirname(__DIR__);
+$configuration = ConfigurationPaths::fromEnvironment($appRoot);
+$reader = new PhpConfigurationReader($configuration);
+$installation = $reader->read('installation.php');
+$catalog = new ModuleCatalog();
+$enabledModules = array_values(array_unique([
+    ...$catalog->packagesForSelection([]),
+    ...(new ModuleStateStore($appRoot, $catalog))->enabledPackages(),
+]));
 
-$runtimeModuleStateFile = __DIR__ . '/../data/config/modules.php';
-$legacyModuleStateFile = __DIR__ . '/modules.php';
-$moduleStateFile = is_file($runtimeModuleStateFile)
-? $runtimeModuleStateFile
-: $legacyModuleStateFile;
-$moduleState = is_file($moduleStateFile) ? require $moduleStateFile : [];
-if (!is_array($moduleState)) {
-    $moduleState = [];
-}
-
-$defaultEnabledModules = [
-    'aaieduhr/heartphrame-module-orm',
-    'aaieduhr/heartphrame-module-menu',
-    'aaieduhr/heartphrame-module-auth',
-    'aaieduhr/heartphrame-module-notification',
-    'aaieduhr/heartphrame-module-editor-html',
-    'aaieduhr/simbioza-module-workspace',
-    'aaieduhr/simbioza-module-workspace-search',
-    'aaieduhr/simbioza-module-user',
-];
-$allowedModules = [
-    ...$defaultEnabledModules,
-    'aaieduhr/heartphrame-module-theme',
-    'aaieduhr/heartphrame-module-audit',
-    'aaieduhr/heartphrame-module-api',
-    'aaieduhr/heartphrame-module-email',
-    'aaieduhr/heartphrame-module-task',
-    'aaieduhr/heartphrame-module-comment',
-    'aaieduhr/heartphrame-module-calendar',
-    'aaieduhr/simbioza-module-confluence-import',
-    'aaieduhr/heartphrame-module-backup',
-    'aaieduhr/heartphrame-module-accessibility',
-];
-$legacyInstalledModules = [];
-if (!array_key_exists('enabled', $moduleState) && is_file(__DIR__ . '/../data/installation.lock')) {
-    $legacyInstalledModules = array_values(array_filter(
-        $allowedModules,
-        static fn(string $package): bool => \Composer\InstalledVersions::isInstalled($package),
-    ));
-}
-
-$enabledModules = is_array($moduleState['enabled'] ?? null)
-? array_values(array_unique([
-    ...$defaultEnabledModules,
-    ...array_filter(
-        $moduleState['enabled'],
-        static fn(mixed $package): bool => is_string($package) && in_array($package, $allowedModules, true),
-    ),
-]))
-: ($legacyInstalledModules !== [] ? $legacyInstalledModules : $defaultEnabledModules);
-
-// HR: Privatni paketi jedne instalacije nisu dio javnog kataloga ni stanja GUI-ja.
-//     Lokalni popis je administratorska konfiguracija koju updater čuva.
 // EN: Installation-private packages are outside the public catalog and GUI state.
 //     The local list is administrator configuration preserved by the updater.
-$localModulesFile = __DIR__ . '/modules.local.php';
-if (is_file($localModulesFile)) {
+//
+// HR: Privatni paketi jedne instalacije nisu dio javnog kataloga ni stanja GUI-ja.
+//     Lokalni popis je administratorska konfiguracija koju updater čuva.
+$localModulesFile = $configuration->effectiveFile('modules.local.php');
+if ($localModulesFile !== null) {
+    if (function_exists('opcache_invalidate')) {
+        opcache_invalidate($localModulesFile, true);
+    }
+
     $localModules = require $localModulesFile;
     if (!is_array($localModules)) {
         throw new RuntimeException('Local modules configuration must return an array.');
@@ -99,15 +57,15 @@ $applicationName = is_string($installation['name'] ?? null) && trim($installatio
 $primaryLocale = is_string($installation['primary_locale'] ?? null)
 ? strtolower(trim($installation['primary_locale']))
 : 'hr';
-$languageRegistryFile = __DIR__ . '/languages.php';
-$languageRegistry = is_file($languageRegistryFile) ? require $languageRegistryFile : [];
+$languageRegistry = $reader->readDocument('languages.php');
+$runtimeLanguages = new RuntimeLanguageStorage($appRoot);
 $availableLocales = [];
 $localeLabels = [];
-foreach (is_array($languageRegistry) ? $languageRegistry : [] as $locale => $definition) {
+foreach ($languageRegistry as $locale => $definition) {
     if (
         is_string($locale)
         && preg_match('/\A[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*\z/D', $locale) === 1
-        && is_file(__DIR__ . '/../lang/' . $locale . '.php')
+        && (is_file($appRoot . '/lang/' . $locale . '.php') || $runtimeLanguages->installed(strtolower($locale)))
     ) {
         $normalizedLocale = strtolower($locale);
         $availableLocales[] = $normalizedLocale;
@@ -142,16 +100,32 @@ $timezone = is_string($installation['timezone'] ?? null)
 ? $installation['timezone']
 : 'Europe/Zagreb';
 
-// HR: Instalacije na istoj domeni mogu imati različita imena sesijskih kolačića.
 // EN: Installations on one domain may use distinct session cookie names.
+//
+// HR: Instalacije na istoj domeni mogu imati različita imena sesijskih kolačića.
 $sessionName = is_string($installation['session_name'] ?? null)
 && preg_match('/\A[A-Za-z][A-Za-z0-9_]{0,63}\z/D', $installation['session_name']) === 1
 ? $installation['session_name']
 : 'HEARTPHRAME_SESSION';
 
 return [
+    // EN: Initial Simbioza policy; Auth stores it in JSON on first creation.
+    //
+    // HR: Početna politika Simbioze; Auth je pri prvom kreiranju sprema u JSON.
+    'auth' => ['require_provider_verification' => true],
     // Application name
     'name' => $applicationName,
+
+    // EN: Defense-in-depth for frames and non-script active content. This is
+    // not a global script allowlist: sanitization and the page registry control
+    // third-party scripts. HSTS belongs to the deployment's env.php, not here.
+    //
+    // HR: Dodatna zaštita okvira i aktivnog sadržaja koji nije skripta. Ovo nije
+    // globalni popis dopuštenih skripti: njih kontroliraju sanitizer i registar
+    // po stranici. HSTS pripada instalacijskom env.php, ne ovoj datoteci.
+    'security_headers' => [
+        'Content-Security-Policy' => "base-uri 'self'; object-src 'none'; frame-ancestors 'self'",
+    ],
 
     // Localization
     'localization' => [
@@ -159,32 +133,34 @@ return [
         'fallback_locale' => $primaryLocale,
         'supported_locales' => $supportedLocales,
         'locale_labels' => $localeLabels,
-        'flags_dir' => __DIR__ . '/../data/languages/flags',
-        // HR: Preglednikov jezik vrijedi samo bez zapamćenog ručnog odabira;
-        //     nepodržan jezik pada na zadani jezik aplikacije.
+        'flags_dir' => $appRoot . '/data/languages/flags',
         // EN: Browser language applies only without a remembered manual choice;
         //     an unsupported language falls back to the application default.
+        //
+        // HR: Preglednikov jezik vrijedi samo bez zapamćenog ručnog odabira;
+        //     nepodržan jezik pada na zadani jezik aplikacije.
         'detect_browser_locale' => (bool)($installation['detect_browser_locale'] ?? true),
-        'translations_dir' => __DIR__ . '/../lang',
+        'translations_dir' => $appRoot . '/lang',
     ],
 
     // Cache directory
-    'cache_dir' => __DIR__ . '/../data/cache',
+    'cache_dir' => $appRoot . '/data/cache',
 
     // Logs configuration
     'logs' => [
         // Logs directory
-        'dir' => __DIR__ . '/../data/logs',
+        'dir' => $appRoot . '/data/logs',
         'filename' => 'app.log',
-        // HR: Rotacija ograničava rast tehničkog loga na približno 100 MB.
         // EN: Rotation limits technical-log growth to approximately 100 MB.
+        //
+        // HR: Rotacija ograničava rast tehničkog loga na približno 100 MB.
         'max_bytes' => 10485760,
         'max_files' => 10,
     ],
 
     // Views configuration
     'views' => [
-        'path' => __DIR__ . '/../views',
+        'path' => $appRoot . '/views',
         'default_layout' => 'main',
     ],
 
@@ -192,8 +168,9 @@ return [
 
     // Session configuration
     'session' => [
-        // HR: Vraćanje kopije sprema samo dopuštene prenosive opcije sesije.
         // EN: Backup restore stores only allowlisted portable session options.
+        //
+        // HR: Vraćanje kopije sprema samo dopuštene prenosive opcije sesije.
         'options' => array_replace([
             'use_cookies' => 1,
             'cookie_secure' => 1,
@@ -201,8 +178,9 @@ return [
             'cookie_samesite' => 'Lax',
             'use_only_cookies' => 1,
             'name' => $sessionName,
-            // HR: Auth modul primjenjuje kraće, administratorski podesivo trajanje prijave.
             // EN: The Auth module enforces the shorter administrator-configured login duration.
+            //
+            // HR: Auth modul primjenjuje kraće, administratorski podesivo trajanje prijave.
             'gc_maxlifetime' => 31536000,
             'cookie_lifetime' => 0,
         ], array_intersect_key(

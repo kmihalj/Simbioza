@@ -18,7 +18,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
 {
     private string $root;
 
-    /** HR: Priprema samo izolirane CLI datoteke testa. EN: Prepares only isolated test CLI files. */
+    /**
+     * EN: Prepares only isolated test CLI files.
+     *
+     * HR: Priprema samo izolirane CLI datoteke testa.
+     */
     protected function setUp(): void
     {
         $this->root = sys_get_temp_dir() . '/simbioza-upgrade-command-' . bin2hex(random_bytes(8));
@@ -33,7 +37,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         );
     }
 
-    /** HR: Briše isključivo imenovane testne datoteke. EN: Deletes only named test files. */
+    /**
+     * EN: Deletes only named test files.
+     *
+     * HR: Briše isključivo imenovane testne datoteke.
+     */
     protected function tearDown(): void
     {
         foreach (['scripts/update_bundled_assets.php', 'data/update-maintenance.json', 'data/bundle-ran'] as $file) {
@@ -47,7 +55,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         }
     }
 
-    /** HR: Uobičajena migracija izvan updatera ne mijenja pakete. EN: A normal migration outside the updater does not change bundles. */
+    /**
+     * EN: A normal migration outside the updater does not change bundles.
+     *
+     * HR: Uobičajena migracija izvan updatera ne mijenja pakete.
+     */
     public function testNormalMigrationDoesNotApplyBundles(): void
     {
         $handler = $this->manager()->getCommand('orm-migrate:up')->getHandler();
@@ -55,7 +67,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         $this->assertFileDoesNotExist($this->root . '/data/bundle-ran');
     }
 
-    /** HR: Stari updater koji poziva novu CLI naredbu dobiva novi korak. EN: An old updater calling the new CLI command gets the new step. */
+    /**
+     * EN: An old updater calling the new CLI command gets the new step.
+     *
+     * HR: Stari updater koji poziva novu CLI naredbu dobiva novi korak.
+     */
     public function testUpdaterMigrationAppliesBundlesAfterSuccess(): void
     {
         file_put_contents($this->root . '/data/update-maintenance.json', '{"target_tag":"0.1.68"}');
@@ -64,7 +80,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         $this->assertFileExists($this->root . '/data/bundle-ran');
     }
 
-    /** HR: Neuspjela migracija ne smije uvesti sadržaj. EN: A failed migration must not import content. */
+    /**
+     * EN: A failed migration must not import content.
+     *
+     * HR: Neuspjela migracija ne smije uvesti sadržaj.
+     */
     public function testFailedMigrationDoesNotApplyBundles(): void
     {
         file_put_contents($this->root . '/data/update-maintenance.json', '{}');
@@ -73,7 +93,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         $this->assertFileDoesNotExist($this->root . '/data/bundle-ran');
     }
 
-    /** HR: Druge veze i putanje migracija ne diraju glavnu instalaciju. EN: Other connections and migration paths do not touch the main installation. */
+    /**
+     * EN: Other connections and migration paths do not touch the main installation.
+     *
+     * HR: Druge veze i putanje migracija ne diraju glavnu instalaciju.
+     */
     public function testOtherConnectionsAndPathsDoNotApplyBundles(): void
     {
         file_put_contents($this->root . '/data/update-maintenance.json', '{}');
@@ -83,7 +107,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         $this->assertFileDoesNotExist($this->root . '/data/bundle-ran');
     }
 
-    /** HR: Greška u paketu zaustavlja update umjesto lažne potvrde uspjeha. EN: A bundle failure stops the update instead of falsely reporting success. */
+    /**
+     * EN: A bundle failure stops the update instead of falsely reporting success.
+     *
+     * HR: Greška u paketu zaustavlja update umjesto lažne potvrde uspjeha.
+     */
     public function testBundleFailureIsPropagated(): void
     {
         file_put_contents($this->root . '/data/update-maintenance.json', '{}');
@@ -93,7 +121,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         $handler([], []);
     }
 
-    /** HR: Read-only status naredba ostaje nepromijenjena. EN: The read-only status command remains unchanged. */
+    /**
+     * EN: The read-only status command remains unchanged.
+     *
+     * HR: Read-only status naredba ostaje nepromijenjena.
+     */
     public function testStatusCommandIsUnchanged(): void
     {
         $manager = $this->manager();
@@ -102,7 +134,11 @@ final class BundledUpgradeCommandManagerTest extends TestCase
         $this->assertSame($definition, $manager->getCommand('orm-migrate:status'));
     }
 
-    /** HR: Stvara adapter s jednostavnom izvornom naredbom. EN: Creates the adapter with a simple original command. */
+    /**
+     * EN: Creates the adapter with a simple original command.
+     *
+     * HR: Stvara adapter s jednostavnom izvornom naredbom.
+     */
     private function manager(int $exit = 0): BundledUpgradeCommandManager
     {
         $factory = $this->createMock(CallableFactory::class);

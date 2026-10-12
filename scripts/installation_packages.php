@@ -6,10 +6,11 @@ use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
 use App\Module\NativeProcessRunner;
 
-// HR: CLI priprema opcionalne pakete kada web-installer nema privilegirani
-//     FPM helper. Ne učitava aplikaciju niti zahtijeva postojeću bazu.
 // EN: CLI prepares optional packages when the web installer has no privileged
 //     FPM helper. It loads neither the application nor an existing database.
+//
+// HR: CLI priprema opcionalne pakete kada web-installer nema privilegirani
+//     FPM helper. Ne učitava aplikaciju niti zahtijeva postojeću bazu.
 
 if (PHP_SAPI !== 'cli') {
     fwrite(STDERR, "This tool is CLI-only.\n");
@@ -40,8 +41,9 @@ try {
 }
 
 /**
- * HR: Čita samo `--modules=a,b` opciju bez shell interpretacije.
  * EN: Reads only the `--modules=a,b` option without shell interpretation.
+ *
+ * HR: Čita samo `--modules=a,b` opciju bez shell interpretacije.
  *
  * @param list<string> $arguments
  * @return array{modules:list<string>,specified:bool}
@@ -67,8 +69,9 @@ function parseOptions(array $arguments): array
 }
 
 /**
- * HR: Instalira odabrane pakete i privremeni Backup potreban početnim uputama.
  * EN: Installs selected packages and the temporary Backup needed by starter guides.
+ *
+ * HR: Instalira odabrane pakete i privremeni Backup potreban početnim uputama.
  *
  * @param array{modules:list<string>,specified:bool} $options
  */
@@ -101,7 +104,11 @@ function preparePackages(
     fwrite(STDOUT, "Backup is temporarily available for the starter-guide import.\n");
 }
 
-/** HR: Nakon instalacije uklanja samo stvarno privremeni Backup. EN: After installation removes only the truly transient Backup package. */
+/**
+ * EN: After installation removes only the truly transient Backup package.
+ *
+ * HR: Nakon instalacije uklanja samo stvarno privremeni Backup.
+ */
 function cleanupPackages(string $root, ComposerPackageManager $packages, string $statePath): void
 {
     if (!is_file($root . '/data/installation.lock')) {
@@ -123,7 +130,11 @@ function cleanupPackages(string $root, ComposerPackageManager $packages, string 
     }
 }
 
-/** HR: Ispisuje pripremljene i stvarno instalirane opcionalne pakete. EN: Prints prepared and physically installed optional packages. */
+/**
+ * EN: Prints prepared and physically installed optional packages.
+ *
+ * HR: Ispisuje pripremljene i stvarno instalirane opcionalne pakete.
+ */
 function printStatus(ModuleCatalog $catalog, ComposerPackageManager $packages, string $statePath): void
 {
     $state = readState($statePath);
@@ -135,7 +146,11 @@ function printStatus(ModuleCatalog $catalog, ComposerPackageManager $packages, s
     }
 }
 
-/** HR: Atomski sprema mali plan pripreme izvan web korijena. EN: Atomically stores the small preparation plan outside the web root. */
+/**
+ * EN: Atomically stores the small preparation plan outside the web root.
+ *
+ * HR: Atomski sprema mali plan pripreme izvan web korijena.
+ */
 function writeState(string $root, string $path, array $state): void
 {
     if (!is_dir($root . '/data') && !mkdir($root . '/data', 0770, true) && !is_dir($root . '/data')) {
@@ -161,8 +176,9 @@ function writeState(string $root, string $path, array $state): void
 }
 
 /**
- * HR: Čita prethodni plan i odbija neočekivanu strukturu.
  * EN: Reads the previous plan and rejects unexpected structure.
+ *
+ * HR: Čita prethodni plan i odbija neočekivanu strukturu.
  *
  * @return array{requested?:list<string>,new?:list<string>}
  */
@@ -184,7 +200,11 @@ function readState(string $path): array
     return $state;
 }
 
-/** HR: Ispisuje postupak za instalaciju bez FPM helpera. EN: Prints the non-FPM installation workflow. */
+/**
+ * EN: Prints the non-FPM installation workflow.
+ *
+ * HR: Ispisuje postupak za instalaciju bez FPM helpera.
+ */
 function printHelp(): void
 {
     fwrite(STDOUT, <<<'HELP'

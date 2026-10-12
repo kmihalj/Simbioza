@@ -5,21 +5,27 @@ declare(strict_types=1);
 namespace App\Setup;
 
 /**
- * HR: Čita javno siguran sažetak pozadinske nadogradnje iz privatnog data
- *     direktorija. Izlaz naredbi ostaje u administratorskom logu.
  * EN: Reads a disclosure-safe background-update summary from the private data
  *     directory. Command output remains in the administrator log.
+ *
+ * HR: Čita javno siguran sažetak pozadinske nadogradnje iz privatnog data
+ *     direktorija. Izlaz naredbi ostaje u administratorskom logu.
  */
 final readonly class ApplicationUpdateStatusStore
 {
-    /** HR: Prima korijen jedne instalacije. EN: Receives one installation root. */
+    /**
+     * EN: Receives one installation root.
+     *
+     * HR: Prima korijen jedne instalacije.
+     */
     public function __construct(private string $appRoot)
     {
     }
 
     /**
-     * HR: Vraća normalizirano stanje i trenutačnu verziju aplikacije.
      * EN: Returns normalized state and the current application version.
+     *
+     * HR: Vraća normalizirano stanje i trenutačnu verziju aplikacije.
      *
      * @return array{state:string,stage:string,progress:?int,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string}
      */
@@ -72,13 +78,21 @@ final readonly class ApplicationUpdateStatusStore
         ];
     }
 
-    /** HR: Vraća privatnu statusnu putanju. EN: Returns the private status path. */
+    /**
+     * EN: Returns the private status path.
+     *
+     * HR: Vraća privatnu statusnu putanju.
+     */
     public function path(): string
     {
         return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/application-update-status.json';
     }
 
-    /** HR: Čita samo valjani stabilni VERSION. EN: Reads only a valid stable VERSION. */
+    /**
+     * EN: Reads only a valid stable VERSION.
+     *
+     * HR: Čita samo valjani stabilni VERSION.
+     */
     private function currentVersion(): string
     {
         $path = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/VERSION';
@@ -88,10 +102,11 @@ final readonly class ApplicationUpdateStatusStore
     }
 
     /**
-     * HR: Razlikuje aktivan pozadinski updater od zapisa koji je ostao nakon
-     *     prekinutog procesa; EPERM također znači da proces drugog korisnika postoji.
      * EN: Distinguishes a live background updater from a record left after a
      *     terminated process; EPERM also means that another user's process exists.
+     *
+     * HR: Razlikuje aktivan pozadinski updater od zapisa koji je ostao nakon
+     *     prekinutog procesa; EPERM također znači da proces drugog korisnika postoji.
      */
     private function processExists(int $pid): bool
     {

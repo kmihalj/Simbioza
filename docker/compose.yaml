@@ -1,0 +1,73 @@
+# EN: Supply an existing versioned local/published image and a private password file.
+# Runtime code is never a volume; only /runtime and PostgreSQL data persist.
+#
+# HR: Zadati postojeći verzionirani lokalni/objavljeni image i privatnu datoteku lozinke.
+# Runtime kod nije volumen; trajni su samo /runtime i PostgreSQL podaci.
+services:
+  init:
+    image: ${SIMBIOZA_IMAGE:?Select a versioned Simbioza image}
+    user: "0:0"
+    read_only: true
+    command: ["init"]
+    network_mode: none
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    security_opt: [no-new-privileges:true]
+    environment:
+      SIMBIOZA_COOKIE_SECURE: ${SIMBIOZA_COOKIE_SECURE:-1}
+      SIMBIOZA_DB_HOST: database
+      SIMBIOZA_DB_NAME: simbioza
+      SIMBIOZA_DB_USER: simbioza
+      SIMBIOZA_DB_PASSWORD_FILE: /run/secrets/database_password
+    secrets: [database_password]
+    volumes:
+      - runtime:/runtime
+    tmpfs: [/tmp]
+  database:
+    image: ${POSTGRES_IMAGE:-postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873}
+    environment:
+      POSTGRES_DB: simbioza
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_admin_password
+    secrets: [database_password, database_admin_password]
+    volumes:
+      - database:/var/lib/postgresql
+      - ./postgres-init.sh:/docker-entrypoint-initdb.d/10-simbioza.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d simbioza"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  app:
+    image: ${SIMBIOZA_IMAGE:?Select a versioned Simbioza image}
+    user: "33:33"
+    read_only: true
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      init: {condition: service_completed_successfully}
+      database: {condition: service_healthy}
+    volumes:
+      - runtime:/runtime
+      - type: volume
+        source: runtime
+        target: /opt/simbioza/data
+        volume: {subpath: data}
+    tmpfs:
+      - /tmp:mode=1777,size=268435456
+    ports:
+      - "${SIMBIOZA_LISTEN:-127.0.0.1}:${SIMBIOZA_PORT:-1511}:8080"
+    healthcheck:
+      test: ["CMD", "php", "/opt/simbioza/docker/healthcheck.php"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+secrets:
+  database_password:
+    file: ${SIMBIOZA_DB_PASSWORD_FILE:?Select a private password file}
+  database_admin_password:
+    file: ${SIMBIOZA_DB_ADMIN_PASSWORD_FILE:?Select a private database admin password file}
+volumes:
+  runtime:
+  database:

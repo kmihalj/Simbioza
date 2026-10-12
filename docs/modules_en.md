@@ -36,7 +36,8 @@ Here is an example `composer.json` for a new module:
         }
     },
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "aaieduhr/heartphrame-framework": "^0.0.25"
     }
 }
 ```
@@ -76,7 +77,7 @@ return new class extends AbstractModuleManifest
             ['GET', '/demo', DemoController::class . '@index', 'demo.index'],
         ];
     }
-}
+};
 ```
 
 > **Note:** Check the ModuleManifestInterface for a full list of
@@ -93,10 +94,12 @@ the module package:
     ```
 
 2.  **Enable in Configuration**: Enable the module in your application's
-`config/app.php` file.
+`HPH_CONFIG_PATH/app.php` file (default: `config/app.php`). Both HTTP and CLI
+entry points must use `ConfigPathResolver::fromEnvironment($appRoot)`. Preserve
+other enabled packages and use the last applicable override layer when declared.
 
     ```php
-    // config/app.php
+    // Fragment inside HPH_CONFIG_PATH/app.php; retain the host's other options.
     'modules' => [
         // List of loadable module types (usually keep the default)
         'loadable_types' => [
@@ -146,7 +149,7 @@ A Simbioza release contains only the required core. An optional module's code
 is installed only when needed. An administrator does not edit `config/app.php`
 manually, but uses the CLI or **Settings → Setup and modules**; both preserve
 module order, check dependencies, and maintain the private
-`data/config/modules.php` file:
+`modules.php` in the active configuration layers (default `config/modules.php`):
 
 ```bash
 vendor/bin/hph modules list
@@ -182,7 +185,15 @@ module and shows the exact CLI command for installing or removing a package.
 The CLI is identical in both modes. On a verified FPM installation it
 automatically delegates package operations to the restricted deploy helper;
 without FPM, the installation owner runs Composer. State changes and
-migrations always use the same durable `data/config/modules.php` registry.
+migrations always use the same durable `modules.php` registry following
+`HPH_CONFIG_PATH`/`HPH_CONFIG_OVERRIDE_PATHS`. See the
+[configuration guide](configuration_en.md#installation-module-selection-and-languages)
+for layer rules, the `.dist` example, permissions, and the explicit one-time
+transition for existing installations. The shared-path lifecycle and updater/backup
+foundation are implemented; remaining generic-module changes follow the staged plan.
+Simbioza User, Workspace Search and Confluence Import retain their application GUI
+and are not being refactored for standalone framework projects. Workspace changes
+configuration storage under `HPH_CONFIG_PATH`, not its Simbioza integration.
 
 On a later `add`, the command detects the newest backup. An interactive terminal
 asks whether to restore it or start fresh; automation must choose explicitly

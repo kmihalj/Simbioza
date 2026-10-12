@@ -1,5 +1,7 @@
 # Simbioza 0.2.9
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Opcionalni modul Confluence Import nadograđen je na 0.1.42.
 
 Datumi zapisani samo u atributu `datetime` praznog Confluence elementa `time` sada postaju vidljiv tekst prije čišćenja HTML-a. Time se čuvaju datumi u tablicama, odlomcima i podržanim makroima s bogatim sadržajem, uključujući nakon uređivanja i spremanja uvezene stranice. Postojeće vidljive oznake datuma ostaju sačuvane; vrijednosti datuma i vremenske zone ne mijenjaju se.

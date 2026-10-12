@@ -5,24 +5,28 @@ declare(strict_types=1);
 namespace App\Installation;
 
 /**
- * HR: Izrađuje, provjerava i troši jednokratnu tajnu novog instalera.
- * Na disku se sprema samo SHA-256 sažetak, nikada izvorni token.
- *
  * EN: Creates, verifies, and consumes the fresh installer's one-time secret.
  * Only its SHA-256 digest is stored on disk, never the original token. The
  * runtime group may read that digest so a dedicated FPM identity can consume it.
+ *
+ * HR: Izrađuje, provjerava i troši jednokratnu tajnu novog instalera.
+ * Na disku se sprema samo SHA-256 sažetak, nikada izvorni token.
  */
 final readonly class InstallationAccessToken
 {
-    /** HR: Inicijalizira putanje tokena. EN: Initializes token storage paths. */
+    /**
+     * EN: Initializes token storage paths.
+     *
+     * HR: Inicijalizira putanje tokena.
+     */
     public function __construct(private InstallationPaths $paths)
     {
     }
 
     /**
-     * HR: Generira novi token i izvan javnog direktorija sprema samo njegov sažetak.
-     *
      * EN: Generates a new token and stores only its hash outside the public directory.
+     *
+     * HR: Generira novi token i izvan javnog direktorija sprema samo njegov sažetak.
      */
     public function generate(): string
     {
@@ -37,7 +41,11 @@ final readonly class InstallationAccessToken
         return $token;
     }
 
-    /** HR: Provjerava token bez vremenskog curenja. EN: Verifies a token without timing leaks. */
+    /**
+     * EN: Verifies a token without timing leaks.
+     *
+     * HR: Provjerava token bez vremenskog curenja.
+     */
     public function verify(string $token): bool
     {
         if ($token === '' || !is_file($this->paths->tokenFile())) {
@@ -53,11 +61,11 @@ final readonly class InstallationAccessToken
     }
 
     /**
-     * HR: Jednokratno zamjenjuje valjani token za autoriziranu instalacijsku sesiju.
-     * Token se uklanja prije nastavka kako istu adresu ne bi mogla otvoriti druga sesija.
-     *
      * EN: Exchanges a valid token for an authorized installer session exactly once.
      * The token is removed before continuing so a second session cannot reuse its URL.
+     *
+     * HR: Jednokratno zamjenjuje valjani token za autoriziranu instalacijsku sesiju.
+     * Token se uklanja prije nastavka kako istu adresu ne bi mogla otvoriti druga sesija.
      */
     public function consume(string $token): bool
     {
@@ -70,7 +78,11 @@ final readonly class InstallationAccessToken
         return true;
     }
 
-    /** HR: Uklanja pohranjeni token. EN: Removes the stored token. */
+    /**
+     * EN: Removes the stored token.
+     *
+     * HR: Uklanja pohranjeni token.
+     */
     public function remove(): void
     {
         $tokenFile = $this->paths->tokenFile();
@@ -79,7 +91,11 @@ final readonly class InstallationAccessToken
         }
     }
 
-    /** HR: Po potrebi izrađuje privatni podatkovni direktorij. EN: Creates the private data directory when needed. */
+    /**
+     * EN: Creates the private data directory when needed.
+     *
+     * HR: Po potrebi izrađuje privatni podatkovni direktorij.
+     */
     private function ensureDataDirectory(): void
     {
         $directory = $this->paths->dataDirectory();
@@ -88,7 +104,11 @@ final readonly class InstallationAccessToken
         }
     }
 
-    /** HR: Atomski zapisuje privatnu datoteku. EN: Atomically writes a private file. */
+    /**
+     * EN: Atomically writes a private file.
+     *
+     * HR: Atomski zapisuje privatnu datoteku.
+     */
     private function atomicWrite(string $path, string $contents): void
     {
         $temporaryPath = tempnam(dirname($path), '.simbioza-install-');
@@ -101,10 +121,11 @@ final readonly class InstallationAccessToken
                 throw new \RuntimeException('The installer file could not be written.');
             }
 
-            // HR: CLI održavatelj i FPM imaju zajedničku isključivu runtime
-            //     grupu. Grupi je čitljiv samo sažetak, nikada izvorni token.
             // EN: The CLI maintainer and FPM share an exclusive runtime group.
             //     The group may read only the digest, never the original token.
+            //
+            // HR: CLI održavatelj i FPM imaju zajedničku isključivu runtime
+            //     grupu. Grupi je čitljiv samo sažetak, nikada izvorni token.
             if (!chmod($temporaryPath, 0640)) {
                 throw new \RuntimeException('The installer file permissions could not be secured.');
             }

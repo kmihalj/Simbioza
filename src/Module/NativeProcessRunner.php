@@ -6,12 +6,17 @@ namespace App\Module;
 
 use RuntimeException;
 
-/** HR: Pokreće argumentni niz izravno preko proc_open, bez shell evaluacije. EN: Runs an argument vector directly through proc_open without shell evaluation. */
+/**
+ * EN: Runs an argument vector directly through proc_open without shell evaluation.
+ *
+ * HR: Pokreće argumentni niz izravno preko proc_open, bez shell evaluacije.
+ */
 final readonly class NativeProcessRunner implements ProcessRunnerInterface
 {
     /**
-     * HR: Prikuplja izlaz i uvijek zatvara sve pipeove procesa.
      * EN: Captures output and always closes every process pipe.
+     *
+     * HR: Prikuplja izlaz i uvijek zatvara sve pipeove procesa.
      *
      * @param list<string> $command
      */

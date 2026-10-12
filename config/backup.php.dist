@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+// EN: Copy to HPH_CONFIG_PATH/backup/backup.php. The default root is application/config.
+// No GUI is required. Paths below are relative to the application root, not the
+// configuration directory; absolute storage paths are also accepted. Later
+// HPH_CONFIG_OVERRIDE_PATHS layers merge maps and replace lists. Archives,
+// staging files and upload sessions remain data, outside configuration.
+//
+// Options:
+// archive_dir: completed ZIP archives; keep outside the public web directory.
+// staging_dir: temporary assembly/extraction; it needs room for uncompressed data.
+// upload_dir: unfinished upload chunks/sessions; not the document-attachment directory.
+// archive_suffix: downloadable filename suffix, not an archive-format version.
+// chunk_size: browser upload chunk size in bytes; minimum 256 KiB.
+// upload_ttl: unfinished-upload retention in seconds; minimum one hour.
+// archive_ttl: completed-archive retention in seconds; 0 means no automatic expiry.
+// require_maintenance_for_full_replace: require maintenance before a destructive full-site replace.
+// max_archive_size: maximum uploaded ZIP size in bytes; minimum 1 MiB.
+// max_uncompressed_size: maximum sum of unpacked entry sizes, in bytes.
+// max_archive_entries: maximum ZIP-entry count; minimum 100.
+// Restore still checks paths, symlinks, manifest checksums and module schemas.
+// Schedule the "backup cleanup" CLI command; TTL values alone do not start a background worker.
+// Optional application_configuration descriptors need an explicit portable-key allowlist;
+// see the paired installation docs. Never include credentials or deployment paths.
+//
+// HR: Kopirati u HPH_CONFIG_PATH/backup/backup.php. Zadani korijen je application/config.
+// GUI nije potreban. Donje putanje relativne su korijenu aplikacije, a ne
+// konfiguracijskom direktoriju; prihvaćaju se i apsolutne putanje spremanja.
+// Kasniji HPH_CONFIG_OVERRIDE_PATHS slojevi spajaju mape i zamjenjuju liste.
+// Arhive, radne datoteke i upload sesije ostaju podaci, izvan konfiguracije.
+//
+// Opcije:
+// archive_dir: dovršene ZIP arhive; spremati izvan javnog web direktorija.
+// staging_dir: privremeno sastavljanje/raspakiravanje; treba prostor za raspakirane podatke.
+// upload_dir: nedovršeni dijelovi/sesije uploada; nije direktorij privitaka dokumenata.
+// archive_suffix: završetak naziva arhive za preuzimanje, ne verzija formata arhive.
+// chunk_size: veličina browser upload dijela u bajtovima; najmanje 256 KiB.
+// upload_ttl: zadržavanje nedovršenih uploada u sekundama; najmanje jedan sat.
+// archive_ttl: zadržavanje dovršenih arhiva u sekundama; 0 znači bez automatskog isteka.
+// require_maintenance_for_full_replace: zahtijeva maintenance prije destruktivne zamjene cijelog sitea.
+// max_archive_size: najveći ZIP upload u bajtovima; najmanje 1 MiB.
+// max_uncompressed_size: najveći zbroj raspakiranih veličina zapisa u bajtovima.
+// max_archive_entries: najveći broj ZIP zapisa; najmanje 100.
+// Restore i dalje provjerava putanje, symlinkove, manifest kontrolne sume i modulske sheme.
+// Periodično pokretati CLI naredbu "backup cleanup"; TTL sam ne pokreće pozadinski worker.
+// Opcionalni application_configuration opisi trebaju izričiti popis prenosivih ključeva;
+// vidi jezično odvojene instalacijske upute. Ne uključivati vjerodajnice ni deployment putanje.
+
+return [
+    'archive_dir' => 'data/backups/archives',
+    'staging_dir' => 'data/backups/staging',
+    'upload_dir' => 'data/backups/uploads',
+    'archive_suffix' => 'heartphrame-backup.zip',
+    'chunk_size' => 8 * 1024 * 1024,
+    'upload_ttl' => 24 * 60 * 60,
+    'archive_ttl' => 0,
+    'require_maintenance_for_full_replace' => true,
+    'max_archive_size' => 20 * 1024 * 1024 * 1024,
+    'max_uncompressed_size' => 100 * 1024 * 1024 * 1024,
+    'max_archive_entries' => 500000,
+];

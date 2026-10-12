@@ -4,5 +4,17 @@ parameters:
 	paths:
 		- tests
 	scanFiles:
+		- scripts/audit_module_documentation.php
+		- scripts/audit_bilingual_phpdoc.php
+		- src/Tools/CleanInstallMatrix.php
 		- update.php
+		- scripts/configure_fpm_setup.php
+		# EN: Analyze installed Auth, not an older dependency of the borrowed tool.
+		#
+		# HR: Analiziraj instalirani Auth, ne stariju ovisnost posuđenog alata.
+		- vendor/aaieduhr/heartphrame-module-auth/src/Backup/AuthBackupProvider.php
+		- vendor/aaieduhr/heartphrame-module-backup/src/Value/BackupProviderMetadata.php
+		- vendor/aaieduhr/heartphrame-module-backup/src/Service/StructuredConfigBackupProvider.php
+		- vendor/aaieduhr/heartphrame-module-backup/src/Service/BackupConfig.php
+		- vendor/aaieduhr/heartphrame-module-api/src/Service/ApiConfiguration.php
 	tmpDir: build/phpstan/dev

@@ -1,6 +1,6 @@
 # Laboratorijski zapis šest čistih instalacija
 
-[English version](installation-lab_en.md)
+[Engleska verzija](installation-lab_en.md)
 
 Ovaj zapis dokumentira stvarne instalacije izvedene 25. kolovoza 2026. na
 lokalnom macOS razvojnom računalu. Nije opći produkcijski recept. Svaka
@@ -53,15 +53,16 @@ rsync -a \
   --exclude='output/' --exclude='composer.local.json' \
   --exclude='composer.local.lock' --exclude='config/database.php' \
   --exclude='config/env.php' --exclude='config/installation.php' \
-  --exclude='config/email.php' --exclude='config/workspace.php' \
+  --exclude='framework.php' --exclude='/config/auth/' --exclude='/config/email/' \
+  --exclude='/config/editor-html/' --exclude='/config/workspace/' \
   /Volumes/Ext/Development/CR/HFClean/ "$install_root/"
 cp -al /Volumes/Ext/Development/CR/HFClean/vendor "$install_root/vendor"
 mkdir -p "$install_root/data/logs" "$install_root/data/cache" "$install_root/data/themes"
 chmod 750 \
   "$install_root/config" \
   "$install_root/data" \
-  "$install_root/resources/config/theme" \
-  "$install_root/resources/config/menu"
+  "$install_root/config/theme" \
+  "$install_root/config/menu"
 ```
 
 Zapisivost oba konfiguracijska spremišta je obvezna: installer uvozi temu, a

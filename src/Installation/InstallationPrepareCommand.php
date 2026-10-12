@@ -7,19 +7,25 @@ namespace App\Installation;
 use InvalidArgumentException;
 
 /**
- * HR: Priprema jednokratni URL kojim lokalni administrator otvara web-installer.
  * EN: Prepares the one-time URL used by a local administrator to open the web installer.
+ *
+ * HR: Priprema jednokratni URL kojim lokalni administrator otvara web-installer.
  */
 final readonly class InstallationPrepareCommand
 {
-    /** HR: Inicijalizira generator tokena. EN: Initializes the token generator. */
+    /**
+     * EN: Initializes the token generator.
+     *
+     * HR: Inicijalizira generator tokena.
+     */
     public function __construct(private InstallationAccessToken $accessToken)
     {
     }
 
     /**
-     * HR: Generira novu tajnu i vraća strogo provjereni HTTPS/HTTP URL.
      * EN: Generates a new secret and returns a strictly validated HTTPS/HTTP URL.
+     *
+     * HR: Generira novu tajnu i vraća strogo provjereni HTTPS/HTTP URL.
      */
     public function prepare(string $baseUrl): string
     {

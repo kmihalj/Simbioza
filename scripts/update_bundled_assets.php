@@ -4,31 +4,35 @@ declare(strict_types=1);
 
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupManager;
-use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
-use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
-use App\Module\ModuleCatalog;
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
 use App\Localization\LanguagePackManager;
 use App\Localization\LanguageRepository;
 use App\Localization\RepositoryLanguageManager;
+use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
 use Composer\InstalledVersions;
 use HeartPhrame\App;
 
-// HR: Isključivo CLI korak updatera nakon migracija, nikada web endpoint.
 // EN: CLI-only updater step after migrations, never a web endpoint.
+//
+// HR: Isključivo CLI korak updatera nakon migracija, nikada web endpoint.
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit(1);
 }
 
 $root = dirname(__DIR__);
+require_once $root . '/bootstrap.php';
 require $root . '/vendor/autoload.php';
+$paths = ConfigurationPaths::fromEnvironment($root);
+$reader = new PhpConfigurationReader($paths);
 BundledAssetsUpdater::normalizeComposerManifestMetadata($root);
 BundledAssetsUpdater::normalizeReleaseTreeMetadata($root);
 $runtime = $root . '/data/.bundled-assets-runtime-' . bin2hex(random_bytes(8));
@@ -43,13 +47,12 @@ try {
         'staging_dir' => $root . '/data/backups/staging',
         'upload_dir' => $root . '/data/backups/uploads',
     ];
-    file_put_contents($runtime . '/backup.php', "<?php return " . var_export($backup, true) . ";\n");
-    // HR: Backup se privremeno uključuje samo za upravljane pakete uputa; trajni odabir modula ostaje netaknut.
+    mkdir($runtime . '/backup', 0700);
+    file_put_contents($runtime . '/backup/backup.php', "<?php return " . var_export($backup, true) . ";\n");
     // EN: Backup is enabled temporarily only for managed guide packages; the persistent module selection stays intact.
-    $runtimeApp = require $root . '/config/app.php';
-    if (!is_array($runtimeApp)) {
-        throw new RuntimeException('The application configuration is invalid.');
-    }
+    //
+    // HR: Backup se privremeno uključuje samo za upravljane pakete uputa; trajni odabir modula ostaje netaknut.
+    $runtimeApp = $reader->read('app.php');
     $catalog = new ModuleCatalog();
     $backupPackage = $catalog->definitionFor('backup')['package'];
     $enabledModules = $runtimeApp['modules']['enabled'] ?? [];
@@ -63,7 +66,7 @@ try {
     }
     $runtimeApp['modules']['enabled'] = array_values(array_unique($enabledModules));
     file_put_contents($runtime . '/app.php', "<?php return " . var_export($runtimeApp, true) . ";\n");
-    $app = new App([$root . '/config', $runtime], $root);
+    $app = new App([...$paths->directories(), $runtime], $root);
     $app->loadCommands();
     $container = $app->getContainer();
     $database = $container->get(Database::class);
@@ -75,40 +78,13 @@ try {
         }
     }
 
-    $installation = is_file($root . '/config/installation.php') ? require $root . '/config/installation.php' : [];
-    if ($basePath === null && is_array($installation) && is_string($installation['base_path'] ?? null)) {
+    $installation = $reader->read('installation.php');
+    if ($basePath === null && is_string($installation['base_path'] ?? null)) {
         $basePath = $installation['base_path'];
     }
 
-    // HR: Starije instalacije nemaju `base_path`, ali već imaju kanonski javni URL e-pošte.
-    // EN: Older installations lack `base_path` but already have the canonical public e-mail URL.
-    $email = is_file($root . '/config/email.php') ? require $root . '/config/email.php' : [];
-    if ($basePath === null && is_array($email) && is_string($email['application_base_url'] ?? null)) {
-        $basePath = BundledAssetsUpdater::basePathFromApplicationUrl($email['application_base_url']);
-    }
-
     if ($basePath === null) {
-        $html = [];
-        $editorConfig = $container->get(EditorHtmlConfig::class);
-        $formatter = $container->get(EditorHtmlDocumentFormatter::class);
-        $workspace = $repository->findWorkspaceBySlug('korisnicke-upute');
-        if (is_array($workspace)) {
-            foreach ($repository->nodesForWorkspace((int)$workspace['id']) as $node) {
-                $document = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
-                    ->where('document_key', '=', $node['document_key'] ?? '')->first();
-                if (!is_array($document)) {
-                    continue;
-                }
-
-                $version = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
-                    ->where('document_id', '=', $document['id'])->orderBy('version_number', 'DESC')->first();
-                if (is_array($version)) {
-                    $html[] = BundledAssetsUpdater::guideVersionHtml($version, $editorConfig->documentsRoot(), $formatter);
-                }
-            }
-        }
-
-        $basePath = BundledAssetsUpdater::basePathFromGuideHtml($html);
+        throw new RuntimeException('Set installation.base_path or supply --base-path explicitly.');
     }
 
     $themePackage = $catalog->definitionFor('theme')['package'];
@@ -139,13 +115,13 @@ try {
             : null,
         $container->get(AuthUserService::class),
         $container->get(EditorHtmlConfig::class),
-        $container->get(EditorHtmlDocumentFormatter::class),
     );
     foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
         echo $action . PHP_EOL;
     }
-    // HR: Kvar repozitorija jezika ne smije blokirati uspješnu migraciju aplikacije.
     // EN: A language-repository outage must not block a successfully migrated application.
+    //
+    // HR: Kvar repozitorija jezika ne smije blokirati uspješnu migraciju aplikacije.
     try {
         $languageManager = new RepositoryLanguageManager(
             new LanguageRepository($root),
@@ -160,11 +136,14 @@ try {
         fwrite(STDERR, 'Language-pack refresh deferred: ' . $languageFailure->getMessage() . PHP_EOL);
     }
 } finally {
-    foreach (['bootstrap.php', 'backup.php', 'app.php'] as $name) {
+    foreach (['bootstrap.php', 'backup/backup.php', 'app.php'] as $name) {
         if (is_file($runtime . '/' . $name)) {
             unlink($runtime . '/' . $name);
         }
     }
 
+    if (is_dir($runtime . '/backup')) {
+        rmdir($runtime . '/backup');
+    }
     rmdir($runtime);
 }

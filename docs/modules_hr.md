@@ -34,7 +34,8 @@ Primjer za novi modul:
         }
     },
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "aaieduhr/heartphrame-framework": "^0.0.25"
     }
 }
 ```
@@ -86,10 +87,13 @@ return new class extends AbstractModuleManifest
     composer require my-vendor/my-module
     ```
 
-2. **Uključite u konfiguraciji:** dodajte modul u `config/app.php` aplikacije:
+2. **Uključite u konfiguraciji:** dodajte modul u `HPH_CONFIG_PATH/app.php`
+aplikacije (zadano: `config/app.php`). HTTP i CLI pokretanje moraju koristiti
+`ConfigPathResolver::fromEnvironment($appRoot)`. Očuvajte ostale uključene pakete
+i, ako su deklarirani, koristite zadnji odgovarajući override sloj:
 
     ```php
-    // config/app.php
+    // Isječak unutar HPH_CONFIG_PATH/app.php; očuvati ostale opcije aplikacije.
     'modules' => [
         // Popis vrsta modula koje se mogu učitati; obično zadržite zadano.
         'loadable_types' => [
@@ -132,7 +136,7 @@ Release Simbioze sadrži samo obveznu jezgru. Kod opcionalnog modula instalira
 se tek kada je potreban. Administrator ne mijenja ručno `config/app.php`, nego
 koristi CLI ili **Postavke → Setup i moduli**; oba načina čuvaju ispravan
 redoslijed, provjeravaju ovisnosti i održavaju privatnu datoteku
-`data/config/modules.php`:
+`modules.php` u aktivnim konfiguracijskim slojevima (zadano `config/modules.php`):
 
 ```bash
 vendor/bin/hph modules list
@@ -167,7 +171,14 @@ naredbu za instalaciju ili uklanjanje paketa.
 CLI je isti u oba načina rada. Na potvrđenoj FPM instalaciji paketne radnje
 automatski predaje ograničenom deploy helperu, dok bez FPM-a Composer pokreće
 vlasnik instalacije. Promjena stanja i migracije uvijek se izvode nad istom
-trajnom evidencijom u `data/config/modules.php`.
+trajnom evidencijom `modules.php` prema `HPH_CONFIG_PATH`/`HPH_CONFIG_OVERRIDE_PATHS`.
+Pravila slojeva, `.dist` primjer, prava i izričiti jednokratni prijelaz postojeće
+instalacije opisani su u [konfiguracijskim uputama](configuration_hr.md#instalacija-moduli-i-jezici).
+Temelj zajedničkih putanja za upravljanje modulima i updater/backup implementiran je;
+preostale dorade generičkih modula prate postupni plan. Simbioza User, Workspace
+Search i Confluence Import zadržavaju aplikacijski GUI i ne prepravljaju se za
+samostalne framework projekte. Workspace mijenja konfiguracijsko spremište pod
+`HPH_CONFIG_PATH`, ne povezanost sa Simbiozom.
 
 Pri kasnijem `add` alat prepoznaje zadnju kopiju. U interaktivnom terminalu pita
 želite li povrat podataka ili praznu instalaciju; u automatizaciji odluka mora

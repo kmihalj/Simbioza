@@ -8,10 +8,13 @@ podesiti i koristiti.
 
 Postavke šifriranja nalaze se u konfiguracijskoj datoteci okruženja.
 
-1. **Konfiguracijska datoteka:** ključ se definira u `config/env.php`. Ako
-   datoteka ne postoji, kopirajte `config/env.php.dist`.
+1. **Konfiguracijska datoteka:** ključ se definira u
+   `<HPH_CONFIG_PATH>/env.php` (zadano `config/env.php`). PHP format ostaje
+   aktualan. Ako datoteka ne postoji, krenite od `config/env.php.dist` u odabranom
+   konfiguracijskom sloju; primjerom nikad ne prepisujte postojeći ključ.
 2. **Postavljanje ključa:** pronađite postavku `encryption_key` u
-   `config/env.php`:
+   efektivnom `env.php`; vanjske putanje i nadjačavanja opisani su u
+   [konfiguracijskoj uputi](configuration_hr.md):
 
     ```php
     return [
@@ -31,7 +34,7 @@ vendor/bin/hph encryption:generate-key
 ```
 
 Kopirajte ispisani ključ i postavite ga kao vrijednost `encryption_key` u
-datoteci `config/env.php`.
+datoteci `env.php` odabranog konfiguracijskog sloja.
 
 ## Uporaba
 

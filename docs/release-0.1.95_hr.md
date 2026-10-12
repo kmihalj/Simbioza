@@ -1,5 +1,7 @@
 # Simbioza 0.1.95
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo izdanje pouzdano dodaje postavke opcionalnih modula u izbornik. Izbornik
 0.1.23 prihvaća prijavu stavki prije ili nakon vlastitog pokretanja, dodaje
 samo nedostajuće stavke te čuva administratorske nazive, redoslijed i stanje

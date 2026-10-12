@@ -69,5 +69,6 @@ Svaki direktorij sadrži `theme-assets.json` s dimenzijama, veličinama i SHA-25
 kontrolnim zbrojevima. `Izvezi paket teme` u samostalni paket uključuje spremljene
 dimenzije, pomake i pravilo prelaženja ukrasa. `Izvezi cijelu temu` i njegov uvoz
 prenose iste postavke i sve hero i logotip assete za obje varijante. Potpuni
-backup site-a dodatno sprema cijele direktorije `resources/config/theme` i
-`data/themes`, pa se iste vrijednosti i datoteke vraćaju kroz restore.
+backup site-a dodatno sprema efektivne JSON dokumente u `HPH_CONFIG_PATH/theme/`
+i biblioteku `data/themes`. Import ih vraća u konfiguracijske slojeve i biblioteku
+odredišne instalacije, uključujući stare arhive.

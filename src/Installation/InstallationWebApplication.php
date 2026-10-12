@@ -14,8 +14,9 @@ use RuntimeException;
 use Throwable;
 
 /**
- * HR: Upravlja sigurnim višekoračnim web-installerom prije boota glavne aplikacije.
  * EN: Controls the secure multi-step web installer before the main application boots.
+ *
+ * HR: Upravlja sigurnim višekoračnim web-installerom prije boota glavne aplikacije.
  */
 final readonly class InstallationWebApplication
 {
@@ -39,7 +40,11 @@ final readonly class InstallationWebApplication
 
     private const SESSION_TIMEOUT_SECONDS = 1800;
 
-    /** HR: Inicijalizira sigurnosne i instalacijske servise. EN: Initializes security and installation services. */
+    /**
+     * EN: Initializes security and installation services.
+     *
+     * HR: Inicijalizira sigurnosne i instalacijske servise.
+     */
     public function __construct(
         private InstallationPaths $paths,
         private InstallationAccessToken $accessToken,
@@ -54,8 +59,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Obrađuje jedan HTTP zahtjev bez oslanjanja na framework ili globalni output.
      * EN: Handles one HTTP request without relying on framework or global output.
+     *
+     * HR: Obrađuje jedan HTTP zahtjev bez oslanjanja na framework ili globalni output.
      *
      * @param array<array-key, mixed> $query
      * @param array<array-key, mixed> $post
@@ -145,8 +151,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Nastavlja samo kada svi opći uvjeti prolaze.
      * EN: Continues only when all general checks pass.
+     *
+     * HR: Nastavlja samo kada svi opći uvjeti prolaze.
      *
      * @param array<array-key, mixed> $session
      */
@@ -163,8 +170,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Provjerava unos i stvarnu vezu s bazom prije spremanja idućeg koraka.
      * EN: Validates input and the real database connection before saving the next step.
+     *
+     * HR: Provjerava unos i stvarnu vezu s bazom prije spremanja idućeg koraka.
      *
      * @param array<array-key, mixed> $post
      * @param array<array-key, mixed> $session
@@ -195,8 +203,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Provjerava aplikacijske i administratorske podatke bez prikaza lozinke u pregledu.
      * EN: Validates application and administrator data without showing the password in review.
+     *
+     * HR: Provjerava aplikacijske i administratorske podatke bez prikaza lozinke u pregledu.
      *
      * @param array<array-key, mixed> $post
      * @param array<array-key, mixed> $session
@@ -236,8 +245,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Pokreće završnu instalaciju i nakon uspjeha briše osjetljivo stanje sesije.
      * EN: Runs final installation and clears sensitive session state after success.
+     *
+     * HR: Pokreće završnu instalaciju i nakon uspjeha briše osjetljivo stanje sesije.
      *
      * @param array<array-key, mixed> $session
      */
@@ -259,10 +269,11 @@ final readonly class InstallationWebApplication
             try {
                 $this->removeTransientInstallerPackages($application);
             } catch (Throwable $cleanupFailure) {
-                // HR: Instalacija je već valjano zaključana. Ostatak neaktivnog
-                //     paketa može se sigurno ukloniti kasnije kroz Setup ili CLI.
                 // EN: Installation is already validly locked. An inactive
                 //     leftover package can safely be removed later via Setup or CLI.
+                //
+                // HR: Instalacija je već valjano zaključana. Ostatak neaktivnog
+                //     paketa može se sigurno ukloniti kasnije kroz Setup ili CLI.
                 $this->logger->error('Transient installer package cleanup failed.', $cleanupFailure);
             }
 
@@ -284,10 +295,11 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Prije završnog koraka osigurava odabrane opcionalne pakete i
-     *     privremeni Backup potreban samo za uvoz početnih uputa.
      * EN: Before the final step, ensures selected optional packages and the
      *     temporary Backup package needed only to import starter guides.
+     *
+     * HR: Prije završnog koraka osigurava odabrane opcionalne pakete i
+     *     privremeni Backup potreban samo za uvoz početnih uputa.
      *
      * @param array{
      *     name:string,
@@ -329,8 +341,10 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Prije završetka priprema odabrane objavljene jezike kroz helper ili zapisivi lokalni korijen.
      * EN: Before finalization, prepares selected released locales through the helper or writable local root.
+     *
+     * HR: Prije završetka priprema odabrane objavljene jezike kroz helper ili zapisivi lokalni korijen.
+     *
      * @param array{supported_locales:list<string>} $application
      */
     private function prepareInstallerLanguages(array $application): void
@@ -349,19 +363,18 @@ final readonly class InstallationWebApplication
 
             if ($this->installerPackageChangesAvailable() && $this->setup instanceof SetupGateway) {
                 $this->setup->execute('language-install', ['locale' => $locale]);
-            } elseif (is_writable($root . '/lang') && is_writable($root . '/config')) {
-                (new RepositoryLanguageManager($this->languages, $manager, $root))->install($locale);
             } else {
-                throw new RuntimeException('Language installation requires the Setup helper or writable app files.');
+                (new RepositoryLanguageManager($this->languages, $manager, $root))->install($locale);
             }
         }
     }
 
     /**
-     * HR: Za paketne radnje installer traži namjenski FPM marker i stvarni
-     *     prolaz kroz ograničeni helper, jednako kao kasniji Setup ekran.
      * EN: For package operations the installer requires a dedicated FPM marker
      *     and a real restricted-helper round trip, just like the later Setup screen.
+     *
+     * HR: Za paketne radnje installer traži namjenski FPM marker i stvarni
+     *     prolaz kroz ograničeni helper, jednako kao kasniji Setup ekran.
      */
     private function installerPackageChangesAvailable(): bool
     {
@@ -373,18 +386,25 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Nakon uspjeha uklanja privremeni Backup paket koji nije korisnički
-     *     odabran. Provjera ne ovisi o trenutačnoj sesiji jer paket može biti
-     *     dovršen nakon prekinutog prethodnog HTTP zahtjeva.
      * EN: After success, removes the temporary Backup package when it was not
      *     selected by the user. The check does not depend on the current
      *     session because a previous interrupted HTTP request may have
      *     completed the package operation in the background.
      *
+     * HR: Nakon uspjeha uklanja privremeni Backup paket koji nije korisnički
+     *     odabran. Provjera ne ovisi o trenutačnoj sesiji jer paket može biti
+     *     dovršen nakon prekinutog prethodnog HTTP zahtjeva.
+     *
      * @param array<array-key,mixed> $application
      */
     private function removeTransientInstallerPackages(array $application): void
     {
+        // EN: Image package composition is fixed; an unselected baked Backup package stays inactive.
+        //
+        // HR: Sastav paketa imagea je fiksan; neodabrani ugrađeni Backup paket ostaje neaktivan.
+        if ((new \App\Deployment\DeploymentPolicy($this->paths->appRoot()))->isImmutable()) {
+            return;
+        }
         $configuredModules = is_array($application['optional_modules'] ?? null)
         ? $application['optional_modules']
         : [];
@@ -406,8 +426,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira trenutačni korak s lokaliziranim sigurnim porukama.
      * EN: Renders the current stage with localized safe messages.
+     *
+     * HR: Renderira trenutačni korak s lokaliziranim sigurnim porukama.
      *
      * @param array<array-key, mixed> $session
      * @param list<string> $errorCodes
@@ -432,7 +453,11 @@ final readonly class InstallationWebApplication
         return $this->response(200, $this->layout($locale, $stage, $installerPath, $content, $errorCodes));
     }
 
-    /** HR: Renderira provjeru preduvjeta. EN: Renders the requirement check. */
+    /**
+     * EN: Renders the requirement check.
+     *
+     * HR: Renderira provjeru preduvjeta.
+     */
     private function requirementsForm(string $locale, string $installerPath, string $csrf): string
     {
         $items = '';
@@ -462,8 +487,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira odabir baze bez vraćanja lozinke u HTML.
      * EN: Renders database selection without returning its password to HTML.
+     *
+     * HR: Renderira odabir baze bez vraćanja lozinke u HTML.
      *
      * @param array<array-key, mixed> $session
      * @param array<array-key, mixed> $submitted
@@ -515,7 +541,11 @@ final readonly class InstallationWebApplication
         );
     }
 
-    /** HR: Renderira radio gumbe podržanih drivera. EN: Renders supported-driver radio buttons. */
+    /**
+     * EN: Renders supported-driver radio buttons.
+     *
+     * HR: Renderira radio gumbe podržanih drivera.
+     */
     private function driverRadios(string $selected): string
     {
         $html = '';
@@ -532,8 +562,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira identitet aplikacije i prvog administratora bez prepunjavanja lozinke.
      * EN: Renders application identity and the first administrator without prefilling passwords.
+     *
+     * HR: Renderira identitet aplikacije i prvog administratora bez prepunjavanja lozinke.
      *
      * @param array<array-key, mixed> $session
      * @param array<array-key, mixed> $submitted
@@ -602,7 +633,11 @@ final readonly class InstallationWebApplication
         );
     }
 
-    /** HR: Renderira opcije jezika. EN: Renders locale options. */
+    /**
+     * EN: Renders locale options.
+     *
+     * HR: Renderira opcije jezika.
+     */
     private function localeOptions(string $selected): string
     {
         $options = '';
@@ -619,8 +654,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira dostupne jezike.
      * EN: Renders enabled locales.
+     *
+     * HR: Renderira dostupne jezike.
      *
      * @param array<mixed> $selected
      */
@@ -640,8 +676,10 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Spaja dva ugrađena jezika s objavljenim prijevodima javnog kataloga.
      * EN: Combines the two built-in locales with released public-catalogue translations.
+     *
+     * HR: Spaja dva ugrađena jezika s objavljenim prijevodima javnog kataloga.
+     *
      * @return array<string,string>
      */
     private function availableLocaleNames(): array
@@ -655,8 +693,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira izbor samo opcionalnih modula; obvezni moduli uvijek se instaliraju.
      * EN: Renders only optional module choices; required modules are always installed.
+     *
+     * HR: Renderira izbor samo opcionalnih modula; obvezni moduli uvijek se instaliraju.
      *
      * @param array<mixed> $selected
      */
@@ -691,7 +730,11 @@ final readonly class InstallationWebApplication
         return $html;
     }
 
-    /** HR: Renderira sve PHP vremenske zone. EN: Renders every PHP timezone. */
+    /**
+     * EN: Renders every PHP timezone.
+     *
+     * HR: Renderira sve PHP vremenske zone.
+     */
     private function timezoneOptions(string $selected): string
     {
         $options = '';
@@ -708,8 +751,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira polja prvog administratora uz sigurne autocomplete oznake.
      * EN: Renders first-administrator fields with safe autocomplete hints.
+     *
+     * HR: Renderira polja prvog administratora uz sigurne autocomplete oznake.
      *
      * @param array<array-key, mixed> $values
      */
@@ -748,8 +792,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Renderira završni pregled bez ijedne lozinke ili tokena.
      * EN: Renders the final review without any password or token.
+     *
+     * HR: Renderira završni pregled bez ijedne lozinke ili tokena.
      *
      * @param array<array-key, mixed> $session
      */
@@ -778,8 +823,9 @@ final readonly class InstallationWebApplication
                 $definition = $moduleCatalog->definitionFor($slug);
                 $moduleLabels[] = $locale === 'en' ? $definition['label_en'] : $definition['label_hr'];
             } catch (\InvalidArgumentException) {
-                // HR: Validator inače uklanja nepoznate module; pregled ih obrambeno preskače.
                 // EN: The validator normally removes unknown modules; review defensively skips them.
+                //
+                // HR: Validator inače uklanja nepoznate module; pregled ih obrambeno preskače.
             }
         }
 
@@ -821,7 +867,11 @@ final readonly class InstallationWebApplication
         );
     }
 
-    /** HR: Renderira potvrdu i vezu za prvu prijavu. EN: Renders confirmation and the first-login link. */
+    /**
+     * EN: Renders confirmation and the first-login link.
+     *
+     * HR: Renderira potvrdu i vezu za prvu prijavu.
+     */
     private function successPage(string $locale, string $installerPath, string $name, string $login): string
     {
         $basePath = substr($installerPath, 0, -strlen('/install'));
@@ -844,8 +894,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Gradi zajednički dokument instalera s jasnim koracima i izmjenom jezika.
      * EN: Builds the common installer document with clear steps and locale switching.
+     *
+     * HR: Gradi zajednički dokument instalera s jasnim koracima i izmjenom jezika.
      *
      * @param list<string> $errorCodes
      */
@@ -897,7 +948,11 @@ final readonly class InstallationWebApplication
         . '<footer>' . $this->escape($this->text('footer_security', $locale)) . '</footer></body></html>';
     }
 
-    /** HR: Vraća jednostavnu sigurnu stranicu. EN: Returns a simple secure page. */
+    /**
+     * EN: Returns a simple secure page.
+     *
+     * HR: Vraća jednostavnu sigurnu stranicu.
+     */
     private function simplePage(string $locale, string $message): string
     {
         return '<!doctype html><html lang="' . $this->escape($locale) . '"><head><meta charset="utf-8">'
@@ -906,15 +961,20 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Vraća zaključani 404 bez otkrivanja instalera.
      * EN: Returns a locked 404 without revealing the installer.
+     *
+     * HR: Vraća zaključani 404 bez otkrivanja instalera.
      */
     private function notFound(): InstallationResponse
     {
         return $this->response(404, $this->simplePage('en', 'Not found.'));
     }
 
-    /** HR: Gradi odgovor preusmjeravanja bez cacheiranja. EN: Builds a non-cacheable redirect. */
+    /**
+     * EN: Builds a non-cacheable redirect.
+     *
+     * HR: Gradi odgovor preusmjeravanja bez cacheiranja.
+     */
     private function redirect(string $location): InstallationResponse
     {
         $headers = $this->securityHeaders();
@@ -924,8 +984,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Gradi HTML odgovor sa svim sigurnosnim zaglavljima.
      * EN: Builds an HTML response with every security header.
+     *
+     * HR: Gradi HTML odgovor sa svim sigurnosnim zaglavljima.
      */
     private function response(int $status, string $body): InstallationResponse
     {
@@ -933,8 +994,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Vraća zaglavlja protiv XSS-a, clickjackinga, sniffinga i curenja podataka.
      * EN: Returns headers protecting against XSS, clickjacking, sniffing, and data leakage.
+     *
+     * HR: Vraća zaglavlja protiv XSS-a, clickjackinga, sniffinga i curenja podataka.
      *
      * @return array<string, string>
      */
@@ -956,8 +1018,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Prepoznaje base path i kada je aplikacija u poddirektoriju.
      * EN: Detects the base path when the application is mounted below a subdirectory.
+     *
+     * HR: Prepoznaje base path i kada je aplikacija u poddirektoriju.
      */
     private function installerPath(string $scriptName): string
     {
@@ -968,8 +1031,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Ograničava izbor sučelja na HR ili EN.
      * EN: Restricts the interface locale to HR or EN.
+     *
+     * HR: Ograničava izbor sučelja na HR ili EN.
      *
      * @param array<array-key, mixed> $query
      */
@@ -981,8 +1045,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Ističe neaktivnu autorizaciju nakon 30 minuta.
      * EN: Expires inactive authorization after 30 minutes.
+     *
+     * HR: Ističe neaktivnu autorizaciju nakon 30 minuta.
      *
      * @param array<array-key, mixed> $session
      */
@@ -997,8 +1062,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Provjerava CSRF tajnu konstantnim vremenom.
      * EN: Verifies the CSRF secret in constant time.
+     *
+     * HR: Provjerava CSRF tajnu konstantnim vremenom.
      *
      * @param array<array-key, mixed> $post
      * @param array<array-key, mixed> $session
@@ -1012,8 +1078,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Rotira CSRF tajnu nakon svakog uspješnog koraka.
      * EN: Rotates the CSRF secret after each successful step.
+     *
+     * HR: Rotira CSRF tajnu nakon svakog uspješnog koraka.
      *
      * @param array<array-key, mixed> $session
      */
@@ -1022,15 +1089,20 @@ final readonly class InstallationWebApplication
         $session[self::SESSION_CSRF] = bin2hex(random_bytes(32));
     }
 
-    /** HR: Sigurno pretvara samo skalaran HTTP unos. EN: Safely converts scalar HTTP input only. */
+    /**
+     * EN: Safely converts scalar HTTP input only.
+     *
+     * HR: Sigurno pretvara samo skalaran HTTP unos.
+     */
     private function scalarString(mixed $value): string
     {
         return is_scalar($value) ? (string)$value : '';
     }
 
     /**
-     * HR: Zadržava samo skalarne jezične oznake za siguran prikaz.
      * EN: Keeps only scalar locale identifiers for safe presentation.
+     *
+     * HR: Zadržava samo skalarne jezične oznake za siguran prikaz.
      *
      * @param array<array-key, mixed> $values
      * @return list<string>
@@ -1047,13 +1119,21 @@ final readonly class InstallationWebApplication
         return $strings;
     }
 
-    /** HR: HTML-escapa svaki dinamički izlaz. EN: HTML-escapes every dynamic value. */
+    /**
+     * EN: HTML-escapes every dynamic value.
+     *
+     * HR: HTML-escapa svaki dinamički izlaz.
+     */
     private function escape(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
-    /** HR: Vraća jednu potpunu HR/EN poruku. EN: Returns one complete HR/EN message. */
+    /**
+     * EN: Returns one complete HR/EN message.
+     *
+     * HR: Vraća jednu potpunu HR/EN poruku.
+     */
     private function text(string $key, string $locale): string
     {
         $messages = $this->messages();
@@ -1063,8 +1143,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * HR: Središnji prijevod cijelog instalacijskog sučelja.
      * EN: Central translation map for the complete installation interface.
+     *
+     * HR: Središnji prijevod cijelog instalacijskog sučelja.
      *
      * @return array<string, array{hr:string,en:string}>
      */

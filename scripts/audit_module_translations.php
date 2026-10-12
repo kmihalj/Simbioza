@@ -3,22 +3,23 @@
 // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols -- This CLI audit defines and invokes local helpers.
 
 /**
- * HR: Provjerava da svaki statički `__()` ključ aplikacije i instaliranih
- *     modula postoji u zasebnim hrvatskim i engleskim katalozima. Provjerava i
- *     dinamičke nazive modula, lokalizirane stavke menija te sprječava povratak
- *     izvornog, jezično ovisnog pregledničkog gumba za odabir datoteke.
- *
  * EN: Verifies every static `__()` key from the application and installed
  *     modules exists in the separate Croatian and English catalogues. It also
  *     checks dynamic module labels, localized menu items, and prevents the
  *     locale-dependent native browser file picker from returning.
+ *
+ * HR: Provjerava da svaki statički `__()` ključ aplikacije i instaliranih
+ *     modula postoji u zasebnim hrvatskim i engleskim katalozima. Provjerava i
+ *     dinamičke nazive modula, lokalizirane stavke menija te sprječava povratak
+ *     izvornog, jezično ovisnog pregledničkog gumba za odabir datoteke.
  */
 
 declare(strict_types=1);
 
 /**
- * HR: Vraća statičke literalne i spojene literalne ključeve jednog PHP izvora.
  * EN: Returns static literal and concatenated-literal keys from one PHP source.
+ *
+ * HR: Vraća statičke literalne i spojene literalne ključeve jednog PHP izvora.
  *
  * @return list<string>
  */
@@ -83,8 +84,9 @@ function staticTranslationKeys(string $source): array
 }
 
 /**
- * HR: Prepoznaje tokene koji ne mijenjaju vrijednost spojenog literala.
  * EN: Recognizes tokens that do not change a concatenated literal value.
+ *
+ * HR: Prepoznaje tokene koji ne mijenjaju vrijednost spojenog literala.
  */
 function isIgnorableTranslationToken(mixed $token): bool
 {
@@ -93,8 +95,9 @@ function isIgnorableTranslationToken(mixed $token): bool
 }
 
 /**
- * HR: Dekodira PHP literal bez evaluacije koda.
  * EN: Decodes a PHP literal without evaluating code.
+ *
+ * HR: Dekodira PHP literal bez evaluacije koda.
  */
 function translationLiteralValue(string $literal): string
 {
@@ -107,8 +110,9 @@ function translationLiteralValue(string $literal): string
 }
 
 /**
- * HR: Učitava katalog i odbija datoteku koja ne vraća polje.
  * EN: Loads a catalogue and rejects a file that does not return an array.
+ *
+ * HR: Učitava katalog i odbija datoteku koja ne vraća polje.
  *
  * @return array<string, mixed>
  */
@@ -127,8 +131,9 @@ function translationCatalogue(string $path): array
 }
 
 /**
- * HR: Vraća PHP izvore komponente koji mogu sadržavati korisničko sučelje.
  * EN: Returns component PHP sources that can contain user interface text.
+ *
+ * HR: Vraća PHP izvore komponente koji mogu sadržavati korisničko sučelje.
  *
  * @return list<string>
  */
@@ -157,8 +162,9 @@ function translationSourceFiles(string $root): array
 }
 
 /**
- * HR: Pronalazi vidljiva izvorna file polja čiji tekst određuje jezik preglednika/OS-a.
  * EN: Finds visible native file inputs whose text is controlled by the browser/OS locale.
+ *
+ * HR: Pronalazi vidljiva izvorna file polja čiji tekst određuje jezik preglednika/OS-a.
  *
  * @return list<string>
  */
@@ -176,8 +182,9 @@ function visibleNativeFileInputs(string $source): array
 }
 
 /**
- * HR: Skuplja hrvatske kanonske ključeve lokaliziranih stavki menija.
  * EN: Collects Croatian canonical keys from localized menu items.
+ *
+ * HR: Skuplja hrvatske kanonske ključeve lokaliziranih stavki menija.
  *
  * @return list<string>
  */
@@ -206,8 +213,9 @@ function localizedMenuKeys(mixed $value): array
 }
 
 /**
- * HR: Izvorno dohvaća kanonske hrvatske oznake Setup provjera iz njihovih poziva.
  * EN: Statically extracts canonical Croatian Setup-check labels from their calls.
+ *
+ * HR: Izvorno dohvaća kanonske hrvatske oznake Setup provjera iz njihovih poziva.
  *
  * @return list<string>
  */
@@ -285,7 +293,14 @@ $dynamicKeys = setupDiagnosticKeys((string)file_get_contents($appRoot . '/src/Se
 foreach ((new App\Module\ModuleCatalog())->definitions() as $definition) {
     $dynamicKeys[] = $definition['label_hr'];
 }
-foreach (glob($appRoot . '/resources/config/menu/*.json') ?: [] as $path) {
+$menuPaths = [$appRoot . '/data/menu/contexts.json'];
+foreach (App\Configuration\ConfigurationPaths::fromEnvironment($appRoot)->directories() as $directory) {
+    $menuPaths = [...$menuPaths, ...glob($directory . '/menu/*.json') ?: []];
+}
+foreach ($menuPaths as $path) {
+    if (!is_file($path)) {
+        continue;
+    }
     $payload = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
     $dynamicKeys = [...$dynamicKeys, ...localizedMenuKeys($payload)];
 }

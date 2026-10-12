@@ -2,6 +2,10 @@
 
 Date: 24 September 2026. Baseline: Simbioza `0.1.89`.
 
+Historical checkpoint: the module-state path and backup observations below refer
+to that baseline. Current configuration uses `HPH_CONFIG_PATH/modules.php`; see
+the [configuration guide](configuration_en.md) and [migration plan](configuration-migration-plan_en.md).
+
 [Croatian version](accessibility-stage-1_hr.md) · [Full implementation plan](accessibility-implementation-plan_en.md)
 
 ## Scope and status

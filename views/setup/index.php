@@ -9,9 +9,9 @@ declare(strict_types=1);
  * @var string $title
  * @var list<array{slug:string,package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,package_installed:bool,enabled:bool,schema_installed:bool,backup_available:bool,state:string}> $modules
  * @var array<string,array{package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,dependencies:list<string>,migrations:list<string>,tables:list<string>}> $definitions
- * @var array{is_fpm:bool,helper_ready:bool,state_changes_allowed:bool,package_changes_allowed:bool,application_updates_allowed:bool,checks:list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}>} $diagnostics
+ * @var array{immutable:bool,is_fpm:bool,helper_ready:bool,state_changes_allowed:bool,language_changes_allowed:bool,package_changes_allowed:bool,application_updates_allowed:bool,checks:list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}>} $diagnostics
  * @var list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float,active:bool}> $languages
- * @var list<array{locale:string,native_name:string,version:string,installed:bool,active:bool,update_available:bool}> $repositoryLanguages
+ * @var list<array{locale:string,native_name:string,version:string,local_version:string,revision_known:bool,installed:bool,active:bool,update_available:bool}> $repositoryLanguages
  * @var array{components:list<array{package:string,name:string,kind:string,installed_version:string,latest_version:?string,status:string}>,checked_at:?int,failures:int,updates:int} $componentUpdates
  * @var array{state:string,stage:string,progress:?int,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string} $applicationUpdate
  * @var string $applicationUpdateStatusPath
@@ -293,6 +293,12 @@ $applicationUpdateUi = json_encode(
                     <?= $this->escape(__('Ovdje upravljate opcionalnim modulima i odmah vidite jesu li prava datoteka ispravna.')) ?>
                 </p>
 
+                <?php if ($diagnostics['immutable']) : ?>
+                    <div class="alert alert-info" role="status" data-immutable-deployment>
+                    <?= $this->escape(__('Ova instalacija koristi nepromjenjivi image. Kod i paketi nadograđuju se zamjenom imagea; GUI konfiguracije, sadržaja i jezika ostaje dostupan.')) ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="alert <?= $diagnostics['package_changes_allowed'] ? 'alert-success' : 'alert-info' ?> mb-3" role="status">
                     <strong>
                         <?= $this->escape($diagnostics['package_changes_allowed']
@@ -300,9 +306,11 @@ $applicationUpdateUi = json_encode(
                             : __('GUI instalacija i uklanjanje modula nisu dostupni.')) ?>
                     </strong>
                     <div class="mt-1">
-                        <?= $this->escape($diagnostics['package_changes_allowed']
+                        <?= $this->escape($diagnostics['immutable']
+                            ? __('Sastav paketa mijenja se gradnjom zamjenskog imagea. Instalirane module i dalje možete uključiti ili isključiti.')
+                            : ($diagnostics['package_changes_allowed']
                             ? __('Aktivni su namjenski FPM pool, ograničeni helper i potrebna prava.')
-                            : __('Već instalirane module i dalje možete uključiti ili isključiti; za pakete upotrijebite CLI.')) ?>
+                            : __('Već instalirane module i dalje možete uključiti ili isključiti; za pakete upotrijebite CLI.'))) ?>
                     </div>
                 </div>
 
@@ -346,7 +354,9 @@ $applicationUpdateUi = json_encode(
                     <div>
                         <h2 class="h4 mb-1"><?= $this->escape(__('Nadogradnja aplikacije')) ?></h2>
                         <p class="text-body-secondary mb-2">
-                            <?= $this->escape(__('Updater izrađuje sigurnosnu kopiju, uključuje održavanje, nadograđuje kod i module te primjenjuje migracije.')) ?>
+                            <?= $this->escape($diagnostics['immutable']
+                                ? __('Zaustavite aplikaciju i workere, sačuvajte bazu i runtime, odaberite novi image, pokrenite migrate i ponovno pokrenite aplikaciju.')
+                                : __('Updater izrađuje sigurnosnu kopiju, uključuje održavanje, nadograđuje kod i module te primjenjuje migracije.')) ?>
                         </p>
                         <div class="d-flex flex-wrap gap-2 align-items-center">
                             <span class="badge text-bg-primary">
@@ -407,6 +417,11 @@ $applicationUpdateUi = json_encode(
                         <?= $this->escape(__('Pokreni nadogradnju')) ?>
                                 </button>
                             </form>
+                        </div>
+                    <?php elseif ($diagnostics['immutable']) : ?>
+                        <div class="rounded bg-body-tertiary p-3">
+                        <?= $this->escape(__('Nadogradnja zamjenom imagea')) ?>
+                            <code class="d-block user-select-all">docker compose run --rm --no-deps app migrate</code>
                         </div>
                     <?php else : ?>
                         <div class="rounded bg-body-tertiary p-3">
@@ -541,12 +556,16 @@ $applicationUpdateUi = json_encode(
                             <?php endif; ?>
                                     </div>
 
-                            <?php if ($module['optional'] && !$diagnostics['package_changes_allowed'] && !$module['schema_installed']) : ?>
+                            <?php if ($module['optional'] && $diagnostics['immutable'] && !$module['schema_installed']) : ?>
+                                    <div class="small text-body-secondary text-end mt-1 setup-module-cli">
+                                <?= $this->escape(__('Modul dodajte u image i pokrenite migrate; zatim ga uključite u GUI-u.')) ?>
+                                    </div>
+                            <?php elseif ($module['optional'] && !$diagnostics['immutable'] && !$diagnostics['package_changes_allowed'] && !$module['schema_installed']) : ?>
                                     <div class="small text-body-secondary text-end mt-1 setup-module-cli">
                                 <?= $this->escape(__('Instalacija kroz CLI')) ?>:
                                         <code class="user-select-all text-break"><?= $this->escape($command . ($module['backup_available'] ? ' --restore' : ' --fresh')) ?></code>
                                     </div>
-                            <?php elseif ($module['optional'] && !$diagnostics['package_changes_allowed'] && $module['schema_installed']) : ?>
+                            <?php elseif ($module['optional'] && !$diagnostics['immutable'] && !$diagnostics['package_changes_allowed'] && $module['schema_installed']) : ?>
                                     <div class="small text-body-secondary text-end mt-1 setup-module-cli">
                                 <?= $this->escape(__('Za potpuno uklanjanje pokrenite:')) ?>
                                         <code class="user-select-all text-break">vendor/bin/hph modules remove <?= $this->escape($module['slug']) ?> --yes</code>
@@ -566,6 +585,19 @@ $applicationUpdateUi = json_encode(
                 <p class="text-body-secondary">
                     <?= $this->escape(__('Jedan jezični paket sadrži prijevode, višejezične nazive jezika i sigurnu SVG zastavicu.')) ?>
                 </p>
+                <form method="post" action="<?= $this->escape($actionPath) ?>" class="mb-3">
+                    <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
+                    <input type="hidden" name="action" value="language-update-check">
+                    <button class="btn btn-outline-primary"><?= $this->escape(__('Provjeri nadogradnje jezika')) ?></button>
+                </form>
+                <?php if (!$diagnostics['language_changes_allowed']) : ?>
+                    <div class="rounded bg-body-tertiary p-3 mb-3" data-setup-language-update-cli>
+                        <p class="mb-2"><?= $this->escape(__('Na ovoj instalaciji jezične pakete nadogradite kroz CLI. Nadogradnja jezika ne zahtijeva novi release aplikacije ili modula.')) ?></p>
+                        <code class="d-block user-select-all">vendor/bin/hph languages available --refresh</code>
+                        <code class="d-block user-select-all">vendor/bin/hph languages update</code>
+                        <p class="small mb-0 mt-2"><?= $this->escape(__('Naredbe pokrenite iz korijena Simbioze kao deploy korisnik, s istim HPH_CONFIG_PATH kao aplikacija.')) ?></p>
+                    </div>
+                <?php endif; ?>
 
                 <h3 class="h6 mt-4 mb-2"><?= $this->escape(__('Instalirani jezici')) ?></h3>
                 <div class="table-responsive mb-4" data-setup-installed-languages>
@@ -573,7 +605,7 @@ $applicationUpdateUi = json_encode(
                         <thead><tr>
                             <th><?= $this->escape(__('Jezik')) ?></th>
                             <th><?= $this->escape(__('Naziv')) ?></th>
-                            <th><?= $this->escape(__('Revizija')) ?></th>
+                            <th><?= $this->escape(__('Instalirana / dostupna revizija')) ?></th>
                             <th><?= $this->escape(__('Pokrivenost')) ?></th>
                             <th><?= $this->escape(__('Stanje')) ?></th>
                             <th class="text-end"><?= $this->escape(__('Radnje')) ?></th>
@@ -585,31 +617,37 @@ $applicationUpdateUi = json_encode(
                             <tr>
                                 <td><code><?= $this->escape($language['locale']) ?></code></td>
                                 <td><?= $this->escape($language['native_name']) ?></td>
-                                <td><?= is_array($remote) && $remote['version'] !== '' ? '<code>' . $this->escape($remote['version']) . '</code>' : '—' ?></td>
+                                <td>
+                                    <code><?= $this->escape(is_array($remote) && $remote['local_version'] !== '' ? $remote['local_version'] : '—') ?></code>
+                                    / <code><?= $this->escape(is_array($remote) && $remote['version'] !== '' ? $remote['version'] : '—') ?></code>
+                                </td>
                                 <td><?= $this->escape(number_format($language['coverage'], 2)) ?>%</td>
                                 <td>
                             <?= $this->escape($language['active'] ? __('Uključen') : __('Isključen')) ?>
+                            <?php if (is_array($remote) && !$remote['revision_known']) : ?>
+                                <span class="badge text-bg-secondary"><?= $this->escape(__('Lokalna revizija nije evidentirana')) ?></span>
+                            <?php endif; ?>
                             <?php if (is_array($remote) && $remote['update_available']) :
                                 ?><span class="badge text-bg-warning"><?= $this->escape(__('Dostupna nadogradnja')) ?></span><?php
                             endif; ?>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-inline-flex flex-wrap justify-content-end gap-1">
-                            <?php if (is_array($remote) && $remote['update_available'] && $diagnostics['package_changes_allowed']) : ?>
+                            <?php if (is_array($remote) && $remote['update_available'] && $diagnostics['language_changes_allowed']) : ?>
                                                 <form method="post" action="<?= $this->escape($actionPath) ?>">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                                     <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>"><input type="hidden" name="replace" value="1">
                                                     <button class="btn btn-sm btn-outline-primary"><?= $this->escape(__('Ažuriraj')) ?></button>
                                                 </form>
                             <?php endif; ?>
-                            <?php if ($diagnostics['state_changes_allowed']) : ?>
+                            <?php if ($diagnostics['language_changes_allowed']) : ?>
                                                 <form method="post" action="<?= $this->escape($actionPath) ?>">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                                     <input type="hidden" name="action" value="<?= $language['active'] ? 'language-disable' : 'language-enable' ?>"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>">
                                                     <button class="btn btn-sm btn-outline-secondary"><?= $this->escape($language['active'] ? __('Isključi') : __('Uključi')) ?></button>
                                                 </form>
                             <?php endif; ?>
-                            <?php if ($diagnostics['package_changes_allowed']) : ?>
+                            <?php if ($diagnostics['language_changes_allowed']) : ?>
                                                 <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm(<?= $this->escape(json_encode(__('Deinstalirati jezik?'), JSON_THROW_ON_ERROR)) ?>)">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                                     <input type="hidden" name="action" value="language-remove"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>">
@@ -617,6 +655,12 @@ $applicationUpdateUi = json_encode(
                                                 </form>
                             <?php endif; ?>
                                     </div>
+                            <?php if (is_array($remote) && !$remote['revision_known']) : ?>
+                                    <div class="small text-body-secondary text-start mt-2">
+                                <?= $this->escape(__('Za ugrađeni ili ručno dodani jezik bez evidencije revizije preuzmite provjereni paket naredbom:')) ?>
+                                        <code class="d-block user-select-all text-break">vendor/bin/hph languages install <?= $this->escape($language['locale']) ?> --replace</code>
+                                    </div>
+                            <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -632,7 +676,7 @@ $applicationUpdateUi = json_encode(
                     <?= $this->escape(__('Objavljeni jezici iz javnog repozitorija Simbioze. Odaberite jedan ili više jezika za zajedničku instalaciju.')) ?>
                 </p>
 
-                <?php if ($availableRepositoryLanguages !== [] && $diagnostics['package_changes_allowed']) : ?>
+                <?php if ($availableRepositoryLanguages !== [] && $diagnostics['language_changes_allowed']) : ?>
                     <form method="post" action="<?= $this->escape($actionPath) ?>" class="d-flex flex-column flex-lg-row align-items-lg-end gap-3 mb-4" data-setup-language-install-form>
                     <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                         <input type="hidden" name="action" value="language-install-selected">
@@ -698,7 +742,7 @@ $applicationUpdateUi = json_encode(
                     </div>
                 <?php endif; ?>
 
-                <?php if ($diagnostics['package_changes_allowed']) : ?>
+                <?php if ($diagnostics['language_changes_allowed']) : ?>
                     <form method="post" action="<?= $this->escape($actionPath) ?>" enctype="multipart/form-data" class="row g-3 align-items-end">
                     <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                         <input type="hidden" name="action" value="language-add">

@@ -2,25 +2,32 @@
 
 declare(strict_types=1);
 
-// HR: Ova datoteka je trajni registar jezika instalacije. Alat `languages add`
-//     dodaje nove zapise zajedno s prevedenim nazivima i zastavicom.
-// EN: This file is the installation's durable language registry. The
-//     `languages add` tool appends new entries with translated names and a flag.
+// EN: Language registry maintained by the Simbioza tool.
+//
+// HR: Registar jezika održava alat Simbioze.
 return [
-    'hr' => [
-        'names' => [
-            'hr' => 'Hrvatski',
-            'en' => 'Croatian',
-        ],
-        'native_name' => 'Hrvatski',
-        'flag' => 'hr.svg',
-    ],
     'en' => [
         'names' => [
-            'hr' => 'Engleski',
             'en' => 'English',
+            'hr' => 'Engleski',
+            'de' => 'Englisch',
+            'fr' => 'anglais',
+            'es' => 'inglés',
+            'it' => 'inglese',
         ],
         'native_name' => 'English',
         'flag' => 'en.svg',
+    ],
+    'hr' => [
+        'names' => [
+            'en' => 'Croatian',
+            'hr' => 'Hrvatski',
+            'de' => 'Kroatisch',
+            'fr' => 'croate',
+            'es' => 'croata',
+            'it' => 'croato',
+        ],
+        'native_name' => 'Hrvatski',
+        'flag' => 'hr.svg',
     ],
 ];

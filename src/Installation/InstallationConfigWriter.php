@@ -4,37 +4,41 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Configuration\PhpConfigurationReader;
 use App\Module\ModuleCatalog;
+use HeartPhrame\Config\ConfigArrayMerger;
 use Psr\Log\LogLevel;
 
 /**
- * HR: Provjerava i atomski zapisuje privatnu instalacijsku konfiguraciju.
- * Datoteke s vjerodajnicama dobivaju prava 0600 i nikada se ne ispisuju.
- *
  * EN: Validates and atomically writes private installation configuration.
  * Credential-bearing files receive mode 0600 and are never printed.
+ *
+ * HR: Provjerava i atomski zapisuje privatnu instalacijsku konfiguraciju.
+ * Datoteke s vjerodajnicama dobivaju prava 0600 i nikada se ne ispisuju.
  */
 final readonly class InstallationConfigWriter
 {
     private const SUPPORTED_DRIVERS = ['sqlite', 'mysql', 'pgsql'];
 
-    /** HR: Inicijalizira konfiguracijske putanje. EN: Initializes configuration paths. */
+    /**
+     * EN: Initializes configuration paths.
+     *
+     * HR: Inicijalizira konfiguracijske putanje.
+     */
     public function __construct(private InstallationPaths $paths)
     {
     }
 
     /**
-     * HR: Zapisuje postavke baze, okruženja i aplikacije.
-     *
      * EN: Writes database, environment, and application settings.
+     *
+     * HR: Zapisuje postavke baze, okruženja i aplikacije.
      *
      * @param array<array-key, mixed> $database
      * @param array<array-key, mixed> $application
      */
     public function write(array $database, array $application): void
     {
-        $this->ensureDirectories();
-
         $databaseConfig = $this->buildDatabaseConfig($database);
         $installationConfig = $this->buildInstallationConfig($application);
         $environmentConfig = [
@@ -46,9 +50,6 @@ final readonly class InstallationConfigWriter
             'trusted_proxies' => ['127.0.0.1', '::1'],
         ];
 
-        $this->atomicWritePhpConfig($this->paths->databaseConfig(), $databaseConfig);
-        $this->atomicWritePhpConfig($this->paths->environmentConfig(), $environmentConfig);
-        $this->atomicWritePhpConfig($this->paths->installationConfig(), $installationConfig);
         $optionalModules = [];
         $selectedModules = is_array($application['optional_modules'] ?? null)
         ? $application['optional_modules']
@@ -59,19 +60,61 @@ final readonly class InstallationConfigWriter
             }
         }
 
-        $this->atomicWritePhpConfig(
-            $this->paths->moduleStateConfig(),
-            [
+        // EN: Validate all targets and contents before the first write. The wizard
+        //     creates no empty external config and never falls back to app config.
+        //
+        // HR: Sve ciljeve i sadržaje provjeri prije prvog zapisa. Čarobnjak ne
+        //     stvara prazni vanjski config niti se vraća na aplikacijski config.
+        $reader = new PhpConfigurationReader($this->paths->configuration());
+        $files = [
+            $this->paths->databaseConfig() => ConfigArrayMerger::merge($reader->read('database.php'), $databaseConfig),
+            $this->paths->environmentConfig() => ConfigArrayMerger::merge($reader->read('env.php'), $environmentConfig),
+            $this->paths->installationConfig() => ConfigArrayMerger::merge(
+                $reader->read('installation.php'),
+                $installationConfig,
+            ),
+            $this->paths->moduleStateConfig() => [
                 'enabled' => (new ModuleCatalog())->packagesForSelection($optionalModules),
                 'removed' => [],
+                'constraints' => [],
             ],
-        );
+        ];
+        foreach ($files as $path => $configuration) {
+            $files[$path] = $this->namedConfiguration($configuration);
+        }
+
+        $this->ensureDirectories();
+        foreach ($files as $path => $configuration) {
+            $this->atomicWritePhpConfig($path, $configuration);
+        }
     }
 
     /**
-     * HR: Vraća normaliziranu vezu prema bazi podataka.
+     * EN: Installer documents use named fields, not numeric root keys.
      *
+     * HR: Instalacijski dokumenti koriste imenovana polja, ne numeričke root ključeve.
+     *
+     * @param array<array-key,mixed> $configuration
+     * @return array<string,mixed>
+     */
+    private function namedConfiguration(array $configuration): array
+    {
+        $named = [];
+        foreach ($configuration as $key => $value) {
+            if (!is_string($key)) {
+                throw new \RuntimeException('Installer configuration must use named keys.');
+            }
+
+            $named[$key] = $value;
+        }
+
+        return $named;
+    }
+
+    /**
      * EN: Returns a normalized database connection.
+     *
+     * HR: Vraća normaliziranu vezu prema bazi podataka.
      *
      * @param array<array-key, mixed> $database
      * @return array{driver:'sqlite',database:string}|array{driver:'mysql'|'pgsql',host:string,port:int,database:string,username:string,password:string,charset:string,options:array<mixed>}
@@ -117,9 +160,9 @@ final readonly class InstallationConfigWriter
     }
 
     /**
-     * HR: Omata normaliziranu vezu u ORM format konfiguracije.
-     *
      * EN: Wraps a normalized connection in the ORM configuration format.
+     *
+     * HR: Omata normaliziranu vezu u ORM format konfiguracije.
      *
      * @param array<array-key, mixed> $database
      * @return array<string, mixed>
@@ -130,9 +173,9 @@ final readonly class InstallationConfigWriter
     }
 
     /**
-     * HR: Provjerava postavke jezika i identiteta web-mjesta.
-     *
      * EN: Validates site language and identity settings.
+     *
+     * HR: Provjerava postavke jezika i identiteta web-mjesta.
      *
      * @param array<array-key, mixed> $application
      * @return array<string, mixed>
@@ -175,14 +218,16 @@ final readonly class InstallationConfigWriter
         ];
     }
 
-    /** HR: Izrađuje privatne zapisive direktorije. EN: Creates private writable directories. */
+    /**
+     * EN: Creates private writable directories.
+     *
+     * HR: Izrađuje privatne zapisive direktorije.
+     */
     private function ensureDirectories(): void
     {
         foreach (
             [
-                $this->paths->configDirectory(),
                 $this->paths->dataDirectory(),
-                dirname($this->paths->moduleStateConfig()),
             ] as $directory
         ) {
             if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
@@ -192,9 +237,9 @@ final readonly class InstallationConfigWriter
     }
 
     /**
-     * HR: Atomski zapisuje privatnu PHP konfiguracijsku datoteku.
-     *
      * EN: Atomically writes a private PHP configuration file.
+     *
+     * HR: Atomski zapisuje privatnu PHP konfiguracijsku datoteku.
      *
      * @param array<string, mixed> $configuration
      */
@@ -218,14 +263,15 @@ final readonly class InstallationConfigWriter
             }
 
             if (!@rename($temporaryPath, $path)) {
-                // HR: U FPM instalaciji deploy korisnik može pripremiti jezike
-                //     prije GUI čarobnjaka. Sticky config direktorij tada ne
-                //     dopušta FPM-u zamjenu njegove datoteke; zapisujemo u
-                //     postojeći inode pod lockom i čuvamo vlasništvo/prava.
                 // EN: In FPM installs the deploy user may prepare languages
                 //     before the GUI wizard. A sticky config directory then
                 //     blocks FPM from replacing that file; use a locked
                 //     in-place write and preserve its owner and permissions.
+                //
+                // HR: U FPM instalaciji deploy korisnik može pripremiti jezike
+                //     prije GUI čarobnjaka. Sticky config direktorij tada ne
+                //     dopušta FPM-u zamjenu njegove datoteke; zapisujemo u
+                //     postojeći inode pod lockom i čuvamo vlasništvo/prava.
                 $this->writeExistingConfigPreservingMetadata($path, $contents);
             }
         } finally {
@@ -235,7 +281,11 @@ final readonly class InstallationConfigWriter
         }
     }
 
-    /** HR: Sigurno zapisuje postojeću konfiguraciju. EN: Safely writes an existing configuration file. */
+    /**
+     * EN: Safely writes an existing configuration file.
+     *
+     * HR: Sigurno zapisuje postojeću konfiguraciju.
+     */
     private function writeExistingConfigPreservingMetadata(string $path, string $contents): void
     {
         if (!is_file($path) || is_link($path) || !is_writable($path)) {
@@ -272,7 +322,11 @@ final readonly class InstallationConfigWriter
         }
     }
 
-    /** HR: Sigurno pretvara samo skalaran instalacijski unos. EN: Safely converts scalar installer input only. */
+    /**
+     * EN: Safely converts scalar installer input only.
+     *
+     * HR: Sigurno pretvara samo skalaran instalacijski unos.
+     */
     private function scalarString(mixed $value): string
     {
         return is_scalar($value) ? (string)$value : '';

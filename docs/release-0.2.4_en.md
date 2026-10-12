@@ -1,5 +1,7 @@
 # Simbioza 0.2.4
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 The isolated PHP-FPM pool now explicitly allows up to 900 seconds for the
 initial installer and module operations. On the tested macOS/PHP 8.5 build,
 the previous `max_execution_time = 0` still terminated a request after about

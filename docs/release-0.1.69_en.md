@@ -1,5 +1,7 @@
 # Simbioza 0.1.69
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 Includes every improvement from 0.1.68: meeting planning, local administrator
 recovery for Administrator-group members, page backup/import/transfers,
 the current Simbioza theme, and bilingual guides with 72 light-theme screenshots.

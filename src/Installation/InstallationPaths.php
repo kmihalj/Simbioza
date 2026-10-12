@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace App\Installation;
 
+use App\Configuration\ConfigurationPaths;
+
 /**
- * HR: Određuje sve putanje u vlasništvu instalacijskog čarobnjaka.
- * Osjetljive i promjenjive datoteke uvijek ostaju izvan javnog direktorija.
- *
  * EN: Resolves every path owned by the installation wizard. Sensitive and
  * mutable files always remain outside the public directory.
+ *
+ * HR: Određuje sve putanje u vlasništvu instalacijskog čarobnjaka.
+ * Osjetljive i promjenjive datoteke uvijek ostaju izvan javnog direktorija.
  */
 final readonly class InstallationPaths
 {
     private string $appRoot;
 
+    private ConfigurationPaths $configuration;
+
     /**
-     * HR: Sprema normalizirani korijenski direktorij aplikacije.
-     *
      * EN: Stores the normalized application root.
+     *
+     * HR: Sprema normalizirani korijenski direktorij aplikacije.
      */
     public function __construct(string $appRoot)
     {
@@ -28,11 +32,14 @@ final readonly class InstallationPaths
         }
 
         $this->appRoot = $normalizedRoot;
+        $this->configuration = ConfigurationPaths::fromEnvironment($normalizedRoot);
     }
 
     /**
-     * HR: Vraća neprazan korijen aplikacije.
      * EN: Returns the non-empty application root.
+     *
+     * HR: Vraća neprazan korijen aplikacije.
+     *
      * @return non-empty-string
      */
     public function appRoot(): string
@@ -41,72 +48,124 @@ final readonly class InstallationPaths
     }
 
     /**
-     * HR: Vraća neprazan konfiguracijski direktorij.
-     * EN: Returns the non-empty configuration directory.
+     * EN: Returns the last declared configuration layer for installer writes.
+     *
+     * HR: Vraća zadnji deklarirani konfiguracijski sloj za instalacijski zapis.
+     *
      * @return non-empty-string
      */
     public function configDirectory(): string
     {
-        return $this->appRoot . DIRECTORY_SEPARATOR . 'config';
+        $directories = $this->configuration->directories();
+
+        return $directories[count($directories) - 1];
     }
 
-    /** HR: Vraća privatni podatkovni direktorij. EN: Returns the private data directory. */
+    /**
+     * EN: Returns the shared path contract.
+     *
+     * HR: Vraća zajednički dogovor o putanjama.
+     */
+    public function configuration(): ConfigurationPaths
+    {
+        return $this->configuration;
+    }
+
+    /**
+     * EN: Returns the private data directory.
+     *
+     * HR: Vraća privatni podatkovni direktorij.
+     */
     public function dataDirectory(): string
     {
         return $this->appRoot . DIRECTORY_SEPARATOR . 'data';
     }
 
-    /** HR: Vraća putanju konfiguracije baze. EN: Returns the database configuration path. */
+    /**
+     * EN: Returns the database configuration path.
+     *
+     * HR: Vraća putanju konfiguracije baze.
+     */
     public function databaseConfig(): string
     {
-        return $this->configDirectory() . DIRECTORY_SEPARATOR . 'database.php';
+        return $this->configuration->writableFile('database.php');
     }
 
-    /** HR: Vraća putanju konfiguracije okruženja. EN: Returns the environment configuration path. */
+    /**
+     * EN: Returns the environment configuration path.
+     *
+     * HR: Vraća putanju konfiguracije okruženja.
+     */
     public function environmentConfig(): string
     {
-        return $this->configDirectory() . DIRECTORY_SEPARATOR . 'env.php';
+        return $this->configuration->writableFile('env.php');
     }
 
-    /** HR: Vraća putanju instalacijskih postavki. EN: Returns the installation settings path. */
+    /**
+     * EN: Returns the installation settings path.
+     *
+     * HR: Vraća putanju instalacijskih postavki.
+     */
     public function installationConfig(): string
     {
-        return $this->configDirectory() . DIRECTORY_SEPARATOR . 'installation.php';
+        return $this->configuration->writableFile('installation.php');
     }
 
-    /** HR: Vraća runtime stanje modula zapisivo iz GUI-ja i CLI-ja. EN: Returns GUI- and CLI-writable module runtime state. */
+    /**
+     * EN: Returns GUI- and CLI-writable module configuration.
+     *
+     * HR: Vraća konfiguracijski odabir modula zapisiv iz GUI-ja i CLI-ja.
+     */
     public function moduleStateConfig(): string
     {
-        return $this->dataDirectory()
-        . DIRECTORY_SEPARATOR . 'config'
-        . DIRECTORY_SEPARATOR . 'modules.php';
+        return $this->configuration->writableFile('modules.php');
     }
 
-    /** HR: Vraća putanju trajnog instalacijskog locka. EN: Returns the permanent installation lock path. */
+    /**
+     * EN: Returns the permanent installation lock path.
+     *
+     * HR: Vraća putanju trajnog instalacijskog locka.
+     */
     public function lockFile(): string
     {
         return $this->dataDirectory() . DIRECTORY_SEPARATOR . 'installation.lock';
     }
 
-    /** HR: Vraća putanju sažetka jednokratnog tokena. EN: Returns the one-time token hash path. */
+    /**
+     * EN: Returns the one-time token hash path.
+     *
+     * HR: Vraća putanju sažetka jednokratnog tokena.
+     */
     public function tokenFile(): string
     {
         return $this->dataDirectory() . DIRECTORY_SEPARATOR . '.installer-token';
     }
 
-    /** HR: Vraća privatni instalacijski log. EN: Returns the private installation log. */
+    /**
+     * EN: Returns the private installation log.
+     *
+     * HR: Vraća privatni instalacijski log.
+     */
     public function logFile(): string
     {
         return $this->dataDirectory() . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'installer.log';
     }
 
-    /** HR: Vraća direktorij migracija. EN: Returns the application migration directory. */
+    /**
+     * EN: Returns the application migration directory.
+     *
+     * HR: Vraća direktorij migracija.
+     */
     public function migrationsDirectory(): string
     {
         return $this->appRoot . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'migrations';
     }
 
-    /** HR: Vraća instalacijski paket teme Simbioza. EN: Returns the bundled Simbioza theme archive. */
+    /**
+     * EN: Returns the bundled Simbioza theme archive.
+     *
+     * HR: Vraća instalacijski paket teme Simbioza.
+     */
     public function themePackage(): string
     {
         return $this->appRoot
@@ -116,7 +175,11 @@ final readonly class InstallationPaths
         . DIRECTORY_SEPARATOR . 'simbioza.zip';
     }
 
-    /** HR: Vraća instalacijski backup javnih korisničkih uputa. EN: Returns the bundled public user-guide backup. */
+    /**
+     * EN: Returns the bundled public user-guide backup.
+     *
+     * HR: Vraća instalacijski backup javnih korisničkih uputa.
+     */
     public function userGuidesPackage(): string
     {
         return $this->appRoot
@@ -126,31 +189,41 @@ final readonly class InstallationPaths
         . DIRECTORY_SEPARATOR . 'korisnicke-upute.zip';
     }
 
-    /** HR: Vraća privremeni config sloj za instalacijski import. EN: Returns the temporary install-import config layer. */
+    /**
+     * EN: Returns the temporary install-import config layer.
+     *
+     * HR: Vraća privremeni config sloj za instalacijski import.
+     */
     public function importConfigDirectory(): string
     {
         return $this->dataDirectory() . DIRECTORY_SEPARATOR . '.installation-import-config';
     }
 
-    /** HR: Vraća JSON spremište tema. EN: Returns the theme JSON storage directory. */
+    /**
+     * EN: Returns the theme JSON storage directory.
+     *
+     * HR: Vraća JSON spremište tema.
+     */
     public function themeConfigDirectory(): string
     {
-        return $this->appRoot
-        . DIRECTORY_SEPARATOR . 'resources'
-        . DIRECTORY_SEPARATOR . 'config'
-        . DIRECTORY_SEPARATOR . 'theme';
+        return $this->configDirectory() . '/theme';
     }
 
-    /** HR: Vraća JSON spremište konfiguracije izbornika. EN: Returns the menu configuration JSON storage directory. */
+    /**
+     * EN: Returns the menu configuration JSON storage directory.
+     *
+     * HR: Vraća JSON spremište konfiguracije izbornika.
+     */
     public function menuConfigDirectory(): string
     {
-        return $this->appRoot
-        . DIRECTORY_SEPARATOR . 'resources'
-        . DIRECTORY_SEPARATOR . 'config'
-        . DIRECTORY_SEPARATOR . 'menu';
+        return $this->configDirectory() . '/menu';
     }
 
-    /** HR: Provjerava je li instalacija dovršena. EN: Reports whether installation is complete. */
+    /**
+     * EN: Reports whether installation is complete.
+     *
+     * HR: Provjerava je li instalacija dovršena.
+     */
     public function isInstalled(): bool
     {
         return is_file($this->lockFile());

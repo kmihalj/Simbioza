@@ -1,5 +1,7 @@
 # Simbioza 0.2.1
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release fixes a PHP memory exhaustion during the verification of a large
 Confluence XML archive. The import job now stores only the inventory needed for
 identity mapping instead of keeping every page and attachment in its database

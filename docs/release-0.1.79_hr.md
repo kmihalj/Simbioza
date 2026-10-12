@@ -1,5 +1,8 @@
 # Simbioza 0.1.79
 
+Povijesna bilješka izdanja: aktualne instalacije koriste `HPH_CONFIG_PATH/modules.php`,
+ne `data/config/modules.php`. Slijediti [aktualne konfiguracijske upute](configuration_hr.md).
+
 Ovo korektivno izdanje dovršava prijelaz starijih instalacija na siguran
 namjenski FPM Setup.
 

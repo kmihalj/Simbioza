@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-// HR: Priprema javne jezične pakete prije GUI instalacije bez FPM helpera.
-// EN: Prepares published language packs before GUI installation without an FPM helper.
+// EN: Optionally preloads published runtime JSON packs through CLI; no package helper is needed.
+//
+// HR: Opcionalno unaprijed učitava javne runtime JSON pakete kroz CLI; ne treba paketni helper.
 
 use App\Localization\LanguagePackManager;
 use App\Localization\LanguageRepository;
@@ -21,12 +22,14 @@ foreach (array_slice($argv, 2) as $argument) {
     }
 }
 
-if ($command !== 'prepare' || $locales === [] || array_filter(
-    $locales,
-    static fn(string $locale): bool => preg_match('/\A[a-z]{2}(?:-[a-z0-9]+)*\z/D', $locale) !== 1,
-) !== []) {
-    fwrite(STDERR, "HR: Uporaba: php scripts/installation_languages.php prepare --locales=de,es,fr,it\n");
+if (
+    $command !== 'prepare' || $locales === [] || array_filter(
+        $locales,
+        static fn(string $locale): bool => preg_match('/\A[a-z]{2}(?:-[a-z0-9]+)*\z/D', $locale) !== 1,
+    ) !== []
+) {
     fwrite(STDERR, "EN: Usage: php scripts/installation_languages.php prepare --locales=de,es,fr,it\n");
+    fwrite(STDERR, "HR: Uporaba: php scripts/installation_languages.php prepare --locales=de,es,fr,it\n");
     exit(2);
 }
 

@@ -16,7 +16,7 @@ Complete [the common prerequisites, release download, and database preparation](
 Use a dedicated Unix account to own the release and run Composer and the CLI
 updater. The Apache/PHP process must be able to read the code and write only
 the required runtime paths: `data/`, dynamic settings in `config/`,
-`resources/config/menu/`, and `resources/config/theme/`. Arrange ownership or
+`config/menu/`, and `config/theme/`. Arrange ownership or
 ACLs for these exact paths on your system; do not make the whole release
 web-writable and do not use `chmod 777`. The document root is `public/`, never
 the release directory.
@@ -28,12 +28,12 @@ creates private `0600` files which must remain readable to later CLI updates.
 ```bash
 cd /srv/simbioza
 MAINTAINER="$(id -un)"
-sudo chgrp -R _www config data resources/config/menu resources/config/theme
+sudo chgrp -R _www config data config/menu config/theme
 chmod 3770 config
-chmod 2770 resources/config/menu resources/config/theme
-chmod -R g+rwX data resources/config/menu resources/config/theme
+chmod 2770 config/menu config/theme
+chmod -R g+rwX data config/menu config/theme
 sudo chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" config
-sudo find data resources/config/menu resources/config/theme -type d -exec chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" {} +
+sudo find data config/menu config/theme -type d -exec chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" {} +
 ```
 
 Use the actual release path rather than `/srv/simbioza` on macOS. On Linux,
@@ -142,8 +142,7 @@ theme data before going live.
 
 ## 5. Maintain this installation
 
-Versions older than 0.2.12 must first run `php update.php --tag=0.2.12`
-as the code owner. Do not skip this required updater bridge.
+Use a fresh 0.3.0 installation; the updater accepts only the current baseline and later releases.
 
 In **Settings → Setup and modules**, an administrator may enable or disable
 modules already installed. Package add/remove and application updates must

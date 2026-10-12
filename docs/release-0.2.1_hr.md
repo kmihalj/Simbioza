@@ -1,5 +1,7 @@
 # Simbioza 0.2.1
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo izdanje ispravlja iscrpljivanje PHP memorije tijekom provjere velike
 Confluence XML arhive. Posao uvoza sada u bazi čuva samo inventar potreban za
 mapiranje identiteta, a ne sve stranice i privitke. Popis poslova i odustajanje

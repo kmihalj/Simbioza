@@ -1,20 +1,27 @@
 <?php
 
 /**
- * HR: Pronalazi imenovane PHP funkcije i metode bez neposrednog dvojezičnog
- *     PHPDoc bloka. Provjera namjerno ne obuhvaća anonimne funkcije.
- *
  * EN: Finds named PHP functions and methods without an adjacent bilingual
- *     PHPDoc block. Anonymous functions are intentionally excluded.
+ * PHPDoc block and rejects mixed/reversed marked comments throughout source code.
+ * Anonymous functions do not require method documentation; their comments are checked.
  *
- * Usage / Uporaba:
+ * HR: Pronalazi imenovane PHP funkcije/metode bez neposrednog dvojezičnog
+ * PHPDoc bloka te odbija pomiješane/obrnute označene komentare u izvornom kodu.
+ * Anonimne funkcije ne trebaju dokumentaciju metode; njihovi komentari provjeravaju se.
+ *
+ * Usage:
  *   php scripts/audit_bilingual_phpdoc.php
  */
 
 declare(strict_types=1);
 
+// phpcs:disable PSR1.Files.SideEffects -- Importable CLI maintenance entry point.
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
 const AUDITED_PROJECTS = [
     'HFClean',
+    'heartphrame-module-accessibility',
     'heartphrame-module-api',
     'heartphrame-module-audit',
     'heartphrame-module-auth',
@@ -35,15 +42,35 @@ const AUDITED_PROJECTS = [
 ];
 
 /**
- * HR: Rekurzivno vraća produkcijske PHP datoteke jednog projekta.
  * EN: Recursively returns production PHP files for one project.
+ *
+ * HR: Rekurzivno vraća produkcijske PHP datoteke jednog projekta.
  *
  * @return list<string>
  */
 function auditedPhpFiles(string $projectDirectory): array
 {
+    $result = (new \App\Module\NativeProcessRunner())->run(
+        ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+        $projectDirectory,
+    );
+    if ($result->exitCode === 0 && !str_contains($projectDirectory, '/vendor/')) {
+        $files = [];
+        foreach (array_unique(explode("\0", $result->stdout)) as $relative) {
+            $path = $projectDirectory . '/' . $relative;
+            if (
+                preg_match('~\.(?:php|php\.dist)$~', $relative)
+                && !preg_match('~\A(?:vendor|data|build|node_modules|\.git)/~', $relative)
+                && is_file($path) && !is_link($path)
+            ) {
+                $files[] = $path;
+            }
+        }
+        sort($files);
+        return $files;
+    }
     $files = [];
-    foreach (['src', 'config', 'resources/migrations'] as $sourceDirectory) {
+    foreach (['src', 'config', 'resources', 'views', 'tests', 'scripts', 'database', 'bin'] as $sourceDirectory) {
         $root = $projectDirectory . '/' . $sourceDirectory;
         if (!is_dir($root)) {
             continue;
@@ -63,8 +90,9 @@ function auditedPhpFiles(string $projectDirectory): array
 }
 
 /**
- * HR: Razrješava sibling checkout lokalno ili Composer vendor paket u CI-ju.
  * EN: Resolves a sibling checkout locally or a Composer vendor package in CI.
+ *
+ * HR: Razrješava sibling checkout lokalno ili Composer vendor paket u CI-ju.
  */
 function auditedProjectDirectory(string $applicationRoot, string $project): string
 {
@@ -86,9 +114,11 @@ function auditedProjectDirectory(string $applicationRoot, string $project): stri
 }
 
 /**
- * HR: Izvlači imenovane funkcije/metode i status njihova PHPDoc bloka.
  * EN: Extracts named functions/methods and the status of their PHPDoc block.
  *
+ * HR: Izvlači imenovane funkcije/metode i status njihova PHPDoc bloka.
+ *
+ * @phpstan-impure
  * @return list<array{line:int,name:string,status:string}>
  */
 function auditPhpFile(string $path): array
@@ -99,20 +129,29 @@ function auditPhpFile(string $path): array
     }
     $tokens = token_get_all($source);
     $lastDoc = null;
-    $lastDocLine = 0;
     $issues = [];
     $count = count($tokens);
+    $rules = new \App\Tools\BilingualCommentRules();
+    foreach ($rules->comments($source) as $comment) {
+        if (!$rules->isOrdered($comment['text'])) {
+            $issues[] = ['line' => $comment['line'], 'name' => 'comment', 'status' => 'language-order'];
+        }
+    }
+    // EN: Preserve the method-doc scope; tests and templates still receive marked-comment checks.
+    //
+    // HR: Čuva opseg dokumentacije metoda; testovi i predlošci i dalje imaju provjeru označenih komentara.
+    if (str_contains($path, '/tests/') || !preg_match('~/(?:src|config|resources/migrations)/~', $path)) {
+        return $issues;
+    }
 
     for ($index = 0; $index < $count; $index++) {
         $token = $tokens[$index];
         if (is_array($token) && $token[0] === T_DOC_COMMENT) {
             $lastDoc = $token[1];
-            $lastDocLine = $token[2];
             continue;
         }
         if (is_string($token) && in_array($token, [';', '{', '}'], true)) {
             $lastDoc = null;
-            $lastDocLine = 0;
             continue;
         }
         if (!is_array($token) || $token[0] !== T_FUNCTION) {
@@ -149,7 +188,7 @@ function auditPhpFile(string $path): array
 
         $line = $token[2];
         $status = null;
-        if ($lastDoc === null || $line - $lastDocLine > 40) {
+        if ($lastDoc === null) {
             $status = 'missing';
         } elseif (!str_contains($lastDoc, 'HR:') || !str_contains($lastDoc, 'EN:')) {
             $status = 'not-bilingual';
@@ -158,15 +197,15 @@ function auditPhpFile(string $path): array
             $issues[] = ['line' => $line, 'name' => $name, 'status' => $status];
         }
         $lastDoc = null;
-        $lastDocLine = 0;
     }
 
     return $issues;
 }
 
 /**
- * HR: Pokreće audit samo nad repozitorijima koje je dopušteno uređivati.
  * EN: Runs the audit only on repositories that are allowed to be edited.
+ *
+ * HR: Pokreće audit samo nad repozitorijima koje je dopušteno uređivati.
  */
 function runBilingualPhpDocAudit(): int
 {
@@ -197,4 +236,6 @@ function runBilingualPhpDocAudit(): int
     return $totalIssues === 0 ? 0 : 1;
 }
 
-exit(runBilingualPhpDocAudit());
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    exit(runBilingualPhpDocAudit());
+}

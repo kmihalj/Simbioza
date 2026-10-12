@@ -1,5 +1,7 @@
 # Simbioza 0.1.90
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo izdanje uvodi opcionalni HeartPhrame modul Pristupačnost i nastavlja dorade temeljnog sučelja Simbioze i njezinih modula. Widget nudi osobne prilagodbe čitanja i prikaza spremljene u pregledniku. Radi bez Teme, Izbornika i Bootstrapa; kada Tema postoji, izborne palete mogu prilagoditi njezine semantičke boje bez promjene spremljene teme. Modul ne ovisi o postojećim modulima i nakon nadogradnje aplikacije može se instalirati i uključiti kroz Setup.
 
 U aplikaciji i modulima poboljšani su rad tipkovnicom, oznake i statusne poruke u Setupu, Backupu, Kalendaru, administraciji API-ja, izbornicima, komentarima, zadacima, obavijestima, pretraživanju, područjima, HTML editoru i uvozu iz Confluencea. Editor provjerava semantiku autorskih slika, naslova, tablica i poveznica. Poznate pretvorbe iz Confluencea čuvaju smislene veze zaglavlja tablica; uvezeni sadržaj ne prepisuje se automatski niti mu se izmišljaju opisi. Dopunjeni engleski i hrvatski izvorni nizovi objavljuju se kroz katalog jezika.

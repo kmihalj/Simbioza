@@ -29,15 +29,36 @@ final class InitialMigrationsTest extends TestCase
 {
     private Database $database;
 
+    private string $configurationDirectory;
+
     /**
-     * HR: Prije svakog testa priprema potpuno praznu SQLite bazu u memoriji.
-     * Time provjera ne može slučajno koristiti razvojne podatke aplikacije.
+     * EN: This test's environment must not affect HFC.
      *
+     * HR: Env ove provjere ne smije utjecati na HFC.
+     *
+     * @var array<string,string|false>
+     */
+    private array $configurationEnvironment;
+
+    /**
      * EN: Prepares a completely empty in-memory SQLite database before each test.
      * This prevents the verification from accidentally using application development data.
+     *
+     * HR: Prije svakog testa priprema potpuno praznu SQLite bazu u memoriji.
+     * Time provjera ne može slučajno koristiti razvojne podatke aplikacije.
      */
     protected function setUp(): void
     {
+        $this->configurationDirectory = sys_get_temp_dir() . '/simbioza-schema-' . bin2hex(random_bytes(8));
+        mkdir($this->configurationDirectory, 0700);
+        file_put_contents($this->configurationDirectory . '/app.php', '<?php return [];');
+        foreach (['HPH_APP_PATH', 'HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $key) {
+            $this->configurationEnvironment[$key] = getenv($key);
+        }
+
+        putenv('HPH_APP_PATH=' . $this->configurationDirectory);
+        putenv('HPH_CONFIG_PATH=' . $this->configurationDirectory);
+        putenv('HPH_CONFIG_OVERRIDE_PATHS=');
         $helper = new Helper();
         $config = new Config($helper, [
             'database' => [
@@ -54,24 +75,50 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Pokreće trideset i pet aktualnih aplikacijskih migracija te provjerava aktualne
-     * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
-     * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
-     * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
+     * EN: Removes only isolated test files and restores the environment.
      *
-     * EN: Runs thirty-five current application migrations and verifies the current Auth,
+     * HR: Uklanja samo datoteke izolirane provjere i vraća env.
+     */
+    protected function tearDown(): void
+    {
+        foreach ($this->configurationEnvironment as $key => $value) {
+            putenv($value === false ? $key : $key . '=' . $value);
+        }
+
+        foreach (glob($this->configurationDirectory . '/auth/*') ?: [] as $path) {
+            unlink($path);
+        }
+
+        if (is_dir($this->configurationDirectory . '/auth')) {
+            rmdir($this->configurationDirectory . '/auth');
+        }
+
+        unlink($this->configurationDirectory . '/app.php');
+        rmdir($this->configurationDirectory);
+    }
+
+    /**
+     * EN: Verifies fourteen initial application migrations and the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
+     *
+     * HR: Provjerava četrnaest početnih aplikacijskih migracija i aktualne
+     * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
+     * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
+     * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
      */
     public function testFreshInstallationCreatesCompleteSchemasWithoutSampleContent(): void
     {
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(35, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(14, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
+            // EN: Fresh installs stamp application-only data relocation without executing it.
+            //
+            // HR: Nova instalacija označava premještanje aplikacijskih podataka bez izvršavanja.
             $migration = require $migrationFile;
             $this->assertTrue(method_exists($migration, 'up'));
             $migration->up($this->database);
@@ -129,9 +176,7 @@ final class InitialMigrationsTest extends TestCase
         foreach (
             [
                 ModuleAuth::TABLE_AUTH_USER_ATTRIBUTE_FIELDS,
-                ModuleAuth::TABLE_AUTH_PROVIDER_SETTINGS,
                 ModuleAuth::TABLE_AUTH_PROVIDER_PROFILES,
-                ModuleAuth::TABLE_AUTH_SYSTEM_SETTINGS,
                 ModuleAuth::TABLE_AUTH_USER_PROVIDER_ACCESS,
                 ModuleAuth::TABLE_AUTH_USER_IDENTITIES,
                 ModuleAuth::TABLE_AUTH_GROUP_MAPPING_RULES,
@@ -140,6 +185,12 @@ final class InitialMigrationsTest extends TestCase
         ) {
             $this->assertTrue($this->database->schema()->hasTable($authTable), 'Missing table: ' . $authTable);
         }
+
+        $this->assertFalse($this->database->schema()->hasTable('auth_provider_settings'));
+        $this->assertFalse($this->database->schema()->hasTable('auth_system_settings'));
+        $this->assertFalse(
+            $this->database->schema()->hasColumn(ModuleAuth::TABLE_AUTH_PROVIDER_PROFILES, 'config_json'),
+        );
 
         $this->assertColumns(ModuleCalendar::TABLE_CALENDARS, [
             'id',
@@ -401,22 +452,7 @@ final class InitialMigrationsTest extends TestCase
             'created_at',
             'updated_at',
         ]);
-        $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_HOMEPAGE_SETTINGS, [
-            'id',
-            'public_node_id',
-            'public_target_type',
-            'public_workspace_id',
-            'public_show_tree',
-            'public_show_display_options',
-            'authenticated_node_id',
-            'authenticated_target_type',
-            'authenticated_workspace_id',
-            'authenticated_show_tree',
-            'authenticated_show_display_options',
-            'allow_user_selection',
-            'created_at',
-            'updated_at',
-        ]);
+        $this->assertFalse($this->database->schema()->hasTable(ModuleWorkspace::TABLE_WORKSPACE_HOMEPAGE_SETTINGS));
         $this->assertColumns(ModuleWorkspace::TABLE_WORKSPACE_USER_HOMEPAGES, [
             'id',
             'user_id',
@@ -895,50 +931,9 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * HR: Aplikacijska migracija nadograđuje postojeću privatnu temu bez pregazivanja postavki.
-     * EN: The application migration upgrades an existing private theme without overwriting settings.
-     */
-    public function testThemeHeightMigrationUpgradesExistingPrivateWorkspaceTheme(): void
-    {
-        $workspaceMigration = require dirname(__DIR__, 3)
-        . '/database/migrations/20260717120804_install_workspace_module_schema.php';
-        $workspaceMigration->up($this->database);
-
-        $now = date('Y-m-d H:i:s');
-        $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->insert([
-            'workspace_id' => 42,
-            'selection_type' => 'custom',
-            'source_theme_id' => 'simbioza',
-            'mode_policy' => 'auto',
-            'theme_json' => json_encode([
-                'id' => 'workspace-42',
-                'components' => [
-                    'header' => ['height_px' => 93, 'sticky' => true],
-                    'navigation' => [],
-                    'content' => ['surface' => 'title-card'],
-                ],
-            ], JSON_THROW_ON_ERROR),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-
-        $migration = require dirname(__DIR__, 3)
-        . '/database/migrations/20260911160000_add_theme_component_heights.php';
-        $migration->up($this->database);
-
-        $row = $this->database->table(ModuleWorkspace::TABLE_WORKSPACE_THEMES)->first();
-        $this->assertIsArray($row);
-        $theme = json_decode((string)$row['theme_json'], true, 512, JSON_THROW_ON_ERROR);
-        $this->assertIsArray($theme);
-        $this->assertSame(93, $theme['components']['header']['height_px']);
-        $this->assertTrue($theme['components']['header']['sticky']);
-        $this->assertSame(56, $theme['components']['navigation']['height_px']);
-        $this->assertSame('title-card', $theme['components']['content']['surface']);
-    }
-
-    /**
-     * HR: Provjerava da tablica postoji i da nijedno očekivano polje nije izostavljeno.
      * EN: Verifies that a table exists and that none of its expected columns were omitted.
+     *
+     * HR: Provjerava da tablica postoji i da nijedno očekivano polje nije izostavljeno.
      *
      * @param list<string> $columns
      */

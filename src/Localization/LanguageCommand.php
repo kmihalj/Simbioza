@@ -7,8 +7,9 @@ namespace App\Localization;
 use RuntimeException;
 
 /**
- * HR: Izlaže izradu, provjeru i instalaciju objedinjene jezične datoteke.
  * EN: Exposes consolidated language-pack creation, validation, and installation.
+ *
+ * HR: Izlaže izradu, provjeru i instalaciju objedinjene jezične datoteke.
  *
  * @phpstan-type ValidationResult array{
  *     locale:string,
@@ -21,7 +22,11 @@ use RuntimeException;
  */
 final readonly class LanguageCommand
 {
-    /** HR: Prima servis paketa i objavljenog kataloga. EN: Receives the pack service and released catalogue. */
+    /**
+     * EN: Receives the pack service and released catalogue.
+     *
+     * HR: Prima servis paketa i objavljenog kataloga.
+     */
     public function __construct(
         private LanguagePackManager $languages,
         private RepositoryLanguageManager $repository,
@@ -29,8 +34,9 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Obrađuje `languages list|template|validate|add` podnaredbe.
      * EN: Handles `languages list|template|validate|add` subcommands.
+     *
+     * HR: Obrađuje `languages list|template|validate|add` podnaredbe.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -42,7 +48,7 @@ final readonly class LanguageCommand
 
         return match ($subcommand) {
             'list' => $this->list(),
-            'available' => $this->available(),
+            'available' => $this->available(!empty($options['refresh'])),
             'template', 'export' => $this->template($rest, $options),
             'validate' => $this->validate($rest),
             'add' => $this->add($rest, $options),
@@ -56,7 +62,11 @@ final readonly class LanguageCommand
         };
     }
 
-    /** HR: Ispisuje jezike i postotak pokrivenosti. EN: Prints locales and translation coverage. */
+    /**
+     * EN: Prints locales and translation coverage.
+     *
+     * HR: Ispisuje jezike i postotak pokrivenosti.
+     */
     private function list(): int
     {
         fwrite(STDOUT, "LOCALE  NAME                 KEYS   REFERENCE  COVERAGE  STATE\n");
@@ -75,13 +85,18 @@ final readonly class LanguageCommand
         return 0;
     }
 
-    /** HR: Ispisuje objavljene revizije i lokalno stanje. EN: Lists released revisions and local state. */
-    private function available(): int
+    /**
+     * EN: Lists published revisions and local state, optionally refreshing the catalogue now.
+     *
+     * HR: Ispisuje objavljene revizije i lokalno stanje, po izboru odmah osvježava katalog.
+     */
+    private function available(bool $refresh = false): int
     {
         fwrite(STDOUT, "LOCALE  NAME                 VERSION        STATE\n");
-        foreach ($this->repository->status() as $language) {
+        foreach ($this->repository->status($refresh) as $language) {
             $state = !$language['installed'] ? 'not installed'
-            : ($language['update_available'] ? 'update available' : ($language['active'] ? 'active' : 'disabled'));
+            : (!$language['revision_known'] ? 'local revision unknown'
+                : ($language['update_available'] ? 'update available' : ($language['active'] ? 'active' : 'disabled')));
             fwrite(STDOUT, sprintf(
                 "%-7s %-20s %-14s %s\n",
                 $language['locale'],
@@ -95,8 +110,10 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Instalira ili osvježava objavljeni paket prema provjerenom digestu.
      * EN: Installs or refreshes a released pack against a verified digest.
+     *
+     * HR: Instalira ili osvježava objavljeni paket prema provjerenom digestu.
+     *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
      */
@@ -109,8 +126,10 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Mijenja stanje već instaliranog jezika.
      * EN: Changes the state of an installed language.
+     *
+     * HR: Mijenja stanje već instaliranog jezika.
+     *
      * @param list<string> $arguments
      */
     private function changeState(array $arguments, bool $enabled): int
@@ -122,8 +141,10 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Deinstalira jezik i čuva najmanje jedan aktivni.
      * EN: Uninstalls a language while retaining at least one active locale.
+     *
+     * HR: Deinstalira jezik i čuva najmanje jedan aktivni.
+     *
      * @param list<string> $arguments
      */
     private function remove(array $arguments): int
@@ -134,7 +155,11 @@ final readonly class LanguageCommand
         return 0;
     }
 
-    /** HR: Osvježava instalirane pakete s novim objavljenim revizijama. EN: Refreshes installed packs with newer released revisions. */
+    /**
+     * EN: Refreshes installed packs with newer released revisions.
+     *
+     * HR: Osvježava instalirane pakete s novim objavljenim revizijama.
+     */
     private function updateRepository(): int
     {
         $updated = $this->repository->updateInstalled();
@@ -143,8 +168,9 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Izrađuje objedinjeni JSON predložak.
      * EN: Creates a consolidated JSON template.
+     *
+     * HR: Izrađuje objedinjeni JSON predložak.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -160,8 +186,9 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Provjerava paket bez zapisivanja.
      * EN: Validates a pack without writing.
+     *
+     * HR: Provjerava paket bez zapisivanja.
      *
      * @param list<string> $arguments
      */
@@ -174,8 +201,9 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Instalira provjereni paket.
      * EN: Installs a validated pack.
+     *
+     * HR: Instalira provjereni paket.
      *
      * @param list<string> $arguments
      * @param array<string,mixed> $options
@@ -194,8 +222,9 @@ final readonly class LanguageCommand
     }
 
     /**
-     * HR: Ispisuje sažetak provjere.
      * EN: Prints the validation summary.
+     *
+     * HR: Ispisuje sažetak provjere.
      *
      * @param ValidationResult $result
      */
@@ -211,14 +240,18 @@ final readonly class LanguageCommand
         ));
     }
 
-    /** HR: Ispisuje dvojezičnu pomoć. EN: Prints bilingual help. */
+    /**
+     * EN: Prints bilingual help.
+     *
+     * HR: Ispisuje dvojezičnu pomoć.
+     */
     private function help(): int
     {
         fwrite(STDOUT, <<<'HELP'
 Simbioza language packs / Jezični paketi
 
   vendor/bin/hph languages list
-  vendor/bin/hph languages available
+  vendor/bin/hph languages available [--refresh]
   vendor/bin/hph languages install <locale> [--replace]
   vendor/bin/hph languages enable <locale>
   vendor/bin/hph languages disable <locale>
@@ -237,7 +270,11 @@ HELP . PHP_EOL);
         return 0;
     }
 
-    /** HR: Odbija nepoznatu podnaredbu. EN: Rejects an unknown subcommand. */
+    /**
+     * EN: Rejects an unknown subcommand.
+     *
+     * HR: Odbija nepoznatu podnaredbu.
+     */
     private function unknown(string $subcommand): int
     {
         fwrite(STDERR, 'Unknown languages subcommand: ' . $subcommand . PHP_EOL);
@@ -246,8 +283,9 @@ HELP . PHP_EOL);
     }
 
     /**
-     * HR: Vraća obavezni pozicijski argument.
      * EN: Returns a required positional argument.
+     *
+     * HR: Vraća obavezni pozicijski argument.
      *
      * @param list<string> $arguments
      */

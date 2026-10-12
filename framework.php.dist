@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+// EN: Copy to framework.php; the private file is neither versioned nor replaced by an update.
+//
+// HR: Kopirati u framework.php; privatna datoteka se ne verzionira niti zamjenjuje nadogradnjom.
+return [
+    // EN: The application root stays alongside the code.
+    //
+    // HR: Korijen aplikacije ostaje uz kod.
+    'HPH_APP_PATH' => __DIR__,
+    // EN: The entire config directory, including auth/auth.json, not just Auth settings.
+    //
+    // HR: Cijeli config direktorij, uključujući auth/auth.json; ne samo Auth postavke.
+    'HPH_CONFIG_PATH' => __DIR__ . '/config',
+    // EN: Optional layers separated by PATH_SEPARATOR; the last one wins.
+    // Every layer must exist and be readable. The new application helper
+    // writes to the last layer and never uses a lower one when writing is denied.
+    //
+    // HR: Opcionalni slojevi, odvojeni PATH_SEPARATOR; zadnji ima prednost.
+    // Svi slojevi moraju postojati i biti čitljivi. Novi aplikacijski pomoćni
+    // sloj bira zadnji sloj za zapis i ne koristi slabiji kada je zapis zabranjen.
+    'HPH_CONFIG_OVERRIDE_PATHS' => '',
+];

@@ -65,6 +65,8 @@ naziva klase u polje datoteke `config/middleware.php`.
 // config/middleware.php
 return [
     \HeartPhrame\Middleware\TrustedProxyMiddleware::class,
+    \HeartPhrame\Middleware\SecurityHeadersMiddleware::class,
+    \HeartPhrame\Middleware\ErrorHandlerMiddleware::class,
     \HeartPhrame\Middleware\StartSessionMiddleware::class,
     \HeartPhrame\Middleware\CheckCsrfMiddleware::class,
     \HeartPhrame\Middleware\DeferredModuleLoaderMiddleware::class,

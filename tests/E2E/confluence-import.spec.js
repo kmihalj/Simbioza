@@ -18,10 +18,11 @@ const sourceCalendarUuid = '3c1a6576-55e6-4776-9296-b95a00f980b7';
 const sourceCalendarName = 'E2E Source Calendar';
 
 /**
- * HR: Izrađuje mali stvarni Confluence XML ZIP s hijerarhijom, internom
- *     poveznicom i privatnim privitkom bez spremanja binarnog fixturea u Git.
  * EN: Creates a small real Confluence XML ZIP with hierarchy, an internal
  *     link, and a private attachment without committing a binary fixture.
+ *
+ * HR: Izrađuje mali stvarni Confluence XML ZIP s hijerarhijom, internom
+ *     poveznicom i privatnim privitkom bez spremanja binarnog fixturea u Git.
  */
 async function confluenceArchive(calendarMonth) {
   const directory = await mkdtemp(join(tmpdir(), 'simbioza-confluence-e2e-'));
@@ -32,15 +33,17 @@ async function confluenceArchive(calendarMonth) {
   const calendar = join(directory, 'source-calendar.ics');
   const archive = join(directory, 'tiny-space.xml.zip');
 
-  // HR: Dva poznata HTML makroa provjeravaju veze zaglavlja nakon cijelog uvoza.
   // EN: Two known HTML macros check header associations after the complete import.
+  //
+  // HR: Dva poznata HTML makroa provjeravaju veze zaglavlja nakon cijelog uvoza.
   const tableMacro = '<ac:structured-macro ac:name="html"><ac:plain-text-body><![CDATA['
     + '<table><caption>Imported accessible table</caption><tr><th id="year" scope="col">2026</th>'
     + '<th id="month" headers="year" scope="col">September</th></tr>'
     + '<tr><td headers="year month">Imported cell</td><td>Other cell</td></tr></table>'
     + ']]></ac:plain-text-body></ac:structured-macro>';
-  // HR: Prazni elementi datuma moraju preživjeti cijeli import i čišćenje editora.
   // EN: Empty date elements must survive the complete import and editor sanitization.
+  //
+  // HR: Prazni elementi datuma moraju preživjeti cijeli import i čišćenje editora.
   const dateStorage = '<table><caption>Imported dates</caption><tbody><tr>'
     + '<td><time datetime="2023-05-10" /></td><td><time datetime="2025-09-30" /></td>'
     + '</tr></tbody></table><p><time datetime="2023-05-10">10 May 2023</time></p>';
@@ -101,7 +104,11 @@ async function confluenceArchive(calendarMonth) {
   return { archive, calendar, directory };
 }
 
-/** HR: Potvrđuje da dovršeni import nije ostavio privatni ZIP ni staging kopije. EN: Confirms a completed import retained no private ZIP or staging copies. */
+/**
+ * EN: Confirms a completed import retained no private ZIP or staging copies.
+ *
+ * HR: Potvrđuje da dovršeni import nije ostavio privatni ZIP ni staging kopije.
+ */
 async function expectImportStagingEmpty() {
   const project = process.env.HPH_E2E_PROJECT;
   expect(project).toBeTruthy();
@@ -114,8 +121,9 @@ async function expectImportStagingEmpty() {
 
 test('administrator imports a Confluence space while ACL and private files remain enforced', async ({ browser, page }) => {
   test.setTimeout(120_000);
-  // HR: Događaj mora biti u mjesecu koji preglednik prikazuje, ne u fiksnom rujnu.
   // EN: The event must fall in the browser's displayed month, not a fixed September.
+  //
+  // HR: Događaj mora biti u mjesecu koji preglednik prikazuje, ne u fiksnom rujnu.
   const calendarMonth = await page.evaluate(() => {
     const now = new Date();
     return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -130,8 +138,9 @@ test('administrator imports a Confluence space while ACL and private files remai
     expect(response?.status()).toBe(200);
     await expect(page.locator('body')).not.toContainText(/Internal Server Error|Fatal error/i);
 
-    // HR: Lokalizirani nativni birač ima jedinstven naziv i vidljiv fokus.
     // EN: The localized native picker has an unambiguous name and visible focus.
+    //
+    // HR: Lokalizirani nativni birač ima jedinstven naziv i vidljiv fokus.
     const fileInput = page.locator('#confluence-import-file');
     await expect(fileInput).toHaveAccessibleName('Confluence XML ZIP archive Choose file');
     await fileInput.focus();
@@ -252,8 +261,9 @@ test('administrator imports a Confluence space while ACL and private files remai
     expect(stateSaved.status()).toBe(200);
     await expect(reportTask).toBeChecked();
     await expect(reportTask).toBeFocused();
-    // HR: Neuspjelo spremanje vraća stanje i zadržava fokus; poruka se ručno zatvara.
     // EN: Failed saves restore state and retain focus; the message is explicitly dismissed.
+    //
+    // HR: Neuspjelo spremanje vraća stanje i zadržava fokus; poruka se ručno zatvara.
     await page.route('**/tasks/state', (route) => route.fulfill({
       status: 500, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'E2E task failure' }),
     }));
@@ -261,8 +271,9 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.getByRole('alert')).toContainText('E2E task failure');
     await expect(reportTask).toBeChecked();
     await expect(reportTask).toBeFocused();
-    // HR: Stvarna poruka pogreške mora ostati iznad vidljivog widgeta.
     // EN: The real error notification must stay above the visible widget.
+    //
+    // HR: Stvarna poruka pogreške mora ostati iznad vidljivog widgeta.
     await expect(page.locator('[data-hph-a11y-open]')).toBeVisible();
     await expect.poll(() => page.locator('.editor-task-toast').evaluate((toast) => {
       const launcher = document.querySelector('[data-hph-a11y-open]');
@@ -313,10 +324,11 @@ test('administrator imports a Confluence space while ACL and private files remai
     await expect(page.locator('.calendar-embed-shell')).toHaveCount(1);
     await expect(page.locator('.calendar-embed-shell')).toContainText('Imported Confluence calendar event');
 
-    // HR: Importirani privitak koristi javni ugovor nativnog HTML Editor privitka;
-    //     test ne smije ovisiti o internoj ruti Confluence importera.
     // EN: The imported attachment uses the native HTML Editor attachment contract;
     //     the test must not depend on the Confluence importer's internal route.
+    //
+    // HR: Importirani privitak koristi javni ugovor nativnog HTML Editor privitka;
+    //     test ne smije ovisiti o internoj ruti Confluence importera.
     const attachmentLink = page.getByRole('link', { name: 'Download sample' });
     await expect(attachmentLink).toBeVisible();
     const originalAttachmentHref = await attachmentLink.getAttribute('href');
@@ -325,10 +337,11 @@ test('administrator imports a Confluence space while ACL and private files remai
     expect(attachmentResponse.headers()['content-disposition']).toContain('attachment;');
     expect((await attachmentResponse.body()).toString()).toBe('private attachment body');
 
-    // HR: Zamjenski uvoz zadržava javni slug područja, slugove stranica i UUID
-    //     privitka te ponovno nudi povezivanje već uvezenog kalendara.
     // EN: Replacement import preserves the public Workspace slug, page slugs,
     //     and attachment UUID and offers the existing calendar for relinking.
+    //
+    // HR: Zamjenski uvoz zadržava javni slug područja, slugove stranica i UUID
+    //     privitka te ponovno nudi povezivanje već uvezenog kalendara.
     await page.goto('/settings/confluence-import');
     await page.locator('#confluence-import-file').setInputFiles(fixture.archive);
     await Promise.all([

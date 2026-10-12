@@ -9,7 +9,13 @@ ostaju stabilni kodovi jer nisu tekstovi sučelja.
 
 ## Konfiguracija
 
-Lokalizacija se podešava u `config/app.php`:
+Zadane postavke lokalizacije određuje aplikacijski `config/app.php`.
+Izbor instalacije sprema se u `installation.php`, a potpuni registar jezika u
+`languages.php`, uz `HPH_CONFIG_PATH` i uređene override slojeve. GUI i CLI
+čitaju iste efektivne postavke i spremaju u zadnji deklarirani sloj; promjene
+zaključava `.languages.lock`. Najviši postojeći `languages.php` je potpuni
+registar, ne djelomično spajanje ključeva. Prava, ručne izmjene i putanje resursa
+opisani su u [konfiguracijskoj uputi](configuration_hr.md#instalacija-moduli-i-jezici).
 
 Hrvatski je zadani jezik standardne nove instalacije, ali installer može
 odabrati drugi primarni jezik i izostaviti hrvatski. Odabrani primarni jezik
@@ -38,11 +44,14 @@ Brisanje kolačića stranice ponovno uključuje automatski odabir. Instalacija
 može izričito postaviti `detect_browser_locale` na `false` ako uvijek želi
 početi primarnim jezikom dok ga korisnik ne promijeni.
 
-## Jezične datoteke
+## Paketne jezične datoteke
 
-Jezične datoteke su PHP datoteke koje vraćaju polje prijevoda. Nalaze se u
-direktoriju zadanom postavkom `translations_dir` i nazivaju prema oznaci jezika,
-primjerice `hr.php` ili `en.php`.
+Izvorni katalozi aplikacije/modula su PHP datoteke koje vraćaju polje prijevoda.
+To su kodovni resursi u `translations_dir`/modulskim `lang` direktorijima,
+nazvani prema jeziku (npr. `hr.php`, `en.php`). Developeri ih uređuju uz izmjene
+koda. Administratori dodatne ili zamjenske pakete instaliraju kao JSON pod
+`data/languages/catalogs/`, nikada kao PHP u aplikacijski `lang/`.
+Vidi [runtime pohranu i backup](#runtime-spremanje-prioritet-i-backup) niže.
 
 ### Primjer `lang/hr.php`
 
@@ -156,12 +165,13 @@ uspoređuje sve ključeve i zamjenske oznake s izvornim jezikom. Nepotpun paket 
 odbija, osim ako je svjesno zadan `--allow-missing`; postojeći jezik se ne
 pregazuje bez `--replace`.
 
-`add` instalira jedan objedinjeni `lang/<jezik>.php` i dodaje jezik u privatnu
-instalacijsku konfiguraciju. Aplikacijska datoteka ima prednost pred
-pojedinačnim prijevodima modula. Svaki paket mora imati sigurnu SVG zastavicu.
+`add` instalira jedan objedinjeni JSON katalog u
+`data/languages/catalogs/<jezik>.json` i dodaje jezik u privatnu instalacijsku
+konfiguraciju. Instalirane vrijednosti imaju prednost pred paketnim prijevodima
+aplikacije i modula. Svaki paket mora imati sigurnu SVG zastavicu.
 Instalirani paket u aplikacijski registar lokalizacije dodaje i izvorni naziv
 jezika te zastavicu. Zato je izbornik jezika potpun i kada instalacija zadrži
-stariji privatni `config/menu.php`; izričito zadani nazivi i putanje iz te
+privatni `HPH_CONFIG_PATH/menu/menu.php`; izričito zadani nazivi i putanje iz te
 datoteke i dalje imaju prednost kao prilagodbe.
 Zadnji uključeni jezik nije moguće isključiti ili ukloniti. U GUI Setupu
 instalirani jezici ostaju u tablici, a objavljeni neinstalirani jezici nalaze se
@@ -187,3 +197,97 @@ u bazi, API polja, strojno čitljivi HTML datumi i tehnički logovi zadržavaju
 stabilan format. Vremenska zona instalacije određuje lokalno vrijeme prikaza;
 promjena jezika ne mijenja pohranjeni trenutak. Mogući su i UTF-8 jezici na
 ćirilici, primjerice `sr-cyrl`.
+
+## Provjera nadogradnji samo prijevoda
+
+U Setup → Jezici gumb **Provjeri nadogradnje jezika** osvježava javni katalog,
+bez instaliranja koda ili jezičnih datoteka. Tablica pokazuje instaliranu i
+dostupnu reviziju, a poznatu promjenu digesta označava kao nadogradnju.
+Nedostajuća evidencija revizije jasno je nepoznata, ne proglašava se ažurnom.
+Ako mrežna provjera zakaže, GUI ne prikazuje stari cache kao uspješnu provjeru.
+
+Instaliranje, zamjena, uključivanje i uklanjanje jezika ne mijenjaju kod i ne
+trebaju privilegirani paketni helper. GUI radnje rade na mod_php, FPM-u i
+sigurnom FPM-u ako su podatkovni direktorij i završni konfiguracijski sloj
+zapisivi. Postojeće admin i CSRF provjere ostaju. Ako prava onemoguće GUI radnje,
+prikazuju se ove naredbe; pokrenite ih iz korijena Simbioze kao ovlašteni
+runtime/deploy korisnik, s istim `HPH_CONFIG_PATH` kao taj site:
+
+```bash
+vendor/bin/hph languages available --refresh
+vendor/bin/hph languages update
+```
+
+Za ugrađeni/ručno dodani jezik bez evidencije revizije jednom izričito
+instalirajte objavljeni kompatibilni paket, npr.:
+
+```bash
+vendor/bin/hph languages install hr --replace
+```
+
+Promjena samo vrijednosti prijevoda ne zahtijeva aplikacijski/modulski tag ni
+Composer release. Objavite jezični JSON i njegov novi SHA-256 u manifestu
+jezičnog repozitorija; nova jezična revizija je preporučena. Otkrivanje koristi
+digest i kada naziv revizije ostane isti. I dalje vrijede provjera checksum-a,
+potpunosti/zamjenskih oznaka i očuvanje prethodne uključenosti jezika.
+Ručno instalirani JSON paket uklanja prethodnu evidenciju revizije repozitorija:
+vlastiti prijevod ne prikazuje se kao nepromijenjeni objavljeni paket.
+
+## Runtime spremanje, prioritet i backup
+
+| Putanja | Namjena |
+| --- | --- |
+| Aplikacijski/modulski `lang/<jezik>.php` | Read-only paketni prijevodi; zamjenjuju se s nadogradnjom koda |
+| `data/languages/catalogs/<jezik>.json` | Instalirani objedinjeni prijevodi, nikada PHP izvor |
+| `data/languages/flags/<jezik>.svg` | Provjerena instalirana SVG zastavica |
+| `data/languages/repository-versions.json` | Objavljena revizija i digest izvornog paketa, ne konfiguracija |
+| `HPH_CONFIG_PATH/languages.php` | Nazivi jezika i registar u završnom deklariranom sloju |
+| `HPH_CONFIG_PATH/installation.php` | Uključeni jezici i primarni jezik u završnom deklariranom sloju |
+
+`App\Localization\RuntimeTranslator` u host aplikaciji proširuje postojeći
+Framework prevoditelj. Framework nije promijenjen. Paketni direktorij i dalje
+se zove `lang`, pa se modulsko učitavanje ne mijenja. Instalirani ključevi imaju
+prednost; nedostajući koriste aktualni katalog aplikacije/modula i postojeći
+pričuvni jezik. Novi zahtjev odmah čita zamijenjeni JSON, bez poništavanja PHP
+OPcachea. Nevaljani instalirani katalog prijavljuje grešku, umjesto prešutnog
+korištenja starog prijevoda.
+
+Instalirajte JSON paket kroz GUI/CLI, ne kopirajte PHP u podatkovni direktorij.
+Generirani runtime dokument ima ovaj mali podatkovni oblik:
+
+```json
+{
+  "format": "simbioza-runtime-translations",
+  "version": 1,
+  "locale": "de",
+  "translations": {"Jezici": "Sprachen"}
+}
+```
+
+Ovo je primjer internog kataloga, ne potpunog distribucijskog jezičnog paketa.
+Uređivanje već instaliranog kataloga mijenja vrijednosti pri sljedećem zahtjevu;
+novi jezik zahtijeva i registar te politiku uključivanja. Koristite `languages
+template`, `validate` i `add` kako bi se zajedno provjerili nazivi, zamjenske
+oznake i zastavica. Runtime datoteke ograničene su na 2 MiB. Podređeni ciljevi
+preko symlinka i nevaljane oznake jezika/putanje odbijaju se.
+
+GUI i CLI uzimaju `.languages.lock` u završnom konfiguracijskom sloju, zatim
+`data/languages/.packs.lock`. Neuspjela objava pri instalaciji/uklanjanju vraća
+sve promijenjene jezične resurse i privatne jezične postavke. Uklanjanje nikada
+ne briše paketne PHP datoteke aplikacije/modula. Nadogradnja čuva prethodnu
+uključenost; zadnji uključeni jezik ostaje zaštićen.
+
+Backup postavki aplikacije, shema 3, uključuje registar jezika, instalirani JSON,
+provjerene zastavice i revizije. Uključenost/primarni jezik ostaju u aplikacijskim
+postavkama. Vraćanje sitea/komponente koristi lokalne putanje odredišta, ne
+putanje izvora, i ne uvozi izvršive PHP kataloge. Izričiti replace uklanja
+izostavljene runtime pakete; merge čuva lokalne jezike. Za dolazni jezik isključivo
+paketni katalog ili zastavica zamjenjuje odredišni runtime override i pri mergeu.
+Greška kasnijeg
+providera ili DB commita vraća konfiguraciju, JSON, zastavice i revizije.
+Cache, preuzimanja, predlošci i lockovi ne ulaze u backup. Backup samo stranice/
+područja ne prenosi instalacijske jezike.
+
+Pri zamjeni imagea/koda zadržite podatkovni i konfiguracijski mount; aplikacijski
+`lang/` ne treba pravo pisanja za administraciju jezika. Simbioza 0.3.0 koristi
+novu instalaciju: runtime pokretanje ne sadrži migraciju starih PHP paketa.

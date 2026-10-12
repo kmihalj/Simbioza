@@ -1,0 +1,48 @@
+{
+    "_documentation": {
+        "en": {
+            "example": "Copy to HPH_CONFIG_PATH/email/email.json only for a new configuration. Never overwrite existing SMTP settings or secrets; this .dist is not loaded automatically.",
+            "format": "Plain JSON data, not PHP or commented JSON. _documentation is descriptive, not an operational setting, and may be removed. Do not quote booleans or integers.",
+            "layers": "HPH_CONFIG_OVERRIDE_PATHS adds layers; objects merge and lists replace. GUI and backup write only to the last declared layer under email.json.lock.",
+            "enabled": "false disables delivery; true requires a real SMTP host and valid sender.email address.",
+            "smtp": "host/port/encryption select the server: encryption is none, starttls, or tls. Empty username/password mean no authentication. Keep passwords private, outside Git and the public web directory.",
+            "smtp_security": "Keep verify_peer true and allow_self_signed false. connect_timeout is 1–120 seconds, io_timeout 1–300 seconds, and port 1–65535.",
+            "sender": "email is the sender address and name its display name; the example uses the non-operational example.invalid domain.",
+            "application_base_url": "Public application base URL, including any subdirectory; used for links in messages.",
+            "notifications_enabled": "Allows e-mail notifications; does not replace the main enabled SMTP delivery switch.",
+            "worker": "max_attempts is 1–100 attempts and retry_delay_seconds 1–86400 seconds. The outbox and delivery status remain in the database, not configuration.",
+            "gui_and_menu": "gui.enabled=false disables administration routes, not SMTP, CLI, or workers. gui.test_enabled=false disables delivery tests. menu.auto_register_settings=false prevents automatic menu registration."
+        },
+        "hr": {
+            "primjer": "Kopirati u HPH_CONFIG_PATH/email/email.json samo za novu konfiguraciju. Ne prepisivati postojeće SMTP postavke ili tajne; ovaj se .dist ne učitava automatski.",
+            "format": "Ovo su obični JSON podaci, ne PHP ni JSON s komentarima. _documentation je opis, nije postavka rada i može se ukloniti. Boolean i integer vrijednosti ne stavljati u navodnike.",
+            "slojevi": "HPH_CONFIG_OVERRIDE_PATHS dodaje slojeve; objekti se spajaju, liste zamjenjuju. GUI i backup pišu samo u posljednji deklarirani sloj, pod email.json.lock.",
+            "enabled": "false isključuje slanje; za true postaviti stvarni SMTP host i valjanu sender.email adresu.",
+            "smtp": "host/port/encryption podešavaju poslužitelj: encryption je none, starttls ili tls. Prazni username/password znače vezu bez autentikacije. Lozinke čuvati privatno, izvan Gita i javnog web direktorija.",
+            "smtp_sigurnost": "verify_peer ostaviti true, allow_self_signed false. connect_timeout je 1–120 sekundi, io_timeout 1–300 sekundi, port 1–65535.",
+            "sender": "email je adresa pošiljatelja, name njegovo prikazano ime; primjer koristi neoperativnu example.invalid domenu.",
+            "application_base_url": "Javni osnovni URL aplikacije, uključujući poddirektorij ako postoji; koristi se za linkove u porukama.",
+            "notifications_enabled": "Omogućuje e-mail obavijesti; ne zamjenjuje glavni enabled prekidač za SMTP slanje.",
+            "worker": "max_attempts je 1–100 pokušaja, retry_delay_seconds 1–86400 sekundi. Red i status slanja ostaju u bazi, nisu konfiguracija.",
+            "gui_i_menu": "gui.enabled=false isključuje administratorske rute, ali ne SMTP, CLI ili worker. gui.test_enabled=false isključuje test slanja. menu.auto_register_settings=false sprječava automatski unos u izbornik."
+        }
+    },
+    "enabled": false,
+    "smtp": {
+        "host": "smtp.example.invalid",
+        "port": 587,
+        "encryption": "starttls",
+        "username": "",
+        "password": "",
+        "connect_timeout": 15,
+        "io_timeout": 30,
+        "verify_peer": true,
+        "allow_self_signed": false
+    },
+    "sender": {"email": "app@example.invalid", "name": "HeartPhrame"},
+    "application_base_url": "https://app.example.invalid",
+    "notifications_enabled": true,
+    "worker": {"max_attempts": 5, "retry_delay_seconds": 60},
+    "menu": {"auto_register_settings": true},
+    "gui": {"enabled": true, "test_enabled": true}
+}

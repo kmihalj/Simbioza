@@ -22,18 +22,20 @@ namespace App\Controllers;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use HeartPhrame\Http\ResponseFactory;
 
 class HomeController
 {
     public function __construct(
         protected readonly LoggerInterface $logger,
+        protected readonly ResponseFactory $responses,
     ) {
     }
 
     public function index(ServerRequestInterface $request): ResponseInterface
     {
-        $this->logger->debug('Podaci zahtjeva: ', $request->getParsedBody() ?? []);
-        // ... vrati odgovor
+        $this->logger->debug('Odgovor početne stranice.', ['module' => 'application', 'method' => $request->getMethod()]);
+        return $this->responses->text('Pozdrav.');
     }
 }
 ```
@@ -91,7 +93,10 @@ neovisnu komunikaciju među dijelovima aplikacije.
 
 ```php
 // Događaj je jednostavan objekt koji sadrži podatke.
-class UserRegisteredEvent { ... }
+final class UserRegisteredEvent
+{
+    public function __construct(public readonly int $userId) {}
+}
 $event = new UserRegisteredEvent($userId);
 
 /** @var Psr\EventDispatcher\EventDispatcherInterface $eventDispatcher */

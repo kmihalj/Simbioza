@@ -1,5 +1,7 @@
 # Simbioza 0.1.68
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This coordinated release adds meeting planning and fixes local administrator
 recovery for all active Administrator-group members, not just the initial
 Administrator account. It includes the page backup/import/transfer and HTML

@@ -1,5 +1,7 @@
 # Simbioza 0.2.3
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Alat za izolirani PHP-FPM sada prihvaća jedinstvenu oznaku `--instance` za
 svaku Simbioza instalaciju na istom poslužitelju. Odvojeni sistemski računi,
 grupe, pomoćni programi, FPM konfiguracije i servisi sprječavaju da druga

@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+// EN: Example; copy to HPH_CONFIG_PATH/calendar/calendar.php and adjust the keys you need.
+// Without HPH_CONFIG_PATH, the application's config/calendar/calendar.php is used.
+// HPH_CONFIG_OVERRIDE_PATHS adds layers; later keys override earlier ones.
+// The GUI, event types, and other calendar data remain unchanged.
+//
+// HR: Primjer; kopirati u HPH_CONFIG_PATH/calendar/calendar.php i prilagoditi potrebne ključeve.
+// Bez HPH_CONFIG_PATH koristi se config/calendar/calendar.php u korijenu aplikacije.
+// HPH_CONFIG_OVERRIDE_PATHS dodaje slojeve; kasniji ključevi nadjačavaju ranije.
+// GUI, tipovi događaja i ostali kalendarski podaci ostaju nepromijenjeni.
+return [
+    // EN: Module enablement.
+    //
+    // HR: Uključenost modula.
+    'enabled' => true,
+    'menu' => [
+        // EN: Automatic entries in the optional Menu module; permissions and routes are unchanged.
+        //
+        // HR: Automatske stavke opcionalnog Menu modula; ne mijenjaju ovlasti ni rute.
+        'auto_register_top' => true,
+        'auto_register_settings' => true,
+    ],
+    'caldav' => [
+        // EN: CalDAV access and the realm displayed by Basic authentication.
+        //
+        // HR: CalDAV pristup i naziv u Basic auth prijavi.
+        'enabled' => true,
+        'realm' => 'HeartPhrame Calendar',
+    ],
+    // EN: Optional internal help path; null retains standalone Calendar help.
+    //
+    // HR: Opcionalna interna putanja uputa; null zadržava samostalne Calendar upute.
+    'meeting_guide_path' => null,
+];

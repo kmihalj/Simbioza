@@ -1,5 +1,7 @@
 # Simbioza 0.1.68
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Koordinirani release donosi planiranje sastanaka i popravak lokalne hitne
 prijave za sve aktivne članove grupe Administrator, ne samo početni račun
 Administrator. Uključuje dorade backupa/uvoza/prijenosa stranica i HTML

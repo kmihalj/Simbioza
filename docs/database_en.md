@@ -6,13 +6,17 @@ MariaDB-compatible connections.
 
 ## Local file
 
-Copy the ignored template before editing it:
+The PHP format remains current. Copy the versioned template into the chosen
+`HPH_CONFIG_PATH` layer before editing it. For the default application `config/`:
 
 ```bash
 cp config/database.php.dist config/database.php
 ```
 
-Never commit `config/database.php` or print production credentials in CI logs.
+With an external root, the destination is `<HPH_CONFIG_PATH>/database.php`;
+read/write layer rules are in the [configuration guide](configuration_en.md).
+Never overwrite existing database credentials with the example. Never commit
+the live `database.php` or print production credentials in CI logs.
 Prefer deployment secrets or environment expansion in production.
 
 ## SQLite
@@ -28,7 +32,7 @@ return [
     'connections' => [
         'default' => [
             'driver' => 'sqlite',
-            'database' => dirname(__DIR__) . '/data/app.sqlite',
+            'database' => rtrim((string)getenv('HPH_APP_PATH'), '/') . '/data/app.sqlite',
         ],
     ],
 ];

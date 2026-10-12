@@ -6,25 +6,33 @@
 
 declare(strict_types=1);
 
-// HR: Namjenski FPM može posluživati public/ kroz zasebnu web-putanju. Korijen
-//     aplikacije zato odredi prije zaštite nadogradnje, bez učitavanja autoloadera.
+// EN: The same central configuration applies to HTTP, CLI, and the updater.
+//
+// HR: Ista centralna konfiguracija vrijedi za HTTP, CLI i updater.
+require_once dirname(__DIR__) . '/bootstrap.php';
+
 // EN: A dedicated FPM pool may serve public/ through a separate web path. Resolve
 //     the application root before the update guard without loading the autoloader.
+//
+// HR: Namjenski FPM može posluživati public/ kroz zasebnu web-putanju. Korijen
+//     aplikacije zato odredi prije zaštite nadogradnje, bez učitavanja autoloadera.
 $configuredAppPath = getenv('HPH_APP_PATH');
 $hphAppPath = is_string($configuredAppPath) && trim($configuredAppPath) !== ''
 ? rtrim($configuredAppPath, DIRECTORY_SEPARATOR)
 : dirname(__DIR__);
 
-// HR: Samostalni updater uključuje ovu statičnu zaštitu prije autoloadera kako HTTP zahtjev
-//     nikada ne bi pokrenuo djelomično ažuriran kod ili vendor direktorij.
 // EN: The standalone updater enables this static guard before the autoloader so an HTTP request
 //     never executes partially updated application code or a partially updated vendor directory.
+//
+// HR: Samostalni updater uključuje ovu statičnu zaštitu prije autoloadera kako HTTP zahtjev
+//     nikada ne bi pokrenuo djelomično ažuriran kod ili vendor direktorij.
 $updateMaintenanceFile = $hphAppPath . '/data/update-maintenance.json';
 if (is_file($updateMaintenanceFile)) {
-    // HR: Statusna putanja radi bez autoloadera i tijekom zamjene koda. Vraća
-    //     samo ograničene podatke potrebne već otvorenom progress prikazu.
     // EN: The status path works without the autoloader while code is replaced.
     //     It returns only restricted data required by the already-open progress UI.
+    //
+    // HR: Statusna putanja radi bez autoloadera i tijekom zamjene koda. Vraća
+    //     samo ograničene podatke potrebne već otvorenom progress prikazu.
     $requestUri = is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '';
     $requestPath = parse_url($requestUri, PHP_URL_PATH);
     if (is_string($requestPath) && str_ends_with(
@@ -212,6 +220,8 @@ HTML;
     exit;
 }
 
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
 use App\Installation\InstallationAccessToken;
 use App\Installation\InstallationConfigWriter;
 use App\Installation\InstallationDatabaseTester;
@@ -225,17 +235,17 @@ use App\Module\NativeProcessRunner;
 use App\Setup\SetupGateway;
 use App\Setup\SetupRequestStore;
 use HeartPhrame\App;
-use HeartPhrame\CodeBook\EnvKeyEnum;
 
 // Autoload
 require_once $hphAppPath . implode(DIRECTORY_SEPARATOR, ['', 'vendor', 'autoload.php']);
 
 $installationPaths = new InstallationPaths($hphAppPath);
 if (!$installationPaths->isInstalled()) {
-    // HR: Installer koristi vlastitu kratku i strogu sesiju prije nego što
-    //     aplikacijska konfiguracija i framework uopće postoje.
     // EN: The installer uses its own short, strict session before application
     //     configuration and the framework are available.
+    //
+    // HR: Installer koristi vlastitu kratku i strogu sesiju prije nego što
+    //     aplikacijska konfiguracija i framework uopće postoje.
     $scriptName = is_string($_SERVER['SCRIPT_NAME'] ?? null) ? $_SERVER['SCRIPT_NAME'] : '/index.php';
     $cookiePath = str_replace('\\', '/', dirname($scriptName));
     $cookiePath = $cookiePath === '/' || $cookiePath === '.' ? '/' : rtrim($cookiePath, '/') . '/';
@@ -269,7 +279,7 @@ if (!$installationPaths->isInstalled()) {
     $inputValidator = new InstallationInputValidator($languageRepository);
     $requirements = new InstallationRequirements($installationPaths);
     $logger = new InstallationLogger($installationPaths);
-    $setupConfiguration = require $hphAppPath . '/config/setup.php';
+    $setupConfiguration = (new PhpConfigurationReader($installationPaths->configuration()))->read('setup.php');
     $setupRequestDirectory = is_array($setupConfiguration)
         && is_string($setupConfiguration['request_dir'] ?? null)
         ? $setupConfiguration['request_dir']
@@ -349,10 +359,7 @@ if (!$installationPaths->isInstalled()) {
     return;
 }
 
-$configuredPath = getenv(EnvKeyEnum::HPH_CONFIG_PATH->value);
-$configPath = is_string($configuredPath) && trim($configuredPath) !== ''
-? $configuredPath
-: $hphAppPath . DIRECTORY_SEPARATOR . 'config';
-
-// Create and run the application
-(new App($configPath, $hphAppPath))->run();
+// EN: The application helper uses the same framework resolver as the unchanged CLI.
+//
+// HR: Aplikacijski pomoćni sloj koristi isti framework resolver kao neizmijenjeni CLI.
+(new App(ConfigurationPaths::fromEnvironment($hphAppPath)->directories(), $hphAppPath))->run();

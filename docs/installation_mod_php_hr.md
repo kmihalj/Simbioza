@@ -16,7 +16,7 @@ Provedite [zajedničke preduvjete, dohvat izdanja i pripremu baze](installation_
 Izdanje neka bude u vlasništvu zasebnog Unix računa koji pokreće Composer i
 CLI nadogradnje. Apache/PHP procesu dopustite čitanje koda i pisanje samo po
 potrebnim radnim putanjama: `data/`, dinamičke postavke u `config/`,
-`resources/config/menu/` i `resources/config/theme/`. Na svojem sustavu
+`config/menu/` i `config/theme/`. Na svojem sustavu
 podesite vlasništvo ili ACL samo za te putanje; cijelo izdanje ne smije biti
 zapisivo web-procesu i ne koristite `chmod 777`. Korijenski web direktorij je
 `public/`, nikada direktorij izdanja.
@@ -29,12 +29,12 @@ nadogradnje moraju moći čitati.
 ```bash
 cd /srv/simbioza
 MAINTAINER="$(id -un)"
-sudo chgrp -R _www config data resources/config/menu resources/config/theme
+sudo chgrp -R _www config data config/menu config/theme
 chmod 3770 config
-chmod 2770 resources/config/menu resources/config/theme
-chmod -R g+rwX data resources/config/menu resources/config/theme
+chmod 2770 config/menu config/theme
+chmod -R g+rwX data config/menu config/theme
 sudo chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" config
-sudo find data resources/config/menu resources/config/theme -type d -exec chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" {} +
+sudo find data config/menu config/theme -type d -exec chmod +a "user:${MAINTAINER} allow read,write,append,execute,delete,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" {} +
 ```
 
 Na macOS-u umjesto `/srv/simbioza` koristite stvarnu putanju izdanja. Na
@@ -142,8 +142,7 @@ korisničke datoteke i podatke teme.
 
 ## 5. Održavajte instalaciju
 
-Verzije starije od 0.2.12 prvo nadogradite naredbom `php update.php --tag=0.2.12`
-kao vlasnik koda. Ne preskačite ovo obvezno prijelazno izdanje updatera.
+Koristite novu instalaciju 0.3.0; updater prihvaća samo aktualnu polaznu verziju i novija izdanja.
 
 U **Postavke → Setup i moduli** administrator može uključivati ili
 isključivati već instalirane module. Dodavanje/uklanjanje paketa i nadogradnje

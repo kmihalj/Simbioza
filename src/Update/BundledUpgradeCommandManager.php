@@ -12,18 +12,27 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 /**
- * HR: Nakon migracija updatera primjenjuje pakete i kada radi već učitana stara verzija update.php.
  * EN: Applies bundles after updater migrations even when an older update.php is already loaded.
+ *
+ * HR: Nakon migracija updatera primjenjuje pakete i kada radi već učitana stara verzija update.php.
  */
 final class BundledUpgradeCommandManager extends CommandManager
 {
-    /** HR: Prima CLI servise i stvarni korijen aplikacije. EN: Receives CLI services and the actual application root. */
+    /**
+     * EN: Receives CLI services and the actual application root.
+     *
+     * HR: Prima CLI servise i stvarni korijen aplikacije.
+     */
     public function __construct(ContainerInterface $container, LoggerInterface $logger, private readonly string $root)
     {
         parent::__construct($container, $logger);
     }
 
-    /** HR: Omata samo uspješnu naredbu migracije prema gore. EN: Wraps only the successful upward-migration command. */
+    /**
+     * EN: Wraps only the successful upward-migration command.
+     *
+     * HR: Omata samo uspješnu naredbu migracije prema gore.
+     */
     public function getCommand(string $name): ?CommandDefinition
     {
         $command = parent::getCommand($name);
@@ -60,8 +69,9 @@ final class BundledUpgradeCommandManager extends CommandManager
     }
 
     /**
-     * HR: Aktivira korak samo za glavnu shemu tijekom eksplicitnog updatea, izvan ORM transakcije.
      * EN: Activates the step only for the main schema during an explicit update, outside the ORM transaction.
+     *
+     * HR: Aktivira korak samo za glavnu shemu tijekom eksplicitnog updatea, izvan ORM transakcije.
      */
     private function afterUpdaterMigrations(string $connection, string $path): void
     {

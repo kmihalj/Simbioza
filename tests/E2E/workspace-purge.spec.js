@@ -15,8 +15,9 @@ test('permanent Workspace deletion shows persistent progress and resumes after i
   test.setTimeout(120_000);
   const slug = `e2e-purge-${Date.now()}`;
 
-  // HR: Više od jedne serije dokumenata omogućuje provjeru prekida i nastavka.
   // EN: More than one document batch verifies interruption and resumption.
+  //
+  // HR: Više od jedne serije dokumenata omogućuje provjeru prekida i nastavka.
   await expectData(await request.post('/api/v1/workspaces', {
     headers: apiHeaders(adminApiToken, { 'Idempotency-Key': idempotencyKey('purge-workspace') }),
     data: { name: 'E2E Purge', slug, description: 'Disposable purge fixture.', visibility: 'public' },
@@ -69,8 +70,9 @@ test('permanent Workspace deletion shows persistent progress and resumes after i
   await expect(form.getByRole('button', { name: 'Delete permanently' })).toBeEnabled();
   await page.unroute('**/settings/workspaces/purge');
 
-  // HR: Ponovno učitavanje mora zadržati brojač i spriječiti vraćanje djelomično uklonjenog područja.
   // EN: Reload must retain progress and prevent restoration of a partially purged Workspace.
+  //
+  // HR: Ponovno učitavanje mora zadržati brojač i spriječiti vraćanje djelomično uklonjenog područja.
   await page.reload();
   const resumedRow = page.getByRole('row').filter({ hasText: slug });
   const resumedForm = resumedRow.locator('[data-workspace-purge-form]');

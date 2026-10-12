@@ -10,7 +10,7 @@ This checkpoint continues stages 1–2. It is not a completed accessibility modu
 
 Structured configuration restoration replaced dynamic `config/app.php` with evaluated values. CLI subsequently updated module state, but application bootstrap no longer read that file.
 
-The Backup provider now supports locally defined destinations and key mappings. Simbioza restores installation settings into `config/installation.php` and enabled modules into `data/config/modules.php`, leaving `config/app.php` unchanged. Portable session options are read through an allowlist. Languages are still validated against installed packages, and the fallback locale follows the application's default locale.
+The Backup provider supports locally defined destinations and key mappings. Simbioza restores installation settings into `installation.php` and enabled modules into `modules.php` in the final `HPH_CONFIG_PATH`/`HPH_CONFIG_OVERRIDE_PATHS` layer, leaving dynamic `app.php` unchanged. External configuration backup/restore is implemented; current rules are in the [configuration guide](configuration_en.md). Portable session options are read through an allowlist. Languages are still validated against installed packages, and the fallback locale follows the application's default locale.
 
 Archives cannot select paths or supply executable code. Nonselected local values and group rollback are preserved. Record format remains compatible with older backups. A regression also checks that PHP-looking text remains inert data.
 

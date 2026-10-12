@@ -1,5 +1,7 @@
 # Simbioza 0.2.8
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 The optional Accessibility module is upgraded to 0.1.5. Lower-right notifications now reserve space above its visible launcher instead of appearing behind it. The rule covers shared application messages, module notifications, and dynamically created Comment and Task messages.
 
 The offset follows the launcher's size, screen safe area, and text scaling. Long Comment and Task messages wrap within narrow screens, including at 200% text size. When the widget is absent or hidden, notifications retain their original position. Upper and left-side notifications are unchanged. The fix works with both light and dark themes.

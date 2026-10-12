@@ -11,6 +11,7 @@ use AaiEduHr\HeartPhrameModuleBackup\Service\BackupManager;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupImportContext;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
+use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\MigrationInterface;
 use AaiEduHr\HeartPhrameModuleTheme\ModuleTheme;
@@ -29,14 +30,16 @@ use ReflectionClass;
 use RuntimeException;
 
 /**
- * HR: Dovršava instalaciju jednim strogo uređenim slijedom i tek na kraju zapisuje lock.
  * EN: Completes installation in one strict sequence and writes the lock only at the end.
+ *
+ * HR: Dovršava instalaciju jednim strogo uređenim slijedom i tek na kraju zapisuje lock.
  */
 final readonly class InstallationRunner
 {
     /**
-     * HR: Paket sadrži isključivo javne početne upute; ovo nije instalacijska tajna.
      * EN: The package contains only public starter guides; this is not an installation secret.
+     *
+     * HR: Paket sadrži isključivo javne početne upute; ovo nije instalacijska tajna.
      */
     private const USER_GUIDES_ARCHIVE_PASSPHRASE = 'SimbiozaSeed2026!';
 
@@ -44,7 +47,11 @@ final readonly class InstallationRunner
 
     private const THEME_PLACEHOLDER_ID = 'installation-placeholder';
 
-    /** HR: Inicijalizira sve instalacijske ovisnosti. EN: Initializes all installation dependencies. */
+    /**
+     * EN: Initializes all installation dependencies.
+     *
+     * HR: Inicijalizira sve instalacijske ovisnosti.
+     */
     public function __construct(
         private InstallationPaths $paths,
         private InstallationAccessToken $accessToken,
@@ -57,11 +64,11 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Ponovno provjerava ulaz, bazu i preduvjete pa pokreće migracije,
-     * uvozi temu, izrađuje administratora i zaključava instalaciju.
-     *
      * EN: Revalidates input, database, and requirements, then runs migrations,
      * imports the theme and public guides, creates the administrator, and locks installation.
+     *
+     * HR: Ponovno provjerava ulaz, bazu i preduvjete pa pokreće migracije,
+     * uvozi temu, izrađuje administratora i zaključava instalaciju.
      *
      * @param array<array-key, mixed> $databaseInput
      * @param array<array-key, mixed> $applicationInput
@@ -81,8 +88,9 @@ final readonly class InstallationRunner
         $databaseInput = $this->validator->database($databaseInput);
         $application = $this->validator->application($applicationInput);
         if (!array_key_exists('password_confirmation', $administratorInput)) {
-            // HR: Web-korak je potvrdu već provjerio i u session sprema samo jednu kopiju tajne.
             // EN: The web step already checked confirmation and keeps only one secret copy in the session.
+            //
+            // HR: Web-korak je potvrdu već provjerio i u session sprema samo jednu kopiju tajne.
             $administratorInput['password_confirmation'] = $administratorInput['password'] ?? '';
         }
 
@@ -100,10 +108,11 @@ final readonly class InstallationRunner
         $enabledPackages = $catalog->packagesForSelection($application['optional_modules']);
         [$config, $database] = $this->runtime();
         $themePackage = $catalog->definitionFor('theme')['package'];
-        // HR: Provjera mora prethoditi migracijama jer inače neuspjeli uvoz teme
-        //     ostavlja shemu u bazi koju idući pokušaj više ne prihvaća kao praznu.
         // EN: Check before migrations, or a failed theme import leaves a schema
         //     that the next installation attempt no longer accepts as empty.
+        //
+        // HR: Provjera mora prethoditi migracijama jer inače neuspjeli uvoz teme
+        //     ostavlja shemu u bazi koju idući pokušaj više ne prihvaća kao praznu.
         if (in_array($themePackage, $enabledPackages, true)) {
             $this->assertThemeStorageWritable($config);
         }
@@ -145,8 +154,10 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: CLI instalacija priprema objavljene vanjske jezike kada ih web-korak nije već pripremio.
      * EN: CLI installation prepares released external locales unless the web step already did so.
+     *
+     * HR: CLI instalacija priprema objavljene vanjske jezike kada ih web-korak nije već pripremio.
+     *
      * @param list<string> $selected
      */
     private function prepareSelectedLanguages(array $selected): void
@@ -163,8 +174,9 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Gradi minimalni runtime potreban migracijama i servisima modula.
      * EN: Builds the minimal runtime required by migrations and module services.
+     *
+     * HR: Gradi minimalni runtime potreban migracijama i servisima modula.
      *
      * @return array{Config,Database}
      */
@@ -172,19 +184,15 @@ final readonly class InstallationRunner
     {
         $helper = new Helper();
         $config = new Config($helper, [], $this->paths->appRoot());
-        $configDirectory = $this->paths->configDirectory();
-        if ($configDirectory === '') {
-            throw new RuntimeException('The installation configuration directory is invalid.');
-        }
-
-        $config->loadLayeredDirectories([$configDirectory]);
+        $config->loadLayeredDirectories($this->paths->configuration()->directories());
 
         return [$config, new Database($config, $helper)];
     }
 
     /**
-     * HR: Učitava i stvarno izvršava sve aplikacijske migracije preko ORM migratora.
      * EN: Loads and actually executes every application migration through the ORM migrator.
+     *
+     * HR: Učitava i stvarno izvršava sve aplikacijske migracije preko ORM migratora.
      *
      * @param list<string> $enabledPackages
      * @return list<string>
@@ -221,8 +229,9 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Uvozi checksummed paket aktualne teme i aktivira automatski light/dark način.
      * EN: Imports the checksummed current-theme package and enables automatic light/dark mode.
+     *
+     * HR: Uvozi checksummed paket aktualne teme i aktivira automatski light/dark način.
      */
     private function importTheme(Config $config): string
     {
@@ -255,8 +264,9 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Provjerava trajne datoteke teme prije nepovratnih migracija baze.
      * EN: Checks persistent theme files before irreversible database migrations.
+     *
+     * HR: Provjerava trajne datoteke teme prije nepovratnih migracija baze.
      */
     private function assertThemeStorageWritable(Config $config): void
     {
@@ -284,10 +294,11 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Prije importa uklanja konfiguracijske početne teme i ostavlja jednu
-     * privremenu temu kako repozitorij ne bi aktivirao svoje fallback primjere.
      * EN: Before import, removes configured starter themes and leaves one temporary
      * theme so the repository does not activate its fallback examples.
+     *
+     * HR: Prije importa uklanja konfiguracijske početne teme i ostavlja jednu
+     * privremenu temu kako repozitorij ne bi aktivirao svoje fallback primjere.
      */
     private function prepareThemeStorage(): void
     {
@@ -313,8 +324,9 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Uklanja datoteke svih tema osim aktivne Simbioza teme.
      * EN: Removes files for every theme except active Simbioza.
+     *
+     * HR: Uklanja datoteke svih tema osim aktivne Simbioza teme.
      */
     private function removeUnusedThemeDirectories(ThemeConfigRepository $repository, string $themeId): void
     {
@@ -328,10 +340,11 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Uvozi javno područje s dvojezičnim uputama i sve izvorne autore
-     * preslikava na upravo kreiranog administratora.
      * EN: Imports the public bilingual guide workspace and maps all source authors
      * to the newly created administrator.
+     *
+     * HR: Uvozi javno područje s dvojezičnim uputama i sve izvorne autore
+     * preslikava na upravo kreiranog administratora.
      *
      * @param list<string> $enabledPackages
      * @param list<string> $selectedLocales
@@ -346,15 +359,16 @@ final readonly class InstallationRunner
         try {
             $runtimeConfig = $this->prepareImportConfig($enabledPackages);
             $application = new App(
-                [$this->paths->configDirectory(), $runtimeConfig],
+                [...$this->paths->configuration()->directories(), $runtimeConfig],
                 $this->paths->appRoot(),
             );
-            // HR: Backup i njegovi poslovni provideri odgođeni su moduli. U
-            //     instalacijskom CLI kontekstu javni lifecycle ih učitava i
-            //     registrira prije dohvaćanja BackupManagera.
             // EN: Backup and its business providers are deferred modules. In
             //     the installer CLI context, the public lifecycle loads and
             //     registers them before BackupManager is resolved.
+            //
+            // HR: Backup i njegovi poslovni provideri odgođeni su moduli. U
+            //     instalacijskom CLI kontekstu javni lifecycle ih učitava i
+            //     registrira prije dohvaćanja BackupManagera.
             $application->loadCommands();
             $manager = $application->getContainer()->get(BackupManager::class);
             if (!$manager instanceof BackupManager) {
@@ -368,6 +382,7 @@ final readonly class InstallationRunner
                 [],
                 $skippedProviders,
                 [
+                    'site_base_url' => \App\Update\BundledAssetsUpdater::guideSiteUrl($basePath),
                     'workspace-scope' => [
                         'target_slug' => self::USER_GUIDES_WORKSPACE_SLUG,
                         'preserve_name_on_copy' => true,
@@ -396,8 +411,10 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Na svježoj instalaciji zadržava samo odabrane upute; za treće jezike čuva EN i HR kao privremeni fallback.
      * EN: On a fresh install, keeps only selected guides; third-party locales retain EN and HR as temporary fallback.
+     *
+     * HR: Na svježoj instalaciji zadržava samo odabrane upute; za treće jezike čuva EN i HR kao privremeni fallback.
+     *
      * @param list<string> $selected
      */
     private function retainSelectedGuideLocales(Database $database, array $selected): void
@@ -503,8 +520,10 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Smanjuje JSON mapu prijevoda samo na dopuštene jezike uputa.
      * EN: Narrows a guide translation JSON map to the permitted locales.
+     *
+     * HR: Smanjuje JSON mapu prijevoda samo na dopuštene jezike uputa.
+     *
      * @param list<string> $wanted
      */
     private function filteredGuideTranslations(mixed $value, array $wanted): string
@@ -520,12 +539,13 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Navodi komponente početnog paketa koje pripadaju neodabranim
-     *     opcionalnim modulima kako bi se njihov prazan ili pomoćni sadržaj
-     *     izričito preskočio, bez tihog djelomičnog uvoza.
      * EN: Lists starter-package components owned by unselected optional modules
      *     so their empty or auxiliary data is explicitly skipped instead of
      *     being silently partially restored.
+     *
+     * HR: Navodi komponente početnog paketa koje pripadaju neodabranim
+     *     opcionalnim modulima kako bi se njihov prazan ili pomoćni sadržaj
+     *     izričito preskočio, bez tihog djelomičnog uvoza.
      *
      * @param list<string> $enabledPackages
      * @return list<string>
@@ -550,15 +570,15 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Početni paket sprema interne poveznice kao kanonske root-relative
-     *     putanje. Nova instalacija može biti u korijenu ili bilo kojem
-     *     poddirektoriju, pa nakon uvoza tim putanjama dodajemo stvarni base path.
-     *     Vanjske, relativne i sidrene poveznice ostaju nepromijenjene.
-     *
      * EN: The starter package stores internal links as canonical root-relative
      *     paths. A new installation may live at the domain root or in any
      *     subdirectory, so the actual base path is added after import. External,
      *     relative, and fragment links remain unchanged.
+     *
+     * HR: Početni paket sprema interne poveznice kao kanonske root-relative
+     *     putanje. Nova instalacija može biti u korijenu ili bilo kojem
+     *     poddirektoriju, pa nakon uvoza tim putanjama dodajemo stvarni base path.
+     *     Vanjske, relativne i sidrene poveznice ostaju nepromijenjene.
      */
     private function rewriteImportedUserGuidePaths(Database $database, string $basePath): void
     {
@@ -577,10 +597,27 @@ final readonly class InstallationRunner
         }
 
         $rows = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get();
-        $database->transaction(static function (Database $database) use ($rows, $basePath): void {
+        $payloadConfig = new EditorHtmlConfig(
+            new Config(new Helper(), [], $this->paths->appRoot()),
+            $this->paths->appRoot() . '/vendor/aaieduhr/heartphrame-module-editor-html',
+        );
+        $database->transaction(static function (Database $database) use ($rows, $basePath, $payloadConfig): void {
             foreach ($rows as $row) {
                 $id = is_numeric($row['id'] ?? null) ? (int)$row['id'] : 0;
                 $html = is_string($row['content_html'] ?? null) ? $row['content_html'] : '';
+                $file = null;
+                if (($row['storage_driver'] ?? null) === 'filesystem') {
+                    $file = $payloadConfig->documentPayloadPath(
+                        is_string($row['content_path'] ?? null) ? $row['content_path'] : '',
+                    );
+                    $bytes = file_get_contents($file);
+                    if (!is_string($bytes)) {
+                        throw new RuntimeException('Imported user-guide HTML is unavailable.');
+                    }
+
+                    $html = $bytes;
+                }
+
                 if ($id <= 0 || $html === '') {
                     continue;
                 }
@@ -601,17 +638,24 @@ final readonly class InstallationRunner
                 }
 
                 if ($rewritten !== $html) {
-                    $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
-                        ->where('id', '=', $id)
-                        ->update(['content_html' => $rewritten]);
+                    if ($file !== null) {
+                        if (file_put_contents($file, $rewritten, LOCK_EX) !== strlen($rewritten)) {
+                            throw new RuntimeException('Imported user-guide HTML could not be normalized.');
+                        }
+                    } else {
+                        $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+                            ->where('id', '=', $id)
+                            ->update(['content_html' => $rewritten]);
+                    }
                 }
             }
         });
     }
 
     /**
-     * HR: Gradi uski config sloj bez web bootstrapa i s temp-root backup putanjama.
      * EN: Builds a narrow no-web-bootstrap config layer with temp-root backup paths.
+     *
+     * HR: Gradi uski config sloj bez web bootstrapa i s temp-root backup putanjama.
      *
      * @param list<string> $enabledPackages
      * @return non-empty-string
@@ -639,11 +683,15 @@ final readonly class InstallationRunner
 
         $files = [
             'bootstrap.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn [];\n",
-            'backup.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($backup, true) . ";\n",
+            'backup/backup.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($backup, true) . ";\n",
             'app.php' => "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export([
                 'modules' => ['enabled' => array_values($enabledPackages)],
             ], true) . ";\n",
         ];
+        if (!is_dir($directory . '/backup') && !mkdir($directory . '/backup', 0700)) {
+            throw new RuntimeException('The installation import Backup configuration could not be created.');
+        }
+
         foreach ($files as $name => $contents) {
             if (file_put_contents($directory . '/' . $name, $contents, LOCK_EX) === false) {
                 throw new RuntimeException('The installation import configuration could not be written.');
@@ -654,17 +702,22 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Uklanja isključivo privremeni config sloj ovog instalera.
      * EN: Removes only this installer's temporary config layer.
+     *
+     * HR: Uklanja isključivo privremeni config sloj ovog instalera.
      */
     private function removeImportConfig(): void
     {
         $directory = $this->paths->importConfigDirectory();
-        foreach (['bootstrap.php', 'backup.php', 'app.php'] as $file) {
+        foreach (['bootstrap.php', 'backup/backup.php', 'app.php'] as $file) {
             $path = $directory . '/' . $file;
             if (is_file($path)) {
                 unlink($path);
             }
+        }
+
+        if (is_dir($directory . '/backup')) {
+            rmdir($directory . '/backup');
         }
 
         if (is_dir($directory)) {
@@ -673,8 +726,9 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Transakcijski izrađuje jedini prvi administratorski račun.
      * EN: Transactionally creates the sole initial administrator account.
+     *
+     * HR: Transakcijski izrađuje jedini prvi administratorski račun.
      *
      * @param array{
      *     login:string,
@@ -716,8 +770,9 @@ final readonly class InstallationRunner
     }
 
     /**
-     * HR: Atomski aktivira trajni lock nakon uklanjanja svake preostale kopije tokena.
      * EN: Atomically activates the permanent lock after removing any remaining token copy.
+     *
+     * HR: Atomski aktivira trajni lock nakon uklanjanja svake preostale kopije tokena.
      *
      * @param array{
      *     name:string,
@@ -752,10 +807,11 @@ final readonly class InstallationRunner
                 throw new RuntimeException('The installation lock could not be written.');
             }
 
-            // HR: Lock ne sadrži tajne; Setup/CLI ga moraju moći pročitati
-            //     kroz isključivu runtime grupu radi čišćenja privremenih paketa.
             // EN: The lock contains no secrets; Setup/CLI must be able to read
             //     it through the exclusive runtime group to clean temporary packages.
+            //
+            // HR: Lock ne sadrži tajne; Setup/CLI ga moraju moći pročitati
+            //     kroz isključivu runtime grupu radi čišćenja privremenih paketa.
             if (!chmod($temporaryPath, 0640)) {
                 throw new RuntimeException('The installation lock permissions could not be secured.');
             }

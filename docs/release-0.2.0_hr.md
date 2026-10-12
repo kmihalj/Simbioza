@@ -1,5 +1,7 @@
 # Simbioza 0.2.0
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo izdanje omogućuje nastavivo trajno brisanje velikog, prethodno obrisanog
 područja. Administrator jednom potvrđuje točan slug; preglednik zatim obrađuje
 ograničene serije i prikazuje traku napretka čije se stanje čuva. Ako se

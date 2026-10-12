@@ -1,5 +1,7 @@
 # Simbioza 0.2.12
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 ## Required updater bridge
 
 Every installation older than 0.2.12 **must first upgrade explicitly to 0.2.12**:

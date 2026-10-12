@@ -11,20 +11,20 @@ use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 
 /**
- * HR: Bilježi vrijeme aplikacijskog requesta, vršnu memoriju i veličinu
- *     odgovora samo kada performance alat postavi sigurnu ciljnu datoteku.
- *
  * EN: Records application request time, peak memory, and response size only
  *     when the performance tool provides a safe target file.
+ *
+ * HR: Bilježi vrijeme aplikacijskog requesta, vršnu memoriju i veličinu
+ *     odgovora samo kada performance alat postavi sigurnu ciljnu datoteku.
  */
 final readonly class RequestMetricsMiddleware implements MiddlewareInterface
 {
     /**
-     * HR: Propušta normalne zahtjeve bez profiliranja, a označene zapisuje kao
-     *     neosjetljivi JSONL zapis bez query stringa i tijela odgovora.
-     *
      * EN: Passes normal requests without profiling and writes marked requests
      *     as non-sensitive JSONL without a query string or response body.
+     *
+     * HR: Propušta normalne zahtjeve bez profiliranja, a označene zapisuje kao
+     *     neosjetljivi JSONL zapis bez query stringa i tijela odgovora.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -63,8 +63,9 @@ final readonly class RequestMetricsMiddleware implements MiddlewareInterface
     }
 
     /**
-     * HR: Koristi sigurnu oznaku mjerenja ili generira lokalni identifikator.
      * EN: Uses a safe measurement marker or generates a local identifier.
+     *
+     * HR: Koristi sigurnu oznaku mjerenja ili generira lokalni identifikator.
      */
     private function requestId(ServerRequestInterface $request, int $startedAt): string
     {

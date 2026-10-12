@@ -84,18 +84,29 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
         "aaieduhr/heartphrame-framework": "^0.0.25",
-        "aaieduhr/heartphrame-module-auth": "^0.1.15",
-        "aaieduhr/heartphrame-module-editor-html": "^0.1.39",
-        "aaieduhr/heartphrame-module-menu": "^0.1.25",
-        "aaieduhr/heartphrame-module-notification": "^0.1.6",
-        "aaieduhr/heartphrame-module-orm": "^0.1.7",
-        "aaieduhr/simbioza-module-user": "^0.1.11",
-        "aaieduhr/simbioza-module-workspace": "^0.1.38",
-        "aaieduhr/simbioza-module-workspace-search": "^0.1.12"
+        "aaieduhr/heartphrame-module-accessibility": "^0.3.0",
+        "aaieduhr/heartphrame-module-api": "^0.3.0",
+        "aaieduhr/heartphrame-module-audit": "^0.3.0",
+        "aaieduhr/heartphrame-module-auth": "^0.3.0",
+        "aaieduhr/heartphrame-module-backup": "^0.3.0",
+        "aaieduhr/heartphrame-module-calendar": "^0.3.0",
+        "aaieduhr/heartphrame-module-comment": "^0.3.0",
+        "aaieduhr/heartphrame-module-editor-html": "^0.3.0",
+        "aaieduhr/heartphrame-module-email": "^0.3.0",
+        "aaieduhr/heartphrame-module-menu": "^0.3.0",
+        "aaieduhr/heartphrame-module-notification": "^0.3.0",
+        "aaieduhr/heartphrame-module-orm": "^0.3.0",
+        "aaieduhr/heartphrame-module-task": "^0.3.0",
+        "aaieduhr/heartphrame-module-theme": "^0.3.0",
+        "aaieduhr/simbioza-module-confluence-import": "^0.3.0",
+        "aaieduhr/simbioza-module-user": "^0.3.0",
+        "aaieduhr/simbioza-module-workspace": "^0.3.0",
+        "aaieduhr/simbioza-module-workspace-search": "^0.3.0",
+        "php": ">=8.2"
     },
     "autoload": {
+        "files": ["bootstrap.php"],
         "psr-4": {
             "App\\": "src"
         }
@@ -107,7 +118,7 @@
     },
     "authors": [
         {
-            "name": "Krešimir Mihalj",
+            "name": "Kre\u0161imir Mihalj",
             "email": "kmihalj@srce.hr"
         }
     ],
@@ -141,16 +152,16 @@
     "extra": {
         "simbioza": {
             "optional-modules": {
-                "aaieduhr/heartphrame-module-accessibility": "^0.1.5",
-                "aaieduhr/heartphrame-module-api": "^0.1.6",
-                "aaieduhr/heartphrame-module-audit": "^0.1.5",
-                "aaieduhr/heartphrame-module-backup": "^0.1.8",
-                "aaieduhr/heartphrame-module-calendar": "^0.1.21",
-                "aaieduhr/heartphrame-module-comment": "^0.1.4",
-                "aaieduhr/heartphrame-module-email": "^0.1.4",
-                "aaieduhr/heartphrame-module-task": "^0.1.8",
-                "aaieduhr/heartphrame-module-theme": "^0.1.17",
-                "aaieduhr/simbioza-module-confluence-import": "^0.1.43"
+                "aaieduhr/heartphrame-module-accessibility": "^0.3.0",
+                "aaieduhr/heartphrame-module-api": "^0.3.0",
+                "aaieduhr/heartphrame-module-audit": "^0.3.0",
+                "aaieduhr/heartphrame-module-backup": "^0.3.0",
+                "aaieduhr/heartphrame-module-calendar": "^0.3.0",
+                "aaieduhr/heartphrame-module-comment": "^0.3.0",
+                "aaieduhr/heartphrame-module-email": "^0.3.0",
+                "aaieduhr/heartphrame-module-task": "^0.3.0",
+                "aaieduhr/heartphrame-module-theme": "^0.3.0",
+                "aaieduhr/simbioza-module-confluence-import": "^0.3.0"
             },
             "development-tools": {
                 "phpstan/phpstan": "^2.1",

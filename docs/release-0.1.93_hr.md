@@ -1,5 +1,7 @@
 # Simbioza 0.1.93
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Ovo održavateljsko izdanje ispravlja prava opcionalnih Composer paketa instaliranih ili uklonjenih kroz GUI i CLI. Ograničeni FPM pomoćni program koristi privatni umask; prije je novi paket mogao biti označen kao uključen iako web-proces nije mogao čitati njegov kod. Nakon svake uspješne paketne radnje Simbioza sada osigurava čitanje koda i prolaz kroz direktorije, bez širenja prava pisanja ili izlaganja Git metapodataka. Regresijski test reproducira restriktivna prava i provjerava rezultat.
 
 Tablica modula u Setupu sada prelama dugačke oznake stanja unutar njihova stupca, pa gumbe više ne prekrivaju poruku o uklonjenom modulu i sačuvanoj kopiji podataka.

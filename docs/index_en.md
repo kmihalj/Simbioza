@@ -6,8 +6,14 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Initial release 0.3.0 and verification checklist](initial-release-0.3.0_en.md)
+- [Expanded pre-release audit and continuation](pre-release-audit-0.3.0_en.md)
+- [Current configuration and module-owned files](configuration_en.md)
+- [Documentation, examples and comment-language checks](documentation-quality_en.md)
+- [Docker deployment, volumes, image updates and optional SAML](docker_en.md)
+- [Container readiness and verification boundaries](container-readiness_en.md)
 - [Brand identity and the Simbioza theme](branding_en.md)
-- [Release 0.2.11: Confluence migration video and portable guides](release-0.2.11_en.md)
+
 
 The documentation is structured for beginners and advanced users. Each topic
 has a separate English and Croatian file.
@@ -68,6 +74,8 @@ composer e2e
 - [Module dependencies](module-dependencies_en.md)
 - [API v1 contract](api-v1-contract_en.md)
 - [API implementation plan](api-implementation-plan_en.md)
+- [Unified configuration plan and continuation point](configuration-migration-plan_en.md)
+- [Workspace and page data storage](workspace-data_en.md)
 - [Encryption](encryption_en.md)
 - [Event dispatcher](event-dispatcher_en.md)
 - [End-to-end testing](end-to-end-testing_en.md)
@@ -92,3 +100,9 @@ conditional API-key screen.
 ## Croatian version
 
 - [Hrvatska dokumentacija](index_hr.md)
+
+### Historical release notes
+
+These notes describe older releases, not the fresh 0.3.0 installation or upgrade procedure.
+
+- [0.2.11 release record](release-0.2.11_en.md)

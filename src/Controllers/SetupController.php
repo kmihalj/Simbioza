@@ -25,14 +25,19 @@ use RuntimeException;
 use Throwable;
 
 /**
- * HR: Administratorski Setup prikazuje stanje modula i razdvaja obične
- *     promjene stanja i migracije od privilegiranih Composer radnji.
  * EN: The administrator Setup screen shows module state and separates ordinary
  *     state changes and migrations from privileged Composer operations.
+ *
+ * HR: Administratorski Setup prikazuje stanje modula i razdvaja obične
+ *     promjene stanja i migracije od privilegiranih Composer radnji.
  */
 final readonly class SetupController
 {
-    /** HR: Prima isključivo servise potrebne Setup ekranu. EN: Receives only services required by the Setup screen. */
+    /**
+     * EN: Receives only services required by the Setup screen.
+     *
+     * HR: Prima isključivo servise potrebne Setup ekranu.
+     */
     public function __construct(
         private ResponseFactory $responses,
         private ModuleLifecycleManager $modules,
@@ -51,8 +56,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Prikazuje module, dijagnostiku prava i CLI zamjenske naredbe.
      * EN: Shows modules, permission diagnostics, and CLI fallback commands.
+     *
+     * HR: Prikazuje module, dijagnostiku prava i CLI zamjenske naredbe.
      */
     public function index(): ResponseInterface
     {
@@ -79,8 +85,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Administratorska stranica ostaje dostupna i kad opcionalni modul nije učitan.
      * EN: The admin page remains available even when the optional module is not loaded.
+     *
+     * HR: Administratorska stranica ostaje dostupna i kad opcionalni modul nije učitan.
      */
     public function accessibility(): ResponseInterface
     {
@@ -106,8 +113,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Mijenja isključivo stanje modula pristupačnosti, uz postojeću CSRF i admin zaštitu.
      * EN: Changes only accessibility module state under the existing CSRF and admin guards.
+     *
+     * HR: Mijenja isključivo stanje modula pristupačnosti, uz postojeću CSRF i admin zaštitu.
      */
     public function changeAccessibility(ServerRequestInterface $request): ResponseInterface
     {
@@ -131,10 +139,11 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Izvršava samo dopuštenu radnju; paketne promjene prolaze kroz helper,
-     *     a enable/disable ostaju dostupni bez FPM-a ako je stanje zapisivo.
      * EN: Executes only an allowed action; package changes use the helper, while
      *     enable/disable remain available without FPM when state is writable.
+     *
+     * HR: Izvršava samo dopuštenu radnju; paketne promjene prolaze kroz helper,
+     *     a enable/disable ostaju dostupni bez FPM-a ako je stanje zapisivo.
      */
     public function change(ServerRequestInterface $request): ResponseInterface
     {
@@ -143,7 +152,30 @@ final readonly class SetupController
             $actionValue = $body['action'] ?? '';
             $action = is_string($actionValue) ? strtolower(trim($actionValue)) : '';
             $diagnostics = $this->diagnostics->report();
-            if (in_array($action, ['application-update-check', 'application-update-start'], true)) {
+            if ($action === 'language-update-check') {
+                try {
+                    $status = $this->repositoryLanguages->status(true);
+                } catch (RuntimeException $error) {
+                    throw new RuntimeException(
+                        __('Katalog jezika nije moguće osvježiti; dostupnost nadogradnji nije potvrđena.'),
+                        0,
+                        $error,
+                    );
+                }
+                $updates = count(array_filter(
+                    $status,
+                    static fn(array $row): bool => $row['installed'] && $row['update_available'],
+                ));
+                $unknown = count(array_filter(
+                    $status,
+                    static fn(array $row): bool => $row['installed'] && !$row['revision_known'],
+                ));
+                $message = sprintf(
+                    __('Provjera jezika je dovršena. Dostupne nadogradnje: %d. Neevidentirane lokalne revizije: %d.'),
+                    $updates,
+                    $unknown,
+                );
+            } elseif (in_array($action, ['application-update-check', 'application-update-start'], true)) {
                 $message = $this->applicationUpdate(
                     $action,
                     $diagnostics['application_updates_allowed'],
@@ -152,7 +184,7 @@ final readonly class SetupController
             } elseif ($action === 'language-add') {
                 $message = $this->addLanguage(
                     $request,
-                    $diagnostics['package_changes_allowed'],
+                    $diagnostics['language_changes_allowed'],
                     !empty($body['replace']),
                 );
             } elseif (
@@ -192,8 +224,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Vraća samo javno siguran status pozadinske nadogradnje za administratorski prikaz napretka.
      * EN: Returns only the disclosure-safe background-update status for the administrator progress screen.
+     *
+     * HR: Vraća samo javno siguran status pozadinske nadogradnje za administratorski prikaz napretka.
      */
     public function applicationUpdateStatus(): ResponseInterface
     {
@@ -204,8 +237,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Mijenja stanje već instaliranog modula bez Composer radnje.
      * EN: Changes an installed module state without a Composer operation.
+     *
+     * HR: Mijenja stanje već instaliranog modula bez Composer radnje.
      */
     private function changeState(string $slug, bool $enable, bool $allowed): string
     {
@@ -223,8 +257,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Odbija paketnu promjenu kada potpuna dijagnostika nije prošla.
      * EN: Rejects a package change unless the complete diagnostic has passed.
+     *
+     * HR: Odbija paketnu promjenu kada potpuna dijagnostika nije prošla.
      */
     private function assertPackageChangesAllowed(bool $allowed): void
     {
@@ -236,10 +271,11 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Najprije privilegirano dodaje samo tagirani paket, zatim kao
-     *     ograničeni web korisnik instalira migracije i po izboru vraća podatke.
      * EN: First adds only the tagged package through the privileged helper,
      *     then installs migrations and optionally restores data as the limited web user.
+     *
+     * HR: Najprije privilegirano dodaje samo tagirani paket, zatim kao
+     *     ograničeni web korisnik instalira migracije i po izboru vraća podatke.
      */
     private function addModule(string $slug, bool $allowed, bool $restore): string
     {
@@ -253,10 +289,11 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Kao ograničeni web korisnik prvo sprema podatke i uklanja shemu,
-     *     a tek zatim helper uklanja paket iz aplikacijskog skupa.
      * EN: As the limited web user, first backs up data and removes schema,
      *     then asks the helper to remove the package from the application set.
+     *
+     * HR: Kao ograničeni web korisnik prvo sprema podatke i uklanja shemu,
+     *     a tek zatim helper uklanja paket iz aplikacijskog skupa.
      */
     private function removeModule(string $slug, bool $allowed): string
     {
@@ -265,10 +302,11 @@ final readonly class SetupController
         try {
             $this->gateway->execute('package-uninstall', ['module' => $slug]);
         } catch (Throwable $throwable) {
-            // HR: Vraća cijeli modul ako privilegirana paketna radnja zakaže
-            //     nakon što je web sloj već izradio kopiju i uklonio shemu.
             // EN: Restores the complete module if the privileged package action
             //     fails after the web layer already backed up and removed schema.
+            //
+            // HR: Vraća cijeli modul ako privilegirana paketna radnja zakaže
+            //     nakon što je web sloj već izradio kopiju i uklonio shemu.
             $this->gateway->execute('package-install', ['module' => $slug]);
             $this->modules->addPrepared($slug, true);
             throw new RuntimeException(
@@ -282,8 +320,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Provjerava upload prije nego ga preda privilegiranom workeru.
-     * EN: Validates an upload before handing it to the privileged worker.
+     * EN: Validates a data-only upload before local atomic installation.
+     *
+     * HR: Provjerava podatkovni upload prije lokalne atomske instalacije.
      */
     private function addLanguage(ServerRequestInterface $request, bool $allowed, bool $replace): string
     {
@@ -301,17 +340,18 @@ final readonly class SetupController
         $file = $this->requests->storeLanguagePack($upload);
         try {
             $this->languages->validate($this->requests->languagePackPath($file));
-            $this->gateway->execute('language-add', ['file' => $file, 'replace' => $replace]);
+            $this->languages->install($this->requests->languagePackPath($file), $replace);
             return __('Jezični paket je instaliran.');
-        } catch (Throwable $throwable) {
+        } finally {
             $this->requests->discardLanguagePack($file);
-            throw $throwable;
         }
     }
 
     /**
-     * HR: Ograničava promjene jezika na katalog i potreban instalacijski način.
      * EN: Restricts language changes to the catalogue and appropriate installation mode.
+     *
+     * HR: Ograničava promjene jezika na katalog i potreban instalacijski način.
+     *
      * @param array<string,mixed> $body
      * @param array<string,mixed> $diagnostics
      */
@@ -325,52 +365,44 @@ final readonly class SetupController
             throw new RuntimeException(__('Odabran je nepoznat jezik.'));
         }
 
-        if (
-            in_array($action, ['language-install', 'language-remove'], true)
-            && empty($diagnostics['package_changes_allowed'])
-        ) {
-            throw new RuntimeException(__('Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.'));
-        }
-
-        if (
-            in_array($action, ['language-enable', 'language-disable'], true)
-            && empty($diagnostics['state_changes_allowed'])
-        ) {
+        if (empty($diagnostics['language_changes_allowed'])) {
             throw new RuntimeException(__('Promjena jezika nije dostupna zbog prava pisanja.'));
         }
 
-        if (!empty($diagnostics['package_changes_allowed'])) {
-            $this->gateway->execute($action, [
-                'locale' => $locale,
-                'replace' => !empty($body['replace']),
-            ]);
-        } else {
-            $this->languages->setActive($locale, $action === 'language-enable');
-        }
+        // EN: JSON-only language changes need no privileged code-changing worker.
+        //
+        // HR: Jezične promjene samo u JSON-u ne trebaju privilegirani worker za promjenu koda.
+        match ($action) {
+            'language-install' => $this->repositoryLanguages->install($locale, !empty($body['replace'])),
+            'language-remove' => $this->repositoryLanguages->uninstall($locale),
+            'language-enable', 'language-disable' => $this->languages->setActive(
+                $locale,
+                $action === 'language-enable',
+            ),
+            default => throw new RuntimeException(__('Odabrana Setup radnja nije dopuštena.')),
+        };
 
-        // HR: Worker vraća tehničku poruku na engleskom. Za promjenu stanja
-        //     GUI uvijek prikazuje kanonski hrvatski ključ kroz aktivni prevoditelj.
-        // EN: The worker returns a technical English message. For state changes,
-        //     the GUI always resolves the canonical Croatian key through the active translator.
         return match ($action) {
             'language-install' => __('Jezični paket je instaliran.'),
             'language-enable' => __('Jezik je uključen.'),
             'language-disable' => __('Jezik je isključen.'),
-            'language-remove' => __('Jezični paket je uklonjen.'),
-            default => throw new RuntimeException(__('Odabrana Setup radnja nije dopuštena.')),
+            default => __('Jezični paket je uklonjen.'),
         };
     }
 
     /**
-     * HR: Provjerava višestruki odabir i instalira ga jednim Setup zahtjevom.
      * EN: Validates a multi-selection and installs it through one Setup request.
+     *
+     * HR: Provjerava višestruki odabir i instalira ga jednim Setup zahtjevom.
      *
      * @param array<string,mixed> $body
      * @param array<string,mixed> $diagnostics
      */
     private function installLanguages(array $body, array $diagnostics): string
     {
-        $this->assertPackageChangesAllowed(!empty($diagnostics['package_changes_allowed']));
+        if (empty($diagnostics['language_changes_allowed'])) {
+            throw new RuntimeException(__('Promjena jezika nije dostupna zbog prava pisanja.'));
+        }
         $requested = $body['locales'] ?? null;
         if (!is_array($requested) || $requested === [] || count($requested) > 512) {
             throw new RuntimeException(__('Odaberite barem jedan dostupan jezik.'));
@@ -390,16 +422,17 @@ final readonly class SetupController
         }
 
         $installed = array_keys($locales);
-        $this->gateway->execute('language-install-many', ['locales' => $installed]);
+        $this->repositoryLanguages->installMany($installed);
 
         return sprintf(__('Instalirano je %d jezičnih paketa.'), count($installed));
     }
 
     /**
-     * HR: Provjeru ili pozadinsko pokretanje updatera predaje isključivo
-     *     ograničenom helperu nakon potpune FPM dijagnostike.
      * EN: Submits an update check or background update start only to the
      *     restricted helper after complete FPM diagnostics.
+     *
+     * HR: Provjeru ili pozadinsko pokretanje updatera predaje isključivo
+     *     ograničenom helperu nakon potpune FPM dijagnostike.
      *
      * @param array<string,mixed> $body
      */
@@ -423,8 +456,10 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Normalizira PSR-7 tijelo forme.
      * EN: Normalizes a PSR-7 form body.
+     *
+     * HR: Normalizira PSR-7 tijelo forme.
+     *
      * @return array<string,mixed>
      */
     private function body(ServerRequestInterface $request): array
@@ -444,7 +479,11 @@ final readonly class SetupController
         return $normalized;
     }
 
-    /** HR: Vraća named Setup putanju uz siguran fallback. EN: Returns the named Setup path with a safe fallback. */
+    /**
+     * EN: Returns the named Setup path with a safe fallback.
+     *
+     * HR: Vraća named Setup putanju uz siguran fallback.
+     */
     private function path(): string
     {
         return $this->urls->namedRouteExists('setup.index')
@@ -452,7 +491,11 @@ final readonly class SetupController
         : '/settings/setup';
     }
 
-    /** HR: Vraća putanju stalne administracijske sklopke. EN: Returns the permanent admin toggle path. */
+    /**
+     * EN: Returns the permanent admin toggle path.
+     *
+     * HR: Vraća putanju stalne administracijske sklopke.
+     */
     private function accessibilityPath(): string
     {
         return $this->urls->namedRouteExists('accessibility.settings')
@@ -461,8 +504,9 @@ final readonly class SetupController
     }
 
     /**
-     * HR: Vraća postojeći administratorski endpoint za automatsku provjeru izdanja.
      * EN: Returns the existing administrator endpoint for automatic release checks.
+     *
+     * HR: Vraća postojeći administratorski endpoint za automatsku provjeru izdanja.
      */
     private function automaticUpdateCheckPath(): string
     {
@@ -471,7 +515,11 @@ final readonly class SetupController
         : '/settings/check-updates/status';
     }
 
-    /** HR: Vraća putanju sigurnog statusa updatera. EN: Returns the safe updater-status path. */
+    /**
+     * EN: Returns the safe updater-status path.
+     *
+     * HR: Vraća putanju sigurnog statusa updatera.
+     */
     private function applicationUpdateStatusPath(): string
     {
         return $this->urls->namedRouteExists('setup.application-update-status')

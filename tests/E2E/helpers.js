@@ -1,10 +1,11 @@
 import { expect } from '@playwright/test';
 
 /**
- * HR: Vraća obavezne E2E vjerodajnice koje izolirani PHP pokretač predaje
- *     Playwrightu bez zapisivanja tajnih API tokena u repozitorij ili logove.
  * EN: Returns required E2E credentials passed to Playwright by the isolated PHP
  *     runner without storing secret API tokens in the repository or logs.
+ *
+ * HR: Vraća obavezne E2E vjerodajnice koje izolirani PHP pokretač predaje
+ *     Playwrightu bez zapisivanja tajnih API tokena u repozitorij ili logove.
  */
 export function e2eEnvironment() {
   const values = {
@@ -26,10 +27,11 @@ export function e2eEnvironment() {
 }
 
 /**
- * HR: Prijavljuje korisnika kroz stvarni lokalni Auth obrazac. Simbioza nakon
- *     uspješne lokalne prijave sama odmah aktivira prava stvarnog administratora.
  * EN: Signs a user in through the real local Auth form. After a successful local
  *     sign-in, Simbioza itself immediately activates a real administrator's rights.
+ *
+ * HR: Prijavljuje korisnika kroz stvarni lokalni Auth obrazac. Simbioza nakon
+ *     uspješne lokalne prijave sama odmah aktivira prava stvarnog administratora.
  */
 export async function login(page, loginIdentifier, password) {
   if (!new URL(page.url()).pathname.includes('/auth/login')) {
@@ -45,13 +47,13 @@ export async function login(page, loginIdentifier, password) {
 }
 
 /**
- * HR: Potvrđuje da je Bootstrap modal stvarno interaktivan, a ne samo vidljiv
- *     ispod vlastite pozadine. Provjera obuhvaća DOM portal, z-index, cilj u
- *     središtu dijaloga i fokus koji mora ostati unutar otvorenog modala.
- *
  * EN: Confirms a Bootstrap modal is genuinely interactive rather than merely
  *     visible below its own backdrop. The check covers the DOM portal, z-index,
  *     center hit target, and focus that must remain inside the open modal.
+ *
+ * HR: Potvrđuje da je Bootstrap modal stvarno interaktivan, a ne samo vidljiv
+ *     ispod vlastite pozadine. Provjera obuhvaća DOM portal, z-index, cilj u
+ *     središtu dijaloga i fokus koji mora ostati unutar otvorenog modala.
  */
 export async function expectUsableModal(modal) {
   await expect(modal).toBeVisible();
@@ -83,10 +85,11 @@ export async function expectUsableModal(modal) {
   expect(state.pointerEvents).not.toBe('none');
 
   /*
-   * HR: Bootstrap aktivira focus trap tek po završetku fade tranzicije, pa
-   *     pristupačnost provjeravamo čekanjem umjesto trenutnim očitanjem.
    * EN: Bootstrap activates its focus trap only after the fade transition,
    *     so accessibility is verified by polling rather than an instant read.
+   *
+   * HR: Bootstrap aktivira focus trap tek po završetku fade tranzicije, pa
+   *     pristupačnost provjeravamo čekanjem umjesto trenutnim očitanjem.
    */
   await expect.poll(() => modal.evaluate((element) => (
     document.activeElement instanceof Element && element.contains(document.activeElement)
@@ -94,8 +97,9 @@ export async function expectUsableModal(modal) {
 }
 
 /**
- * HR: Gradi standardna zaglavlja za verzionirani API bez otkrivanja tokena.
  * EN: Builds standard versioned API headers without exposing the token.
+ *
+ * HR: Gradi standardna zaglavlja za verzionirani API bez otkrivanja tokena.
  */
 export function apiHeaders(token, extra = {}) {
   return {
@@ -106,8 +110,9 @@ export function apiHeaders(token, extra = {}) {
 }
 
 /**
- * HR: Zahtijeva uspješnu JSON omotnicu i vraća njezino polje data.
  * EN: Requires a successful JSON envelope and returns its data field.
+ *
+ * HR: Zahtijeva uspješnu JSON omotnicu i vraća njezino polje data.
  */
 export async function expectData(response, status = 200) {
   expect(response.status()).toBe(status);
@@ -120,8 +125,9 @@ export async function expectData(response, status = 200) {
 }
 
 /**
- * HR: Zahtijeva stabilni RFC 9457 problem odgovor.
  * EN: Requires a stable RFC 9457 problem response.
+ *
+ * HR: Zahtijeva stabilni RFC 9457 problem odgovor.
  */
 export async function expectProblem(response, status, code) {
   expect(response.status()).toBe(status);
@@ -135,8 +141,9 @@ export async function expectProblem(response, status, code) {
 }
 
 /**
- * HR: Dohvaća resurs i vraća podatke zajedno s ETagom za sigurnu izmjenu.
  * EN: Fetches a resource and returns its data with the ETag needed for a safe update.
+ *
+ * HR: Dohvaća resurs i vraća podatke zajedno s ETagom za sigurnu izmjenu.
  */
 export async function getDataWithEtag(request, path, headers) {
   const response = await request.get(path, { headers });
@@ -148,12 +155,13 @@ export async function getDataWithEtag(request, path, headers) {
 }
 
 /**
- * HR: Stvara vlastito privremeno područje i dokument za pregled integriranog
- *     HTML editora. Testovi tako ne ovise o instalacijskom seed sadržaju, ali
- *     i dalje potvrđuju da samostalna ruta bez dokumenta nije dostupna.
  * EN: Creates a dedicated temporary workspace and document for an integrated
  *     HTML editor view. Tests therefore remain independent from installer seed
  *     content while still allowing the standalone document-less route to stay disabled.
+ *
+ * HR: Stvara vlastito privremeno područje i dokument za pregled integriranog
+ *     HTML editora. Testovi tako ne ovise o instalacijskom seed sadržaju, ali
+ *     i dalje potvrđuju da samostalna ruta bez dokumenta nije dostupna.
  */
 export async function createEditorSurface(request, token, prefix) {
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -189,8 +197,9 @@ export async function createEditorSurface(request, token, prefix) {
 }
 
 /**
- * HR: Stvara jedinstven idempotency ključ dovoljne duljine za jedan logički zapis.
  * EN: Creates a unique sufficiently long idempotency key for one logical write.
+ *
+ * HR: Stvara jedinstven idempotency ključ dovoljne duljine za jedan logički zapis.
  */
 export function idempotencyKey(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;

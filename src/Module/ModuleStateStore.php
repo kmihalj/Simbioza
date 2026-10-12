@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Module;
 
-use Composer\InstalledVersions;
+use App\Configuration\ConfigurationPaths;
 use RuntimeException;
 
 use function array_filter;
@@ -24,23 +24,32 @@ use function unlink;
 use function var_export;
 
 /**
- * HR: Čuva administratorski odabir omogućenih i uklonjenih modula u zasebnoj
- *     privatnoj konfiguraciji koju updater smije sačuvati između izdanja.
  * EN: Stores the administrator's enabled and removed module selection in a
  *     private configuration file preserved by the updater across releases.
+ *
+ * HR: Čuva administratorski odabir omogućenih i uklonjenih modula u zasebnoj
+ *     privatnoj konfiguraciji koju updater smije sačuvati između izdanja.
  */
 final readonly class ModuleStateStore
 {
-    /** HR: Prima korijen aplikacije i katalog dopuštenih modula. EN: Receives the application root and allowed-module catalog. */
+    private ConfigurationPaths $configuration;
+
+    /**
+     * EN: Receives the application root and allowed-module catalog.
+     *
+     * HR: Prima korijen aplikacije i katalog dopuštenih modula.
+     */
     public function __construct(
         private string $appRoot,
         private ModuleCatalog $catalog,
     ) {
+        $this->configuration = ConfigurationPaths::fromEnvironment($appRoot);
     }
 
     /**
-     * HR: Vraća omogućene pakete ili samo obveznu jezgru za novu instalaciju.
      * EN: Returns enabled packages or only the required core for a new installation.
+     *
+     * HR: Vraća omogućene pakete ili samo obveznu jezgru za novu instalaciju.
      *
      * @return list<string>
      */
@@ -49,13 +58,7 @@ final readonly class ModuleStateStore
         $state = $this->read();
         if (!array_key_exists('enabled', $state)) {
             if (is_file(rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/installation.lock')) {
-                return array_values(array_filter(
-                    array_map(
-                        static fn(array $definition): string => $definition['package'],
-                        $this->catalog->definitions(),
-                    ),
-                    static fn(string $package): bool => InstalledVersions::isInstalled($package),
-                ));
+                throw new RuntimeException('Installed applications require modules.php in HPH_CONFIG_PATH.');
             }
 
             return $this->catalog->packagesForSelection([]);
@@ -73,8 +76,9 @@ final readonly class ModuleStateStore
     }
 
     /**
-     * HR: Vraća module uklonjene uz zadržanu sigurnosnu kopiju.
      * EN: Returns modules removed with a retained backup.
+     *
+     * HR: Vraća module uklonjene uz zadržanu sigurnosnu kopiju.
      *
      * @return list<string>
      */
@@ -89,13 +93,21 @@ final readonly class ModuleStateStore
         ));
     }
 
-    /** HR: Vraća zapamćeno ograničenje paketa za ponovnu instalaciju. EN: Returns the remembered package constraint for reinstallation. */
+    /**
+     * EN: Returns the remembered package constraint for reinstallation.
+     *
+     * HR: Vraća zapamćeno ograničenje paketa za ponovnu instalaciju.
+     */
     public function requirementConstraint(string $slug): ?string
     {
         return $this->requirementConstraints()[$this->catalog->normalizeSlug($slug)] ?? null;
     }
 
-    /** HR: Pamti točno ograničenje uklonjenog paketa bez promjene stanja modula. EN: Remembers a removed package's exact constraint without changing module state. */
+    /**
+     * EN: Remembers a removed package's exact constraint without changing module state.
+     *
+     * HR: Pamti točno ograničenje uklonjenog paketa bez promjene stanja modula.
+     */
     public function rememberRequirementConstraint(string $slug, string $constraint): void
     {
         $slug = $this->catalog->normalizeSlug($slug);
@@ -108,12 +120,18 @@ final readonly class ModuleStateStore
             throw new RuntimeException('The module package constraint is invalid.');
         }
 
-        $constraints = $this->requirementConstraints();
-        $constraints[$slug] = $constraint;
-        $this->write($this->enabledPackages(), $this->removedSlugs(), $constraints);
+        $this->withLock(function () use ($slug, $constraint): void {
+            $constraints = $this->requirementConstraints();
+            $constraints[$slug] = $constraint;
+            $this->write($this->enabledPackages(), $this->removedSlugs(), $constraints);
+        });
     }
 
-    /** HR: Provjerava je li modul omogućen. EN: Checks whether a module is enabled. */
+    /**
+     * EN: Checks whether a module is enabled.
+     *
+     * HR: Provjerava je li modul omogućen.
+     */
     public function isEnabled(string $slug): bool
     {
         $package = $this->catalog->definitionFor($slug)['package'];
@@ -121,101 +139,155 @@ final readonly class ModuleStateStore
         return in_array($package, $this->enabledPackages(), true);
     }
 
-    /** HR: Omogućuje modul i uklanja oznaku uklonjenog stanja. EN: Enables a module and clears its removed-state marker. */
+    /**
+     * EN: Enables a module and clears its removed-state marker.
+     *
+     * HR: Omogućuje modul i uklanja oznaku uklonjenog stanja.
+     */
     public function enable(string $slug): void
     {
-        $definition = $this->catalog->definitionFor($slug);
-        $enabled = $this->enabledPackages();
-        if (!in_array($definition['package'], $enabled, true)) {
-            $enabled[] = $definition['package'];
-        }
+        $this->withLock(function () use ($slug): void {
+            $definition = $this->catalog->definitionFor($slug);
+            $enabled = $this->enabledPackages();
+            if (!in_array($definition['package'], $enabled, true)) {
+                $enabled[] = $definition['package'];
+            }
 
-        $this->write($this->orderedPackages($enabled), array_values(array_filter(
-            $this->removedSlugs(),
-            static fn(string $removed): bool => $removed !== $slug,
-        )));
-    }
-
-    /** HR: Onemogućuje modul bez brisanja podataka. EN: Disables a module without deleting data. */
-    public function disable(string $slug): void
-    {
-        $package = $this->catalog->definitionFor($slug)['package'];
-        $this->write(array_values(array_filter(
-            $this->enabledPackages(),
-            static fn(string $enabled): bool => $enabled !== $package,
-        )), $this->removedSlugs());
-    }
-
-    /** HR: Bilježi da su modul i njegova shema uklonjeni. EN: Records that a module and its schema were removed. */
-    public function markRemoved(string $slug): void
-    {
-        $package = $this->catalog->definitionFor($slug)['package'];
-        $removed = $this->removedSlugs();
-        if (!in_array($slug, $removed, true)) {
-            $removed[] = $slug;
-        }
-
-        $this->write(array_values(array_filter(
-            $this->enabledPackages(),
-            static fn(string $enabled): bool => $enabled !== $package,
-        )), $removed);
+            $this->write($this->orderedPackages($enabled), array_values(array_filter(
+                $this->removedSlugs(),
+                static fn(string $removed): bool => $removed !== $slug,
+            )));
+        });
     }
 
     /**
-     * HR: Zapisuje početni instalacijski odabir.
+     * EN: Disables a module without deleting data.
+     *
+     * HR: Onemogućuje modul bez brisanja podataka.
+     */
+    public function disable(string $slug): void
+    {
+        $this->withLock(function () use ($slug): void {
+            $package = $this->catalog->definitionFor($slug)['package'];
+            $this->write(array_values(array_filter(
+                $this->enabledPackages(),
+                static fn(string $enabled): bool => $enabled !== $package,
+            )), $this->removedSlugs());
+        });
+    }
+
+    /**
+     * EN: Records that a module and its schema were removed.
+     *
+     * HR: Bilježi da su modul i njegova shema uklonjeni.
+     */
+    public function markRemoved(string $slug): void
+    {
+        $this->withLock(function () use ($slug): void {
+            $package = $this->catalog->definitionFor($slug)['package'];
+            $removed = $this->removedSlugs();
+            if (!in_array($slug, $removed, true)) {
+                $removed[] = $slug;
+            }
+
+            $this->write(array_values(array_filter(
+                $this->enabledPackages(),
+                static fn(string $enabled): bool => $enabled !== $package,
+            )), $removed);
+        });
+    }
+
+    /**
      * EN: Writes the initial installer selection.
+     *
+     * HR: Zapisuje početni instalacijski odabir.
      *
      * @param list<string> $optionalSlugs
      */
     public function initialize(array $optionalSlugs): void
     {
-        $this->write($this->catalog->packagesForSelection($optionalSlugs), [], []);
+        $this->withLock(fn () => $this->write($this->catalog->packagesForSelection($optionalSlugs), [], []));
     }
 
     /**
-     * HR: Učitava privatni config ako postoji.
      * EN: Loads the private config when present.
+     *
+     * HR: Učitava privatni config ako postoji.
      *
      * @return array<string,mixed>
      */
     private function read(): array
     {
-        $path = $this->path();
-        clearstatcache(true, $path);
-        if (!is_file($path)) {
-            $path = $this->legacyPath();
-            clearstatcache(true, $path);
-            if (!is_file($path)) {
-                return [];
-            }
+        clearstatcache();
+        $path = $this->configuration->effectiveFile('modules.php');
+
+        return $path === null ? [] : $this->readFile($path);
+    }
+
+    /**
+     * EN: Invalid configuration must not silently enable every installed module.
+     *
+     * HR: Nevaljana konfiguracija ne smije tiho uključiti sve instalirane module.
+     *
+     * @return array<string,mixed>
+     */
+    private function readFile(string $path): array
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            throw new RuntimeException('Module configuration is not readable: ' . $path);
         }
 
-        // HR: Promjena iz CLI-ja ne može poništiti OPcache drugog web procesa.
         // EN: A CLI change cannot invalidate the OPcache of another web process.
+        //
+        // HR: Promjena iz CLI-ja ne može poništiti OPcache drugog web procesa.
         if (function_exists('opcache_invalidate')) {
             opcache_invalidate($path, true);
         }
 
         $state = require $path;
         if (!is_array($state)) {
-            return [];
+            throw new RuntimeException('Module configuration must return an array: ' . $path);
         }
 
         $normalized = [];
         foreach ($state as $key => $value) {
-            if (is_string($key)) {
-                $normalized[$key] = $value;
+            if (!is_string($key)) {
+                throw new RuntimeException('Module configuration must use named keys: ' . $path);
             }
+
+            $normalized[$key] = $value;
+        }
+
+        if (!is_array($normalized['enabled'] ?? null) || !array_is_list($normalized['enabled'])) {
+            throw new RuntimeException('Module configuration must contain an enabled package list: ' . $path);
+        }
+
+        foreach (['enabled', 'removed'] as $name) {
+            $items = $normalized[$name] ?? [];
+            if (!is_array($items) || !array_is_list($items)) {
+                throw new RuntimeException('Module configuration must contain lists: ' . $path);
+            }
+
+            foreach ($items as $item) {
+                if (!is_string($item) || trim($item) === '') {
+                    throw new RuntimeException('Module configuration list items must be non-empty strings: ' . $path);
+                }
+            }
+        }
+
+        if (isset($normalized['constraints']) && !is_array($normalized['constraints'])) {
+            throw new RuntimeException('Module constraints must be an array: ' . $path);
         }
 
         return $normalized;
     }
 
     /**
-     * HR: Atomski sprema kanonsko stanje modula dostupno samo vlasniku i
-     *     namjenskoj runtime grupi, kako bi isti CLI radio bez sudo pristupa.
      * EN: Atomically stores canonical module state for the owner and the
      *     dedicated runtime group so the same CLI works without sudo access.
+     *
+     * HR: Atomski sprema kanonsko stanje modula dostupno samo vlasniku i
+     *     namjenskoj runtime grupi, kako bi isti CLI radio bez sudo pristupa.
      *
      * @param list<string> $enabled
      * @param list<string> $removed
@@ -223,33 +295,30 @@ final readonly class ModuleStateStore
      */
     private function write(array $enabled, array $removed, ?array $constraints = null): void
     {
-        $path = $this->path();
-        $directory = dirname($path);
-        if (!is_dir($directory)) {
-            if (!mkdir($directory, 02770, true) && !is_dir($directory)) {
-                throw new RuntimeException('Unable to create the module state directory.');
-            }
+        $path = $this->configuration->writableFile('modules.php');
+        $constraints ??= $this->requirementConstraints();
+        $state = array_replace($this->read(), [
+            'enabled' => $this->orderedPackages($enabled),
+            'removed' => array_values($removed),
+            'constraints' => $constraints,
+        ]);
+        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($state, true) . ";\n";
+        $this->activate($path, $contents);
+    }
 
-            // HR: mkdir poštuje process umask. Eksplicitna prava nakon stvaranja
-            //     nužna su da i FPM i CLI održavatelj mogu atomski zamijeniti stanje.
-            // EN: mkdir honors the process umask. Explicit post-create permissions
-            //     are required so both FPM and the CLI maintainer can atomically replace state.
-            if (!chmod($directory, 02770)) {
-                throw new RuntimeException('Unable to secure the module state directory.');
-            }
-        }
-
+    /**
+     * EN: Atomically stores validated contents without a lower fallback.
+     *
+     * HR: Atomski sprema već provjereni sadržaj bez nižeg fallbacka.
+     */
+    private function activate(string $path, string $contents): void
+    {
+        $this->configuration->writableFile('modules.php');
         $temporary = tempnam(dirname($path), '.simbioza-modules-');
         if (!is_string($temporary)) {
             throw new RuntimeException('Unable to create a temporary module configuration file.');
         }
 
-        $constraints ??= $this->requirementConstraints();
-        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export([
-            'enabled' => $this->orderedPackages($enabled),
-            'removed' => array_values($removed),
-            'constraints' => $constraints,
-        ], true) . ";\n";
         try {
             if (file_put_contents($temporary, $contents, LOCK_EX) === false || !chmod($temporary, 0660)) {
                 throw new RuntimeException('Unable to write the module configuration.');
@@ -259,10 +328,11 @@ final readonly class ModuleStateStore
                 throw new RuntimeException('Unable to activate the module configuration.');
             }
 
-            // HR: FPM može imati konfiguraciju u OPcacheu. Odmah poništi samo
-            //     ovu promijenjenu datoteku kako bi redirect prikazao novo stanje.
             // EN: FPM may have cached the configuration in OPcache. Invalidate
             //     only this changed file so the redirect shows the new state.
+            //
+            // HR: FPM može imati konfiguraciju u OPcacheu. Odmah poništi samo
+            //     ovu promijenjenu datoteku kako bi redirect prikazao novo stanje.
             if (function_exists('opcache_invalidate')) {
                 opcache_invalidate($path, true);
             }
@@ -274,8 +344,38 @@ final readonly class ModuleStateStore
     }
 
     /**
-     * HR: Vraća samo sigurna zapamćena ograničenja opcionalnih paketa.
+     * EN: A shared lock serializes the entire read-modify-write for GUI and CLI.
+     *
+     * HR: Zajednički lock serijalizira cijeli read-modify-write za GUI i CLI.
+     *
+     * @param callable():void $operation
+     */
+    private function withLock(callable $operation): void
+    {
+        $this->configuration->writableFile('modules.php');
+        $path = $this->configuration->writableFile('.modules.lock');
+        $handle = fopen($path, 'c+b');
+        if ($handle === false) {
+            throw new RuntimeException('Unable to open the module configuration lock.');
+        }
+
+        try {
+            if (((fileperms($path) & 0777) !== 0660 && !chmod($path, 0660)) || !flock($handle, LOCK_EX)) {
+                throw new RuntimeException('Unable to secure or acquire the module configuration lock.');
+            }
+
+            $operation();
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
+    /**
      * EN: Returns only safe remembered constraints for optional packages.
+     *
+     * HR: Vraća samo sigurna zapamćena ograničenja opcionalnih paketa.
+     *
      * @return array<string,string>
      */
     private function requirementConstraints(): array
@@ -302,8 +402,9 @@ final readonly class ModuleStateStore
     }
 
     /**
-     * HR: Vraća pakete jedinstveno i u bootstrap redoslijedu.
      * EN: Returns unique packages in bootstrap order.
+     *
+     * HR: Vraća pakete jedinstveno i u bootstrap redoslijedu.
      *
      * @param list<string> $packages
      * @return list<string>
@@ -319,17 +420,5 @@ final readonly class ModuleStateStore
         }
 
         return $ordered;
-    }
-
-    /** HR: Vraća privatnu putanju konfiguracije modula. EN: Returns the private module configuration path. */
-    private function path(): string
-    {
-        return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/data/config/modules.php';
-    }
-
-    /** HR: Čita staru putanju samo radi prijelaza. EN: Reads the legacy path only for transition. */
-    private function legacyPath(): string
-    {
-        return rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/config/modules.php';
     }
 }

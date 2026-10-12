@@ -12,6 +12,8 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace;
+use App\Configuration\ConfigurationPaths;
+use App\Configuration\PhpConfigurationReader;
 use App\Installation\InstallationAccessToken;
 use App\Installation\InstallationConfigWriter;
 use App\Installation\InstallationDatabaseTester;
@@ -40,7 +42,27 @@ final class InstallationTest extends TestCase
     /** @var list<string> */
     private array $temporaryDirectories = [];
 
-    /** HR: Nakon testa uklanja samo njegove jedinstvene temp direktorije. EN: Removes only test-owned temp directories. */
+    /** @var array<string,string|false> */
+    private array $environment = [];
+
+    /**
+     * EN: Tests never read the active HFC config.
+     *
+     * HR: Testovi nikada ne čitaju aktivni HFC config.
+     */
+    protected function setUp(): void
+    {
+        foreach (['HPH_APP_PATH', 'HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $name) {
+            $this->environment[$name] = getenv($name);
+            putenv($name);
+        }
+    }
+
+    /**
+     * EN: Removes only test-owned temp directories.
+     *
+     * HR: Nakon testa uklanja samo njegove jedinstvene temp direktorije.
+     */
     protected function tearDown(): void
     {
         foreach ($this->temporaryDirectories as $directory) {
@@ -48,16 +70,20 @@ final class InstallationTest extends TestCase
         }
 
         $this->temporaryDirectories = [];
+        foreach ($this->environment as $name => $value) {
+            is_string($value) ? putenv($name . '=' . $value) : putenv($name);
+        }
     }
 
     /**
-     * HR: Izvorne teme i instalacijski paket ne smiju sadržavati razvojnu web-putanju.
      * EN: Source themes and the installation package must not contain the development web path.
+     *
+     * HR: Izvorne teme i instalacijski paket ne smiju sadržavati razvojnu web-putanju.
      */
     public function testBundledThemesDoNotHardCodeDevelopmentBasePath(): void
     {
         $projectRoot = dirname(__DIR__, 3);
-        $themesJson = file_get_contents($projectRoot . '/resources/config/theme/themes.json');
+        $themesJson = file_get_contents($projectRoot . '/config/theme/themes.json');
         $this->assertIsString($themesJson);
         $this->assertStringNotContainsString('/hfc', strtolower($themesJson));
 
@@ -81,7 +107,11 @@ final class InstallationTest extends TestCase
         $this->assertSame(24, $hero['visual_right_px'] ?? null);
     }
 
-    /** HR: Provjerava normalizaciju svakog podržanog tipa baze. EN: Verifies every supported database type. */
+    /**
+     * EN: Verifies every supported database type.
+     *
+     * HR: Provjerava normalizaciju svakog podržanog tipa baze.
+     */
     public function testInputValidatorNormalizesSupportedDatabases(): void
     {
         $validator = new InstallationInputValidator();
@@ -112,7 +142,11 @@ final class InstallationTest extends TestCase
         ])['driver']);
     }
 
-    /** HR: Novi obrazac uključuje sve opcionalne module, ali izričit prazan odabir ostaje prazan. EN: New forms select all optional modules while an explicit empty selection remains empty. */
+    /**
+     * EN: New forms select all optional modules while an explicit empty selection remains empty.
+     *
+     * HR: Novi obrazac uključuje sve opcionalne module, ali izričit prazan odabir ostaje prazan.
+     */
     public function testOptionalModulesDefaultToAllAndCanAllBeDeselected(): void
     {
         $validator = new InstallationInputValidator();
@@ -130,7 +164,11 @@ final class InstallationTest extends TestCase
         ])['optional_modules']);
     }
 
-    /** HR: Odbija slabe administratorske lozinke. EN: Rejects weak administrator passwords. */
+    /**
+     * EN: Rejects weak administrator passwords.
+     *
+     * HR: Odbija slabe administratorske lozinke.
+     */
     public function testInputValidatorRejectsWeakAdministratorPassword(): void
     {
         $validator = new InstallationInputValidator();
@@ -151,7 +189,11 @@ final class InstallationTest extends TestCase
         }
     }
 
-    /** HR: Dokazuje da token vrijedi samo jednom i da se na disku nalazi samo sažetak. EN: Proves one-time use and hash-only storage. */
+    /**
+     * EN: Proves one-time use and hash-only storage.
+     *
+     * HR: Dokazuje da token vrijedi samo jednom i da se na disku nalazi samo sažetak.
+     */
     public function testAccessTokenIsHashedAndConsumedOnce(): void
     {
         $root = $this->minimalRoot();
@@ -168,7 +210,11 @@ final class InstallationTest extends TestCase
         $this->assertFalse($tokens->consume($token));
     }
 
-    /** HR: CLI prihvaća samo sigurnu baznu adresu bez tajni i queryja. EN: CLI accepts only a safe secret-free base URL. */
+    /**
+     * EN: CLI accepts only a safe secret-free base URL.
+     *
+     * HR: CLI prihvaća samo sigurnu baznu adresu bez tajni i queryja.
+     */
     public function testPrepareCommandBuildsValidatedOneTimeUrl(): void
     {
         $root = $this->minimalRoot();
@@ -181,7 +227,11 @@ final class InstallationTest extends TestCase
         $command->prepare('https://user:password@example.test/?unsafe=1');
     }
 
-    /** HR: Uvoz početnih uputa zahtijeva zapisivu konfiguraciju izbornika. EN: Starter-guide import requires writable menu configuration. */
+    /**
+     * EN: Starter-guide import requires writable menu configuration.
+     *
+     * HR: Uvoz početnih uputa zahtijeva zapisivu konfiguraciju izbornika.
+     */
     public function testRequirementsRejectReadOnlyMenuConfigurationStorage(): void
     {
         $root = $this->minimalRoot();
@@ -202,7 +252,11 @@ final class InstallationTest extends TestCase
         }
     }
 
-    /** HR: Installer izričito provjerava ICU podršku potrebnu za jezično sortiranje. EN: Installer explicitly checks ICU support required for locale-aware sorting. */
+    /**
+     * EN: Installer explicitly checks ICU support required for locale-aware sorting.
+     *
+     * HR: Installer izričito provjerava ICU podršku potrebnu za jezično sortiranje.
+     */
     public function testRequirementsIncludeIntlExtension(): void
     {
         $requirements = new InstallationRequirements(new InstallationPaths($this->minimalRoot()));
@@ -213,7 +267,11 @@ final class InstallationTest extends TestCase
         $this->assertSame(extension_loaded('intl'), $checks['extension_intl']['passed']);
     }
 
-    /** HR: Web pristup token zamjenjuje sesijom, uklanja URL tajnu i postavlja sigurnosna zaglavlja. EN: Web access exchanges the token for a session and security headers. */
+    /**
+     * EN: Web access exchanges the token for a session and security headers.
+     *
+     * HR: Web pristup token zamjenjuje sesijom, uklanja URL tajnu i postavlja sigurnosna zaglavlja.
+     */
     public function testWebApplicationConsumesTokenAndProtectsTheSession(): void
     {
         $root = $this->minimalRoot();
@@ -257,7 +315,11 @@ final class InstallationTest extends TestCase
         $this->assertSame(404, $reuse->status);
     }
 
-    /** HR: Nevaljani CSRF zaustavlja POST prije ikakve promjene. EN: Invalid CSRF stops POST before any mutation. */
+    /**
+     * EN: Invalid CSRF stops POST before any mutation.
+     *
+     * HR: Nevaljani CSRF zaustavlja POST prije ikakve promjene.
+     */
     public function testWebApplicationRejectsInvalidCsrf(): void
     {
         $root = $this->minimalRoot();
@@ -282,10 +344,11 @@ final class InstallationTest extends TestCase
     }
 
     /**
-     * HR: Instalacija može dovršiti deploy-pripremljenu konfiguraciju bez
-     *     zamjene njezina vlasništva u sticky FPM direktoriju.
      * EN: Installation can finish deploy-prepared configuration without
      *     replacing its ownership in a sticky FPM directory.
+     *
+     * HR: Instalacija može dovršiti deploy-pripremljenu konfiguraciju bez
+     *     zamjene njezina vlasništva u sticky FPM direktoriju.
      */
     public function testExistingInstallationConfigWritePreservesMetadata(): void
     {
@@ -312,13 +375,151 @@ final class InstallationTest extends TestCase
     }
 
     /**
-     * HR: Nedostupna datoteka teme zaustavlja instalaciju prije izrade sheme.
+     * EN: Installer writes use the external final layer and retain extra keys.
+     *
+     * HR: Instalacijski zapis koristi vanjski zadnji sloj i čuva dodatne ključeve.
+     */
+    public function testWriterUsesExternalLayerAndPreservesMergedConfiguration(): void
+    {
+        $root = $this->minimalRoot();
+        mkdir($root . '/external', 0770);
+        file_put_contents(
+            $root . '/config/installation.php',
+            '<?php return ["custom"=>["keep"=>true],"session_name"=>"FIXTURE_SESSION"];',
+        );
+        file_put_contents($root . '/config/database.php', '<?php return ["custom"=>"fixture"];');
+        putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $root . '/external');
+        $paths = new InstallationPaths($root);
+        (new InstallationConfigWriter($paths))->write(['driver' => 'sqlite'], [
+            'name' => 'External fixture', 'primary_locale' => 'en', 'supported_locales' => ['en'],
+            'timezone' => 'UTC', 'optional_modules' => ['api'],
+        ]);
+        $this->assertSame($root . '/external', $paths->configDirectory());
+        $this->assertSame($root . '/external/modules.php', $paths->moduleStateConfig());
+        $this->assertFileDoesNotExist($root . '/data/config/modules.php');
+        $this->assertFileDoesNotExist($root . '/config/env.php');
+        $reader = new PhpConfigurationReader(ConfigurationPaths::fromEnvironment($root));
+        $installation = $reader->read('installation.php');
+        $this->assertSame(['keep' => true], $installation['custom']);
+        $this->assertSame('FIXTURE_SESSION', $installation['session_name']);
+        $database = require $paths->databaseConfig();
+        $this->assertSame('fixture', $database['custom']);
+        $this->assertSame($root . '/data/simbioza.sqlite', $database['connections']['default']['database']);
+        $this->assertSame($root . '/data/installation.lock', $paths->lockFile());
+    }
+
+    /**
+     * EN: Missing external config is neither created nor replaced with defaults.
+     *
+     * HR: Nedostajući vanjski config se ne stvara ni zamjenjuje zadanim.
+     */
+    public function testWriterRejectsMissingExternalDirectoryWithoutWrites(): void
+    {
+        $root = $this->minimalRoot();
+        putenv('HPH_CONFIG_PATH=' . $root . '/missing');
+        $writer = new InstallationConfigWriter(new InstallationPaths($root));
+        $this->expectException(RuntimeException::class);
+        try {
+            $writer->write(['driver' => 'sqlite'], [
+                'name' => 'Missing fixture', 'primary_locale' => 'en',
+                'supported_locales' => ['en'], 'timezone' => 'UTC',
+            ]);
+        } finally {
+            $this->assertDirectoryDoesNotExist($root . '/missing');
+            $this->assertFileDoesNotExist($root . '/config/database.php');
+        }
+    }
+
+    /**
+     * EN: An unwritable target is detected before the first write of another config.
+     *
+     * HR: Nezapisivi cilj se otkriva prije prvog zapisivanja drugog configa.
+     */
+    public function testWriterPreflightsAllTargetsBeforeWriting(): void
+    {
+        $root = $this->minimalRoot();
+        file_put_contents($root . '/config/modules.php', '<?php return ["enabled"=>[]];');
+        chmod($root . '/config/modules.php', 0400);
+        $writer = new InstallationConfigWriter(new InstallationPaths($root));
+        $this->expectException(RuntimeException::class);
+        try {
+            $writer->write(['driver' => 'sqlite'], [
+                'name' => 'Readonly fixture', 'primary_locale' => 'en',
+                'supported_locales' => ['en'], 'timezone' => 'UTC',
+            ]);
+        } finally {
+            $this->assertFileDoesNotExist($root . '/config/database.php');
+            $this->assertFileDoesNotExist($root . '/config/env.php');
+        }
+    }
+
+    /**
+     * EN: An empty external config is not a prepared installation and never gets a default fallback.
+     *
+     * HR: Prazni vanjski config nije pripremljena instalacija i ne dobiva zadani fallback.
+     */
+    public function testRequirementsRejectEmptyExternalConfiguration(): void
+    {
+        $root = $this->completeRoot();
+        mkdir($root . '/external', 0770);
+        putenv('HPH_CONFIG_PATH=' . $root . '/external');
+        $requirements = new InstallationRequirements(new InstallationPaths($root));
+        $checks = array_column($requirements->checks('sqlite'), null, 'id');
+        $this->assertFalse($checks['configuration_ready']['passed']);
+        $this->assertFileDoesNotExist($root . '/external/database.php');
+        $this->assertFileDoesNotExist($root . '/data/simbioza.sqlite');
+    }
+
+    /**
+     * EN: The clean installer honors the external layer and creates only current schemas.
+     *
+     * HR: Čisti installer poštuje vanjski sloj i stvara samo aktualne sheme.
+     */
+    public function testFreshRunnerUsesExternalConfigurationLayer(): void
+    {
+        $root = $this->completeRoot();
+        mkdir($root . '/external', 0770);
+        putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $root . '/external');
+        $paths = new InstallationPaths($root);
+        $writer = new InstallationConfigWriter($paths);
+        $runner = new InstallationRunner(
+            $paths,
+            new InstallationAccessToken($paths),
+            $writer,
+            new InstallationDatabaseTester($writer),
+            new InstallationInputValidator(),
+            new InstallationRequirements($paths),
+            new InstallationLogger($paths),
+        );
+        $result = $runner->run(['driver' => 'sqlite'], [
+            'name' => 'Layered install', 'primary_locale' => 'en', 'supported_locales' => ['en'],
+            'timezone' => 'UTC', 'optional_modules' => [], 'module_selection_present' => '1',
+        ], [
+            'login' => 'layer-admin', 'display_name' => 'Fixture Admin', 'email' => 'fixture@example.test',
+            'first_name' => 'Fixture', 'last_name' => 'Admin', 'password' => 'Unique#Strong987',
+            'password_confirmation' => 'Unique#Strong987',
+        ]);
+        $this->assertSame(6, $result['migration_count']);
+        $this->assertFileExists($root . '/external/modules.php');
+        $this->assertFileDoesNotExist($root . '/config/modules.php');
+        $this->assertFileExists($root . '/data/installation.lock');
+        $databaseConfig = require $paths->databaseConfig();
+        $database = new Database(new Config(new Helper(), ['database' => $databaseConfig]), new Helper());
+        $this->assertFalse($database->schema()->hasTable('auth_provider_settings'));
+        $this->assertFalse($database->schema()->hasColumn(ModuleAuth::TABLE_AUTH_PROVIDER_PROFILES, 'config_json'));
+        $this->assertNull($database->table('_hph_migrations')
+            ->where('migration', '=', '20261009000000_file_auth_configuration')->first());
+    }
+
+    /**
      * EN: An unwritable theme file stops installation before schema creation.
+     *
+     * HR: Nedostupna datoteka teme zaustavlja instalaciju prije izrade sheme.
      */
     public function testThemeWritePreflightPrecedesDatabaseMigrations(): void
     {
         $root = $this->completeRoot();
-        $themeFile = $root . '/resources/config/theme/themes.json';
+        $themeFile = $root . '/config/theme/themes.json';
         $this->assertTrue(chmod($themeFile, 0444));
         $paths = new InstallationPaths($root);
         $writer = new InstallationConfigWriter($paths);
@@ -356,7 +557,7 @@ final class InstallationTest extends TestCase
             $this->fail('The unwritable theme file must stop the installation.');
         } catch (RuntimeException $runtimeException) {
             $this->assertStringContainsString(
-                'theme configuration file is not writable',
+                'installation requirements are not satisfied',
                 $runtimeException->getMessage(),
             );
             $databaseFile = $root . '/data/simbioza.sqlite';
@@ -372,7 +573,11 @@ final class InstallationTest extends TestCase
         }
     }
 
-    /** HR: Pokreće stvarnu čistu SQLite instalaciju s migracijama, računom, temom i lockom. EN: Runs a real clean SQLite install. */
+    /**
+     * EN: Runs a real clean SQLite install.
+     *
+     * HR: Pokreće stvarnu čistu SQLite instalaciju s migracijama, računom, temom i lockom.
+     */
     public function testRunnerPerformsCompleteSqliteInstallation(): void
     {
         $root = $this->completeRoot();
@@ -417,7 +622,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(35, $result['migration_count']);
+        $this->assertSame(14, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -443,7 +648,9 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(35, $database->table('_hph_migrations')->get());
+        $this->assertCount(14, $database->table('_hph_migrations')->get());
+        $this->assertFalse($database->schema()->hasTable('auth_provider_settings'));
+        $this->assertFalse($database->schema()->hasColumn(ModuleAuth::TABLE_AUTH_PROVIDER_PROFILES, 'config_json'));
         $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)
             ->where('group_key', '=', ModuleCalendar::GROUP_KEY_CALENDAR_MANAGERS)
             ->first();
@@ -474,6 +681,11 @@ final class InstallationTest extends TestCase
         $meetingWorkflows = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
             ->where('node_id', '=', $meetingPage['id'])->get();
         $this->assertCount(2, $meetingWorkflows);
+        $payloadConfig = new \AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig(
+            new Config($helper, [], $root),
+            dirname(__DIR__, 3) . '/vendor/aaieduhr/heartphrame-module-editor-html',
+        );
+        $formatter = new \AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter();
         foreach ($meetingWorkflows as $workflow) {
             $published = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
                 ->where('document_id', '=', $meetingDocument['id'])
@@ -481,14 +693,17 @@ final class InstallationTest extends TestCase
                 ->where('version_number', '=', $workflow['published_version_number'])->first();
             $this->assertIsArray($published);
             $this->assertSame('published', $workflow['status']);
-            $this->assertGreaterThan(30000, strlen((string)$published['content_html']));
-            $this->assertSame(36, substr_count((string)$published['content_html'], '<img '));
+            $publishedHtml = BundledAssetsUpdater::guideVersionHtml($published, $payloadConfig, $formatter);
+            $this->assertGreaterThan(30000, strlen($publishedHtml));
+            $this->assertSame(36, substr_count($publishedHtml, '<img '));
         }
 
         $guideHtml = implode("\n", array_map(
-            static fn(array $version): string => is_string($version['content_html'] ?? null)
-                ? $version['content_html']
-                : '',
+            static fn(array $version): string => BundledAssetsUpdater::guideVersionHtml(
+                $version,
+                $payloadConfig,
+                $formatter,
+            ),
             $guideVersions,
         ));
         $this->assertStringNotContainsString('/hfc', strtolower($guideHtml));
@@ -505,7 +720,7 @@ final class InstallationTest extends TestCase
         $assetsByUuid = [];
         foreach ($assetRows as $assetRow) {
             $assetsByUuid[(string)$assetRow['uuid']] = $assetRow;
-            $assetPath = $root . '/data/editor-html/uploads/' . $assetRow['content_path'];
+            $assetPath = $payloadConfig->attachmentPayloadPath((string)$assetRow['content_path']);
             $this->assertFileExists($assetPath);
             $this->assertSame(
                 (int)$assetRow['file_size'],
@@ -518,7 +733,7 @@ final class InstallationTest extends TestCase
             $this->assertArrayHasKey($assetUuid, $assetsByUuid, 'Imported guide asset reference must resolve.');
             $contentPath = (string)$assetsByUuid[$assetUuid]['content_path'];
             $this->assertNotSame('', $contentPath);
-            $this->assertFileExists($root . '/data/editor-html/uploads/' . $contentPath);
+            $this->assertFileExists($payloadConfig->attachmentPayloadPath($contentPath));
         }
 
         $this->assertCount(0, $database->table(ModuleCalendar::TABLE_CALENDARS)->get());
@@ -582,10 +797,11 @@ final class InstallationTest extends TestCase
         ));
         $this->assertSame(['simbioza'], $themeDirectories);
 
-        // HR: Stvarna nadogradnja postojeće instalacije čuva korisničke teme,
-        //     položaj i ACL uputa te ne ponavlja import istog paketa.
         // EN: A real existing-install update preserves user themes, guide
         //     identity and ACL, and does not reimport an unchanged package.
+        //
+        // HR: Stvarna nadogradnja postojeće instalacije čuva korisničke teme,
+        //     položaj i ACL uputa te ne ponavlja import istog paketa.
         copy(
             dirname(__DIR__, 3) . '/scripts/update_bundled_assets.php',
             $root . '/scripts/update_bundled_assets.php',
@@ -607,9 +823,10 @@ final class InstallationTest extends TestCase
             );
         }
 
-        // HR: Reproducira javni CLI put starog update.php, ne izravni poziv novog koraka.
         // EN: Reproduces the public CLI path of an old update.php, not a direct new-step call.
-        file_put_contents($root . '/scripts/legacy-updater-migrate.php', <<<'PHP'
+        //
+        // HR: Reproducira javni CLI put starog update.php, ne izravni poziv novog koraka.
+        file_put_contents($root . '/scripts/bundled-assets-finalize.php', <<<'PHP'
 <?php
 require dirname(__DIR__) . '/vendor/autoload.php';
 $root = dirname(__DIR__);
@@ -656,8 +873,9 @@ PHP);
             $managedPageIds[] = (int)$guideNode['id'];
         }
 
-        // HR: Novi paket nadograđuje samo uputu za uvoz i čuva njen položaj i ACL.
         // EN: The new package upgrades only the import guide and preserves its position and ACL.
+        //
+        // HR: Novi paket nadograđuje samo uputu za uvoz i čuva njen položaj i ACL.
         $confluencePage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('slug', '=', 'confluence-import')->first();
         $this->assertIsArray($confluencePage);
@@ -693,20 +911,7 @@ PHP);
         $otherTasks = $database->table(ModuleTask::TABLE_STATES)->where('document_id', '=', $otherDocumentKey)->get();
         $otherComments = $database->table(ModuleComment::TABLE_COMMENTS)
             ->where('document_id', '=', $otherDocumentKey)->get();
-        // HR: Simulira stariju instalaciju: nema base_path metapodatka, a HTML je samo u datotekama.
-        // EN: Simulates an older installation: no base_path metadata and file-only HTML payloads.
-        $installationPath = $root . '/config/installation.php';
-        $installation = require $installationPath;
-        unset($installation['base_path']);
-        file_put_contents($installationPath, '<?php return ' . var_export($installation, true) . ';');
-        foreach ($guideVersions as $version) {
-            $relative = 'legacy-guide-' . $version['id'] . '.html';
-            file_put_contents($root . '/data/editor-html/' . $relative, (string)$version['content_html']);
-            $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->where('id', '=', $version['id'])
-                ->update(['storage_driver' => 'filesystem', 'content_path' => $relative, 'content_html' => null]);
-        }
-
-        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/legacy-updater-migrate.php')
+        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/bundled-assets-finalize.php')
         . ' 2>&1';
         $output = [];
         exec($command, $output, $exit);
@@ -752,7 +957,7 @@ PHP);
         foreach ($updatedVersions as $version) {
             $html = BundledAssetsUpdater::guideVersionHtml(
                 $version,
-                $root . '/data/editor-html',
+                $payloadConfig,
                 new EditorHtmlDocumentFormatter(),
             );
             $this->assertGreaterThan(30000, strlen($html));
@@ -760,11 +965,11 @@ PHP);
             preg_match_all('~/editor-html/asset/([0-9a-f-]{36})~i', $html, $updatedAssetMatches);
             foreach (array_unique($updatedAssetMatches[1]) as $uuid) {
                 $this->assertArrayHasKey($uuid, $updatedAssetsByUuid);
-                $assetPath = $root . '/data/editor-html/uploads/' . $updatedAssetsByUuid[$uuid]['content_path'];
+                $assetPath = $payloadConfig->attachmentPayloadPath((string)$updatedAssetsByUuid[$uuid]['content_path']);
                 $this->assertFileExists($assetPath);
                 $this->assertIsReadable($assetPath);
-                $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($assetPath));
-                $this->assertSame(filegroup($root . '/data/editor-html/uploads'), filegroup($assetPath));
+                $this->assertSame(fileowner($payloadConfig->dataRoot()), fileowner($assetPath));
+                $this->assertSame(filegroup($payloadConfig->dataRoot()), filegroup($assetPath));
             }
 
             $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $html, json_encode([
@@ -776,8 +981,9 @@ PHP);
 
         $this->assertSame('none', $meetingDocument['attachment_visibility']);
 
-        // HR: Video se prenosi lokalno, s ispravnim putanjama u HR i EN uputi.
         // EN: The video is transferred locally with correctly rebased URLs in both guide locales.
+        //
+        // HR: Video se prenosi lokalno, s ispravnim putanjama u HR i EN uputi.
         $confluenceVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
             ->where('document_id', '=', $confluenceDocument['id'])->get();
         $this->assertSame(['hr', 'en'], array_column($confluenceVersions, 'language_code'));
@@ -786,7 +992,7 @@ PHP);
         foreach ($confluenceVersions as $version) {
             $html = BundledAssetsUpdater::guideVersionHtml(
                 $version,
-                $root . '/data/editor-html',
+                $payloadConfig,
                 new EditorHtmlDocumentFormatter(),
             );
             $this->assertSame(1, preg_match(
@@ -798,18 +1004,18 @@ PHP);
             $this->assertArrayHasKey($videoMatch[1], $confluenceAssets);
             $video = $confluenceAssets[$videoMatch[1]];
             $this->assertSame('video/mp4', $video['mime_type']);
-            $videoPath = $root . '/data/editor-html/uploads/' . $video['content_path'];
+            $videoPath = $payloadConfig->attachmentPayloadPath((string)$video['content_path']);
             $this->assertFileExists($videoPath);
             $this->assertGreaterThan(1000000, filesize($videoPath));
-            $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($videoPath));
-            $this->assertSame(filegroup($root . '/data/editor-html/uploads'), filegroup($videoPath));
+            $this->assertSame(fileowner($payloadConfig->dataRoot()), fileowner($videoPath));
+            $this->assertSame(filegroup($payloadConfig->dataRoot()), filegroup($videoPath));
         }
 
         $this->assertSame(0600, fileperms($root . '/data/bundled-assets.json') & 0777);
         $stateHash = hash_file('sha256', $root . '/data/bundled-assets.json');
         $repairPath = null;
         if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
-            $repairPath = $root . '/data/editor-html/uploads/' . $updatedAssets[0]['content_path'];
+            $repairPath = $payloadConfig->attachmentPayloadPath((string)$updatedAssets[0]['content_path']);
             $this->assertTrue(chown($repairPath, 65534));
             $this->assertTrue(chgrp($repairPath, 65534));
         }
@@ -829,10 +1035,11 @@ PHP);
     }
 
     /**
-     * HR: Čista instalacija bez opcionalnih modula preskače njihove migracije,
-     *     ali ipak uvozi početne korisničke upute.
      * EN: A clean installation without optional modules skips their migrations
      *     while still importing the starter user guides.
+     *
+     * HR: Čista instalacija bez opcionalnih modula preskače njihove migracije,
+     *     ali ipak uvozi početne korisničke upute.
      */
     public function testRunnerInstallsRequiredModulesWithoutOptionalSchemas(): void
     {
@@ -876,15 +1083,16 @@ PHP);
             '/minimal',
         );
 
-        $this->assertSame(22, $result['migration_count']);
+        $this->assertSame(6, $result['migration_count']);
         $this->assertSame('', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $moduleState = require $paths->moduleStateConfig();
         $this->assertIsArray($moduleState);
-        // HR: Web-installer prvo piše privatno; jednokratni FPM `--finalize`
-        //     zatim postavlja zajedničku runtime grupu i 0660.
         // EN: The web installer writes privately first; the one-time FPM
         //     `--finalize` then applies the shared runtime group and mode 0660.
+        //
+        // HR: Web-installer prvo piše privatno; jednokratni FPM `--finalize`
+        //     zatim postavlja zajedničku runtime grupu i 0660.
         $this->assertSame(0600, fileperms($paths->moduleStateConfig()) & 0777);
         $this->assertNotContains('aaieduhr/heartphrame-module-calendar', $moduleState['enabled']);
         $this->assertNotContains('aaieduhr/heartphrame-module-theme', $moduleState['enabled']);
@@ -898,10 +1106,11 @@ PHP);
         $this->assertFalse($database->schema()->hasTable('simbioza_confluence_import_jobs'));
         $this->assertTrue($database->schema()->hasTable(ModuleWorkspace::TABLE_WORKSPACES));
 
-        // HR: Updater mora moći osvježiti ugrađene upute i bez trajno
-        //     uključenih opcionalnih modula Backup i Theme.
         // EN: The updater must be able to refresh bundled guides without the
         //     optional Backup and Theme modules being persistently enabled.
+        //
+        // HR: Updater mora moći osvježiti ugrađene upute i bez trajno
+        //     uključenih opcionalnih modula Backup i Theme.
         copy(
             dirname(__DIR__, 3) . '/scripts/update_bundled_assets.php',
             $root . '/scripts/update_bundled_assets.php',
@@ -937,7 +1146,11 @@ PHP);
         $this->assertNotContains('aaieduhr/heartphrame-module-theme', $unchangedModuleState['enabled']);
     }
 
-    /** HR: Web čarobnjak dovršava stvarnu SQLite instalaciju. EN: The web wizard completes a real SQLite installation. */
+    /**
+     * EN: The web wizard completes a real SQLite installation.
+     *
+     * HR: Web čarobnjak dovršava stvarnu SQLite instalaciju.
+     */
     public function testWebApplicationCompletesRealSqliteInstallation(): void
     {
         $root = $this->completeRoot();
@@ -999,7 +1212,11 @@ PHP);
         $this->assertSame(404, $locked->status);
     }
 
-    /** HR: Gradi web-aplikaciju sa stvarnim servisima u temp korijenu. EN: Builds the web app with real temp-root services. */
+    /**
+     * EN: Builds the web app with real temp-root services.
+     *
+     * HR: Gradi web-aplikaciju sa stvarnim servisima u temp korijenu.
+     */
     private function webApplication(
         InstallationPaths $paths,
         InstallationAccessToken $accessToken,
@@ -1031,8 +1248,9 @@ PHP);
     }
 
     /**
-     * HR: Jednojezična instalacija ne zadržava nepotrebnu drugu verziju uputa.
      * EN: A single-locale install does not retain the unnecessary second guide version.
+     *
+     * HR: Jednojezična instalacija ne zadržava nepotrebnu drugu verziju uputa.
      */
     public function testSingleLocaleInstallationImportsOnlySelectedGuideLanguage(): void
     {
@@ -1088,8 +1306,9 @@ PHP);
     }
 
     /**
-     * HR: Stvara najmanji privatni korijen za sigurnosne testove.
      * EN: Creates a minimal private root for security tests.
+     *
+     * HR: Stvara najmanji privatni korijen za sigurnosne testove.
      */
     private function minimalRoot(): string
     {
@@ -1099,8 +1318,8 @@ PHP);
             'data',
             'scripts',
             'database/migrations',
-            'resources/config/theme',
-            'resources/config/menu',
+            'config/theme',
+            'config/menu',
             'resources/installation/theme',
             'resources/installation/workspace',
             'vendor',
@@ -1116,11 +1335,18 @@ PHP);
         }
 
         $this->temporaryDirectories[] = $root;
+        putenv('HPH_APP_PATH=' . $root);
+        putenv('HPH_CONFIG_PATH=' . $root . '/config');
+        putenv('HPH_CONFIG_OVERRIDE_PATHS');
 
         return $root;
     }
 
-    /** HR: Priprema izolirani korijen sa stvarnim migracijama i paketom teme. EN: Prepares an isolated root with real migrations and theme package. */
+    /**
+     * EN: Prepares an isolated root with real migrations and theme package.
+     *
+     * HR: Priprema izolirani korijen sa stvarnim migracijama i paketom teme.
+     */
     private function completeRoot(): string
     {
         $root = $this->minimalRoot();
@@ -1132,6 +1358,7 @@ PHP);
         }
 
         copy($projectRoot . '/composer.json', $root . '/composer.json');
+        copy($projectRoot . '/bootstrap.php', $root . '/bootstrap.php');
 
         foreach (['lang', 'views'] as $applicationDirectory) {
             if (!symlink($projectRoot . '/' . $applicationDirectory, $root . '/' . $applicationDirectory)) {
@@ -1145,37 +1372,44 @@ PHP);
 
         foreach (
             [
-                'api.php',
+                'api/api.php',
                 'app.php',
-                'backup-providers.php',
-                'backup.php',
-                'calendar.php',
+                'backup/backup-providers.php',
+                'backup/backup.php',
                 'bootstrap.php',
                 'commands.php',
-                'editor-html.php',
                 'listeners.php',
-                'menu.php',
+                'menu/menu.php',
                 'middleware.php',
                 'routes.php',
                 'services.php',
-                'theme.php',
-                'workspace.php',
+                'theme/theme.php',
             ] as $configFile
         ) {
+            if (!is_dir(dirname($root . '/config/' . $configFile))) {
+                mkdir(dirname($root . '/config/' . $configFile), 0770, true);
+            }
+
             copy($projectRoot . '/config/' . $configFile, $root . '/config/' . $configFile);
         }
 
+        // EN: A clean install has the new path, without legacy calendar.php or its upgrade.
+        //
+        // HR: Čista instalacija ima novu putanju, bez starog calendar.php i njegova upgradea.
+        mkdir($root . '/config/calendar', 0770);
+        copy($projectRoot . '/config/calendar/calendar.php', $root . '/config/calendar/calendar.php');
+
         foreach (['themes.json', 'settings.json'] as $themeFile) {
             copy(
-                $projectRoot . '/resources/config/theme/' . $themeFile,
-                $root . '/resources/config/theme/' . $themeFile,
+                $projectRoot . '/config/theme/' . $themeFile,
+                $root . '/config/theme/' . $themeFile,
             );
         }
 
-        foreach (['contexts.json', 'settings.json', 'top.json'] as $menuFile) {
+        foreach (['settings.json', 'top.json'] as $menuFile) {
             copy(
-                $projectRoot . '/resources/config/menu/' . $menuFile,
-                $root . '/resources/config/menu/' . $menuFile,
+                $projectRoot . '/config/menu/' . $menuFile,
+                $root . '/config/menu/' . $menuFile,
             );
         }
 
@@ -1208,7 +1442,11 @@ PHP);
         return $root;
     }
 
-    /** HR: Rekurzivno uklanja potvrđeni temp direktorij testa. EN: Recursively removes a confirmed test temp directory. */
+    /**
+     * EN: Recursively removes a confirmed test temp directory.
+     *
+     * HR: Rekurzivno uklanja potvrđeni temp direktorij testa.
+     */
     private function deleteDirectory(string $directory): void
     {
         if (!str_starts_with($directory, sys_get_temp_dir() . '/simbioza-install-test-') || !is_dir($directory)) {

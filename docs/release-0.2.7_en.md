@@ -1,5 +1,7 @@
 # Simbioza 0.2.7
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 The optional Accessibility module is upgraded to 0.1.4. Its first-party widget now has theme-aware cards, visible on/off states, an active preference count, and bounded text sizing from 100% to 200%. Reusable controls and icons are built by the cached local script, keeping the HTML response inside the existing performance budget.
 
 New controls include independent line height, paragraph spacing, text weight, heading emphasis, yellow-on-black high contrast, high/low saturation and monochrome filters, a reading guide and mask, and a large cursor. Existing bundled fonts, semantic color palettes, link emphasis, stronger focus indicators, and reduced motion remain available. Every control is translated into Croatian, English, German, French, Spanish, and Italian.

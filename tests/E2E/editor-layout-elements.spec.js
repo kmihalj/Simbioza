@@ -26,8 +26,9 @@ async function openToolbarMenu(page, name) {
   await page.getByRole('button', { name, exact: true }).click();
 }
 
-// HR: Autor odlučuje o svrsi slike; provjera i spremljeni HTML moraju zadržati istu semantiku.
 // EN: The author decides the image purpose; checks and saved HTML must retain the same semantics.
+//
+// HR: Autor odlučuje o svrsi slike; provjera i spremljeni HTML moraju zadržati istu semantiku.
 async function verifyAccessibleContent(page) {
   const sourceToggle = page.locator('[data-editor-html-source-toggle]');
   const source = page.locator('[data-editor-html-source]');
@@ -207,8 +208,9 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   await expect(renderedCard.locator(':scope > .card-body')).toHaveText('Editable card body');
 
   const renderedTabs = page.locator('[data-editor-html-tabs="1"]');
-  // HR: Veze naslova/panela i tipkovnica ostaju valjane nakon spremanja.
   // EN: Tab/panel associations and keyboard behavior survive saving.
+  //
+  // HR: Veze naslova/panela i tipkovnica ostaju valjane nakon spremanja.
   await expect(page.getByRole('main')).toHaveCount(1);
   const tabButtons = renderedTabs.getByRole('tab');
   const panels = renderedTabs.locator('[role="tabpanel"]');
@@ -249,8 +251,9 @@ test('cards, tabs, accordion and chart 3D remain directly editable and render ca
   await expect(page.locator('.editor-html-chart-svg .editor-html-chart-background'))
     .toHaveAttribute('fill', '#f0f4f8');
 
-  // HR: Prazan Confluence redak i sljedeći Bootstrap grid ne smiju prekriti akcije dokumenta.
   // EN: An empty Confluence row followed by a Bootstrap grid must not overlap document actions.
+  //
+  // HR: Prazan Confluence redak i sljedeći Bootstrap grid ne smiju prekriti akcije dokumenta.
   await page.locator('.editor-html-view-content').evaluate((content) => {
     content.innerHTML = '<div class="w-100"><div class="row g-3"></div>'
       + '<div class="row g-3"><div class="col-12 col-lg-6">'

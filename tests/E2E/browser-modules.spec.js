@@ -1,10 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 /*
- * HR: Predmemorirani widget mora izgraditi iste nativne kontrole i zadržati
- *     tipkovnicu, spremanje, prioritete filtara i uski prikaz bez većeg HTML-a.
  * EN: The cached widget must build native controls and preserve keyboard use,
  *     persistence, filter precedence, and narrow layouts without larger HTML.
+ *
+ * HR: Predmemorirani widget mora izgraditi iste nativne kontrole i zadržati
+ *     tipkovnicu, spremanje, prioritete filtara i uski prikaz bez većeg HTML-a.
  */
 test('Accessibility builds native translated controls and retains browser preferences', async ({ page }) => {
   await page.goto('/');
@@ -106,10 +109,11 @@ const {
 } = e2eEnvironment();
 
 /**
- * HR: Otvara dropdown u pomičnom modalu i provjerava da su mu gornji i
- *     donji dio stvarno iznad tijela/podnožja modala, a ne samo CSS-om vidljivi.
  * EN: Opens a dropdown in a scrollable modal and verifies its top and bottom
  *     are actually above the modal body/footer, rather than merely CSS-visible.
+ *
+ * HR: Otvara dropdown u pomičnom modalu i provjerava da su mu gornji i
+ *     donji dio stvarno iznad tijela/podnožja modala, a ne samo CSS-om vidljivi.
  */
 async function expectUnclippedModalDropdown(toggle) {
   const menu = toggle.locator('xpath=following-sibling::*[contains(concat(" ", normalize-space(@class), " "), " dropdown-menu ")][1]');
@@ -284,12 +288,13 @@ test.describe('module browser surfaces', () => {
     await login(page, adminLogin, adminPassword);
 
     /*
-     * HR: Generički prolaz obuhvaća sve modalne okidače koje trenutna ruta
-     *     stvarno renderira. Tako novi modul automatski ulazi u regresijsku
-     *     zaštitu bez posebnog popisa ID-eva u testu.
      * EN: This generic pass covers every modal trigger actually rendered by
      *     the current route. New modules therefore join the regression guard
      *     without a separate hard-coded ID list.
+     *
+     * HR: Generički prolaz obuhvaća sve modalne okidače koje trenutna ruta
+     *     stvarno renderira. Tako novi modul automatski ulazi u regresijsku
+     *     zaštitu bez posebnog popisa ID-eva u testu.
      */
     for (const route of [
       '/calendars',
@@ -468,8 +473,9 @@ test.describe('module browser surfaces', () => {
     await expect(page).toHaveURL((url) => url.pathname === `/calendars/view/${created.uuid}`);
   });
 
-  // HR: Kombinirano polje radi tipkovnicom, najavljuje stanje i poništava zakašnjele odgovore.
   // EN: The combobox supports keyboard selection, announces state and cancels late responses.
+  //
+  // HR: Kombinirano polje radi tipkovnicom, najavljuje stanje i poništava zakašnjele odgovore.
   test('API owner picker exposes selection, pagination and request cancellation', async ({ page }) => {
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/auth/api-keys');
@@ -490,8 +496,9 @@ test.describe('module browser surfaces', () => {
     await expect(input).not.toHaveAttribute('aria-activedescendant', /.+/);
     await expect(page.locator('[data-api-owner-id]')).not.toHaveValue('');
 
-    // HR: Ograničeni lažni odgovor ne stvara korisnike ni ključeve u bazi.
     // EN: Bounded mock responses create neither users nor keys in the database.
+    //
+    // HR: Ograničeni lažni odgovor ne stvara korisnike ni ključeve u bazi.
     await page.route('**/settings/auth/api-keys/users?**', async (route) => {
       const second = new URL(route.request().url()).searchParams.get('page') === '2';
       await route.fulfill({ json: { items: [{ id: second ? 902 : 901, label: second ? 'Second test owner' : 'First test owner' }], hasMore: !second } });
@@ -529,7 +536,10 @@ test.describe('module browser surfaces', () => {
   });
 
   test('all module settings, application screens, JSON helpers, and public assets respond', async ({ page, request }) => {
-    test.setTimeout(90_000);
+    // EN: Loading every module screen cold is a workflow, not a per-request budget.
+    //
+    // HR: Hladno učitavanje svih modula cijeli je tok, ne ograničenje jednog zahtjeva.
+    test.setTimeout(300_000);
     const editorPath = await createEditorSurface(request, adminApiToken, 'surface-editor');
     await login(page, adminLogin, adminPassword);
 
@@ -574,18 +584,20 @@ test.describe('module browser surfaces', () => {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.locator('body'), route).not.toContainText(/Internal Server Error|Fatal error/i);
-      // HR: Djelomični prikazi ne smiju dodavati ugniježđeni glavni orijentir.
       // EN: Partial views must not add a nested main landmark.
+      //
+      // HR: Djelomični prikazi ne smiju dodavati ugniježđeni glavni orijentir.
       await expect(page.getByRole('main'), route).toHaveCount(1);
     }
 
     /*
-     * HR: Confluence import mora koristiti isti 3/9 raspored i karticu kao
-     *     ostale postavke; inače bočni izbornik ulazi u sadržaj, a tekst
-     *     naslova nasljeđuje boje hero elementa.
      * EN: Confluence import must use the same 3/9 layout and card as the
      *     remaining settings pages; otherwise the sidebar overlaps content
      *     and heading copy inherits hero colours.
+     *
+     * HR: Confluence import mora koristiti isti 3/9 raspored i karticu kao
+     *     ostale postavke; inače bočni izbornik ulazi u sadržaj, a tekst
+     *     naslova nasljeđuje boje hero elementa.
      */
     await page.goto('/settings/confluence-import');
     const confluenceSettings = page.locator('.confluence-import-shell');
@@ -671,7 +683,10 @@ test.describe('module browser surfaces', () => {
   });
 
   test('single calendar settings and direct subscription use the displayed calendar', async ({ page, request }) => {
-    test.setTimeout(60_000);
+    // EN: Ten theme/mode round trips need time to restore the original global theme.
+    //
+    // HR: Deset prolaza tema/način treba vrijeme i za vraćanje izvorne globalne teme.
+    test.setTimeout(180_000);
     const calendarName = `E2E single calendar ${Date.now()}`;
     const created = await expectData(await request.post('/api/v1/calendars', {
       headers: apiHeaders(adminApiToken, {
@@ -1066,10 +1081,11 @@ test.describe('module browser surfaces', () => {
     }
 
     /*
-     * HR: Izvorni tekst koji ostaje unutar kartice mora koristiti sadržajnu
-     *     paletu, iako je njegov duplicirani naslov premješten u hero.
      * EN: Source copy that remains inside a card must use the content palette,
      *     even though its duplicate title was moved into the hero.
+     *
+     * HR: Izvorni tekst koji ostaje unutar kartice mora koristiti sadržajnu
+     *     paletu, iako je njegov duplicirani naslov premješten u hero.
      */
     await page.goto('/settings/theme?theme=simbioza');
     const settingsCopy = page.getByText(
@@ -1260,10 +1276,11 @@ test.describe('module browser surfaces', () => {
     };
 
     /*
-     * HR: Svako područje dobiva jednu stvarnu objavljenu stranicu kako bi test
-     *     provjerio request-scoped temu na javnoj ruti, a ne samo vrijednost forme.
      * EN: Each Workspace receives one real published page so the test verifies
      *     request-scoped theming on a public route, not only a form value.
+     *
+     * HR: Svako područje dobiva jednu stvarnu objavljenu stranicu kako bi test
+     *     provjerio request-scoped temu na javnoj ruti, a ne samo vrijednost forme.
      */
     const createWorkspacePage = async (workspace, title) => {
       await expectData(await page.request.post('/api/v1/workspaces', {
@@ -1317,10 +1334,11 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByRole('link', { name: 'Export complete theme' })).toHaveCount(0);
 
     /*
-     * HR: Spremanje neizmijenjenog naziva sistemske teme mora stvoriti privatni
-     *     naziv s područjem i tek tada administratoru ponuditi izvoz kopije.
      * EN: Saving an unchanged system-theme label must create a private label
      *     containing the Workspace and only then offer the copy export to an administrator.
+     *
+     * HR: Spremanje neizmijenjenog naziva sistemske teme mora stvoriti privatni
+     *     naziv s područjem i tek tada administratoru ponuditi izvoz kopije.
      */
     await Promise.all([
       page.waitForURL((url) => url.pathname === '/workspaces/theme'
@@ -1419,6 +1437,10 @@ test.describe('module browser surfaces', () => {
   });
 
   test('personal Workspace is created once, linked from profile, and concealed from guests', async ({ page }) => {
+    // EN: Multiple login/logout and administration pages run with a cold test cache.
+    //
+    // HR: Više prijava/odjava i administracijskih stranica radi s hladnim testnim cacheom.
+    test.setTimeout(90_000);
     await page.setViewportSize({ width: 1440, height: 900 });
     await login(page, userLogin, userPassword);
     await page.goto('/auth/account/profile');
@@ -1443,8 +1465,9 @@ test.describe('module browser surfaces', () => {
     await expect(page.getByText(/^Osobno područje korisnika /i)).toHaveCount(0);
 
     /*
-     * HR: Naslov osobnog područja na desktopu mora ostati u jednom retku.
      * EN: The personal Workspace title must remain on one line on desktop.
+     *
+     * HR: Naslov osobnog područja na desktopu mora ostati u jednom retku.
      */
     await expect.poll(async () => englishTitle.evaluate((element) => {
       const range = document.createRange();
@@ -1463,10 +1486,11 @@ test.describe('module browser surfaces', () => {
     await page.goto('/workspaces');
     await expect(page.locator('main').locator(`a[href="${personalPath}"]`)).toHaveCount(1);
 
-    // HR: Opća pretraga odmah nudi obična vidljiva područja, ali sva osobna
-    //     područja sažima u jednu mogućnost umjesto popisa svakog vlasnika.
     // EN: Global search immediately offers ordinary visible Workspaces while
     //     aggregating every personal Workspace into one option.
+    //
+    // HR: Opća pretraga odmah nudi obična vidljiva područja, ali sva osobna
+    //     područja sažima u jednu mogućnost umjesto popisa svakog vlasnika.
     await page.goto('/search');
     const workspaceFilter = page.locator('#workspace-search-workspace-button');
     await expect(workspaceFilter).toBeVisible();
@@ -1656,8 +1680,9 @@ test.describe('module browser surfaces', () => {
       hasText: /My Workspace|Moje područje/i,
     })).toHaveCount(0);
 
-    // HR: Vraća početnu politiku zbog sljedećih testova u istoj razvojnoj bazi.
     // EN: Restores the default policy for subsequent tests in the same development database.
+    //
+    // HR: Vraća početnu politiku zbog sljedećih testova u istoj razvojnoj bazi.
     await page.goto('/auth/logout');
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/personal-workspaces');
@@ -1669,182 +1694,201 @@ test.describe('module browser surfaces', () => {
   });
 
   test('Workspace application homepage follows public, signed-in, and personal precedence', async ({ page }) => {
-    test.setTimeout(90_000);
+    // EN: This workflow publishes two pages and verifies several distinct login/homepage policies.
+    //
+    // HR: Ovaj postupak objavljuje dvije stranice i provjerava više različitih pravila prijave/naslovnice.
+    test.setTimeout(180_000);
 
-    const suffix = Date.now();
-    const workspaceSlug = `e2e-homepage-${suffix}`;
-    const publicSlug = `public-homepage-${suffix}`;
-    const signedInSlug = `signed-in-homepage-${suffix}`;
-    const publicTitle = `E2E Public Homepage ${suffix}`;
-    const signedInTitle = `E2E Signed-in Homepage ${suffix}`;
-    const headers = apiHeaders(adminApiToken);
+    const project = process.env.HPH_E2E_PROJECT;
+    expect(project).toBeTruthy();
+    const settingsPath = join(project, 'config/workspace/workspace.json');
+    const originalSettings = readFileSync(settingsPath, 'utf8');
+    try {
+      const suffix = Date.now();
+      const workspaceSlug = `e2e-homepage-${suffix}`;
+      const publicSlug = `public-homepage-${suffix}`;
+      const signedInSlug = `signed-in-homepage-${suffix}`;
+      const publicTitle = `E2E Public Homepage ${suffix}`;
+      const signedInTitle = `E2E Signed-in Homepage ${suffix}`;
+      const headers = apiHeaders(adminApiToken);
 
-    const homepageWorkspace = await expectData(await page.request.post('/api/v1/workspaces', {
-      headers: apiHeaders(adminApiToken, {
-        'Idempotency-Key': idempotencyKey('homepage-workspace'),
-      }),
-      data: {
-        name: `E2E Homepage ${suffix}`,
-        slug: workspaceSlug,
-        visibility: 'public',
-      },
-    }), 201);
-
-    const publishPage = async (title, slug) => {
-      const created = await expectData(await page.request.post('/api/v1/pages', {
+      const homepageWorkspace = await expectData(await page.request.post('/api/v1/workspaces', {
         headers: apiHeaders(adminApiToken, {
-          'Idempotency-Key': idempotencyKey(`homepage-page-${slug}`),
+          'Idempotency-Key': idempotencyKey('homepage-workspace'),
         }),
         data: {
-          title,
-          slug,
-          workspace_slug: workspaceSlug,
-          language: 'en',
-          html: `<h1>${title}</h1><p>Homepage precedence E2E fixture.</p>`,
+          name: `E2E Homepage ${suffix}`,
+          slug: workspaceSlug,
+          visibility: 'public',
         },
       }), 201);
-      const draft = await getDataWithEtag(
-        page.request,
-        `/api/v1/pages/${created.id}/draft?lang=en`,
-        headers,
+
+      const publishPage = async (title, slug) => {
+        const created = await expectData(await page.request.post('/api/v1/pages', {
+          headers: apiHeaders(adminApiToken, {
+            'Idempotency-Key': idempotencyKey(`homepage-page-${slug}`),
+          }),
+          data: {
+            title,
+            slug,
+            workspace_slug: workspaceSlug,
+            language: 'en',
+            html: `<h1>${title}</h1><p>Homepage precedence E2E fixture.</p>`,
+          },
+        }), 201);
+        const draft = await getDataWithEtag(
+          page.request,
+          `/api/v1/pages/${created.id}/draft?lang=en`,
+          headers,
+        );
+        await expectData(await page.request.post(`/api/v1/pages/${created.id}/publish?lang=en`, {
+          headers: apiHeaders(adminApiToken, {
+            'Idempotency-Key': idempotencyKey(`homepage-publish-${slug}`),
+            'If-Match': draft.etag,
+          }),
+          data: {},
+        }));
+        return created;
+      };
+
+      const publicPage = await publishPage(publicTitle, publicSlug);
+      const signedInPage = await publishPage(signedInTitle, signedInSlug);
+      const homepagePagePicker = (audience) => page
+        .locator(`[data-workspace-homepage-target="${audience}"]`)
+        .locator('xpath=..');
+      const homepageWorkspacePicker = (audience) => page.locator(
+        audience === 'personal'
+          ? '#workspace-personal-homepage-workspace [data-workspace-lookup-picker]'
+          : `#workspace-${audience}-workspace [data-workspace-lookup-picker]`,
       );
-      await expectData(await page.request.post(`/api/v1/pages/${created.id}/publish?lang=en`, {
-        headers: apiHeaders(adminApiToken, {
-          'Idempotency-Key': idempotencyKey(`homepage-publish-${slug}`),
-          'If-Match': draft.etag,
-        }),
-        data: {},
-      }));
-      return created;
-    };
 
-    const publicPage = await publishPage(publicTitle, publicSlug);
-    const signedInPage = await publishPage(signedInTitle, signedInSlug);
-    const homepagePagePicker = (audience) => page
-      .locator(`[data-workspace-homepage-target="${audience}"]`)
-      .locator('xpath=..');
-    const homepageWorkspacePicker = (audience) => page.locator(
-      audience === 'personal'
-        ? '#workspace-personal-homepage-workspace [data-workspace-lookup-picker]'
-        : `#workspace-${audience}-workspace [data-workspace-lookup-picker]`,
-    );
+      const chooseHomepageWorkspace = async (audience, label, query = label) => {
+        const picker = homepageWorkspacePicker(audience);
+        await expect(picker).toHaveAttribute('data-workspace-lookup-ready', '1');
+        await picker.locator('[data-workspace-lookup-toggle]').click();
+        await picker.locator('[data-workspace-lookup-search]').fill(query);
+        await picker
+          .locator('[data-workspace-lookup-list]')
+          // EN: The consolidated EN pack changes only the casing of “All Workspaces”.
+          //
+          // HR: Objedinjeni EN paket mijenja samo velika slova u „All Workspaces”.
+          .getByRole('button', { name: new RegExp(`^${label}$`, 'i') })
+          .click();
+      };
+      const chooseHomepagePage = async (audience, label, query) => {
+        const picker = homepagePagePicker(audience);
+        await expect(picker).toHaveAttribute('data-workspace-lookup-ready', '1');
+        await picker.locator('[data-workspace-lookup-toggle]').click();
+        await picker.locator('[data-workspace-lookup-search]').fill(query);
+        await picker
+          .locator('[data-workspace-lookup-list]')
+          .getByRole('button', { name: label, exact: true })
+          .click();
+      };
 
-    const chooseHomepageWorkspace = async (audience, label, query = label) => {
-      const picker = homepageWorkspacePicker(audience);
-      await expect(picker).toHaveAttribute('data-workspace-lookup-ready', '1');
-      await picker.locator('[data-workspace-lookup-toggle]').click();
-      await picker.locator('[data-workspace-lookup-search]').fill(query);
-      await picker
-        .locator('[data-workspace-lookup-list]')
-        // HR: Objedinjeni EN paket mijenja samo velika slova u „All Workspaces”.
-        // EN: The consolidated EN pack changes only the casing of “All Workspaces”.
-        .getByRole('button', { name: new RegExp(`^${label}$`, 'i') })
-        .click();
-    };
-    const chooseHomepagePage = async (audience, label, query) => {
-      const picker = homepagePagePicker(audience);
-      await expect(picker).toHaveAttribute('data-workspace-lookup-ready', '1');
-      await picker.locator('[data-workspace-lookup-toggle]').click();
-      await picker.locator('[data-workspace-lookup-search]').fill(query);
-      await picker
-        .locator('[data-workspace-lookup-list]')
-        .getByRole('button', { name: label, exact: true })
-        .click();
-    };
+      await login(page, adminLogin, adminPassword);
+      await page.goto('/settings/workspaces/homepage');
+      await expect(page.getByRole('heading', { name: 'Application homepage' })).toBeVisible();
+      await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
+      await expect(homepagePagePicker('public').locator('[data-workspace-lookup-toggle]'))
+        .toHaveText('Select a page');
+      await chooseHomepagePage('public', publicTitle, 'Public Homepage');
+      await expect(page.locator('[data-workspace-homepage-target="public"]'))
+        .toHaveValue(`page:${publicPage.workspace_node.id}`);
 
-    await login(page, adminLogin, adminPassword);
-    await page.goto('/settings/workspaces/homepage');
-    await expect(page.getByRole('heading', { name: 'Application homepage' })).toBeVisible();
-    await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
-    await expect(homepagePagePicker('public').locator('[data-workspace-lookup-toggle]'))
-      .toHaveText('Select a page');
-    await chooseHomepagePage('public', publicTitle, 'Public Homepage');
-    await expect(page.locator('[data-workspace-homepage-target="public"]'))
-      .toHaveValue(`page:${publicPage.workspace_node.id}`);
+      await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
+      await chooseHomepagePage(
+        'authenticated',
+        `${homepageWorkspace.name} / ${signedInTitle}`,
+        signedInTitle,
+      );
+      await expect(page.locator('[data-workspace-homepage-target="authenticated"]'))
+        .toHaveValue(`page:${signedInPage.workspace_node.id}`);
+      await page.locator('#workspace-allow-user-homepage').check();
+      await Promise.all([
+        page.waitForURL('/settings/workspaces/homepage'),
+        page.getByRole('button', { name: 'Save homepage settings' }).click(),
+      ]);
 
-    await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
-    await chooseHomepagePage(
-      'authenticated',
-      `${homepageWorkspace.name} / ${signedInTitle}`,
-      signedInTitle,
-    );
-    await expect(page.locator('[data-workspace-homepage-target="authenticated"]'))
-      .toHaveValue(`page:${signedInPage.workspace_node.id}`);
-    await page.locator('#workspace-allow-user-homepage').check();
-    await Promise.all([
-      page.waitForURL('/settings/workspaces/homepage'),
-      page.getByRole('button', { name: 'Save homepage settings' }).click(),
-    ]);
+      await page.goto('/auth/logout');
+      await page.goto('/');
+      await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
 
-    await page.goto('/auth/logout');
-    await page.goto('/');
-    await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
+      await login(page, userLogin, userPassword);
+      await expect(page).toHaveURL(
+        new RegExp(`/workspace/${workspaceSlug}/${signedInSlug}\\?lang=en$`),
+      );
 
-    await login(page, userLogin, userPassword);
-    await expect(page).toHaveURL(
-      new RegExp(`/workspace/${workspaceSlug}/${signedInSlug}\\?lang=en$`),
-    );
+      await page.goto('/auth/account/profile');
+      await openProfileSection(page, '#auth-account-personal');
+      await expect(homepagePagePicker('personal')).toBeVisible();
+      await chooseHomepageWorkspace('personal', homepageWorkspace.name, String(suffix));
+      await chooseHomepagePage('personal', publicTitle, 'Public Homepage');
+      await expect(page.locator('[data-workspace-homepage-target="personal"]'))
+        .toHaveValue(`page:${publicPage.workspace_node.id}`);
+      await Promise.all([
+        page.waitForURL('/auth/account/profile'),
+        page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
+      ]);
+      await page.goto('/');
+      await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
 
-    await page.goto('/auth/account/profile');
-    await openProfileSection(page, '#auth-account-personal');
-    await expect(homepagePagePicker('personal')).toBeVisible();
-    await chooseHomepageWorkspace('personal', homepageWorkspace.name, String(suffix));
-    await chooseHomepagePage('personal', publicTitle, 'Public Homepage');
-    await expect(page.locator('[data-workspace-homepage-target="personal"]'))
-      .toHaveValue(`page:${publicPage.workspace_node.id}`);
-    await Promise.all([
-      page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
-    ]);
-    await page.goto('/');
-    await expect(page).toHaveURL(new RegExp(`/workspace/${workspaceSlug}/${publicSlug}\\?lang=en$`));
+      await page.goto('/auth/account/profile');
+      await openProfileSection(page, '#auth-account-personal');
+      await chooseHomepageWorkspace('personal', 'All workspaces', 'All');
+      await expect(page.locator('[data-workspace-homepage-target="personal"]')).toHaveValue('default');
+      await Promise.all([
+        page.waitForURL('/auth/account/profile'),
+        page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
+      ]);
+      await page.goto('/auth/logout');
 
-    await page.goto('/auth/account/profile');
-    await openProfileSection(page, '#auth-account-personal');
-    await chooseHomepageWorkspace('personal', 'All workspaces', 'All');
-    await expect(page.locator('[data-workspace-homepage-target="personal"]')).toHaveValue('default');
-    await Promise.all([
-      page.waitForURL('/auth/account/profile'),
-      page.getByRole('button', { name: /Save personal homepage|Spremi osobnu naslovnicu/i }).click(),
-    ]);
-    await page.goto('/auth/logout');
+      await login(page, adminLogin, adminPassword);
+      await page.goto('/settings/workspaces/homepage');
+      await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
+      await chooseHomepagePage('public', 'Summaries', 'Summ');
+      await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
+      await expect(homepagePagePicker('authenticated').locator('[data-workspace-lookup-toggle]'))
+        .toHaveText('Use the public homepage');
+      await page.locator('#workspace-public-show-tree').uncheck();
+      await page.locator('#workspace-public-show-options').uncheck();
+      await Promise.all([
+        page.waitForURL('/settings/workspaces/homepage'),
+        page.getByRole('button', { name: 'Save homepage settings' }).click(),
+      ]);
+      await page.goto('/auth/logout');
+      await page.goto('/');
+      await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`
+        && url.searchParams.get('lang') === 'en'
+        && url.searchParams.get('tree') === '0'
+        && url.searchParams.get('options') === '0');
+      await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
+      await expect(page.locator('#workspace-shorts-display-options')).not.toHaveClass(/\bshow\b/);
 
-    await login(page, adminLogin, adminPassword);
-    await page.goto('/settings/workspaces/homepage');
-    await chooseHomepageWorkspace('public', homepageWorkspace.name, String(suffix));
-    await chooseHomepagePage('public', 'Summaries', 'Summ');
-    await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
-    await expect(homepagePagePicker('authenticated').locator('[data-workspace-lookup-toggle]'))
-      .toHaveText('Use the public homepage');
-    await page.locator('#workspace-public-show-tree').uncheck();
-    await page.locator('#workspace-public-show-options').uncheck();
-    await Promise.all([
-      page.waitForURL('/settings/workspaces/homepage'),
-      page.getByRole('button', { name: 'Save homepage settings' }).click(),
-    ]);
-    await page.goto('/auth/logout');
-    await page.goto('/');
-    await expect(page).toHaveURL((url) => url.pathname === `/workspace/${workspaceSlug}/shorts`
-      && url.searchParams.get('lang') === 'en'
-      && url.searchParams.get('tree') === '0'
-      && url.searchParams.get('options') === '0');
-    await expect(page.locator('#workspace-page-tree')).not.toHaveClass(/\bshow\b/);
-    await expect(page.locator('#workspace-shorts-display-options')).not.toHaveClass(/\bshow\b/);
-
-    await login(page, adminLogin, adminPassword);
-    await page.goto('/settings/workspaces/homepage');
-    await chooseHomepageWorkspace('public', 'All workspaces', 'All');
-    await expect(homepagePagePicker('public').locator('[data-workspace-lookup-toggle]'))
-      .toHaveText('Built-in application page');
-    await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
-    await Promise.all([
-      page.waitForURL('/settings/workspaces/homepage'),
-      page.getByRole('button', { name: 'Save homepage settings' }).click(),
-    ]);
-    await page.goto('/auth/logout');
+      await login(page, adminLogin, adminPassword);
+      await page.goto('/settings/workspaces/homepage');
+      await chooseHomepageWorkspace('public', 'All workspaces', 'All');
+      await expect(homepagePagePicker('public').locator('[data-workspace-lookup-toggle]'))
+        .toHaveText('Built-in application page');
+      await chooseHomepageWorkspace('authenticated', 'All workspaces', 'All');
+      await Promise.all([
+        page.waitForURL('/settings/workspaces/homepage'),
+        page.getByRole('button', { name: 'Save homepage settings' }).click(),
+      ]);
+      await page.goto('/auth/logout');
+    } finally {
+      // EN: Never leak a custom global homepage into later tests after a failure or timeout.
+      //
+      // HR: Nakon greške ili isteka roka ne ostavljaj prilagođenu globalnu naslovnicu drugim testovima.
+      writeFileSync(settingsPath, originalSettings);
+    }
   });
 
   test('personal API-key request, administrator approval, and one-time reveal work', async ({ page }) => {
+    // EN: Several cold profile requests span three logins and the one-time reveal.
+    //
+    // HR: Više hladnih profilnih zahtjeva obuhvaća tri prijave i jednokratni prikaz.
+    test.setTimeout(90_000);
     const requestName = 'E2E personal read key';
     const requestDescription = 'Validates the user request and administrator approval lifecycle.';
 
@@ -1954,8 +1998,9 @@ test.describe('module browser surfaces', () => {
         throw new Error('Notification text elements are missing.');
       }
 
-      // HR: Razrješava varijablu teme u isti izračunati RGB oblik koji vraća preglednik.
       // EN: Resolves a theme variable to the same computed RGB form returned by the browser.
+      //
+      // HR: Razrješava varijablu teme u isti izračunati RGB oblik koji vraća preglednik.
       const colorFromVariable = (name) => {
         const probe = document.createElement('span');
         probe.style.color = `var(${name})`;

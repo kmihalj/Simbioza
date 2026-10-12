@@ -1,5 +1,7 @@
 # Simbioza 0.1.69
 
+> Povijesna bilješka izdanja — nije aktualna uputa za instalaciju ni nadogradnju. Za čistu osnovu 0.3.0 koristite [instalaciju](installation_hr.md) i [aktualnu konfiguraciju](configuration_hr.md). Upute za nadogradnju starijih verzija u nastavku ostaju samo kao povijest.
+
 Uključuje sve dorade iz 0.1.68: planiranje sastanaka, administratorsku hitnu
 prijavu za članove grupe Administrator, backup/uvoz/prijenos stranica,
 aktualnu temu Simbioza i dvojezične upute sa 72 slike u svijetloj temi.

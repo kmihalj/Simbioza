@@ -1,0 +1,44 @@
+{
+    "_description_en": {
+        "installation": "Copy to HPH_CONFIG_PATH/editor-html/external-scripts.json. Without HPH_CONFIG_PATH, use app/config/editor-html/external-scripts.json. The GUI edits this file; it is optional. Protect it from public access and allow only administrators to write it.",
+        "layers": "HPH_CONFIG_OVERRIDE_PATHS adds layers. The last layer containing scripts replaces the entire list; the GUI writes to the highest layer.",
+        "scripts": "A list of at most 256 definitions. A script runs only when its status is approved AND its reference is in a published page. It does not run in the editor, draft preview, history or standalone HTML export. Application JavaScript is separate.",
+        "name": "A human-readable label, 1-160 bytes. Editors see only approved labels.",
+        "type": "inline for classic JavaScript source code, or url for a classic JavaScript file. Module scripts and other script types are not supported.",
+        "value": "The exact JavaScript source (at most 65536 bytes), or an absolute HTTPS URL (at most 4096 bytes) without embedded credentials or a fragment. Nothing is fetched during validation. HTTPS does not establish trust.",
+        "integrity": "Optional Subresource Integrity hash for a URL: sha256-, sha384- or sha512- followed by a Base64 digest. Empty means no content-integrity check. Inline scripts must leave this empty.",
+        "status": "pending (default), approved, or rejected. Approving grants full JavaScript privileges on pages selecting the script, including access to page data and same-origin requests. Review source and origin first. Revocation blocks subsequent page loads, not tabs already open.",
+        "id": "Optional when configuring manually. Derived from exact type, value and integrity; the GUI writes it automatically. Never reuse an ID after changing code, URL or integrity. Existing page references need reselecting after such a change.",
+        "imports": "New definitions from Confluence or backup are pending regardless of source approval. Existing local approval/rejection wins. Confluence automatically selects an exact locally approved match only on pages containing it; otherwise its candidate reference remains inert. The report can approve/select one page or all matching pages. Settings show direct usage, drafts and optional history. H5P follows the same rules without exceptions.",
+        "examples": "The following two entries are illustrative and pending. Replace or remove them. Do not approve unfamiliar code."
+    },
+    "_description_hr": {
+        "installation": "Kopirati u HPH_CONFIG_PATH/editor-html/external-scripts.json. Bez HPH_CONFIG_PATH koristiti app/config/editor-html/external-scripts.json. GUI uređuje ovu datoteku, ali nije obavezan. Zabraniti javni pristup i dopustiti pisanje samo administratorima.",
+        "layers": "HPH_CONFIG_OVERRIDE_PATHS dodaje slojeve. Zadnji sloj koji sadrži scripts zamjenjuje cijelu listu; GUI piše u najviši sloj.",
+        "scripts": "Lista do 256 definicija. Skripta se izvršava samo ako ima status approved I referencu u objavljenoj stranici. Ne izvršava se u editoru, pregledu nacrta, povijesti ili samostalnom HTML izvozu. JavaScript aplikacije je odvojen.",
+        "name": "Čitljiva oznaka, 1-160 bajtova. Urednici vide samo odobrene oznake.",
+        "type": "inline za izvorni kod klasičnog JavaScripta ili url za datoteku klasičnog JavaScripta. Module skripte i drugi tipovi nisu podržani.",
+        "value": "Točan JavaScript kod (do 65536 bajtova) ili apsolutni HTTPS URL (do 4096 bajtova), bez vjerodajnica i fragmenta. Provjera ništa ne dohvaća. HTTPS ne jamči pouzdanost.",
+        "integrity": "Neobavezan Subresource Integrity hash za URL: sha256-, sha384- ili sha512- pa Base64 sažetak. Prazno znači da nema provjere integriteta sadržaja. Za inline mora biti prazno.",
+        "status": "pending (zadano), approved ili rejected. Odobrenje daje puna JavaScript prava na stranicama koje odabiru skriptu, uključujući pristup sadržaju i zahtjeve prema istom siteu. Prvo provjeriti kod i izvor. Opoziv blokira sljedeća učitavanja, ne već otvorene tabove.",
+        "id": "Neobavezan pri ručnom podešavanju. Izvodi se iz točnog type, value i integrity; GUI ga automatski zapisuje. Nikad ne koristiti isti ID nakon promjene koda, URL-a ili integriteta. Postojeće reference stranica tada treba ponovno odabrati.",
+        "imports": "Nove definicije iz Confluencea ili backupa su pending bez obzira na izvorno odobrenje. Lokalno odobrenje/odbijanje ostaje. Confluence automatski odabire točno lokalno odobreno podudaranje samo na stranicama koje ga sadrže; inače referenca kandidata ostaje neizvršiva. Izvještaj omogućuje odobrenje/odabir jedne ili svih pripadajućih stranica. Postavke prikazuju izravnu upotrebu, nacrte i opcionalnu povijest. H5P nema iznimaka.",
+        "examples": "Sljedeća dva unosa su primjeri i na čekanju. Zamijeniti ih ili ukloniti. Ne odobravati nepoznat kod."
+    },
+    "scripts": [
+        {
+            "name": "H5P resizer (review before approval)",
+            "type": "url",
+            "value": "https://h5p.org/sites/all/modules/h5p/library/js/h5p-resizer.js",
+            "integrity": "",
+            "status": "pending"
+        },
+        {
+            "name": "Local example",
+            "type": "inline",
+            "value": "document.querySelectorAll('[data-example]').forEach(function (element) { element.textContent = 'Example'; });",
+            "integrity": "",
+            "status": "pending"
+        }
+    ]
+}

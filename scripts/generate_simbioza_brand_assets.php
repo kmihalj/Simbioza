@@ -1,11 +1,11 @@
 <?php
 
 /**
- * HR: Iz cjelovitog Simbioza master PNG-a izrađuje šest paleta transparentnih
- *     hero vizuala, pripadajuće ikone i stvarne vektorske SVG izvedbe.
- *
  * EN: Builds six palettes of transparent hero artwork, matching icons, and
  *     real vector SVG variants from the complete Simbioza master PNG.
+ *
+ * HR: Iz cjelovitog Simbioza master PNG-a izrađuje šest paleta transparentnih
+ *     hero vizuala, pripadajuće ikone i stvarne vektorske SVG izvedbe.
  */
 
 declare(strict_types=1);
@@ -181,8 +181,9 @@ file_put_contents(
 fwrite(STDOUT, "Generated " . count($manifestAssets) . " Simbioza branding assets.\n");
 
 /**
- * HR: Kreira direktorij ako ne postoji.
  * EN: Creates a directory when it does not exist.
+ *
+ * HR: Kreira direktorij ako ne postoji.
  */
 function ensureDirectory(string $directory): void
 {
@@ -192,8 +193,9 @@ function ensureDirectory(string $directory): void
 }
 
 /**
- * HR: Kreira potpuno prozirno GD platno s uključenim alpha kanalom.
  * EN: Creates a fully transparent GD canvas with alpha preservation enabled.
+ *
+ * HR: Kreira potpuno prozirno GD platno s uključenim alpha kanalom.
  */
 function transparentCanvas(int $width, int $height): GdImage
 {
@@ -211,8 +213,9 @@ function transparentCanvas(int $width, int $height): GdImage
 }
 
 /**
- * HR: Svakom pikselu dodjeljuje anatomsku skupinu prema boji master ilustracije.
  * EN: Assigns every pixel to an anatomical group based on the master artwork color.
+ *
+ * HR: Svakom pikselu dodjeljuje anatomsku skupinu prema boji master ilustracije.
  *
  * @return list<string>
  */
@@ -251,8 +254,9 @@ function classifyPixels(GdImage $image): array
 }
 
 /**
- * HR: Pretvara RGB u HSV radi stabilnog razdvajanja triju boja motiva.
  * EN: Converts RGB to HSV for stable separation of the artwork's three colors.
+ *
+ * HR: Pretvara RGB u HSV radi stabilnog razdvajanja triju boja motiva.
  *
  * @return array{float, float, float}
  */
@@ -284,8 +288,9 @@ function rgbToHsv(int $red, int $green, int $blue): array
 }
 
 /**
- * HR: Renderira jednu paletu uz očuvanje izvornog alpha ruba.
  * EN: Renders one palette while preserving the source alpha edge.
+ *
+ * HR: Renderira jednu paletu uz očuvanje izvornog alpha ruba.
  *
  * @param list<string> $classes
  * @param array<string, string> $palette
@@ -318,8 +323,9 @@ function renderPalette(GdImage $master, array $classes, array $palette): GdImage
 }
 
 /**
- * HR: Pretvara heksadecimalnu boju u RGB komponente.
  * EN: Converts a hexadecimal color to RGB components.
+ *
+ * HR: Pretvara heksadecimalnu boju u RGB komponente.
  *
  * @return array{int, int, int}
  */
@@ -331,8 +337,9 @@ function hexRgb(string $hex): array
 }
 
 /**
- * HR: Sprema transparentni PNG bez gubitka alpha kanala.
  * EN: Saves a transparent PNG without losing its alpha channel.
+ *
+ * HR: Sprema transparentni PNG bez gubitka alpha kanala.
  */
 function writePng(GdImage $image, string $path): void
 {
@@ -342,8 +349,9 @@ function writePng(GdImage $image, string $path): void
 }
 
 /**
- * HR: Iz hero motiva izrađuje kvadratnu ikonu visoke kvalitete.
  * EN: Creates a high-quality square icon from the hero artwork.
+ *
+ * HR: Iz hero motiva izrađuje kvadratnu ikonu visoke kvalitete.
  */
 function writeIcon(GdImage $hero, string $path): void
 {
@@ -364,8 +372,9 @@ function writeIcon(GdImage $hero, string $path): void
 }
 
 /**
- * HR: Za svaku anatomsku skupinu izrađuje Potrace vektorsku grupu.
  * EN: Builds a Potrace vector group for every anatomical color group.
+ *
+ * HR: Za svaku anatomsku skupinu izrađuje Potrace vektorsku grupu.
  *
  * @param list<string> $classes
  * @return array<string, string>
@@ -413,8 +422,9 @@ function traceVectorGroups(array $classes, string $temporaryDirectory): array
 }
 
 /**
- * HR: Izvršava vanjsku naredbu bez shell interpolacije i provjerava izlazni status.
  * EN: Runs an external command without shell interpolation and checks its exit status.
+ *
+ * HR: Izvršava vanjsku naredbu bez shell interpolacije i provjerava izlazni status.
  *
  * @param list<string> $arguments
  */
@@ -428,8 +438,9 @@ function runCommand(array $arguments): void
 }
 
 /**
- * HR: Piše samostalni skalabilni SVG s potpuno prozirnom pozadinom.
  * EN: Writes a standalone scalable SVG with a fully transparent background.
+ *
+ * HR: Piše samostalni skalabilni SVG s potpuno prozirnom pozadinom.
  *
  * @param array<string, string> $groups
  * @param array<string, string> $palette
@@ -461,8 +472,9 @@ function writeSvg(
 }
 
 /**
- * HR: Gradi zapis biblioteke teme za jednu generiranu datoteku.
  * EN: Builds one theme-library record for a generated file.
+ *
+ * HR: Gradi zapis biblioteke teme za jednu generiranu datoteku.
  *
  * @return array<string, mixed>
  */
@@ -489,8 +501,9 @@ function assetMetadata(
 }
 
 /**
- * HR: Rekurzivno uklanja isključivo privremeni direktorij generatora.
  * EN: Recursively removes only the generator's temporary directory.
+ *
+ * HR: Rekurzivno uklanja isključivo privremeni direktorij generatora.
  */
 function deleteDirectory(string $directory): void
 {

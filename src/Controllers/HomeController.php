@@ -19,9 +19,9 @@ class HomeController
     private const HOMEPAGE_RESOLVER_SERVICE = 'heartphrame.application_homepage_resolver';
 
     /**
-     * HR: Inicijalizira kontroler naslovnice.
-     *
      * EN: Initializes the homepage controller.
+     *
+     * HR: Inicijalizira kontroler naslovnice.
      */
     public function __construct(
         protected readonly ResponseFactory $responseFactory,
@@ -30,9 +30,9 @@ class HomeController
     }
 
     /**
-     * HR: Prikazuje naslovnicu i predaje opcionalni hero kontekst theme modulu.
-     *
      * EN: Shows the homepage and supplies optional hero context to the theme module.
+     *
+     * HR: Prikazuje naslovnicu i predaje opcionalni hero kontekst theme modulu.
      */
     public function index(): ResponseInterface
     {
@@ -61,11 +61,11 @@ class HomeController
     }
 
     /**
-     * HR: Poziva opcionalni neutralni resolver koji registrira Workspace modul.
-     * Kada modul nije instaliran, uključen ili spreman, ostaje ugrađena naslovnica.
-     *
      * EN: Calls the optional neutral resolver registered by the Workspace module.
      * When the module is absent, disabled, or not ready, the built-in homepage remains.
+     *
+     * HR: Poziva opcionalni neutralni resolver koji registrira Workspace modul.
+     * Kada modul nije instaliran, uključen ili spreman, ostaje ugrađena naslovnica.
      */
     private function workspaceHomepagePath(): ?string
     {
@@ -93,9 +93,9 @@ class HomeController
     }
 
     /**
-     * HR: Prikazuje informativnu stranicu aplikacije.
-     *
      * EN: Shows the application's information page.
+     *
+     * HR: Prikazuje informativnu stranicu aplikacije.
      */
     public function about(): ResponseInterface
     {

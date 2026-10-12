@@ -1,0 +1,254 @@
+{
+    "_documentation": {
+        "en": {
+            "example": "Starting example for HPH_CONFIG_PATH/auth/auth.json; .dist is not loaded automatically. Never overwrite an existing auth.json. All example SSO profiles are disabled and contain no real secrets.",
+            "format": "JSON has no comments; _documentation is descriptive, not operational. Auth ignores it during validation and GUI saves remove it. It may be removed before copying.",
+            "layers": "Auth selects the last existing auth/auth.json as a complete document rather than merging partial JSON layers. HTTP and CLI must share HPH_CONFIG_PATH and HPH_CONFIG_OVERRIDE_PATHS.",
+            "login": "allow_local_admin_breakglass enables local admin override; allow_local_registration allows local registration; login_duration_days is an inactivity lifetime of 1–365 days. require_provider_verification requires a prior profile test; generic Auth does not require it, while Simbioza may enable that policy.",
+            "providers": "enabled is the global protocol switch. Each SSO provider may contain multiple profiles; both protocol and profile must be enabled for login. Local has no profiles or empty config.",
+            "profile_identity": "Profile keys are stable and unique across protocols; the database retains IDs and user links. Rename profile_name, not the key. root_profile_key is null for independent profiles or the SAML proxy root key.",
+            "config_and_mapping": "config contains per-profile connection settings and secrets; mapping maps SSO attributes. Protocol switches use string 0/1. Replace example URLs, client_id/client_secret, and the SimpleSAMLphp autoload_path before enabling profiles.",
+            "user_attributes": "Field definitions, not user data. labels supports languages, field_type selects the type, and switches select required/form/active behavior. Adding or removing a definition synchronizes the database; removal also deletes stored values for that attribute.",
+            "database": "Users, groups, memberships, identities, and necessary relationships remain in the database. JSON does not remove the need for ORM and migrations.",
+            "security": "Keep outside the public web directory and Git; file/lock 0660, private Auth directory 2770 with the runtime group. Publish manual edits atomically and coordinate with auth.json.lock.",
+            "oidc_trust": "issuer and jwks_uri are mandatory and copied exactly from trusted OIDC metadata. RSA signature, issuer, client audience/azp, exp/iat/nbf, nonce and UserInfo sub are checked. No unsigned fallback or JWT-header key URL. userinfo_endpoint is optional only for OIDC; required mapping attributes must still exist.",
+            "oidc_algorithms": "id_token_algorithms is a comma-separated subset of RS256,RS384,RS512, default RS256; none, HMAC, EC and encrypted JWE are unsupported. clock_skew_seconds is 0–120, default 60; it is not an expiry bypass.",
+            "backchannel": "HTTPS with chain/hostname verification is mandatory by default. ca_cert_path is an optional readable PEM CA bundle. allow_insecure_http=1 is an explicit non-production exception, not a TLS-verification bypass. Internal HTTPS SSO is allowed. No redirects; 2 MiB response maximum; 10-second connect and 30-second total timeout. Canonical direct endpoints are required.",
+            "pkce": "pkce_enabled=1 sends S256 challenge and redeems with a session-only verifier; OIDC defaults to 1 and generic OAuth2 to 0 for provider compatibility. OAuth2 authenticates only from UserInfo, not from JWT payloads. State is single-use, expires after 600 seconds and is bound to profile, callback and configuration/mapping. OIDC nonce is mandatory."
+        },
+        "hr": {
+            "primjer": "Početni primjer za HPH_CONFIG_PATH/auth/auth.json; .dist se ne učitava automatski. Ne prepisivati postojeći auth.json. Svi ogledni SSO profili su isključeni i nemaju stvarne tajne.",
+            "format": "JSON nema komentare; _documentation sadrži samo opis, ne postavke. Auth ga pri validaciji zanemaruje, a GUI spremanje uklanja. Može se ukloniti prije kopiranja.",
+            "slojevi": "Auth koristi posljednji postojeći auth/auth.json kao cjelovit dokument, ne spaja djelomične JSON slojeve. HTTP i CLI moraju dijeliti HPH_CONFIG_PATH i HPH_CONFIG_OVERRIDE_PATHS.",
+            "login": "allow_local_admin_breakglass omogućuje lokalni admin override; allow_local_registration lokalnu registraciju; login_duration_days trajanje neaktivnosti 1–365 dana. require_provider_verification traži prethodni test profila; generički modul ga ne zahtijeva, Simbioza može uključiti tu politiku.",
+            "providers": "enabled je globalni prekidač protokola. Svaki SSO provider može imati više profiles unosa; i protokol i profil moraju biti uključeni za prijavu. Local nema profiles ili prazan config.",
+            "identitet_profila": "Ključ profila je stabilan i jedinstven među protokolima; DB zadržava njegov ID i korisničke veze. Za preimenovanje mijenjati profile_name, ne ključ. root_profile_key je null za samostalan profil ili ključ SAML proxy korijena.",
+            "config_i_mapping": "config sadrži vezu i tajne pojedinog profila, mapping mapiranja SSO atributa. Protokolni prekidači koriste string 0/1. Zamijeniti ogledne URL-ove, client_id/client_secret i SimpleSAMLphp autoload_path prije uključivanja profila.",
+            "user_attributes": "To su definicije polja, ne podaci korisnika. labels podržava jezike, field_type tip, ostali prekidači obveznost/forme/aktivnost. Dodavanje ili uklanjanje definicije sinkronizira bazu; uklanjanje briše i spremljene vrijednosti tog atributa.",
+            "baza": "Korisnici, grupe, članstva, identiteti i nužne veze ostaju u bazi. JSON ne uklanja potrebu za ORM-om i migracijama.",
+            "sigurnost": "Držati izvan javnog web direktorija i Gita; file/lock 0660, privatni auth direktorij 2770 s runtime grupom. Ručne izmjene objaviti atomskom zamjenom, usklađeno s auth.json.lock.",
+            "oidc_povjerenje": "issuer i jwks_uri obavezni su i doslovno se prepisuju iz pouzdanih OIDC metapodataka. Provjeravaju se RSA potpis, issuer, publika klijenta/azp, exp/iat/nbf, nonce i UserInfo sub. Nema nepotpisanog fallbacka ni URL-a ključa iz JWT zaglavlja. userinfo_endpoint opcionalan je samo za OIDC; potrebni mapirani atributi i dalje moraju postojati.",
+            "oidc_algoritmi": "id_token_algorithms je popis podskupa RS256,RS384,RS512 odvojen zarezima, zadano RS256; none, HMAC, EC i šifrirani JWE nisu podržani. clock_skew_seconds je 0–120, zadano 60; ne zaobilazi provjeru isteka.",
+            "backchannel": "Zadano je obavezan HTTPS uz provjeru lanca/naziva hosta. ca_cert_path je opcionalan čitljiv PEM CA bundle. allow_insecure_http=1 izričita je neprodukcijska iznimka, ne isključivanje TLS provjere. Interni HTTPS SSO je dopušten. Nema preusmjerenja; najviše 2 MiB odgovora; 10 sekundi za povezivanje i 30 ukupno. Potrebni su direktni endpointi.",
+            "pkce": "pkce_enabled=1 šalje S256 challenge i razmjenjuje kod uz verifier samo u sjednici; OIDC zadano 1, generički OAuth2 0 zbog kompatibilnosti providera. OAuth2 autentificira samo iz UserInfo, ne JWT payloada. State je jednokratan, istječe nakon 600 sekundi i vezan je uz profil, callback i konfiguraciju/mapiranja. OIDC nonce je obavezan."
+        }
+    },
+    "schema_version": 1,
+    "login": {
+        "allow_local_admin_breakglass": true,
+        "allow_local_registration": false,
+        "login_duration_days": 30,
+        "require_provider_verification": false
+    },
+    "providers": {
+        "local": {
+            "enabled": true
+        },
+        "saml": {
+            "enabled": false,
+            "profiles": {
+                "example-saml": {
+                    "profile_name": "Example SAML",
+                    "root_profile_key": null,
+                    "is_enabled": false,
+                    "allow_auto_create": false,
+                    "config": {
+                        "autoload_path": "/path/to/simplesamlphp/lib/_autoload.php",
+                        "auth_source": "default-sp",
+                        "is_proxy_instance": "0",
+                        "force_login": "0",
+                        "allowed_domains": "example.test"
+                    },
+                    "mapping": {
+                        "subject_attribute": "uid",
+                        "login_attribute": "uid",
+                        "display_name_attribute": "displayName",
+                        "domain_attribute": "mail",
+                        "user_attribute_email": "mail",
+                        "user_attribute_first_name": "givenName",
+                        "user_attribute_last_name": "sn"
+                    }
+                }
+            }
+        },
+        "cas": {
+            "enabled": false,
+            "profiles": {
+                "example-cas": {
+                    "profile_name": "Example CAS",
+                    "root_profile_key": null,
+                    "is_enabled": false,
+                    "allow_auto_create": false,
+                    "config": {
+                        "base_url": "https://sso.example.test/cas",
+                        "login_endpoint": "/login",
+                        "validate_endpoint": "/serviceValidate",
+                        "logout_endpoint": "/logout",
+                        "ca_cert_path": "",
+                        "force_login": "0",
+                        "allowed_domains": "",
+                        "allow_insecure_http": "0"
+                    },
+                    "mapping": {
+                        "subject_attribute": "user",
+                        "login_attribute": "mail",
+                        "display_name_attribute": "displayName",
+                        "domain_attribute": "",
+                        "user_attribute_email": "mail",
+                        "user_attribute_first_name": "givenName",
+                        "user_attribute_last_name": "sn"
+                    }
+                }
+            }
+        },
+        "oidc": {
+            "enabled": false,
+            "profiles": {
+                "example-oidc-work": {
+                    "profile_name": "Example OIDC work account",
+                    "root_profile_key": null,
+                    "is_enabled": false,
+                    "allow_auto_create": false,
+                    "config": {
+                        "client_id": "replace-with-client-id",
+                        "client_secret": "replace-with-client-secret",
+                        "authorization_endpoint": "https://sso.example.test/authorize",
+                        "token_endpoint": "https://sso.example.test/token",
+                        "userinfo_endpoint": "https://sso.example.test/userinfo",
+                        "scope": "openid profile email",
+                        "redirect_base_url": "https://app.example.test",
+                        "end_session_endpoint": "https://sso.example.test/logout",
+                        "force_login_parameters": "max_age=0",
+                        "force_login": "0",
+                        "allowed_domains": "",
+                        "issuer": "https://sso.example.test",
+                        "jwks_uri": "https://sso.example.test/jwks",
+                        "id_token_algorithms": "RS256",
+                        "clock_skew_seconds": "60",
+                        "pkce_enabled": "1",
+                        "ca_cert_path": "",
+                        "allow_insecure_http": "0"
+                    },
+                    "mapping": {
+                        "subject_attribute": "sub",
+                        "login_attribute": "preferred_username",
+                        "display_name_attribute": "name",
+                        "domain_attribute": "",
+                        "user_attribute_email": "email",
+                        "user_attribute_first_name": "given_name",
+                        "user_attribute_last_name": "family_name"
+                    }
+                },
+                "example-oidc-campus": {
+                    "profile_name": "Example second OIDC provider",
+                    "root_profile_key": null,
+                    "is_enabled": false,
+                    "allow_auto_create": false,
+                    "config": {
+                        "client_id": "replace-with-second-client-id",
+                        "client_secret": "replace-with-second-client-secret",
+                        "authorization_endpoint": "https://campus.example.test/authorize",
+                        "token_endpoint": "https://campus.example.test/token",
+                        "userinfo_endpoint": "https://campus.example.test/userinfo",
+                        "scope": "openid profile email",
+                        "redirect_base_url": "https://app.example.test",
+                        "issuer": "https://campus.example.test",
+                        "jwks_uri": "https://campus.example.test/jwks",
+                        "id_token_algorithms": "RS256",
+                        "clock_skew_seconds": "60",
+                        "pkce_enabled": "1",
+                        "ca_cert_path": "",
+                        "allow_insecure_http": "0"
+                    },
+                    "mapping": {
+                        "subject_attribute": "sub",
+                        "login_attribute": "email",
+                        "display_name_attribute": "name",
+                        "user_attribute_email": "email",
+                        "user_attribute_first_name": "given_name",
+                        "user_attribute_last_name": "family_name"
+                    }
+                }
+            }
+        },
+        "oauth2": {
+            "enabled": false,
+            "profiles": {
+                "example-oauth2": {
+                    "profile_name": "Example OAuth2",
+                    "root_profile_key": null,
+                    "is_enabled": false,
+                    "allow_auto_create": false,
+                    "config": {
+                        "client_id": "replace-with-client-id",
+                        "client_secret": "replace-with-client-secret",
+                        "authorization_endpoint": "https://oauth.example.test/authorize",
+                        "token_endpoint": "https://oauth.example.test/token",
+                        "userinfo_endpoint": "https://oauth.example.test/user",
+                        "scope": "profile email",
+                        "redirect_base_url": "https://app.example.test",
+                        "logout_endpoint": "https://oauth.example.test/logout",
+                        "logout_redirect_parameter": "redirect_uri",
+                        "logout_hint_parameter": "",
+                        "force_login_parameters": "prompt=login",
+                        "force_login": "0",
+                        "allowed_domains": "",
+                        "pkce_enabled": "0",
+                        "ca_cert_path": "",
+                        "allow_insecure_http": "0"
+                    },
+                    "mapping": {
+                        "subject_attribute": "id",
+                        "login_attribute": "username",
+                        "display_name_attribute": "name",
+                        "domain_attribute": "",
+                        "user_attribute_email": "email",
+                        "user_attribute_first_name": "first_name",
+                        "user_attribute_last_name": "last_name"
+                    }
+                }
+            }
+        }
+    },
+    "user_attributes": [
+        {
+            "field_key": "email",
+            "labels": {
+                "en": "Email",
+                "hr": "Email"
+            },
+            "field_type": "email",
+            "is_required": false,
+            "show_on_registration": true,
+            "show_on_profile": true,
+            "is_enabled": true,
+            "sort_order": 10
+        },
+        {
+            "field_key": "first_name",
+            "labels": {
+                "en": "First name",
+                "hr": "Ime"
+            },
+            "field_type": "text",
+            "is_required": false,
+            "show_on_registration": true,
+            "show_on_profile": true,
+            "is_enabled": true,
+            "sort_order": 20
+        },
+        {
+            "field_key": "last_name",
+            "labels": {
+                "en": "Last name",
+                "hr": "Prezime"
+            },
+            "field_type": "text",
+            "is_required": false,
+            "show_on_registration": true,
+            "show_on_profile": true,
+            "is_enabled": true,
+            "sort_order": 30
+        }
+    ]
+}

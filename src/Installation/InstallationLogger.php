@@ -7,19 +7,25 @@ namespace App\Installation;
 use Throwable;
 
 /**
- * HR: Zapisuje tehničke detalje instalacije u privatni log bez korisničkog ispisa.
  * EN: Writes installation diagnostics to a private log without exposing them to the user.
+ *
+ * HR: Zapisuje tehničke detalje instalacije u privatni log bez korisničkog ispisa.
  */
 final readonly class InstallationLogger
 {
-    /** HR: Inicijalizira privatnu lokaciju loga. EN: Initializes the private log location. */
+    /**
+     * EN: Initializes the private log location.
+     *
+     * HR: Inicijalizira privatnu lokaciju loga.
+     */
     public function __construct(private InstallationPaths $paths)
     {
     }
 
     /**
-     * HR: Zapisuje sigurni kontekst i puni izuzetak za administratora sustava.
      * EN: Records safe context and the complete exception for the system administrator.
+     *
+     * HR: Zapisuje sigurni kontekst i puni izuzetak za administratora sustava.
      */
     public function error(string $context, Throwable $throwable): void
     {
@@ -34,13 +40,21 @@ final readonly class InstallationLogger
         $this->write($message);
     }
 
-    /** HR: Zapisuje poruku bez osjetljivog konteksta. EN: Records a message without sensitive context. */
+    /**
+     * EN: Records a message without sensitive context.
+     *
+     * HR: Zapisuje poruku bez osjetljivog konteksta.
+     */
     public function info(string $message): void
     {
         $this->write(sprintf("[%s] INFO %s\n", gmdate(DATE_ATOM), $message));
     }
 
-    /** HR: Sigurno dodaje zapis privatnoj datoteci. EN: Safely appends a record to the private file. */
+    /**
+     * EN: Safely appends a record to the private file.
+     *
+     * HR: Sigurno dodaje zapis privatnoj datoteci.
+     */
     private function write(string $message): void
     {
         $directory = dirname($this->paths->logFile());

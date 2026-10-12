@@ -8,24 +8,34 @@ namespace Simbioza\Update;
 use App\Module\NativeProcessRunner;
 use App\Setup\SetupGateway;
 use App\Setup\SetupRequestStore;
+use HeartPhrame\Config\ConfigArrayMerger;
+use HeartPhrame\Config\ConfigPathResolver;
 use JsonException;
 use RuntimeException;
 use Throwable;
 
+// EN: No autoloader is needed to select private configuration before updating.
+//
+// HR: Autoloader nije potreban za odabir privatne konfiguracije prije nadogradnje.
+if (is_file(__DIR__ . '/bootstrap.php')) {
+    require_once __DIR__ . '/bootstrap.php';
+}
+
 /**
- * HR: Samostalni updater za release instalacije bez trajnog Git direktorija.
- *
  * EN: Standalone updater for release installations without a persistent Git directory.
+ *
+ * HR: Samostalni updater za release instalacije bez trajnog Git direktorija.
  */
 final class ApplicationUpdateCommand
 {
-    // HR: Povećati pri svakoj promjeni updatera; protokol predaje ostaje kompatibilan.
     // EN: Increment on every updater change; keep the handoff protocol compatible.
-    public const UPDATER_VERSION = '1.0.0';
+    //
+    // HR: Povećati pri svakoj promjeni updatera; protokol predaje ostaje kompatibilan.
+    public const UPDATER_VERSION = '1.0.7';
 
     public const HANDOFF_PROTOCOL = 1;
 
-    public const BRIDGE_RELEASE = '0.2.12';
+    public const MINIMUM_RELEASE = '0.3.0';
 
     private const HANDOFF_ENV = 'SIMBIOZA_UPDATER_HANDOFF';
 
@@ -43,12 +53,18 @@ final class ApplicationUpdateCommand
         '/config/database.php',
         '/config/env.php',
         '/config/installation.php',
+        '/config/modules.php',
         '/config/languages.php',
-        '/config/email.php',
-        '/config/workspace.php',
-        '/config/editor-html.php',
-        '/resources/config/menu/',
-        '/resources/config/theme/',
+        '/config/email/',
+        '/config/workspace/',
+        '/config/editor-html/',
+        '/config/auth/',
+        '/config/calendar/',
+        '/config/menu/',
+        '/config/theme/',
+        '/config/backup/',
+        '/config/api/',
+        '/framework.php',
     ];
 
     /** @var list<string> */
@@ -57,14 +73,38 @@ final class ApplicationUpdateCommand
         'config/database.php',
         'config/env.php',
         'config/installation.php',
+        'config/modules.php',
+        'config/modules.php.lock',
         'config/languages.php',
-        'config/email.php',
-        'config/workspace.php',
-        'config/editor-html.php',
+        'config/email',
+        'config/email/email.json',
+        'config/email/email.json.lock',
+        'config/workspace',
+        'config/workspace/workspace.json',
+        'config/workspace/workspace.json.lock',
+        'config/editor-html',
+        'config/editor-html/editor-html.json',
+        'config/editor-html/editor-html.json.lock',
+        'config/auth',
+        'config/auth/auth.json',
+        'config/auth/auth.json.lock',
+        'config/calendar',
+        'config/calendar/calendar.php',
+        'config/menu',
+        'config/menu/menu.php',
+        'config/menu/top.json',
+        'config/menu/settings.json',
+        'config/theme',
+        'config/theme/theme.php',
+        'config/theme/themes.json',
+        'config/theme/settings.json',
+        'config/backup',
+        'config/backup/backup.php',
+        'config/backup/backup-providers.php',
+        'config/api',
+        'config/api/api.php',
+        'framework.php',
         'data',
-        'resources/config',
-        'resources/config/menu',
-        'resources/config/theme',
     ];
 
     /** @var list<string> */
@@ -164,8 +204,8 @@ final class ApplicationUpdateCommand
             'en' => 'Updating application files while preserving private configuration and data...',
         ],
         'theme_config' => [
-            'hr' => 'Dopunjujem nedostajuće strukturne vrijednosti postojećih tema...',
-            'en' => 'Adding missing structural values to existing themes...',
+            'hr' => 'Čuvam privatne konfiguracije i dopunjujem izbornik postavki...',
+            'en' => 'Preserving private configuration and extending the settings menu...',
         ],
         'composer' => [
             'hr' => 'Ažuriram Composer module na zadnje kompatibilne tagove...',
@@ -244,8 +284,9 @@ final class ApplicationUpdateCommand
     private readonly ?\Closure $progressReporter;
 
     /**
-     * HR: Prima korijen, CLI argumente i opcionalni izvjestitelj GUI napretka.
      * EN: Receives the root, CLI arguments, and an optional GUI progress reporter.
+     *
+     * HR: Prima korijen, CLI argumente i opcionalni izvjestitelj GUI napretka.
      *
      * @param list<string> $arguments
      * @param (callable(string,int,string):void)|null $progressReporter
@@ -275,16 +316,35 @@ final class ApplicationUpdateCommand
             $this->write(json_encode([
                 'version' => self::UPDATER_VERSION,
                 'protocol' => self::HANDOFF_PROTOCOL,
-                'bridge_release' => self::BRIDGE_RELEASE,
+                'minimum_release' => self::MINIMUM_RELEASE,
             ], JSON_THROW_ON_ERROR));
             return 0;
         }
 
         try {
+            // EN: This standalone guard works before Composer and never mutates an image deployment.
+            // The baked marker remains authoritative even if environment settings are changed.
+            //
+            // HR: Samostalna zaštita radi prije Composera i ne mijenja deployment imagea.
+            // Ugrađena oznaka ostaje mjerodavna i nakon promjene okoliša.
+            $deploymentMode = getenv('HPH_DEPLOYMENT_MODE');
+            if ($deploymentMode !== false && !in_array($deploymentMode, ['', 'classic', 'immutable'], true)) {
+                throw new RuntimeException('Invalid HPH_DEPLOYMENT_MODE; expected classic or immutable.');
+            }
+            if (is_file($this->appRoot . '/resources/deployment/immutable.json')
+                || getenv('HPH_DEPLOYMENT_MODE') === 'immutable') {
+                $message = 'Immutable deployment: replace the application image; do not update code in place.';
+                if ($this->hasOption('--check')) {
+                    $this->write($message);
+                    return 0;
+                }
+                throw new RuntimeException($message);
+            }
             $this->assertInstallationRoot();
             $currentTag = $this->currentTag();
             if ($this->hasOption('--continue-update')) {
                 [$targetTag, $sourceTag, $sourceDirectory] = $this->receiveUpdaterHandoff();
+                $this->assertReleaseBoundary($currentTag, $targetTag);
                 $this->reportProgress('updater_ready', 9, 'Refreshed updater is running.');
                 if ($targetTag !== $sourceTag) {
                     $sourceDirectory = $this->temporaryDirectory . '/source';
@@ -306,9 +366,7 @@ final class ApplicationUpdateCommand
                     }
                     return 0;
                 }
-                if (version_compare(ltrim($targetTag, 'v'), self::BRIDGE_RELEASE, '<')) {
-                    throw new RuntimeException('Target releases older than the required bridge ' . self::BRIDGE_RELEASE . ' are not supported.');
-                }
+                $this->assertReleaseBoundary($currentTag, $targetTag);
                 if ($this->shouldDelegateToSetupHelper()) {
                     return $this->delegateToSetupHelper($targetTag);
                 }
@@ -338,12 +396,12 @@ final class ApplicationUpdateCommand
             $this->write(sprintf($this->message('target'), $targetTag));
             $this->progress('download', 10, $this->message('download'));
             $this->assertReleaseSource($sourceDirectory, $targetTag);
+            $this->configurationDirectories();
             $this->captureSelectedOptionalRequirements($sourceDirectory);
 
             $this->backupPath = $this->createBackup($tar, $currentTag, $targetTag);
             $this->progress('backup', 25, sprintf($this->message('backup'), $this->backupPath));
             $this->enableMaintenance($targetTag);
-            $this->ensureModuleStateConfig();
             $this->capturePreservedPathMetadata();
             $this->captureRuntimeSettings();
 
@@ -355,7 +413,6 @@ final class ApplicationUpdateCommand
             $this->restoreRuntimeSettings();
             $this->appendMissingMenuSettings($sourceDirectory);
             $this->progress('configuration', 42, $this->message('theme_config'));
-            $this->normalizeStoredThemeComponentHeights();
             $this->restorePreservedPathMetadata();
             $this->normalizeReleaseConfigFileMetadata();
 
@@ -366,12 +423,14 @@ final class ApplicationUpdateCommand
             $this->mustRunComposer([$composer, 'check-platform-reqs'], $this->appRoot);
             $this->mustRunComposer([$composer, 'audit', '--locked'], $this->appRoot);
 
-            // HR: Read-only status prisiljava potpuni bootstrap aplikacije prije
-            //     nego označimo da su migracije započele. Pad tijekom bootstrapa
-            //     tada još uvijek može sigurno vratiti kod i Composer pakete.
+
             // EN: The read-only status command forces a complete application
             //     bootstrap before migrations are marked as started. A bootstrap
             //     failure can therefore still safely restore code and packages.
+            //
+            // HR: Read-only status prisiljava potpuni bootstrap aplikacije prije
+            //     nego označimo da su migracije započele. Pad tijekom bootstrapa
+            //     tada još uvijek može sigurno vratiti kod i Composer pakete.
             $this->progress('preflight', 78, $this->message('preflight'));
             $this->mustRun([
                 $this->appRoot . '/vendor/bin/hph',
@@ -393,8 +452,9 @@ final class ApplicationUpdateCommand
                 'migrate-status',
             ], $this->appRoot);
 
-            // HR: Paketi sadržaja primjenjuju se tek uz migriranu shemu.
             // EN: Content packages are applied only after schema migrations.
+            //
+            // HR: Paketi sadržaja primjenjuju se tek uz migriranu shemu.
             $this->mustRun([PHP_BINARY, $this->appRoot . '/scripts/update_bundled_assets.php'], $this->appRoot);
             $this->progress('cache', 96, $this->message('cache'));
             $this->clearCache($this->appRoot . '/data/cache');
@@ -428,6 +488,7 @@ final class ApplicationUpdateCommand
             }
             return 1;
         } finally {
+
             $this->restorePreservedPathMetadata(false);
             $this->removeTemporaryDirectory();
             $this->releaseLock();
@@ -435,9 +496,9 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Odabire najveći stabilni semantički tag iz izlaza `git ls-remote`.
-     *
      * EN: Selects the greatest stable semantic tag from `git ls-remote` output.
+     *
+     * HR: Odabire najveći stabilni semantički tag iz izlaza `git ls-remote`.
      */
     public static function greatestStableTag(string $remoteOutput): ?string
     {
@@ -482,7 +543,11 @@ final class ApplicationUpdateCommand
         return $tag;
     }
 
-    /** HR: Dohvaća točan stabilni tag bez pokretanja aplikacije. EN: Fetches an exact stable tag without bootstrapping the application. */
+    /**
+     * EN: Fetches an exact stable tag without bootstrapping the application.
+     *
+     * HR: Dohvaća točan stabilni tag bez pokretanja aplikacije.
+     */
     private function fetchRelease(string $git, string $targetTag, string $sourceDirectory): void
     {
         $this->mustRun([$git, 'init', '--quiet', $sourceDirectory]);
@@ -493,10 +558,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Provjerava i atomski osvježava jedinu samostalnu datoteku updatera.
-     *     Baza, vendor, konfiguracija i održavanje još nisu mijenjani.
      * EN: Validates and atomically refreshes the single standalone updater file.
      *     Database, vendor, configuration, and maintenance are still untouched.
+     *
+     * HR: Provjerava i atomski osvježava jedinu samostalnu datoteku updatera.
+     *     Baza, vendor, konfiguracija i održavanje još nisu mijenjani.
      */
     private function refreshUpdater(string $candidate): bool
     {
@@ -569,10 +635,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Novi PHP proces nasljeđuje lock; stari omotač prenosi GUI napredak
-     *     i čeka njegov stvarni izlazni kod. Ne koristi shell niti pcntl.
      * EN: The new PHP process inherits the lock; the old wrapper relays GUI
      *     progress and waits for its real exit code. Uses neither shell nor pcntl.
+     *
+     * HR: Novi PHP proces nasljeđuje lock; stari omotač prenosi GUI napredak
+     *     i čeka njegov stvarni izlazni kod. Ne koristi shell niti pcntl.
      */
     private function continueWithNewUpdater(string $targetTag, string $sourceTag, string $sourceDirectory): int
     {
@@ -583,8 +650,9 @@ final class ApplicationUpdateCommand
         if ($context === false) {
             throw new RuntimeException('Unable to prepare updater handoff context.');
         }
-        // HR: Protokol 1 koristi samo ove skalarne vrijednosti i deskriptore 3/4/5.
         // EN: Protocol 1 uses only these scalar values and descriptors 3/4/5.
+        //
+        // HR: Protokol 1 koristi samo ove skalarne vrijednosti i deskriptore 3/4/5.
         fwrite($context, json_encode([
             'protocol' => self::HANDOFF_PROTOCOL,
             'root' => realpath($this->appRoot),
@@ -645,10 +713,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Prihvaća internu predaju samo kroz naslijeđene privatne deskriptore,
-     *     s istim korijenom, lock inodeom, kodom i provjerenim izvornim tagom.
      * EN: Accepts internal handoff only through inherited private descriptors,
      *     with the same root, lock inode, code, and validated source tag.
+     *
+     * HR: Prihvaća internu predaju samo kroz naslijeđene privatne deskriptore,
+     *     s istim korijenom, lock inodeom, kodom i provjerenim izvornim tagom.
      *
      * @return array{string,string,string}
      */
@@ -727,12 +796,13 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Prepoznaje namjensku FPM instalaciju samo kada root-owned helper
-     *     izričito cilja worker upravo ove instalacije, a CLI ne radi kao
-     *     vlasnik aplikacijskog koda.
      * EN: Recognises a dedicated FPM installation only when the root-owned
      *     helper explicitly targets this installation's worker and the CLI is
      *     not already running as the application-code owner.
+     *
+     * HR: Prepoznaje namjensku FPM instalaciju samo kada root-owned helper
+     *     izričito cilja worker upravo ove instalacije, a CLI ne radi kao
+     *     vlasnik aplikacijskog koda.
      */
     private function shouldDelegateToSetupHelper(): bool
     {
@@ -745,9 +815,8 @@ final class ApplicationUpdateCommand
             return false;
         }
 
-        $setupPath = $this->appRoot . '/config/setup.php';
-        $setup = is_file($setupPath) ? require $setupPath : null;
-        if (!is_array($setup) || !empty($setup['direct_local_testing'])) {
+        $setup = $this->readConfiguration('setup.php');
+        if (!empty($setup['direct_local_testing'])) {
             return false;
         }
 
@@ -761,12 +830,13 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Odvaja čistu odluku o delegiranju kako bi se provjerila bez stvarnih
-     *     sistemskih korisnika: vlasnik koda radi izravno, ostali samo kroz
-     *     helper potvrđen za istu instalaciju.
      * EN: Separates the pure delegation decision so it can be verified without
      *     real system accounts: the code owner runs directly, while other
      *     identities use only a helper confirmed for the same installation.
+     *
+     * HR: Odvaja čistu odluku o delegiranju kako bi se provjerila bez stvarnih
+     *     sistemskih korisnika: vlasnik koda radi izravno, ostali samo kroz
+     *     helper potvrđen za istu instalaciju.
      */
     private static function requiresHelperDelegation(
         int $effectiveUid,
@@ -777,10 +847,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Provjerava da globalni helper nije konfiguriran za neku drugu
-     *     Simbioza instalaciju na istom poslužitelju.
      * EN: Verifies that the global helper is not configured for another
      *     Simbioza installation on the same host.
+     *
+     * HR: Provjerava da globalni helper nije konfiguriran za neku drugu
+     *     Simbioza instalaciju na istom poslužitelju.
      */
     private static function helperTargetsInstallation(string $helper, string $appRoot): bool
     {
@@ -795,27 +866,23 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Iz običnog administratorskog CLI-ja pokreće istu strogo dopuštenu
-     *     pozadinsku radnju kao GUI Setup i čeka njezin konačni status. Sam
-     *     CLI nikada ne dobiva vlasništvo nad release kodom ni opću root ljusku.
      * EN: From an ordinary administrator CLI, starts the same strictly
      *     allowlisted background action as GUI Setup and waits for its final
      *     status. The CLI receives neither release-code ownership nor a general
      *     root shell.
+     *
+     * HR: Iz običnog administratorskog CLI-ja pokreće istu strogo dopuštenu
+     *     pozadinsku radnju kao GUI Setup i čeka njezin konačni status. Sam
+     *     CLI nikada ne dobiva vlasništvo nad release kodom ni opću root ljusku.
      */
     private function delegateToSetupHelper(string $targetTag): int
     {
         $autoload = $this->appRoot . '/vendor/autoload.php';
-        $setupPath = $this->appRoot . '/config/setup.php';
-        if (!is_file($autoload) || !is_file($setupPath)) {
+        if (!is_file($autoload)) {
             throw new RuntimeException($this->message('write_access'));
         }
         require_once $autoload;
-        $setup = require $setupPath;
-        if (!is_array($setup)) {
-            throw new RuntimeException($this->message('write_access'));
-        }
-
+        $setup = $this->readConfiguration('setup.php');
         $helper = is_string($setup['helper'] ?? null) ? $setup['helper'] : '';
         $requestDirectory = is_string($setup['request_dir'] ?? null)
         ? $setup['request_dir']
@@ -872,10 +939,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Prikazuje samo novi dio privatnog updater loga dok ograničeni helper
-     *     obavlja posao, bez ponavljanja zapisa ranijih nadogradnji.
      * EN: Displays only the new part of the private updater log while the
      *     restricted helper works, without replaying earlier update logs.
+     *
+     * HR: Prikazuje samo novi dio privatnog updater loga dok ograničeni helper
+     *     obavlja posao, bez ponavljanja zapisa ranijih nadogradnji.
      */
     private function drainDelegatedLog(string $path, int &$offset): void
     {
@@ -949,6 +1017,9 @@ final class ApplicationUpdateCommand
         foreach (self::BACKUP_EXCLUDES as $exclude) {
             $command[] = '--exclude=' . $exclude;
         }
+        foreach ($this->protectedConfigurationDirectories() as $relative) {
+            $command[] = '--exclude=./' . $relative;
+        }
         $command[] = '.';
         $this->mustRun($command, $this->appRoot);
         chmod($backupPath, 0600);
@@ -966,8 +1037,9 @@ final class ApplicationUpdateCommand
             '--no-owner',
             '--no-group',
             '--no-perms',
-            // HR: Grupno zapisivi FPM direktoriji ne dopuštaju deploy korisniku utimensat.
             // EN: Group-writable FPM directories do not let the deploy user set mtimes.
+            //
+            // HR: Grupno zapisivi FPM direktoriji ne dopuštaju deploy korisniku utimensat.
             '--omit-dir-times',
         ];
         foreach ($this->sourceSyncExcludes() as $exclude) {
@@ -979,13 +1051,14 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Nove datoteke izdanja čini čitljivima FPM procesu i direktorije
-     *     prohodnima, bez širenja prava pisanja i bez diranja trajnih postavki.
-     *     To poništava samo read/execute dio restriktivnog umaska sigurnog helpera.
      * EN: Makes new release files readable and directories traversable by the
      *     FPM process without widening write permissions or touching persistent
      *     settings. This only offsets the read/execute effect of the helper's
      *     restrictive umask.
+     *
+     * HR: Nove datoteke izdanja čini čitljivima FPM procesu i direktorije
+     *     prohodnima, bez širenja prava pisanja i bez diranja trajnih postavki.
+     *     To poništava samo read/execute dio restriktivnog umaska sigurnog helpera.
      */
     private function normalizeReleaseTreeMetadata(string $sourceDirectory): void
     {
@@ -1049,8 +1122,9 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Primjenjuje ista apsolutna rsync izuzeća na jednu relativnu putanju.
      * EN: Applies the same absolute rsync exclusions to one relative path.
+     *
+     * HR: Primjenjuje ista apsolutna rsync izuzeća na jednu relativnu putanju.
      *
      * @param list<string> $excludes
      */
@@ -1075,126 +1149,43 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Starije instalacije spremale su popis modula izravno u release datoteku
-     *     app.php. Prije njezine zamjene izdvaja taj odabir u trajnu runtime
-     *     konfiguraciju pod data/ kako bi je i GUI i CLI mogli atomski mijenjati.
-     * EN: Legacy installations stored the module list directly in the release
-     *     app.php file. Before replacing it, extracts that selection into the
-     *     persistent runtime configuration under data/ so both GUI and CLI can
-     *     update it atomically without allowing FPM to replace release config.
-     */
-    private function ensureModuleStateConfig(): void
-    {
-        $moduleStatePath = $this->appRoot . '/data/config/modules.php';
-        if (is_file($moduleStatePath)) {
-            return;
-        }
-
-        $legacyModuleStatePath = $this->appRoot . '/config/modules.php';
-        $legacyModuleState = is_file($legacyModuleStatePath) ? require $legacyModuleStatePath : null;
-        $legacyAppPath = $this->appRoot . '/config/app.php';
-        $legacyApp = is_file($legacyAppPath) ? require $legacyAppPath : null;
-        $legacyModules = is_array($legacyModuleState)
-        && is_array($legacyModuleState['enabled'] ?? null)
-        ? $legacyModuleState['enabled']
-        : (is_array($legacyApp)
-            && is_array($legacyApp['modules'] ?? null)
-            && is_array($legacyApp['modules']['enabled'] ?? null)
-            ? $legacyApp['modules']['enabled']
-            : []);
-        $enabled = array_values(array_unique(array_filter(
-            $legacyModules,
-            static fn(mixed $package): bool => is_string($package) && trim($package) !== '',
-        )));
-        $removed = is_array($legacyModuleState)
-        && is_array($legacyModuleState['removed'] ?? null)
-        ? array_values(array_unique(array_filter(
-            $legacyModuleState['removed'],
-            static fn(mixed $slug): bool => is_string($slug) && trim($slug) !== '',
-        )))
-        : [];
-        if ($enabled === []) {
-            throw new RuntimeException(
-                'Legacy module selection could not be extracted before replacing config/app.php.',
-            );
-        }
-
-        $moduleStateDirectory = dirname($moduleStatePath);
-        if (!is_dir($moduleStateDirectory)) {
-            if (!mkdir($moduleStateDirectory, 02770, true) && !is_dir($moduleStateDirectory)) {
-                throw new RuntimeException('Unable to create the persistent module state directory.');
-            }
-            if (!chmod($moduleStateDirectory, 02770)) {
-                throw new RuntimeException('Unable to secure the persistent module state directory.');
-            }
-        }
-
-        $temporary = tempnam($moduleStateDirectory, '.simbioza-modules-update-');
-        if (!is_string($temporary)) {
-            throw new RuntimeException('Unable to prepare the persistent module configuration.');
-        }
-
-        $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export([
-            'enabled' => $enabled,
-            'removed' => $removed,
-        ], true) . ";\n";
-        try {
-            if (file_put_contents($temporary, $contents, LOCK_EX) === false || !chmod($temporary, 0660)) {
-                throw new RuntimeException('Unable to write the persistent module configuration.');
-            }
-            if (!rename($temporary, $moduleStatePath)) {
-                throw new RuntimeException('Unable to activate the persistent module configuration.');
-            }
-        } finally {
-            if (is_file($temporary)) {
-                unlink($temporary);
-            }
-        }
-    }
-
-    /**
-     * HR: Spaja stalna izuzeća izdanja sa svim zatečenim administratorskim
-     *     postavkama. Trajne datoteke zato ostaju na mjestu, s istim inodeom,
-     *     vlasnikom i pravima, čak i kada updater radi kao odvojeni deploy korisnik.
      * EN: Combines permanent release exclusions with every discovered
      *     administrator-managed setting. Persistent files therefore stay in
      *     place with the same inode, owner, and mode even under a separate deploy user.
+     *
+     * HR: Spaja stalna izuzeća izdanja sa svim zatečenim administratorskim
+     *     postavkama. Trajne datoteke zato ostaju na mjestu, s istim inodeom,
+     *     vlasnikom i pravima, čak i kada updater radi kao odvojeni deploy korisnik.
      *
      * @return list<string>
      */
     private function sourceSyncExcludes(): array
     {
         $excludes = array_fill_keys(self::SOURCE_SYNC_EXCLUDES, true);
+        foreach ($this->protectedConfigurationDirectories() as $relative) {
+            $excludes['/' . $relative] = true;
+        }
         foreach ($this->runtimeSettingsFiles() as $relativePath) {
             $excludes['/' . ltrim($relativePath, '/')] = true;
         }
 
-        // HR: Korisnikovi jezični paketi nisu dio release arhive; čuvaj ih i pri
-        //     nadogradnji i pri rollbacku, dok se ugrađeni en/hr redovito ažuriraju.
-        // EN: User-installed packs are absent from the release archive; preserve
-        //     them during both update and rollback while refreshing bundled en/hr.
-        $registryPath = $this->appRoot . '/config/languages.php';
-        $registry = is_file($registryPath) ? require $registryPath : [];
-        foreach (is_array($registry) ? array_keys($registry) : [] as $locale) {
-            if (
-                is_string($locale)
-                && !in_array($locale, ['en', 'hr'], true)
-                && preg_match('/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/D', $locale) === 1
-            ) {
-                $excludes['/lang/' . $locale . '.php'] = true;
-            }
-        }
+        // EN: Installed packs live in the already excluded data mount. All
+        // bundled lang/ files are code and may be refreshed with the release.
+        //
+        // HR: Instalirani paketi žive u već izuzetom podatkovnom mountu. Sve
+        // ugrađene lang/ datoteke su kod koji release smije osvježiti.
 
         return array_keys($excludes);
     }
 
     /**
-     * HR: Pamti opcionalne module koje je administrator stvarno dodao u
-     *     aplikacijski Composer skup. Ograničenja verzija čita iz zasebnog
-     *     kataloga stabilnih opcionalnih paketa u manifestu izdanja.
      * EN: Remembers optional modules that the administrator actually added to
      *     the application Composer set. Version constraints are read from the
      *     release manifest's separate stable optional-package catalog.
+     *
+     * HR: Pamti opcionalne module koje je administrator stvarno dodao u
+     *     aplikacijski Composer skup. Ograničenja verzija čita iz zasebnog
+     *     kataloga stabilnih opcionalnih paketa u manifestu izdanja.
      */
     private function captureSelectedOptionalRequirements(string $sourceDirectory): void
     {
@@ -1203,10 +1194,12 @@ final class ApplicationUpdateCommand
         $currentLock = is_file($currentLockPath)
         ? json_decode((string)file_get_contents($currentLockPath), true)
         : [];
-        $moduleStatePath = $this->appRoot . '/data/config/modules.php';
-        $moduleState = is_file($moduleStatePath) ? require $moduleStatePath : [];
+        $moduleState = $this->readConfiguration('modules.php', true);
+        if (!is_array($moduleState['enabled'] ?? null) || !array_is_list($moduleState['enabled'])) {
+            throw new RuntimeException('The installation must have a valid modules.php in HPH_CONFIG_PATH.');
+        }
         $release = json_decode((string)file_get_contents($sourceDirectory . '/composer.json'), true);
-        if (!is_array($current) || !is_array($currentLock) || !is_array($moduleState) || !is_array($release)) {
+        if (!is_array($current) || !is_array($currentLock) || !is_array($release)) {
             throw new RuntimeException('Composer manifests could not be compared before update.');
         }
 
@@ -1219,14 +1212,13 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Spaja tri pouzdana traga o instaliranom opcionalnom modulu: izričiti
-     *     Composer zahtjev, zaključani paket i trajno uključeno stanje. Time
-     *     nadogradnja čuva i isključeni instalirani modul te popravlja stariju
-     *     instalaciju čiji je manifest već bio sveden na obveznu jezgru.
      * EN: Combines three reliable traces of an installed optional module: an
      *     explicit Composer requirement, a locked package, and persistent
-     *     enabled state. This preserves disabled installed modules and repairs
-     *     older installations whose manifest was already reduced to core.
+     *     enabled state. This also preserves disabled installed modules.
+     *
+     * HR: Spaja tri pouzdana traga o instaliranom opcionalnom modulu: izričiti
+     *     Composer zahtjev, zaključani paket i trajno uključeno stanje. Time
+     *     nadogradnja čuva i isključeni instalirani modul.
      *
      * @param array<array-key,mixed> $current
      * @param array<array-key,mixed> $currentLock
@@ -1282,10 +1274,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Nakon sinkronizacije vraća odabrane opcionalne pakete u produkcijski
-     *     dio manifesta prije Composer razrješenja novog izdanja.
      * EN: After source synchronization, restores selected optional packages to
      *     the production manifest before resolving the new release dependencies.
+     *
+     * HR: Nakon sinkronizacije vraća odabrane opcionalne pakete u produkcijski
+     *     dio manifesta prije Composer razrješenja novog izdanja.
      */
     private function restoreSelectedOptionalRequirements(): void
     {
@@ -1320,10 +1313,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Izričite lokalne path pakete vraća nakon zamjene javnog manifesta.
-     *     Ne prepisuje zahtjeve izdanja niti izlaže pakete javnom katalogu.
      * EN: Restores explicit local path packages after replacing the public manifest.
      *     It neither overrides release requirements nor exposes packages in the public catalog.
+     *
+     * HR: Izričite lokalne path pakete vraća nakon zamjene javnog manifesta.
+     *     Ne prepisuje zahtjeve izdanja niti izlaže pakete javnom katalogu.
      */
     private function restoreLocalComposerRequirements(): void
     {
@@ -1351,8 +1345,9 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Dopušta samo lokalne path repozitorije i nove zahtjeve; release ovisnosti ostaju mjerodavne.
      * EN: Allows only local path repositories and new requirements; release dependencies remain authoritative.
+     *
+     * HR: Dopušta samo lokalne path repozitorije i nove zahtjeve; release ovisnosti ostaju mjerodavne.
      *
      * @param array<array-key,mixed> $manifest
      * @param array<array-key,mixed> $local
@@ -1413,10 +1408,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Sprema sve postojeće aplikacijske override postavke prije sinkronizacije izdanja.
-     *     Datoteke koje grade bootstrap, rute i servisni spremnik ostaju pod upravljanjem izdanja.
      * EN: Snapshots every existing application override setting before release synchronization.
      *     Files that build the bootstrap, routes, and service container remain release-managed.
+     *
+     * HR: Sprema sve postojeće aplikacijske override postavke prije sinkronizacije izdanja.
+     *     Datoteke koje grade bootstrap, rute i servisni spremnik ostaju pod upravljanjem izdanja.
      */
     private function captureRuntimeSettings(): void
     {
@@ -1446,10 +1442,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Nakon sinkronizacije vraća zatečene postavke preko novih release defaulta.
-     *     Nova konfiguracijska datoteka koju prethodna instalacija nije imala ostaje iz izdanja.
      * EN: Restores captured settings over new release defaults after synchronization.
      *     A new configuration file absent from the previous installation remains from the release.
+     *
+     * HR: Nakon sinkronizacije vraća zatečene postavke preko novih release defaulta.
+     *     Nova konfiguracijska datoteka koju prethodna instalacija nije imala ostaje iz izdanja.
      */
     private function restoreRuntimeSettings(): void
     {
@@ -1499,18 +1496,21 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: U zatečeni administratorski izbornik postavki dodaje samo nove
-     *     release stavke. Postojeće stavke, njihov redoslijed i postavke ostaju
-     *     netaknuti, a svaka nova značajka ili modul dodaje se na kraj.
      * EN: Appends only new release entries to the administrator-managed
      *     settings menu. Existing entries, order, and options stay untouched,
      *     while every new feature or module is added at the end.
+     *
+     * HR: U zatečeni administratorski izbornik postavki dodaje samo nove
+     *     release stavke. Postojeće stavke, njihov redoslijed i postavke ostaju
+     *     netaknuti, a svaka nova značajka ili modul dodaje se na kraj.
      */
     private function appendMissingMenuSettings(string $sourceDirectory): int
     {
-        $relativePath = 'resources/config/menu/settings.json';
-        $currentPath = $this->appRoot . '/' . $relativePath;
-        $releasePath = rtrim($sourceDirectory, '/') . '/' . $relativePath;
+        [$currentPath, $writePath] = $this->moduleJsonPaths('menu', 'settings.json');
+        $releasePath = rtrim($sourceDirectory, '/') . '/config/menu/settings.json';
+        if (!is_file($releasePath)) {
+            $releasePath = rtrim($sourceDirectory, '/') . '/resources/config/menu/settings.json';
+        }
         if (!is_file($currentPath) || !is_file($releasePath)) {
             return 0;
         }
@@ -1518,8 +1518,8 @@ final class ApplicationUpdateCommand
         try {
             $current = json_decode((string)file_get_contents($currentPath), true, 512, JSON_THROW_ON_ERROR);
             $release = json_decode((string)file_get_contents($releasePath), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
-            throw new RuntimeException('Menu settings could not be decoded during update.', 0, $exception);
+        } catch (JsonException $jsonException) {
+            throw new RuntimeException('Menu settings could not be decoded during update.', 0, $jsonException);
         }
         if (!is_array($current) || !array_is_list($current) || !is_array($release) || !array_is_list($release)) {
             throw new RuntimeException('Menu settings must contain a JSON list during update.');
@@ -1534,20 +1534,17 @@ final class ApplicationUpdateCommand
             $current,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
         ) . "\n";
-        $this->writeExistingFilePreservingMetadata(
-            $currentPath,
-            $encoded,
-            'Updated menu settings could not be written.',
-        );
+        $this->writeModuleJson($writePath, $encoded, 'Updated menu settings could not be written.');
 
         return $added;
     }
 
     /**
-     * HR: Rekurzivno dodaje nedostajuće stavke unutar postojećih grupa bez
-     *     mijenjanja korisničkih oznaka, redoslijeda i stanja postojećih stavki.
      * EN: Recursively appends missing items inside existing groups while
      *     preserving user labels, order, and state on existing items.
+     *
+     * HR: Rekurzivno dodaje nedostajuće stavke unutar postojećih grupa bez
+     *     mijenjanja korisničkih oznaka, redoslijeda i stanja postojećih stavki.
      *
      * @param array<int, mixed> $current
      * @param array<int, mixed> $release
@@ -1605,94 +1602,68 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: U sačuvane instalacijske teme dodaje samo nove ključeve visine koji nedostaju.
-     *     Vrijednosti odgovaraju izgledu prije uvođenja podesivih visina.
-     * EN: Adds only missing height keys to preserved installation themes. Values
-     *     match the appearance before configurable heights were introduced.
+     * EN: Resolves complete module JSON layers under HPH_CONFIG_PATH before full bootstrap.
+     * Writes never modify a lower-priority layer or import a source site's absolute paths.
+     *
+     * HR: Određuje potpune JSON slojeve modula pod HPH_CONFIG_PATH prije bootstrapa.
+     * Zapis ne mijenja slabiji sloj niti uvozi apsolutne putanje izvornog sitea.
+     *
+     * @return array{string,string}
      */
-    private function normalizeStoredThemeComponentHeights(): int
+    private function moduleJsonPaths(string $module, string $filename): array
     {
-        $path = $this->appRoot . '/resources/config/theme/themes.json';
-        if (!is_file($path)) {
-            return 0;
-        }
-
-        $json = file_get_contents($path);
-        if (!is_string($json)) {
-            throw new RuntimeException('Unable to read preserved theme configuration.');
-        }
-
-        try {
-            $themes = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $jsonException) {
-            throw new RuntimeException('Preserved theme configuration contains invalid JSON.', 0, $jsonException);
-        }
-
-        if (!is_array($themes)) {
-            throw new RuntimeException('Preserved theme configuration must contain a JSON array.');
-        }
-
-        $changedThemes = 0;
-        foreach ($themes as $index => $theme) {
-            if (!is_array($theme)) {
-                continue;
+        $directories = $this->configurationDirectories();
+        $target = $directories[count($directories) - 1] . '/' . $module . '/' . $filename;
+        foreach (array_reverse($directories) as $directory) {
+            $path = $directory . '/' . $module . '/' . $filename;
+            if (file_exists($path) || is_link($path)) {
+                if (is_link($path) || !is_file($path) || !is_readable($path)) {
+                    throw new RuntimeException('Module JSON is not a readable regular file: ' . $path);
+                }
+                return [$path, $target];
             }
-
-            $components = is_array($theme['components'] ?? null) ? $theme['components'] : [];
-            $header = is_array($components['header'] ?? null) ? $components['header'] : [];
-            $navigation = is_array($components['navigation'] ?? null) ? $components['navigation'] : [];
-            $changed = false;
-
-            if (!array_key_exists('height_px', $header)) {
-                $header['height_px'] = 72;
-                $changed = true;
-            }
-
-            if (!array_key_exists('height_px', $navigation)) {
-                $navigation['height_px'] = 56;
-                $changed = true;
-            }
-
-            if (!$changed) {
-                continue;
-            }
-
-            $components['header'] = $header;
-            $components['navigation'] = $navigation;
-            $theme['components'] = $components;
-            $themes[$index] = $theme;
-            ++$changedThemes;
         }
-
-        if ($changedThemes === 0) {
-            return 0;
-        }
-
-        try {
-            $encoded = json_encode(
-                $themes,
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
-            ) . "\n";
-        } catch (\JsonException $jsonException) {
-            throw new RuntimeException('Unable to encode upgraded theme configuration.', 0, $jsonException);
-        }
-
-        $this->writeExistingFilePreservingMetadata(
-            $path,
-            $encoded,
-            'Unable to upgrade preserved theme configuration.',
-        );
-
-        return $changedThemes;
+        return [$target, $target];
     }
 
     /**
-     * HR: Zaključano prepisuje sadržaj postojeće trajne datoteke bez zamjene
-     *     inodea. Time neprivilegirani deploy proces čuva FPM vlasnika, grupu,
-     *     ACL i prava administratorski upravljane konfiguracije.
+     * EN: Creates a highest-layer override without taking ownership of an existing runtime file.
+     *
+     * HR: Stvara override najvišeg sloja bez preuzimanja vlasništva postojeće runtime datoteke.
+     */
+    private function writeModuleJson(string $path, string $contents, string $error): void
+    {
+        if (is_link($path) || is_link(dirname($path))) {
+            throw new RuntimeException($error);
+        }
+        if (is_file($path)) {
+            $this->writeExistingFilePreservingMetadata($path, $contents, $error);
+            return;
+        }
+        if (!is_dir(dirname($path)) && !mkdir(dirname($path), 0770, true) && !is_dir(dirname($path))) {
+            throw new RuntimeException($error);
+        }
+        $handle = fopen($path, 'x+b');
+        if ($handle === false) {
+            throw new RuntimeException($error);
+        }
+        try {
+            if (fwrite($handle, $contents) !== strlen($contents) || !fflush($handle) || !chmod($path, 0660)) {
+                throw new RuntimeException($error);
+            }
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    /**
      * EN: Rewrites an existing persistent file under an exclusive lock without
      *     replacing its inode. This lets an unprivileged deploy process retain
      *     the FPM owner, group, ACL, and mode of administrator-managed config.
+     *
+     * HR: Zaključano prepisuje sadržaj postojeće trajne datoteke bez zamjene
+     *     inodea. Time neprivilegirani deploy proces čuva FPM vlasnika, grupu,
+     *     ACL i prava administratorski upravljane konfiguracije.
      */
     private function writeExistingFilePreservingMetadata(
         string $path,
@@ -1732,16 +1703,18 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Otkriva trajne PHP override datoteke i sve administratorski upravljane resource postavke.
-     * EN: Discovers persistent PHP overrides and all administrator-managed resource settings.
+     * EN: Discovers private configuration and locks without reading content directories.
+     *
+     * HR: Otkriva privatne konfiguracije i lockove bez čitanja direktorija sadržaja.
      *
      * @return list<string>
      */
     private function runtimeSettingsFiles(): array
     {
         $files = [];
+        $protected = $this->protectedConfigurationDirectories();
         $configDirectory = $this->appRoot . '/config';
-        if (is_dir($configDirectory)) {
+        if (is_dir($configDirectory) && !is_link($configDirectory)) {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($configDirectory, \FilesystemIterator::SKIP_DOTS),
             );
@@ -1752,28 +1725,17 @@ final class ApplicationUpdateCommand
 
                 $path = $item->getPathname();
                 $relativePath = 'config/' . substr($path, strlen($configDirectory) + 1);
+                foreach ($protected as $directory) {
+                    if (str_starts_with($relativePath, $directory . '/')) {
+                        continue 2;
+                    }
+                }
                 if (
-                    !str_ends_with($relativePath, '.php')
-                    || str_ends_with($relativePath, '.php.dist')
+                    str_ends_with($relativePath, '.dist')
                     || in_array($relativePath, self::RELEASE_MANAGED_CONFIG_FILES, true)
                 ) {
                     continue;
                 }
-                $files[$relativePath] = true;
-            }
-        }
-
-        $resourceDirectory = $this->appRoot . '/resources/config';
-        if (is_dir($resourceDirectory)) {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($resourceDirectory, \FilesystemIterator::SKIP_DOTS),
-            );
-            foreach ($iterator as $item) {
-                if (!$item instanceof \SplFileInfo || !$item->isFile() || $item->isLink()) {
-                    continue;
-                }
-                $path = $item->getPathname();
-                $relativePath = 'resources/config/' . substr($path, strlen($resourceDirectory) + 1);
                 $files[$relativePath] = true;
             }
         }
@@ -1783,7 +1745,11 @@ final class ApplicationUpdateCommand
         return $paths;
     }
 
-    /** HR: Pamti Unix vlasništvo i prava zapisivih putanja. EN: Captures Unix ownership and modes of writable paths. */
+    /**
+     * EN: Captures Unix ownership and modes of writable paths.
+     *
+     * HR: Pamti Unix vlasništvo i prava zapisivih putanja.
+     */
     private function capturePreservedPathMetadata(): void
     {
         $this->preservedPathMetadata = [];
@@ -1792,6 +1758,7 @@ final class ApplicationUpdateCommand
         }
 
         $paths = array_fill_keys(self::PRESERVED_WRITABLE_PATHS, true);
+        $protected = $this->protectedConfigurationDirectories();
         foreach ($this->runtimeSettingsFiles() as $relativePath) {
             $paths[$relativePath] = true;
             $directory = dirname($relativePath);
@@ -1803,6 +1770,11 @@ final class ApplicationUpdateCommand
 
         foreach (array_keys($paths) as $relativePath) {
             $path = $this->appRoot . '/' . $relativePath;
+            foreach ($protected as $directory) {
+                if ($relativePath === $directory || str_starts_with($relativePath, $directory . '/')) {
+                    continue 2;
+                }
+            }
             $metadata = @stat($path);
             if (!is_array($metadata)) {
                 continue;
@@ -1817,16 +1789,17 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Nova konfiguracijska datoteka izdanja bez zapamćenih metapodataka ostaje
-     *     u vlasništvu deploy procesa i postaje čitljiva FPM procesu. Updater zato
-     *     ne treba privilegirani chown, dok trajne postavke zadržavaju svoja prava.
      * EN: A new release configuration file without captured metadata remains owned
      *     by the deploy process and is made readable by FPM. The updater therefore
      *     needs no privileged chown while persistent settings keep their metadata.
+     *
+     * HR: Nova konfiguracijska datoteka izdanja bez zapamćenih metapodataka ostaje
+     *     u vlasništvu deploy procesa i postaje čitljiva FPM procesu. Updater zato
+     *     ne treba privilegirani chown, dok trajne postavke zadržavaju svoja prava.
      */
     private function normalizeReleaseConfigFileMetadata(): void
     {
-        if (PHP_OS_FAMILY === 'Windows') {
+        if (PHP_OS_FAMILY === 'Windows' || is_link($this->appRoot . '/config')) {
             return;
         }
 
@@ -1857,8 +1830,9 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Vraća zatečeni Unix UID, GID i mode; ne pretpostavlja ime web-korisnika.
      * EN: Restores the captured Unix UID, GID, and mode without assuming a web-user name.
+     *
+     * HR: Vraća zatečeni Unix UID, GID i mode; ne pretpostavlja ime web-korisnika.
      */
     private function restorePreservedPathMetadata(bool $strict = true): void
     {
@@ -1907,11 +1881,11 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Izračunava novi lock bez izmjene postojećeg vendora pa pakete instalira u čisti vendor.
-     *     Time release instalacija ne ovisi o `.git` direktorijima unutar postojećih VCS paketa.
-     *
      * EN: Resolves the new lock without changing the existing vendor, then installs into a clean vendor.
      *     This keeps release updates independent of `.git` directories inside existing VCS packages.
+     *
+     * HR: Izračunava novi lock bez izmjene postojećeg vendora pa pakete instalira u čisti vendor.
+     *     Time release instalacija ne ovisi o `.git` direktorijima unutar postojećih VCS paketa.
      */
     private function updateComposerDependencies(string $composer): void
     {
@@ -1965,12 +1939,13 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Composerove datoteke čini čitljivima web procesu i prohodnima kroz
-     *     direktorije bez promjene vlasnika, grupe ili prava pisanja. To je
-     *     potrebno kada sigurni FPM helper stvara vendor uz umask 0007.
      * EN: Makes Composer files readable by the web process and directories
      *     traversable without changing ownership, group, or write permissions.
      *     This is required when the secure FPM helper creates vendor with umask 0007.
+     *
+     * HR: Composerove datoteke čini čitljivima web procesu i prohodnima kroz
+     *     direktorije bez promjene vlasnika, grupe ili prava pisanja. To je
+     *     potrebno kada sigurni FPM helper stvara vendor uz umask 0007.
      */
     private function normalizeComposerVendorMetadata(): void
     {
@@ -2015,6 +1990,20 @@ final class ApplicationUpdateCommand
         }
     }
 
+    /**
+     * EN: Releases before 0.3.0 require a fresh installation; future updates keep this baseline.
+     *
+     * HR: Izdanja prije 0.3.0 zahtijevaju novu instalaciju; buduće nadogradnje čuvaju ovu osnovu.
+     */
+    private function assertReleaseBoundary(?string $currentTag, string $targetTag): void
+    {
+        if ($currentTag === null || version_compare(ltrim($currentTag, 'v'), self::MINIMUM_RELEASE, '<')) {
+            throw new RuntimeException('Simbioza 0.3.0 is the initial baseline. Install it afresh instead of upgrading an older or unknown version.');
+        }
+        if (version_compare(ltrim($targetTag, 'v'), self::MINIMUM_RELEASE, '<')) {
+            throw new RuntimeException('Target releases before the initial baseline 0.3.0 are not supported.');
+        }
+    }
     private function rollback(): void
     {
         $backupPath = $this->backupPath;
@@ -2056,8 +2045,9 @@ final class ApplicationUpdateCommand
             '--no-owner',
             '--no-group',
             '--no-perms',
-            // HR: I povratak mora poštovati vlasništvo trajnih FPM direktorija.
             // EN: Rollback must also respect ownership of persistent FPM directories.
+            //
+            // HR: I povratak mora poštovati vlasništvo trajnih FPM direktorija.
             '--omit-dir-times',
         ];
         foreach ($this->sourceSyncExcludes() as $exclude) {
@@ -2156,8 +2146,9 @@ final class ApplicationUpdateCommand
 
     private function createTemporaryDirectory(): string
     {
-        // HR: I demo zadržava privremene datoteke unutar svoje instalacije.
         // EN: Demo installations also keep temporary files inside their own root.
+        //
+        // HR: I demo zadržava privremene datoteke unutar svoje instalacije.
         $path = $this->appRoot . '/data/simbioza-update-' . bin2hex(random_bytes(8));
         if (!mkdir($path, 0700, true) && !is_dir($path)) {
             throw new RuntimeException('Unable to create a temporary update directory.');
@@ -2224,13 +2215,121 @@ final class ApplicationUpdateCommand
 
     private function installedLocale(): string
     {
-        $configurationPath = $this->appRoot . '/config/installation.php';
-        if (!is_file($configurationPath)) {
+        // EN: Updater inspection works before vendor recovery; paths are checked before mutations.
+        //
+        // HR: Pregled updatera radi i prije obnove vendora; putanje se provjeravaju prije izmjena.
+        if (!$this->loadConfigurationPrimitives()) {
             return 'hr';
         }
-        $configuration = require $configurationPath;
-        $locale = is_array($configuration) ? ($configuration['primary_locale'] ?? null) : null;
+        $configuration = $this->readConfiguration('installation.php');
+        $locale = $configuration['primary_locale'] ?? null;
         return is_string($locale) && in_array($locale, ['hr', 'en'], true) ? $locale : 'hr';
+    }
+
+    /**
+     * EN: Loads only pure configuration classes, not Composer/application bootstrap.
+     *
+     * HR: Učitava samo čiste konfiguracijske klase, ne Composer/aplikacijski bootstrap.
+     */
+    private function loadConfigurationPrimitives(): bool
+    {
+        $classes = [
+            \HeartPhrame\CodeBook\EnvKeyEnum::class => 'CodeBook/EnvKeyEnum.php',
+            ConfigPathResolver::class => 'Config/ConfigPathResolver.php',
+            ConfigArrayMerger::class => 'Config/ConfigArrayMerger.php',
+        ];
+        foreach ($classes as $class => $relative) {
+            if (class_exists($class, false) || enum_exists($class, false)) {
+                continue;
+            }
+            $file = $this->appRoot . '/vendor/aaieduhr/heartphrame-framework/src/' . $relative;
+            if (!is_file($file)) {
+                return false;
+            }
+            require_once $file;
+        }
+        return true;
+    }
+
+    /**
+     * EN: The framework resolver selects the same layers as HTTP/CLI, without a custom parser.
+     *
+     * HR: Resolver frameworka određuje iste slojeve kao HTTP/CLI, bez vlastitog parsera.
+     *
+     * @return non-empty-list<non-empty-string>
+     */
+    private function configurationDirectories(): array
+    {
+        if (!$this->loadConfigurationPrimitives()) {
+            throw new RuntimeException('Framework configuration classes are missing; restore vendor before updating.');
+        }
+        $directories = ConfigPathResolver::fromEnvironment($this->appRoot);
+        foreach ($directories as $directory) {
+            if (
+                str_contains($directory, "\0") || str_contains($directory, '://') || !is_dir($directory)
+                || !is_readable($directory) || (PHP_OS_FAMILY !== 'Windows' && !is_executable($directory))
+            ) {
+                throw new RuntimeException('Configuration directory is missing or not readable: ' . $directory);
+            }
+        }
+        return $directories;
+    }
+
+    /**
+     * EN: Reads layered PHP configuration; complete registries select only the last document.
+     *
+     * HR: Čita slojevitu PHP konfiguraciju; potpuni registri biraju samo zadnji dokument.
+     *
+     * @return array<array-key,mixed>
+     */
+    private function readConfiguration(string $name, bool $document = false): array
+    {
+        $values = [];
+        foreach ($this->configurationDirectories() as $directory) {
+            $path = $directory . '/' . $name;
+            if (!file_exists($path) && !is_link($path)) {
+                continue;
+            }
+            if (!is_file($path) || !is_readable($path)) {
+                throw new RuntimeException('Configuration file is not readable: ' . $path);
+            }
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($path, true);
+            }
+            $layer = require $path;
+            if (!is_array($layer)) {
+                throw new RuntimeException('Configuration file must return an array: ' . $path);
+            }
+            $values = $document ? $layer : ConfigArrayMerger::merge($values, $layer);
+        }
+        return $values;
+    }
+
+    /**
+     * EN: Protects a whole private layer inside code from both rsync deletion and archiving.
+     *
+     * HR: Cijeli privatni sloj unutar koda štiti i od rsync brisanja i od arhiviranja.
+     *
+     * @return list<string>
+     */
+    private function protectedConfigurationDirectories(): array
+    {
+        $root = realpath($this->appRoot);
+        $default = realpath($this->appRoot . '/config');
+        $protected = is_link($this->appRoot . '/config') ? ['config'] : [];
+        foreach ($this->configurationDirectories() as $directory) {
+            $path = realpath($directory);
+            if ($path === $root) {
+                throw new RuntimeException('Configuration cannot use the application root itself.');
+            }
+            if (
+                is_string($path) && is_string($root) && $path !== $default
+                && str_starts_with($path, $root . DIRECTORY_SEPARATOR)
+            ) {
+                $protected[] = str_replace(DIRECTORY_SEPARATOR, '/', substr($path, strlen($root) + 1));
+            }
+        }
+        return $protected;
     }
 
     private function hasOption(string $option): bool
@@ -2342,8 +2441,9 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Ispisuje CLI poruku i, kada postoji GUI omotač, atomski javlja fazu i postotak.
      * EN: Writes the CLI message and, when a GUI wrapper exists, atomically reports its stage and percentage.
+     *
+     * HR: Ispisuje CLI poruku i, kada postoji GUI omotač, atomski javlja fazu i postotak.
      */
     private function progress(string $stage, int $percentage, string $message): void
     {
@@ -2352,12 +2452,13 @@ final class ApplicationUpdateCommand
     }
 
     /**
-     * HR: Šalje ograničeni napredak bez uvjetovanja samostalnog CLI rada.
      * EN: Sends restricted progress without making standalone CLI execution depend on it.
+     *
+     * HR: Šalje ograničeni napredak bez uvjetovanja samostalnog CLI rada.
      */
     private function reportProgress(string $stage, int $percentage, string $message): void
     {
-        if ($this->progressReporter === null) {
+        if (!$this->progressReporter instanceof \Closure) {
             return;
         }
 

@@ -72,6 +72,6 @@ Each directory includes a `theme-assets.json` manifest with dimensions, sizes,
 and SHA-256 checksums. `Export theme package` includes the saved artwork size,
 offsets, and overflow rule in the standalone package. `Export complete theme`
 and its import preserve those settings and every hero and logo asset for both
-colour variants. A full-site backup also captures the complete
-`resources/config/theme` and `data/themes` directories, so restore returns the
-same values and files.
+colour variants. A full-site backup also captures the effective JSON documents
+in `HPH_CONFIG_PATH/theme/` and the `data/themes` library. Import restores them to
+the target installation's configuration layers and library, including old archives.

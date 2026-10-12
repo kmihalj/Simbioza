@@ -25,10 +25,11 @@ const {
 } = e2eEnvironment();
 
 /**
- * HR: Klikom predaje stvarni HTML obrazac, čeka navigaciju i potvrđuje odgovor
- * očekivane POST rute bez utrke između novog dokumenta i sljedeće radnje.
  * EN: Submits the real HTML form by clicking, waits for navigation, and verifies
  * the expected POST response without racing the next action against the new document.
+ *
+ * HR: Klikom predaje stvarni HTML obrazac, čeka navigaciju i potvrđuje odgovor
+ * očekivane POST rute bez utrke između novog dokumenta i sljedeće radnje.
  */
 async function submitFormAndExpectPost(page, button, expectedPath) {
   const responsePromise = page.waitForResponse((response) => response.request().method() === 'POST'
@@ -43,10 +44,11 @@ async function submitFormAndExpectPost(page, button, expectedPath) {
 }
 
 /**
- * HR: Zatvara modal njegovom eksplicitnom kontrolom i čeka dovršetak fade
- *     tranzicije prije sljedećeg otvaranja.
  * EN: Closes a modal through its explicit control and waits for the fade
  *     transition to finish before the next modal opens.
+ *
+ * HR: Zatvara modal njegovom eksplicitnom kontrolom i čeka dovršetak fade
+ *     tranzicije prije sljedećeg otvaranja.
  */
 async function closeModal(dialog) {
   await dialog.locator('[data-bs-dismiss="modal"]').last().click();
@@ -110,8 +112,9 @@ test.describe('browser flows', () => {
     expect(mobileContentGeometry.contentOverlap).toBeGreaterThanOrEqual(120);
     expect(mobileContentGeometry.contentClearance).toBeGreaterThanOrEqual(16);
 
-    // HR: Prijavljeno zaglavlje ne smije širiti dokument na 320 CSS piksela.
     // EN: The authenticated header must not widen the document at 320 CSS pixels.
+    //
+    // HR: Prijavljeno zaglavlje ne smije širiti dokument na 320 CSS piksela.
     await login(page, adminLogin, adminPassword);
     await page.setViewportSize({ width: 320, height: 844 });
     for (const colorScheme of ['light', 'dark']) {
@@ -139,10 +142,11 @@ test.describe('browser flows', () => {
   });
 
   test('sticky language selector stays above overlapping hero content', async ({ page }) => {
-    // HR: Vidljivost nije dovoljna: hit-test potvrđuje da ni navigacija ni hero
-    //     ne presreću klik na jezičnu stavku otvorenu iz ljepljivog zaglavlja.
     // EN: Visibility is insufficient: hit testing proves navigation and hero
     //     do not intercept a click on a language item opened from the sticky header.
+    //
+    // HR: Vidljivost nije dovoljna: hit-test potvrđuje da ni navigacija ni hero
+    //     ne presreću klik na jezičnu stavku otvorenu iz ljepljivog zaglavlja.
     await page.setViewportSize({ width: 990, height: 506 });
     const response = await page.goto('/');
 
@@ -307,7 +311,17 @@ test.describe('browser flows', () => {
       await expect(page.getByText('Choose file', { exact: true })).toBeVisible();
       await expect(page.getByText('No file selected', { exact: true })).toBeVisible();
     }
-    await expect(page.locator('input[type="file"]:visible')).toHaveCount(0);
+    // EN: Playwright counts Bootstrap's clipped 1px accessible input as visible.
+    // Validate the clipping separately; ordinary native file controls remain hidden.
+    //
+    // HR: Playwright Bootstrapov odrezani pristupačni input od 1px smatra vidljivim.
+    // Odvojeno provjeriti odrezivanje; obične nativne kontrole datoteka ostaju skrivene.
+    if (await languagePackInput.count() === 1) {
+      const fileInputBox = await languagePackInput.boundingBox();
+      expect(fileInputBox?.width ?? 0).toBeLessThanOrEqual(1);
+      expect(fileInputBox?.height ?? 0).toBeLessThanOrEqual(1);
+    }
+    await expect(page.locator('input[type="file"]:not(.visually-hidden):visible')).toHaveCount(0);
     await expect(page.locator('[data-setup-application-update]')).toContainText('9.9.9');
     const menuModule = moduleTable.locator('[data-component-package="aaieduhr/heartphrame-module-menu"]');
     await expect(menuModule.locator('[data-component-installed-version]')).toHaveText('0.1.12');
@@ -365,10 +379,11 @@ test.describe('browser flows', () => {
     expect(mobileLayout.actionRight).toBeLessThanOrEqual(mobileLayout.viewportWidth);
 
     /*
-     * HR: Aktivna GUI nadogradnja mora nakon navigacije obnoviti trajni prikaz
-     *     napretka iz privatnog statusa pozadinskog procesa.
      * EN: An active GUI update must restore its persistent progress screen
      *     from the background process's private status after navigation.
+     *
+     * HR: Aktivna GUI nadogradnja mora nakon navigacije obnoviti trajni prikaz
+     *     napretka iz privatnog statusa pozadinskog procesa.
      */
     const e2eProject = process.env.HPH_E2E_PROJECT;
     expect(e2eProject).toBeTruthy();
@@ -391,8 +406,11 @@ test.describe('browser flows', () => {
       await expect(updateOverlay.locator('[data-setup-update-stage]')).toContainText(
         /existing theme configuration|konfiguraciju postojećih tema/i,
       );
-      /* HR: Nativni modal čuva fokus; zatvaranje prikaza ne prekida pozadinski posao.
-       * EN: The native modal contains focus; dismissing the view never cancels the job. */
+      /*
+       * EN: The native modal contains focus; dismissing the view never cancels the job.
+       *
+       * HR: Nativni modal čuva fokus; zatvaranje prikaza ne prekida pozadinski posao.
+       */
       await expect(page.locator('#setup-update-title')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-setup-update-close]')).toBeFocused();
@@ -652,15 +670,16 @@ test.describe('browser flows', () => {
       && url.searchParams.get('document') === pageSlug);
 
     /*
-     * HR: Kada je Workspace modul instaliran, dokument se otvara i stvara
-     *     isključivo kroz stablo područja. Samostalne akcije Otvori i Kreiraj
-     *     zato ne smiju biti prikazane, dok preostale akcije koriste pune
-     *     tematske stilove.
      * EN: With the Workspace module installed, documents are opened and
      *     created exclusively through the workspace tree. The standalone Open
      *     and Create actions must therefore be absent, while the remaining
      *     actions keep their filled theme styles.
-    */
+     *
+     * HR: Kada je Workspace modul instaliran, dokument se otvara i stvara
+     *     isključivo kroz stablo područja. Samostalne akcije Otvori i Kreiraj
+     *     zato ne smiju biti prikazane, dok preostale akcije koriste pune
+     *     tematske stilove.
+     */
     await expect(page.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Create', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
@@ -672,17 +691,19 @@ test.describe('browser flows', () => {
         await expect(action).not.toHaveClass(/btn-outline-secondary/);
       }
     }
-    // HR: Objedinjeni EN paket može nazvati istu radnju „Preview” umjesto „View”.
     // EN: The consolidated EN pack may label the same action “Preview” rather than “View”.
+    //
+    // HR: Objedinjeni EN paket može nazvati istu radnju „Preview” umjesto „View”.
     const viewAction = page.getByRole('link', { name: /^(View|Preview)$/ });
     await expect(viewAction).toHaveClass(/btn-secondary/);
     await expect(viewAction).not.toHaveClass(/btn-outline-secondary/);
 
     /*
-     * HR: Provjerava svaki modal dostupan u zaglavlju uređivača, ne samo
-     *     prijavljeni dijalog za povijest verzija.
      * EN: Verifies every modal exposed by the editor header, not only the
      *     reported version-history dialog.
+     *
+     * HR: Provjerava svaki modal dostupan u zaglavlju uređivača, ne samo
+     *     prijavljeni dijalog za povijest verzija.
      */
     for (const modalAction of [
       { button: 'Translations', dialog: 'Copy translation' },
@@ -717,12 +738,13 @@ test.describe('browser flows', () => {
       await closeModal(dialog);
     }
 
-    // HR: Novi kompaktni prikaz privitka mora ostati poravnat na desktopu i
-    //     bez vodoravnog preljeva na mobilnom prikazu. Isti privitak zatim
-    //     provjeravamo u tabličnom pregledu objavljene stranice.
     // EN: The compact attachment editor must stay aligned on desktop and free
     //     of horizontal overflow on mobile. The same attachment is then checked
     //     in the published page's tabular attachment view.
+    //
+    // HR: Novi kompaktni prikaz privitka mora ostati poravnat na desktopu i
+    //     bez vodoravnog preljeva na mobilnom prikazu. Isti privitak zatim
+    //     provjeravamo u tabličnom pregledu objavljene stranice.
     const attachmentName = 'e2e-attachment-layout.txt';
     await page.locator('#editor-html-attachment').setInputFiles({
       name: attachmentName,
@@ -835,10 +857,11 @@ test.describe('browser flows', () => {
     await page.getByRole('link', { name: 'Edit', exact: true }).click();
     await expect(editorSurface).toBeVisible();
 
-    // HR: Odustajanje mora ukloniti samo lokalni nacrt i ponovno otvoriti
-    //     objavljeni dokument bez promjene zajedničkog nacrta na poslužitelju.
     // EN: Cancel must remove only the local draft and reopen the published
     //     document without changing the shared server-side draft.
+    //
+    // HR: Odustajanje mora ukloniti samo lokalni nacrt i ponovno otvoriti
+    //     objavljeni dokument bez promjene zajedničkog nacrta na poslužitelju.
     const localOnlyBody = 'Local browser draft that must be discarded by Cancel.';
     await editorSurface.fill(localOnlyBody);
     await expect.poll(() => page.evaluate(() => Object.keys(window.localStorage)
@@ -938,10 +961,11 @@ test.describe('browser flows', () => {
     expect(publishedNode?.id).toBeTruthy();
 
     /*
-     * HR: Aktivna stranica na bilo kojoj dubini automatski pokazuje svoju
-     *     prvu razinu podstranica, čak i kada spremljeno stanje nema tu granu.
      * EN: An active page at any depth automatically shows its first child
      *     level, even when the stored state does not contain that branch.
+     *
+     * HR: Aktivna stranica na bilo kojoj dubini automatski pokazuje svoju
+     *     prvu razinu podstranica, čak i kada spremljeno stanje nema tu granu.
      */
     const activeBranchParentSlug = `e2e-active-branch-parent-${Date.now()}`;
     await expectData(await request.post('/api/v1/pages', {
@@ -1276,10 +1300,11 @@ test.describe('browser flows', () => {
     await expect(historyDialog).toContainText('#1');
 
     /*
-     * HR: Zatvaranje i ponovno otvaranje istog modala mora ostati ispravno;
-     *     tako pokrivamo kvar koji se ranije pojavljivao tek nakon nekoliko klikova.
      * EN: Closing and reopening the same modal must remain correct; this covers
      *     the former failure that sometimes appeared only after several clicks.
+     *
+     * HR: Zatvaranje i ponovno otvaranje istog modala mora ostati ispravno;
+     *     tako pokrivamo kvar koji se ranije pojavljivao tek nakon nekoliko klikova.
      */
     await closeModal(historyDialog);
     await page.getByRole('button', { name: 'History' }).click();
@@ -1319,10 +1344,11 @@ test.describe('browser flows', () => {
     expect(archive.length).toBeGreaterThan(1_000);
 
     /*
-     * HR: ZIP se otvara stvarnom PHP ZipArchive ekstenzijom, provjerava da ne
-     *     umnaža nepostojeći prijevod i zatim se pregledava izravno kroz file://.
      * EN: The ZIP is opened by the real PHP ZipArchive extension, checked for
      *     nonexistent-translation duplication, and then viewed directly via file://.
+     *
+     * HR: ZIP se otvara stvarnom PHP ZipArchive ekstenzijom, provjerava da ne
+     *     umnaža nepostojeći prijevod i zatim se pregledava izravno kroz file://.
      */
     const extractedDirectory = await mkdtemp(join(tmpdir(), 'simbioza-workspace-export-'));
     try {
@@ -1400,8 +1426,9 @@ test.describe('browser flows', () => {
         exact: true,
       })).toBeVisible();
       /*
-       * HR: Izvoz nudi sve stvarno instalirane jezike, uz obavezne početne HR i EN.
        * EN: Export offers every actually installed language, including the required initial HR and EN.
+       *
+       * HR: Izvoz nudi sve stvarno instalirane jezike, uz obavezne početne HR i EN.
        */
       const exportLanguages = offlinePage.locator('[data-export-language] option');
       expect(await exportLanguages.count()).toBeGreaterThanOrEqual(2);
@@ -1417,12 +1444,13 @@ test.describe('browser flows', () => {
       await expect.poll(() => offlineHeroVisual.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
 
       /*
-       * HR: Mišem odabrana stavka stabla smije ostati semantički trenutačna,
-       *     ali ne smije zadržati Bootstrapovu `.active` pozadinu niti fokus
-       *     namijenjen tipkovnici.
        * EN: A tree item selected by mouse may remain semantically current, but
        *     must not retain Bootstrap's `.active` background or keyboard-only
        *     focus treatment.
+       *
+       * HR: Mišem odabrana stavka stabla smije ostati semantički trenutačna,
+       *     ali ne smije zadržati Bootstrapovu `.active` pozadinu niti fokus
+       *     namijenjen tipkovnici.
        */
       const offlineTreeLink = offlinePage.getByRole('link', {
         name: 'E2E Published Page Renamed',
@@ -1476,10 +1504,11 @@ test.describe('browser flows', () => {
     }
 
     /*
-     * HR: Neprivilegirani korisnik ne smije ni otvoriti export formu, iako
-     *     smije vidjeti javno područje i njegovu objavljenu stranicu.
      * EN: An unprivileged user must not open the export form even when the
      *     public Workspace and its published page remain visible.
+     *
+     * HR: Neprivilegirani korisnik ne smije ni otvoriti export formu, iako
+     *     smije vidjeti javno područje i njegovu objavljenu stranicu.
      */
     const userContext = await browser.newContext({ baseURL: new URL(page.url()).origin });
     const userPage = await userContext.newPage();

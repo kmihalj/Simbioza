@@ -8,15 +8,17 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
 /**
- * HR: Čuva osnovnu navigaciju tipkovnicom neovisno o opcionalnoj temi.
  * EN: Protects baseline keyboard navigation independently of the optional theme.
+ *
+ * HR: Čuva osnovnu navigaciju tipkovnicom neovisno o opcionalnoj temi.
  */
 #[CoversNothing]
 final class MainLayoutAccessibilityTest extends TestCase
 {
     /**
-     * HR: Setup koristi glavni orijentir rasporeda i nativni dijalog napretka.
      * EN: Setup uses the layout's main landmark and a native progress dialog.
+     *
+     * HR: Setup koristi glavni orijentir rasporeda i nativni dijalog napretka.
      */
     public function testSetupUsesSupportedRowAndDialogSemantics(): void
     {
@@ -33,8 +35,9 @@ final class MainLayoutAccessibilityTest extends TestCase
     }
 
     /**
-     * HR: Preskakanje navigacije postoji i kada renderer teme ne vrati poveznicu.
      * EN: Navigation can be bypassed even when the theme renderer returns no link.
+     *
+     * HR: Preskakanje navigacije postoji i kada renderer teme ne vrati poveznicu.
      */
     public function testLayoutProvidesAnIndependentSkipLinkFallback(): void
     {
@@ -48,8 +51,9 @@ final class MainLayoutAccessibilityTest extends TestCase
     }
 
     /**
-     * HR: Bez modula se ne ispisuju njegove skripte ni panel.
      * EN: Its scripts and panel are not rendered when the module is absent.
+     *
+     * HR: Bez modula se ne ispisuju njegove skripte ni panel.
      */
     public function testAccessibilityRendererIsOptional(): void
     {

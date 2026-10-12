@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Module;
 
+use App\Configuration\ConfigurationPaths;
+use App\Deployment\DeploymentPolicy;
 use App\Module\CommandResult;
 use App\Module\ComposerPackageManager;
 use App\Module\ModuleCatalog;
 use App\Module\ModuleStateStore;
 use App\Module\ProcessRunnerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -20,24 +23,47 @@ use SplFileInfo;
 #[CoversClass(ModuleCatalog::class)]
 #[CoversClass(ModuleStateStore::class)]
 #[CoversClass(CommandResult::class)]
+#[UsesClass(ConfigurationPaths::class)]
+#[UsesClass(DeploymentPolicy::class)]
 final class ComposerPackageManagerTest extends TestCase
 {
     private string $root;
 
-    /** HR: Stvara minimalni Composer runtime za provjeru osvježavanja metapodataka. EN: Creates a minimal Composer runtime for metadata refresh testing. */
+    /** @var array<string,string|false> */
+    private array $environment = [];
+
+    /**
+     * EN: Creates a minimal Composer runtime for metadata refresh testing.
+     *
+     * HR: Stvara minimalni Composer runtime za provjeru osvježavanja metapodataka.
+     */
     protected function setUp(): void
     {
+        foreach (['HPH_CONFIG_PATH', 'HPH_CONFIG_OVERRIDE_PATHS'] as $name) {
+            $this->environment[$name] = getenv($name);
+            putenv($name);
+        }
+
         $this->root = sys_get_temp_dir() . '/simbioza-composer-package-test-' . bin2hex(random_bytes(8));
         if (!mkdir($this->root . '/vendor/composer', 0770, true)) {
             throw new RuntimeException('Unable to create Composer package test directory.');
         }
 
         file_put_contents($this->root . '/composer.json', "{}\n");
+        mkdir($this->root . '/config', 0770);
     }
 
-    /** HR: Uklanja samo datoteke privremene Composer instalacije. EN: Removes only the temporary Composer installation files. */
+    /**
+     * EN: Removes only the temporary Composer installation files.
+     *
+     * HR: Uklanja samo datoteke privremene Composer instalacije.
+     */
     protected function tearDown(): void
     {
+        foreach ($this->environment as $name => $value) {
+            is_string($value) ? putenv($name . '=' . $value) : putenv($name);
+        }
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->root, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST,
@@ -54,10 +80,11 @@ final class ComposerPackageManagerTest extends TestCase
     }
 
     /**
-     * HR: Nakon promjene koju je napravio drugi proces sljedeće čitanje mora
-     *     odmah prikazati novoinstalirani paket u postojećem FPM procesu.
      * EN: After another process changes packages, the next read must expose the
      *     newly installed package immediately in the existing FPM process.
+     *
+     * HR: Nakon promjene koju je napravio drugi proces sljedeće čitanje mora
+     *     odmah prikazati novoinstalirani paket u postojećem FPM procesu.
      */
     public function testReadsPackagesChangedByAnotherProcessWithoutStaleGlobalCache(): void
     {
@@ -65,7 +92,11 @@ final class ComposerPackageManagerTest extends TestCase
         $manager = new ComposerPackageManager(
             new ModuleCatalog(),
             new class implements ProcessRunnerInterface {
-                /** HR: Ovaj test ne pokreće procese. EN: This test never launches processes. */
+                /**
+                 * EN: This test never launches processes.
+                 *
+                 * HR: Ovaj test ne pokreće procese.
+                 */
                 public function run(array $command, string $workingDirectory): CommandResult
                 {
                     return new CommandResult(0, '', '');
@@ -80,8 +111,9 @@ final class ComposerPackageManagerTest extends TestCase
     }
 
     /**
-     * HR: Svježa mapa mora učitati klasu paketa dodanog nakon početka zahtjeva.
      * EN: A fresh map must load a package class added after the request started.
+     *
+     * HR: Svježa mapa mora učitati klasu paketa dodanog nakon početka zahtjeva.
      */
     public function testRegistersAutoloadMapGeneratedByAnotherProcess(): void
     {
@@ -104,7 +136,11 @@ final class ComposerPackageManagerTest extends TestCase
         $manager = new ComposerPackageManager(
             new ModuleCatalog(),
             new class implements ProcessRunnerInterface {
-                /** HR: Ovaj test ne pokreće procese. EN: This test never launches processes. */
+                /**
+                 * EN: This test never launches processes.
+                 *
+                 * HR: Ovaj test ne pokreće procese.
+                 */
                 public function run(array $command, string $workingDirectory): CommandResult
                 {
                     return new CommandResult(0, '', '');
@@ -119,8 +155,9 @@ final class ComposerPackageManagerTest extends TestCase
     }
 
     /**
-     * HR: Razvojno ograničenje paketa preživljava uklanjanje i ponovnu instalaciju.
      * EN: A development package constraint survives removal and reinstallation.
+     *
+     * HR: Razvojno ograničenje paketa preživljava uklanjanje i ponovnu instalaciju.
      */
     public function testRemovalAndReinstallationPreserveCurrentConstraint(): void
     {
@@ -137,14 +174,19 @@ final class ComposerPackageManagerTest extends TestCase
             /** @var list<string|null> */
             public array $observedConstraints = [];
 
-            /** HR: Prima probni korijen i paket. EN: Receives the test root and package. */
+            /**
+             * EN: Receives the test root and package.
+             *
+             * HR: Prima probni korijen i paket.
+             */
             public function __construct(private readonly string $root, private readonly string $package)
             {
             }
 
             /**
-             * HR: Oponaša Composerovu osvježenu installed.json datoteku.
              * EN: Emulates Composer's refreshed installed.json file.
+             *
+             * HR: Oponaša Composerovu osvježenu installed.json datoteku.
              */
             public function run(array $command, string $workingDirectory): CommandResult
             {
@@ -189,25 +231,38 @@ final class ComposerPackageManagerTest extends TestCase
     }
 
     /**
-     * HR: GUI instalacija novog opcionalnog modula mora uzeti ograničenje iz
-     *     manifesta izdanja, a ne iz ručno održavanog zastarjelog popisa.
      * EN: GUI installation of a new optional module must use the release
      *     manifest constraint rather than a stale hand-maintained list.
+     *
+     * HR: GUI instalacija novog opcionalnog modula mora uzeti ograničenje iz
+     *     manifesta izdanja, a ne iz ručno održavanog zastarjelog popisa.
      */
     public function testInstallsAccessibilityUsingReleaseManifestConstraint(): void
     {
         $package = 'aaieduhr/heartphrame-module-accessibility';
         $this->writeInstalledMetadata([]);
         $runner = new class ($this->root, $package) implements ProcessRunnerInterface {
-            /** HR: Pamti Composer naredbu. EN: Records the Composer command. */
+            /**
+             * EN: Records the Composer command.
+             *
+             * HR: Pamti Composer naredbu.
+             */
             public array $command = [];
 
-            /** HR: Prima izolirani korijen i paket. EN: Receives the isolated root and package. */
+            /**
+             * EN: Receives the isolated root and package.
+             *
+             * HR: Prima izolirani korijen i paket.
+             */
             public function __construct(private readonly string $root, private readonly string $package)
             {
             }
 
-            /** HR: Oponaša uspješnu instalaciju paketa. EN: Simulates a successful package installation. */
+            /**
+             * EN: Simulates a successful package installation.
+             *
+             * HR: Oponaša uspješnu instalaciju paketa.
+             */
             public function run(array $command, string $workingDirectory): CommandResult
             {
                 $this->command = $command;
@@ -255,7 +310,11 @@ final class ComposerPackageManagerTest extends TestCase
         $this->assertSame(0, fileperms($module . '/.git/config') & 0004);
     }
 
-    /** HR: Svaki opcionalni modul mora imati izdano ograničenje. EN: Every optional module must have a release constraint. */
+    /**
+     * EN: Every optional module must have a release constraint.
+     *
+     * HR: Svaki opcionalni modul mora imati izdano ograničenje.
+     */
     public function testEveryOptionalModuleHasReleaseConstraint(): void
     {
         $catalog = new ModuleCatalog();
@@ -276,8 +335,9 @@ final class ComposerPackageManagerTest extends TestCase
     }
 
     /**
-     * HR: Zapisuje valjani minimalni `installed.php` za zadane pakete.
      * EN: Writes valid minimal `installed.php` metadata for the requested packages.
+     *
+     * HR: Zapisuje valjani minimalni `installed.php` za zadane pakete.
      *
      * @param list<string> $packages
      */
@@ -298,7 +358,11 @@ final class ComposerPackageManagerTest extends TestCase
         );
     }
 
-    /** HR: Zapisuje jednu generiranu Composer autoload mapu. EN: Writes one generated Composer autoload map. */
+    /**
+     * EN: Writes one generated Composer autoload map.
+     *
+     * HR: Zapisuje jednu generiranu Composer autoload mapu.
+     */
     private function writeAutoloadMap(string $file, array $map): void
     {
         file_put_contents(

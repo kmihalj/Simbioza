@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Installation;
 
 /**
- * HR: Predstavlja očekivane i korisniku sigurno prikazive pogreške unosa.
  * EN: Represents expected input errors that are safe to show to the user.
+ *
+ * HR: Predstavlja očekivane i korisniku sigurno prikazive pogreške unosa.
  */
 final class InstallationValidationException extends \InvalidArgumentException
 {
     /**
-     * HR: Sprema stabilne kodove validacijskih pogrešaka.
      * EN: Stores stable validation error codes.
+     *
+     * HR: Sprema stabilne kodove validacijskih pogrešaka.
      *
      * @param list<string> $errorCodes
      */
@@ -22,8 +24,9 @@ final class InstallationValidationException extends \InvalidArgumentException
     }
 
     /**
-     * HR: Vraća kodove za lokalizirani prikaz.
      * EN: Returns codes for localized presentation.
+     *
+     * HR: Vraća kodove za lokalizirani prikaz.
      *
      * @return list<string>
      */

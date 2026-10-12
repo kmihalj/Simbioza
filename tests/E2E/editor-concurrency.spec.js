@@ -51,8 +51,9 @@ test('two users can recover a rejected concurrent edit without overwriting the s
     },
   }));
 
-  // HR: Odvojeni preglednički konteksti daju stvarne odvojene sesije i lokalne nacrte.
   // EN: Separate browser contexts provide real separate sessions and local drafts.
+  //
+  // HR: Odvojeni preglednički konteksti daju stvarne odvojene sesije i lokalne nacrte.
   const adminContext = await browser.newContext();
   const editorContext = await browser.newContext();
   try {

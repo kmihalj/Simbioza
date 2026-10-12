@@ -1,5 +1,7 @@
 # Simbioza 0.1.95
 
+> Historical release note — not current installation or upgrade instructions. For the clean 0.3.0 baseline, use [installation](installation_en.md) and [current configuration](configuration_en.md). Older-version upgrade instructions below are retained only as history.
+
 This release makes optional module settings entries reliable. Menu 0.1.23 now
 accepts contributions before or after its own bootstrap, adds only missing
 entries, and preserves administrator labels, ordering, and enabled states.

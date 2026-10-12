@@ -1,10 +1,6 @@
 <?php
 
 /**
- * HR: Provjerava clean-room instalacije HeartPhrame aplikacije s minimalnim
- *     skupovima modula. Svaki slučaj koristi novu privremenu aplikaciju,
- *     udaljene VCS repozitorije i praznu bazu podataka.
- *
  * EN: Verifies clean-room HeartPhrame application installations with minimal
  *     module sets. Every case uses a new temporary application, remote VCS
  *     repositories, and an empty database.
@@ -15,6 +11,10 @@
  *   php scripts/verify_clean_install_matrix.php --case=all --database=pgsql
  *   php scripts/verify_clean_install_matrix.php --case=all --local
  *   php scripts/verify_clean_install_matrix.php --case=theme-menu --keep
+ *
+ * HR: Provjerava clean-room instalacije HeartPhrame aplikacije s minimalnim
+ *     skupovima modula. Svaki slučaj koristi novu privremenu aplikaciju,
+ *     udaljene VCS repozitorije i praznu bazu podataka.
  */
 
 declare(strict_types=1);
@@ -112,8 +112,9 @@ const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
 ];
 
 /**
- * HR: Pokreće proces bez posredovanja ljuske i redovito prosljeđuje izlaz.
  * EN: Runs a process without a shell intermediary and streams output regularly.
+ *
+ * HR: Pokreće proces bez posredovanja ljuske i redovito prosljeđuje izlaz.
  *
  * @param list<string> $command
  * @param array<string, string> $environment
@@ -127,6 +128,14 @@ function runMatrixCommand(array $command, string $workingDirectory, array $envir
     $inheritedEnvironment = getenv();
     $processEnvironment = array_merge(
         is_array($inheritedEnvironment) ? array_filter($inheritedEnvironment, is_string(...)) : [],
+        // EN: An isolated project must not inherit the development installation paths.
+        //
+        // HR: Izolirani projekt ne smije naslijediti putanje razvojne instalacije.
+        [
+            'HPH_APP_PATH' => $workingDirectory,
+            'HPH_CONFIG_PATH' => $workingDirectory . '/config',
+            'HPH_CONFIG_OVERRIDE_PATHS' => '',
+        ],
         $environment,
     );
     $startedAt = microtime(true);
@@ -172,10 +181,13 @@ function runMatrixCommand(array $command, string $workingDirectory, array $envir
 }
 
 /**
- * HR: Rekurzivno kopira aplikacijske datoteke, ali nikada lokalne artefakte.
  * EN: Recursively copies application files while excluding local artifacts.
+ *
+ * HR: Rekurzivno kopira aplikacijske datoteke, ali nikada lokalne artefakte.
+ *
+ * @param list<string> $excludedNames
  */
-function copyMatrixPath(string $source, string $destination): void
+function copyMatrixPath(string $source, string $destination, array $excludedNames = []): void
 {
     if (is_link($source)) {
         throw new RuntimeException('Symbolic links are not accepted in clean-room source: ' . $source);
@@ -216,17 +228,18 @@ function copyMatrixPath(string $source, string $destination): void
             continue;
         }
 
-        if ($item === '.DS_Store') {
+        if ($item === '.DS_Store' || in_array($item, $excludedNames, true)) {
             continue;
         }
 
-        copyMatrixPath($source . '/' . $item, $destination . '/' . $item);
+        copyMatrixPath($source . '/' . $item, $destination . '/' . $item, $excludedNames);
     }
 }
 
 /**
- * HR: Uklanja isključivo privremeni direktorij koji je izradio ovaj alat.
  * EN: Removes only a temporary directory created by this verifier.
+ *
+ * HR: Uklanja isključivo privremeni direktorij koji je izradio ovaj alat.
  */
 function removeMatrixDirectory(string $directory, string $temporaryRoot): void
 {
@@ -272,8 +285,9 @@ function removeMatrixDirectory(string $directory, string $temporaryRoot): void
 }
 
 /**
- * HR: Zapisuje PHP konfiguracijsku datoteku s tipiziranim zaglavljem.
  * EN: Writes a PHP configuration file with a typed header.
+ *
+ * HR: Zapisuje PHP konfiguracijsku datoteku s tipiziranim zaglavljem.
  *
  * @param array<string, mixed> $configuration
  */
@@ -288,10 +302,11 @@ function writeMatrixPhpConfig(string $path, array $configuration): void
 }
 
 /**
- * HR: Označava izravno konfiguriranu testnu aplikaciju instaliranom prije HTTP provjere.
- *     Matrica namjerno pokreće migracijske CLI naredbe umjesto web-čarobnjaka.
  * EN: Marks the directly configured test application as installed before its HTTP check.
  *     The matrix intentionally runs migration CLI commands instead of the web wizard.
+ *
+ * HR: Označava izravno konfiguriranu testnu aplikaciju instaliranom prije HTTP provjere.
+ *     Matrica namjerno pokreće migracijske CLI naredbe umjesto web-čarobnjaka.
  */
 function writeMatrixInstallationLock(string $projectDirectory, string $database): void
 {
@@ -333,8 +348,9 @@ function writeMatrixInstallationLock(string $projectDirectory, string $database)
 }
 
 /**
- * HR: Provjerava da konfiguracijsko polje ima isključivo tekstualne ključeve.
  * EN: Verifies that a configuration array contains string keys only.
+ *
+ * HR: Provjerava da konfiguracijsko polje ima isključivo tekstualne ključeve.
  *
  * @param array<mixed, mixed> $value
  * @return array<string, mixed>
@@ -354,10 +370,6 @@ function matrixStringKeyedArray(array $value, string $label): array
 }
 
 /**
- * HR: Izrađuje konfiguraciju potpuno prazne baze odabrane za ovaj test.
- *     Pristupni podaci za mrežne baze čitaju se samo iz okoliša i nikada
- *     se ne zapisuju u izvještaj matrice.
- *
  * EN: Builds the empty database configuration selected for this test. Network
  *     database credentials are read only from the environment and are never
  *     written to the matrix report.
@@ -366,6 +378,10 @@ function matrixStringKeyedArray(array $value, string $label): array
  *   HPH_MATRIX_DB_NAME, HPH_MATRIX_DB_USER
  * Optional environment / Neobavezni okoliš:
  *   HPH_MATRIX_DB_HOST, HPH_MATRIX_DB_PORT, HPH_MATRIX_DB_PASSWORD
+ *
+ * HR: Izrađuje konfiguraciju potpuno prazne baze odabrane za ovaj test.
+ *     Pristupni podaci za mrežne baze čitaju se samo iz okoliša i nikada
+ *     se ne zapisuju u izvještaj matrice.
  *
  * @return array<string, mixed>
  */
@@ -416,15 +432,19 @@ function matrixDatabaseConfiguration(
 }
 
 /**
- * HR: U lokalnom načinu dopuštene module učitava isključivo iz lokalnih path
- *     repozitorija. Time Composer ne može tiho posegnuti za zastarjelim ili još
- *     neobjavljenim VCS repozitorijem. Framework ostaje udaljeni izvor, a demo
- *     namjerno nije na popisu lokalnih izvora.
- *
  * EN: In local mode, loads allowed modules exclusively from local path
  *     repositories. Composer therefore cannot silently fall back to a stale or
  *     not-yet-published VCS repository. Framework remains remote, while demo is
- *     intentionally absent from the local source list.
+ *     intentionally absent from the local source list. Development stability is
+ *     accepted only in this isolated local verifier so transitive module
+ *     dependencies can resolve their development branch aliases too.
+ *
+ * HR: U lokalnom načinu dopuštene module učitava isključivo iz lokalnih path
+ *     repozitorija. Time Composer ne može tiho posegnuti za zastarjelim ili još
+ *     neobjavljenim VCS repozitorijem. Framework ostaje udaljeni izvor, a demo
+ *     namjerno nije na popisu lokalnih izvora. Razvojna stabilnost dopuštena je
+ *     samo u ovom izoliranom lokalnom testu kako bi i posredne ovisnosti modula
+ *     mogle koristiti aliase svojih razvojnih grana.
  *
  * @param array<string, mixed> $rootComposer
  * @return array<string, mixed>
@@ -467,13 +487,16 @@ function withLocalMatrixRepositories(array $rootComposer, string $workspaceRoot)
         },
     ));
     $rootComposer['repositories'] = array_merge($localRepositories, $remoteNonModuleRepositories);
+    $rootComposer['minimum-stability'] = 'dev';
+    $rootComposer['prefer-stable'] = true;
 
     return $rootComposer;
 }
 
 /**
- * HR: Vraća module koje je Composer stvarno instalirao u privremenom projektu.
  * EN: Returns modules that Composer actually installed in the temporary project.
+ *
+ * HR: Vraća module koje je Composer stvarno instalirao u privremenom projektu.
  *
  * @return list<string>
  */
@@ -498,8 +521,9 @@ function installedMatrixModules(string $projectDirectory): array
 }
 
 /**
- * HR: Priprema potpuno novu aplikaciju i vraća podatke o jednoj provjeri.
  * EN: Prepares a brand-new application and returns one verification record.
+ *
+ * HR: Priprema potpuno novu aplikaciju i vraća podatke o jednoj provjeri.
  *
  * @param list<string> $requestedModules
  * @param array<string, mixed> $rootComposer
@@ -526,14 +550,23 @@ function verifyMatrixCase(
 
     try {
         foreach (['config', 'database', 'lang', 'public', 'resources', 'src', 'views'] as $path) {
-            copyMatrixPath($sourceRoot . '/' . $path, $projectDirectory . '/' . $path);
+            // EN: Isolated checks never copy private Auth settings, database connections or module selection.
+            //
+            // HR: Izolirane provjere ne kopiraju privatne Auth postavke, veze baze ni odabir modula.
+            copyMatrixPath(
+                $sourceRoot . '/' . $path,
+                $projectDirectory . '/' . $path,
+                $path === 'config'
+                    ? ['auth', 'email', 'email.php', 'database.php', 'env.php', 'modules.php', '.modules.lock'] : [],
+            );
         }
 
-        // HR: Zadane biblioteke tema dio su aplikacije, a cache i logovi nisu.
         // EN: Preset theme libraries belong to the application; caches and logs do not.
+        //
+        // HR: Zadane biblioteke tema dio su aplikacije, a cache i logovi nisu.
         copyMatrixPath($sourceRoot . '/data/themes', $projectDirectory . '/data/themes');
 
-        foreach (['LICENSE'] as $file) {
+        foreach (['LICENSE', 'bootstrap.php'] as $file) {
             copyMatrixPath($sourceRoot . '/' . $file, $projectDirectory . '/' . $file);
         }
 
@@ -559,7 +592,7 @@ function verifyMatrixCase(
             'aaieduhr/heartphrame-framework' => '^0.0.25',
         ];
         foreach ($requestedModules as $package) {
-            $composer['require'][$package] = $local ? 'dev-main' : '^0.1.0';
+            $composer['require'][$package] = $local ? 'dev-main' : '^0.3.0';
         }
 
         unset($composer['require-dev'], $composer['autoload-dev'], $composer['scripts']);
@@ -599,12 +632,13 @@ function verifyMatrixCase(
         }
 
         $installedModules = installedMatrixModules($projectDirectory);
-        // HR: Release app.php mora ostati dinamičan jer pri svakom bootstrapu
-        //     učitava trajni odabir modula. Statička testna kopija skrivala je
-        //     regresiju u kojoj GUI promijeni oznaku, ali modul ostane učitan.
         // EN: The release app.php must remain dynamic because every bootstrap
         //     reads the persistent module selection. A static test copy hid the
         //     regression where the GUI changed the badge while the module stayed loaded.
+        //
+        // HR: Release app.php mora ostati dinamičan jer pri svakom bootstrapu
+        //     učitava trajni odabir modula. Statička testna kopija skrivala je
+        //     regresiju u kojoj GUI promijeni oznaku, ali modul ostane učitan.
         writeMatrixPhpConfig($projectDirectory . '/config/installation.php', [
             'name' => 'Simbioza matrix: ' . $caseName,
             'base_path' => '',
@@ -613,16 +647,7 @@ function verifyMatrixCase(
             'timezone' => 'Europe/Zagreb',
             'installed_at' => gmdate(DATE_ATOM),
         ]);
-        $moduleStateDirectory = $projectDirectory . '/data/config';
-        if (
-            !is_dir($moduleStateDirectory)
-            && !mkdir($moduleStateDirectory, 0770, true)
-            && !is_dir($moduleStateDirectory)
-        ) {
-            throw new RuntimeException('Unable to create matrix module state directory.');
-        }
-
-        writeMatrixPhpConfig($projectDirectory . '/data/config/modules.php', [
+        writeMatrixPhpConfig($projectDirectory . '/config/modules.php', [
             'enabled' => $installedModules,
             'removed' => [],
         ]);
@@ -746,8 +771,9 @@ function verifyMatrixCase(
 }
 
 /**
- * HR: Čita jednostavne CLI opcije alata.
  * EN: Reads the verifier's simple CLI options.
+ *
+ * HR: Čita jednostavne CLI opcije alata.
  *
  * @return array{case: ?string, database: string, keep: bool, local: bool}
  */
@@ -775,8 +801,9 @@ function matrixOptions(): array
 }
 
 /**
- * HR: Izvršava odabrane slučajeve, zapisuje JSON izvještaj i vraća CLI kod.
  * EN: Executes selected cases, writes a JSON report, and returns the CLI code.
+ *
+ * HR: Izvršava odabrane slučajeve, zapisuje JSON izvještaj i vraća CLI kod.
  */
 function runCleanInstallMatrix(): int
 {

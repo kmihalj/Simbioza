@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Module;
 
+use App\Deployment\DeploymentPolicy;
 use Composer\Autoload\ClassLoader;
 use FilesystemIterator;
 use JsonException;
@@ -14,14 +15,19 @@ use RuntimeException;
 use SplFileInfo;
 
 /**
- * HR: Dodaje i uklanja samo pakete iz fiksnog kataloga modula. Korisnički
- *     unos nikada ne postaje naredba, putanja ni Composer opcija.
  * EN: Adds and removes only packages from the fixed module catalog. User input
  *     never becomes a command, path, or Composer option.
+ *
+ * HR: Dodaje i uklanja samo pakete iz fiksnog kataloga modula. Korisnički
+ *     unos nikada ne postaje naredba, putanja ni Composer opcija.
  */
 final readonly class ComposerPackageManager
 {
-    /** HR: Prima katalog, runner i korijen jedne instalacije. EN: Receives the catalog, runner, and one installation root. */
+    /**
+     * EN: Receives the catalog, runner, and one installation root.
+     *
+     * HR: Prima katalog, runner i korijen jedne instalacije.
+     */
     public function __construct(
         private ModuleCatalog $catalog,
         private ProcessRunnerInterface $processes,
@@ -30,7 +36,11 @@ final readonly class ComposerPackageManager
     ) {
     }
 
-    /** HR: Provjerava postoji li paket u stvarno instaliranom Composer skupu. EN: Checks whether the package exists in the actual Composer installation. */
+    /**
+     * EN: Checks whether the package exists in the actual Composer installation.
+     *
+     * HR: Provjerava postoji li paket u stvarno instaliranom Composer skupu.
+     */
     public function isInstalled(string $slug): bool
     {
         return in_array(
@@ -41,19 +51,21 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Čita stvarno instalirane pakete iz točno ove aplikacije. Ne koristi
-     *     globalni Composer cache jer ga dugotrajni FPM proces može zastarjeti.
      * EN: Reads packages actually installed in this application. It avoids the
      *     global Composer cache because a long-lived FPM process can stale it.
+     *
+     * HR: Čita stvarno instalirane pakete iz točno ove aplikacije. Ne koristi
+     *     globalni Composer cache jer ga dugotrajni FPM proces može zastarjeti.
      *
      * @return list<string>
      */
     public function installedPackages(): array
     {
-        // HR: JSON se čita kao podatak, ne kao PHP, pa OPcache ne može vratiti
-        //     staru snimku neposredno nakon Composerove atomske zamjene datoteke.
         // EN: JSON is read as data rather than PHP, so OPcache cannot return a
         //     stale snapshot immediately after Composer atomically replaces it.
+        //
+        // HR: JSON se čita kao podatak, ne kao PHP, pa OPcache ne može vratiti
+        //     staru snimku neposredno nakon Composerove atomske zamjene datoteke.
         $installed = rtrim($this->appRoot, DIRECTORY_SEPARATOR) . '/vendor/composer/installed.json';
         if (!is_file($installed)) {
             return [];
@@ -83,12 +95,13 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Registrira svježu autoload mapu nakon što je odvojeni deploy proces
-     *     dodao paket. Postojeći Composer loader u FPM-u inače zadržava mapu
-     *     učitanu na početku zahtjeva.
      * EN: Registers a fresh autoload map after the separate deploy process adds
      *     a package. The existing Composer loader in FPM otherwise retains the
      *     map loaded at the start of the request.
+     *
+     * HR: Registrira svježu autoload mapu nakon što je odvojeni deploy proces
+     *     dodao paket. Postojeći Composer loader u FPM-u inače zadržava mapu
+     *     učitanu na početku zahtjeva.
      */
     public function registerCurrentAutoloader(): void
     {
@@ -125,9 +138,14 @@ final readonly class ComposerPackageManager
         }
     }
 
-    /** HR: Instalira točno jedan katalogizirani opcionalni paket. EN: Installs exactly one catalogued optional package. */
+    /**
+     * EN: Installs exactly one catalogued optional package.
+     *
+     * HR: Instalira točno jedan katalogizirani opcionalni paket.
+     */
     public function install(string $slug): void
     {
+        (new DeploymentPolicy($this->appRoot))->assertCodeChangesAllowed();
         $definition = $this->optionalDefinition($slug);
         if ($this->isInstalled($slug) && $this->isProductionRequirement($definition['package'])) {
             return;
@@ -140,9 +158,14 @@ final readonly class ComposerPackageManager
         }
     }
 
-    /** HR: Uklanja točno jedan katalogizirani opcionalni paket. EN: Removes exactly one catalogued optional package. */
+    /**
+     * EN: Removes exactly one catalogued optional package.
+     *
+     * HR: Uklanja točno jedan katalogizirani opcionalni paket.
+     */
     public function uninstall(string $slug): void
     {
+        (new DeploymentPolicy($this->appRoot))->assertCodeChangesAllowed();
         $definition = $this->optionalDefinition($slug);
         if (!$this->isInstalled($slug) && !$this->isProductionRequirement($definition['package'])) {
             return;
@@ -157,8 +180,9 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Vraća samo opcionalnu definiciju; obvezni paket nije dopušten cilj.
      * EN: Returns only an optional definition; a required package is never an allowed target.
+     *
+     * HR: Vraća samo opcionalnu definiciju; obvezni paket nije dopušten cilj.
      *
      * @return array{package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,dependencies:list<string>,migrations:list<string>,tables:list<string>}
      */
@@ -172,13 +196,21 @@ final readonly class ComposerPackageManager
         return $definition;
     }
 
-    /** HR: Provjerava je li paket trajno odabran za produkciju. EN: Checks whether a package is persistently selected for production. */
+    /**
+     * EN: Checks whether a package is persistently selected for production.
+     *
+     * HR: Provjerava je li paket trajno odabran za produkciju.
+     */
     private function isProductionRequirement(string $package): bool
     {
         return $this->productionRequirement($package) !== null;
     }
 
-    /** HR: Vraća trenutačno produkcijsko ograničenje paketa. EN: Returns the package's current production constraint. */
+    /**
+     * EN: Returns the package's current production constraint.
+     *
+     * HR: Vraća trenutačno produkcijsko ograničenje paketa.
+     */
     private function productionRequirement(string $package): ?string
     {
         $require = $this->readManifest()['require'] ?? null;
@@ -192,12 +224,13 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Dodaje ili uklanja tagirani opcionalni paket isključivo iz običnog
-     *     aplikacijskog skupa. Opcionalni moduli nikada nisu razvojne ovisnosti.
-     *     Pri pogrešci vraća oba Composer metapodatka na prethodno stanje.
      * EN: Adds or removes a tagged optional package only from the regular
      *     application set. Optional modules are never development dependencies.
      *     On failure both Composer metadata files are restored.
+     *
+     * HR: Dodaje ili uklanja tagirani opcionalni paket isključivo iz običnog
+     *     aplikacijskog skupa. Opcionalni moduli nikada nisu razvojne ovisnosti.
+     *     Pri pogrešci vraća oba Composer metapodatka na prethodno stanje.
      */
     private function changeRequirement(string $package, string $constraint, bool $install): void
     {
@@ -244,8 +277,10 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Čita i provjerava korijenski Composer manifest.
      * EN: Reads and validates the root Composer manifest.
+     *
+     * HR: Čita i provjerava korijenski Composer manifest.
+     *
      * @return array<string,mixed>
      */
     private function readManifest(): array
@@ -278,8 +313,10 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Atomski zapisuje formatirani Composer manifest.
      * EN: Atomically writes a formatted Composer manifest.
+     *
+     * HR: Atomski zapisuje formatirani Composer manifest.
+     *
      * @param array<string,mixed> $manifest
      */
     private function writeManifest(string $path, array $manifest): void
@@ -314,10 +351,11 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Pokreće lokalni Composer samo s internim argumentima i sigurnim
-     *     neinteraktivnim opcijama.
      * EN: Runs the local Composer only with internal arguments and safe
      *     non-interactive options.
+     *
+     * HR: Pokreće lokalni Composer samo s internim argumentima i sigurnim
+     *     neinteraktivnim opcijama.
      *
      * @param list<string> $arguments
      */
@@ -359,12 +397,13 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Sigurni FPM helper koristi umask 0007. Nakon Composerove promjene
-     *     kod paketa mora ostati čitljiv FPM-u, ali `.git` metapodaci i prava
-     *     pisanja ne smiju postati javni.
      * EN: The restricted FPM helper uses umask 0007. After a Composer change,
      *     package code must remain readable by FPM, without exposing `.git`
      *     metadata or widening write permissions.
+     *
+     * HR: Sigurni FPM helper koristi umask 0007. Nakon Composerove promjene
+     *     kod paketa mora ostati čitljiv FPM-u, ali `.git` metapodaci i prava
+     *     pisanja ne smiju postati javni.
      */
     private function normalizeVendorReadAccess(): void
     {
@@ -391,7 +430,11 @@ final readonly class ComposerPackageManager
         }
     }
 
-    /** HR: Dodaje samo čitanje/prolaz za ostale korisnike. EN: Adds only other-user read/traverse permission. */
+    /**
+     * EN: Adds only other-user read/traverse permission.
+     *
+     * HR: Dodaje samo čitanje/prolaz za ostale korisnike.
+     */
     private function makeVendorPathReadable(SplFileInfo $item): void
     {
         if ($item->isLink()) {
@@ -412,10 +455,11 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Za svaku paketnu radnju stvara cache u vlasništvu trenutačnog
-     *     FPM/deploy/CLI korisnika i tako izbjegava Git dubious-owner kvar.
      * EN: Creates a per-operation cache owned by the current FPM/deploy/CLI
      *     account, preventing Git dubious-owner failures across identities.
+     *
+     * HR: Za svaku paketnu radnju stvara cache u vlasništvu trenutačnog
+     *     FPM/deploy/CLI korisnika i tako izbjegava Git dubious-owner kvar.
      */
     private function privateComposerCache(): string
     {
@@ -432,7 +476,11 @@ final readonly class ComposerPackageManager
         return $cache;
     }
 
-    /** HR: Uklanja samo jednokratni Composer cache ove radnje. EN: Removes only this operation's one-time Composer cache. */
+    /**
+     * EN: Removes only this operation's one-time Composer cache.
+     *
+     * HR: Uklanja samo jednokratni Composer cache ove radnje.
+     */
     private function removePrivateComposerCache(string $cache): void
     {
         if (!is_dir($cache)) {
@@ -455,8 +503,9 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Učitava samo Composerovu generiranu autoload mapu iz ove instalacije.
      * EN: Loads only a Composer-generated autoload map from this installation.
+     *
+     * HR: Učitava samo Composerovu generiranu autoload mapu iz ove instalacije.
      *
      * @return array<array-key,mixed>
      */
@@ -475,8 +524,10 @@ final readonly class ComposerPackageManager
     }
 
     /**
-     * HR: Svodi Composerove putanje na tip koji ClassLoader sigurno prihvaća.
      * EN: Narrows Composer paths to the type safely accepted by ClassLoader.
+     *
+     * HR: Svodi Composerove putanje na tip koji ClassLoader sigurno prihvaća.
+     *
      * @return string|list<string>|null
      */
     private function autoloadPaths(mixed $paths): string|array|null

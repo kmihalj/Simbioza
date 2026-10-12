@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+// EN: Starting example; never overwrite selection migrated from an existing install.
+//     Copy to modules.php in the active configuration layer. This is a complete
+//     document: enabled contains Composer packages, removed contains removed-module
+//     slugs, and constraints retains exact requirements for their reinstallation.
+//
+// HR: Polazni primjer; ne prepisuj odabir prenesen iz postojeće instalacije.
+//     Kopiraj u modules.php u aktivnom konfiguracijskom sloju. Dokument je
+//     potpun: enabled su Composer paketi, removed su slugovi uklonjenih modula,
+//     constraints čuva točna ograničenja potrebna za njihovu ponovnu instalaciju.
+return [
+    'enabled' => [
+        'aaieduhr/heartphrame-module-orm',
+        'aaieduhr/heartphrame-module-menu',
+        'aaieduhr/heartphrame-module-auth',
+        'aaieduhr/heartphrame-module-notification',
+        'aaieduhr/heartphrame-module-editor-html',
+        'aaieduhr/simbioza-module-workspace',
+        'aaieduhr/simbioza-module-workspace-search',
+        'aaieduhr/simbioza-module-user',
+    ],
+    'removed' => [],
+    'constraints' => [],
+];

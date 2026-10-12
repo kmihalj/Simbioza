@@ -14,7 +14,11 @@ final class BundledAssetPermissionsTest extends TestCase
 {
     private string $directory;
 
-    /** HR: Priprema zasebno runtime i privatno spremište. EN: Prepares separate runtime and private storage. */
+    /**
+     * EN: Prepares separate runtime and private storage.
+     *
+     * HR: Priprema zasebno runtime i privatno spremište.
+     */
     protected function setUp(): void
     {
         $this->directory = sys_get_temp_dir() . '/simbioza-asset-permissions-' . bin2hex(random_bytes(8));
@@ -25,7 +29,11 @@ final class BundledAssetPermissionsTest extends TestCase
         chmod($this->directory . '/private-backup.zip', 0600);
     }
 
-    /** HR: Uklanja samo imenovane testne datoteke i direktorije. EN: Removes only named test files and directories. */
+    /**
+     * EN: Removes only named test files and directories.
+     *
+     * HR: Uklanja samo imenovane testne datoteke i direktorije.
+     */
     protected function tearDown(): void
     {
         foreach (['uploads/link', 'uploads/guide/nested/image.png', 'private-backup.zip'] as $path) {
@@ -40,7 +48,11 @@ final class BundledAssetPermissionsTest extends TestCase
         }
     }
 
-    /** HR: Ispravan postojeći import ostaje netaknut, uključujući privatne artefakte. EN: A correct existing import remains unchanged, including private artifacts. */
+    /**
+     * EN: A correct existing import remains unchanged, including private artifacts.
+     *
+     * HR: Ispravan postojeći import ostaje netaknut, uključujući privatne artefakte.
+     */
     public function testCorrectOwnershipAndModesRemainUnchanged(): void
     {
         $asset = $this->directory . '/uploads/guide/nested/image.png';
@@ -56,7 +68,11 @@ final class BundledAssetPermissionsTest extends TestCase
         $this->assertSame('private bytes', file_get_contents($this->directory . '/private-backup.zip'));
     }
 
-    /** HR: Sudo import nasljeđuje UID/GID runtime korijena i ostaje idempotentan. EN: A sudo import inherits the runtime root UID/GID and remains idempotent. */
+    /**
+     * EN: A sudo import inherits the runtime root UID/GID and remains idempotent.
+     *
+     * HR: Sudo import nasljeđuje UID/GID runtime korijena i ostaje idempotentan.
+     */
     public function testRootImportsInheritAnotherRuntimeIdentity(): void
     {
         if (PHP_OS_FAMILY === 'Windows' || !function_exists('posix_geteuid') || posix_geteuid() !== 0) {
@@ -83,41 +99,65 @@ final class BundledAssetPermissionsTest extends TestCase
         $this->assertFalse(BundledAssetPermissions::inheritOwnership($root, ['guide/nested/image.png']));
     }
 
-    /** HR: Prazan popis privitaka ne zahtijeva filesystem spremište. EN: An empty attachment list needs no filesystem storage. */
+    /**
+     * EN: An empty attachment list needs no filesystem storage.
+     *
+     * HR: Prazan popis privitaka ne zahtijeva filesystem spremište.
+     */
     public function testEmptyAssetListIsANoOp(): void
     {
         $this->assertFalse(BundledAssetPermissions::inheritOwnership($this->directory . '/missing', []));
     }
 
-    /** HR: Putanje ne smiju izaći iz odabranog spremišta. EN: Paths must not escape the selected storage. */
+    /**
+     * EN: Paths must not escape the selected storage.
+     *
+     * HR: Putanje ne smiju izaći iz odabranog spremišta.
+     */
     public function testTraversalIsRejected(): void
     {
         $this->expectException(RuntimeException::class);
         BundledAssetPermissions::inheritOwnership($this->directory . '/uploads', ['../private-backup.zip']);
     }
 
-    /** HR: Apsolutna putanja ne smije zamijeniti relativnu. EN: An absolute path must not replace a relative path. */
+    /**
+     * EN: An absolute path must not replace a relative path.
+     *
+     * HR: Apsolutna putanja ne smije zamijeniti relativnu.
+     */
     public function testAbsolutePathIsRejected(): void
     {
         $this->expectException(RuntimeException::class);
         BundledAssetPermissions::inheritOwnership($this->directory . '/uploads', ['/etc/passwd']);
     }
 
-    /** HR: Windows putanje ne smiju biti prihvaćene kao relativne. EN: Windows paths must not be accepted as relative paths. */
+    /**
+     * EN: Windows paths must not be accepted as relative paths.
+     *
+     * HR: Windows putanje ne smiju biti prihvaćene kao relativne.
+     */
     public function testDrivePathIsRejected(): void
     {
         $this->expectException(RuntimeException::class);
         BundledAssetPermissions::inheritOwnership($this->directory . '/uploads', ['C:\\outside.png']);
     }
 
-    /** HR: Nedostajući korijen mora zaustaviti provjeru. EN: A missing root must stop validation. */
+    /**
+     * EN: A missing root must stop validation.
+     *
+     * HR: Nedostajući korijen mora zaustaviti provjeru.
+     */
     public function testMissingRootIsRejected(): void
     {
         $this->expectException(RuntimeException::class);
         BundledAssetPermissions::inheritOwnership($this->directory . '/missing', ['image.png']);
     }
 
-    /** HR: Nedostajući privitak ne smije uzrokovati djelomičan popravak ranijih putanja. EN: A missing attachment must not partially repair preceding paths. */
+    /**
+     * EN: A missing attachment must not partially repair preceding paths.
+     *
+     * HR: Nedostajući privitak ne smije uzrokovati djelomičan popravak ranijih putanja.
+     */
     public function testAllPathsAreValidatedBeforeRepair(): void
     {
         $asset = $this->directory . '/uploads/guide/nested/image.png';
@@ -135,7 +175,11 @@ final class BundledAssetPermissionsTest extends TestCase
         $this->assertSame($before, stat($asset));
     }
 
-    /** HR: Simboličke veze prema drugim datotekama nisu dopuštene. EN: Symbolic links to other files are not allowed. */
+    /**
+     * EN: Symbolic links to other files are not allowed.
+     *
+     * HR: Simboličke veze prema drugim datotekama nisu dopuštene.
+     */
     public function testSymbolicLinkIsRejected(): void
     {
         $this->assertTrue(symlink($this->directory, $this->directory . '/uploads/link'));
@@ -143,7 +187,11 @@ final class BundledAssetPermissionsTest extends TestCase
         BundledAssetPermissions::inheritOwnership($this->directory . '/uploads', ['link/private-backup.zip']);
     }
 
-    /** HR: Direktorij nije binarni privitak. EN: A directory is not an attachment binary. */
+    /**
+     * EN: A directory is not an attachment binary.
+     *
+     * HR: Direktorij nije binarni privitak.
+     */
     public function testDirectoryIsRejected(): void
     {
         $this->expectException(RuntimeException::class);

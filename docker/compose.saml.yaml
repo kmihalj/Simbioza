@@ -1,0 +1,12 @@
+# EN: Optional compatible library mount; do not mount private host configuration into image code.
+# Create /runtime/saml/config and point its paths to /runtime/saml or /runtime/data/saml.
+#
+# HR: Opcionalni mount kompatibilne biblioteke; privatni host config ne montirati u kod imagea.
+# Stvoriti /runtime/saml/config i usmjeriti njegove putanje u /runtime/saml ili /runtime/data/saml.
+services:
+  app:
+    volumes:
+      - type: bind
+        source: ${SIMBIOZA_SAML_LIBRARY:?Select compatible SimpleSAMLphp code}
+        target: /opt/simplesamlphp
+        read_only: true
