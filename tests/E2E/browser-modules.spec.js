@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /*
@@ -1702,7 +1702,10 @@ test.describe('module browser surfaces', () => {
     const project = process.env.HPH_E2E_PROJECT;
     expect(project).toBeTruthy();
     const settingsPath = join(project, 'config/workspace/workspace.json');
-    const originalSettings = readFileSync(settingsPath, 'utf8');
+    // EN: A fresh installation uses bundled defaults until its first GUI/config write.
+    //
+    // HR: Nova instalacija koristi ugrađene vrijednosti do prvog zapisa kroz GUI/config.
+    const originalSettings = existsSync(settingsPath) ? readFileSync(settingsPath, 'utf8') : null;
     try {
       const suffix = Date.now();
       const workspaceSlug = `e2e-homepage-${suffix}`;
@@ -1880,7 +1883,13 @@ test.describe('module browser surfaces', () => {
       // EN: Never leak a custom global homepage into later tests after a failure or timeout.
       //
       // HR: Nakon greške ili isteka roka ne ostavljaj prilagođenu globalnu naslovnicu drugim testovima.
-      writeFileSync(settingsPath, originalSettings);
+      if (originalSettings === null) {
+        if (existsSync(settingsPath)) {
+          unlinkSync(settingsPath);
+        }
+      } else {
+        writeFileSync(settingsPath, originalSettings);
+      }
     }
   });
 

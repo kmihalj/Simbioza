@@ -10,8 +10,8 @@ Opseg: svih 18 javnih modula, privatni demo modul i Simbioza s tagom 0.3.0; Dock
 - [x] Provjeriti kvalitetu modula i izolirani integrirani E2E (80/80).
 - [x] Objaviti main grane; prošlo je svih 19 CI provjera za točne commitove.
 - [x] Objaviti tagove 0.3.0 za 18 javnih modula i privatni demo modul.
-- [ ] Provjeriti CI objavljenih tagova sa stabilnim ovisnostima.
-- [ ] Provjeriti novu instalaciju iz objavljenih paketa, bez lokalnih aliasa.
+- [x] Provjeriti CI svih 19 objavljenih tagova sa stabilnim ovisnostima.
+- [x] Provjeriti novu instalaciju iz objavljenih paketa, bez lokalnih aliasa: prošla je 21 čista instalacija i svih 80 browser/API scenarija.
 - [ ] Objaviti main/tag aplikacije i provjeriti cijelu matricu baze/browsera/API-ja.
 - [ ] Izgraditi i skenirati Linux amd64/arm64 imagee; objaviti GHCR image i Compose paket.
 - [ ] Provjeriti registar i release datoteke; zapisati commitove, CI i digeste imagea.

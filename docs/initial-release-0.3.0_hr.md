@@ -48,14 +48,14 @@ Izvori privatnog demo modula u `DemoSeed/simbioza-module-demo/` koriste aktualne
 
 ## Preostala objava
 
-- [ ] Nakon zasebne upute objaviti usklađene tagove 0.3.0 za module/aplikaciju i provjeriti instalaciju iz tih objavljenih paketa.
+- [ ] Objaviti usklađene tagove 0.3.0 za module/aplikaciju i provjeriti instalaciju iz objavljenih paketa; odobrenje primljeno 12. listopada 2026.
 - [ ] Korisnik ponovno instalira demo i apps-test, a zatim snima novu početnu kopiju demo reseta.
 
 Do objave primjeri ovisnosti `^0.3.0` opisuju pripremljeno izdanje; razvojne provjere koriste lokalne izvore paketa. Ne zamjenjivati ih starim tagovima 0.2.x niti pokušavati nadogradnju s njih.
 
 ## Granice i nastavak
 
-HeartPhrame Framework ne mijenjati. Sačuvati nepovezane izmjene i privatne postavke. Korisnik reinstalira demo/apps-test; aktivne siteove i baze ne mijenjati. HFC je razvojni site i ne treba backup sadržaja. Ovim zadatkom nisu objavljeni tagovi, commitovi ni izdanja.
+HeartPhrame Framework ne mijenjati. Sačuvati nepovezane izmjene i privatne postavke. Korisnik reinstalira demo/apps-test; aktivne siteove i baze ne mijenjati. HFC je razvojni site i ne treba backup sadržaja. Aktualno stanje objave prati [popis za objavu izdanja](release-publication-0.3.0_hr.md).
 
 2026-10-11: provjera čiste početne osnove dovršena. Prošireni audit je u tijeku;
 objava i ponovna instalacija aktivnih siteova ostaju zasebni koraci.
