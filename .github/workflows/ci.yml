@@ -257,6 +257,15 @@ jobs:
       - name: Check platform requirements / Provjeri platformske preduvjete
         run: COMPOSER=composer.ci.json composer check-platform-reqs
 
+      # EN: Parse generated pools, including no override layers; no FPM service is started by the check.
+      #
+      # HR: Parsira generirane poolove, uključujući rad bez dodatnih slojeva; provjera ne pokreće FPM servis.
+      - name: Verify real FPM configuration parser / Provjeri stvarni FPM parser konfiguracije
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y "php${{ matrix.php }}-fpm"
+          php scripts/verify_fpm_pool_configuration.php --php-fpm="/usr/sbin/php-fpm${{ matrix.php }}"
+
       - name: Run quality and test suite / Pokreni provjere i testove
         run: |
           COMPOSER=composer.ci.json composer on-commit

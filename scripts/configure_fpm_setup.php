@@ -953,6 +953,14 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
     $simpleSamlEnvironment = $simpleSamlConfig === null
     ? ''
     : 'env[SIMPLESAMLPHP_CONFIG_DIR] = ' . $simpleSamlConfig . "\n";
+    // EN: FPM rejects an empty env value. With clear_env=yes, omitting an empty override
+    //     leaves the worker without inherited layers; explicitly configured layers remain unchanged.
+    //
+    // HR: FPM odbija praznu env vrijednost. Uz clear_env=yes izostavljanje praznih slojeva
+    //     ostavlja worker bez naslijeđenih slojeva; izričito podešeni slojevi ostaju nepromijenjeni.
+    $overrideEnvironment = $environment['HPH_CONFIG_OVERRIDE_PATHS'] === ''
+    ? ''
+    : 'env[HPH_CONFIG_OVERRIDE_PATHS] = "' . addcslashes($environment['HPH_CONFIG_OVERRIDE_PATHS'], '\\"') . "\"\n";
     return '[' . FPM_CONFIG_NAME . "]\n"
     . $identity
     . 'listen = ' . $listen . "\n"
@@ -973,7 +981,7 @@ function fpmPool(string $root, string $listen, bool $includeIdentity, ?string $s
     . 'env[SIMBIOZA_SETUP_HELPER] = ' . FPM_HELPER . "\n"
     . 'env[HPH_APP_PATH] = ' . $root . "\n"
     . 'env[HPH_CONFIG_PATH] = "' . addcslashes($environment['HPH_CONFIG_PATH'], '\\"') . "\"\n"
-    . 'env[HPH_CONFIG_OVERRIDE_PATHS] = "' . addcslashes($environment['HPH_CONFIG_OVERRIDE_PATHS'], '\\"') . "\"\n"
+    . $overrideEnvironment
     . $simpleSamlEnvironment
     . 'env[TMPDIR] = ' . $root . "/data/tmp\n"
     . "env[PATH] = /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\n"

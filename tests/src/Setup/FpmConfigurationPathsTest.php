@@ -141,6 +141,39 @@ final class FpmConfigurationPathsTest extends TestCase
     }
 
     /**
+     * EN: FPM rejects an empty env value, so absent/empty override layers must be omitted.
+     * clear_env still prevents inherited worker environment values from leaking in.
+     *
+     * HR: FPM odbija praznu env vrijednost pa izostali/prazni dodatni slojevi ne ulaze u pool.
+     * clear_env i dalje sprječava nasljeđivanje okolišnih vrijednosti u workerima.
+     */
+    public function testEmptyOverrideLayersAreOmittedFromPool(): void
+    {
+        putenv('HPH_CONFIG_PATH');
+        foreach ([false, '', " \t "] as $override) {
+            putenv($override === false ? 'HPH_CONFIG_OVERRIDE_PATHS' : 'HPH_CONFIG_OVERRIDE_PATHS=' . $override);
+            $pool = \fpmPool($this->root, '127.0.0.1:9999', false, null);
+            $this->assertStringNotContainsString('env[HPH_CONFIG_OVERRIDE_PATHS]', $pool);
+            $this->assertStringContainsString('clear_env = yes', $pool);
+            $this->assertStringContainsString('env[HPH_CONFIG_PATH] = "' . $this->root . '/config"', $pool);
+        }
+    }
+
+    /**
+     * EN: Explicit nonempty layers preserve their order and are not removed by the empty-value guard.
+     *
+     * HR: Izričiti neprazni slojevi zadržavaju redoslijed i ne uklanjaju se provjerom prazne vrijednosti.
+     */
+    public function testMultipleOverrideLayersRemainInPool(): void
+    {
+        $overrides = $this->root . '/config' . PATH_SEPARATOR . $this->root . '/override';
+        putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $overrides);
+        $pool = \fpmPool($this->root, '127.0.0.1:9999', true, null);
+        $this->assertStringContainsString('env[HPH_CONFIG_OVERRIDE_PATHS] = "' . $overrides . '"', $pool);
+        $this->assertSame(1, substr_count($pool, 'env[HPH_CONFIG_OVERRIDE_PATHS]'));
+    }
+
+    /**
      * EN: Two names for one directory must not alter the final layer's priority.
      *
      * HR: Dva imena istog direktorija ne smiju promijeniti prioritet zadnjeg.
