@@ -132,6 +132,41 @@ Do not put real passwords in documentation, command history or Git.
 
 ## 4. Create the dedicated pool
 
+### Targeted generator fix for application 0.3.1
+
+The original 0.3.1 tag emits `env[HPH_CONFIG_OVERRIDE_PATHS] = ""` when no
+override layers exist. PHP-FPM rejects that empty value. The corrected generator
+omits only that entry; `clear_env = yes`, the main configuration path and
+explicitly configured layers remain unchanged. Published tags are not moved.
+
+For **application 0.3.1 only**, replace just the generator with this reviewed,
+checksum-verified fix before the setup command below. The original is retained
+in a private temporary directory. Do not use this block to downgrade a later
+release or overwrite local customizations without reviewing them.
+
+```bash
+test "$(tr -d '[:space:]' < "$SIMBIOZA_APP_ROOT/VERSION")" = 0.3.1 &&
+test ! -L "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php" &&
+SIMBIOZA_FPM_FIX_DIR="$(mktemp -d)" &&
+curl --fail --location https://raw.githubusercontent.com/kmihalj/Simbioza/bec34dfae76dd5446b9e15ba570089724f69cadb/scripts/configure_fpm_setup.php \
+  --output "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" &&
+printf '%s  %s\n' b9f4c61d323ded770cce2444ef0817ce6dbcd5630d3003122b3d303c5a7fd9ec "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" | shasum -a 256 -c - &&
+php -l "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" &&
+sudo cp -p "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php" "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.before.php" &&
+sudo cp "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php" &&
+cmp "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php"
+```
+
+Expect checksum `OK` and `No syntax errors detected`; `cmp` is silent on success.
+Stop on any failure. If setup already stopped with `empty value`, do not delete
+the application/users, repeat Composer or reset the database. Apply the same
+targeted fix and repeat the original **FPM setup** `--install` command with the
+same instance, application path and port, provided the web installer has not
+completed and no reset baseline exists. Existing accounts are reused; this
+does not reinstall Simbioza. Then follow the usual checks and reconnect SSH to
+activate group membership. The generator's regression check uses real FPM
+parsing for absent, empty, whitespace, single and multiple override layers.
+
 On Debian, install the PHP-FPM package for the same PHP version used by the CLI
 and the `acl` package. From the release directory, run the one-time system step:
 

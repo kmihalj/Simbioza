@@ -53,9 +53,16 @@ try {
         'one override' => $root . '/override-one',
         'ordered overrides' => $root . '/override-one' . PATH_SEPARATOR . $root . '/override-two',
     ];
-    foreach ($cases as $name => $overrides) {
+    $variants = [];
+    foreach ([false, true] as $includeIdentity) {
+        foreach ($cases as $name => $overrides) {
+            $variants[] = [$name . ($includeIdentity ? ' / explicit identity' : ' / launchd identity'), $overrides, $includeIdentity];
+        }
+    }
+
+    foreach ($variants as [$name, $overrides, $includeIdentity]) {
         putenv($overrides === false ? 'HPH_CONFIG_OVERRIDE_PATHS' : 'HPH_CONFIG_OVERRIDE_PATHS=' . $overrides);
-        $pool = fpmPool($root, $root . '/fpm.sock', true, null);
+        $pool = fpmPool($root, $root . '/fpm.sock', $includeIdentity, null);
         $configuration = "[global]\ndaemonize = no\nerror_log = " . $root . '/fpm.log'
             . "\npid = " . $root . "/fpm.pid\n" . $pool;
         $path = $root . '/fpm.conf';

@@ -124,6 +124,42 @@ Stvarne lozinke ne stavljajte u upute, povijest terminala ni Git.
 
 ## 4. Stvorite namjenski pool
 
+### Ciljani ispravak generatora za aplikaciju 0.3.1
+
+Izvorni tag 0.3.1 zapisuje `env[HPH_CONFIG_OVERRIDE_PATHS] = ""` kada nema
+dodatnih konfiguracijskih slojeva. PHP-FPM odbija tu praznu vrijednost.
+Ispravljeni generator izostavlja samo taj unos; `clear_env = yes`, glavna
+konfiguracijska putanja i izričito podešeni slojevi ostaju nepromijenjeni.
+Objavljeni tagovi ne pomiču se.
+
+**Samo za aplikaciju 0.3.1**, prije setup naredbe u nastavku zamijenite samo
+generator ovim provjerenim ispravkom s kontrolnim zbrojem. Izvorni se čuva u
+privatnom privremenom direktoriju. Ovim blokom ne vraćati novije izdanje na
+stariji generator niti bez pregleda prepisivati vlastite prilagodbe.
+
+```bash
+test "$(tr -d '[:space:]' < "$SIMBIOZA_APP_ROOT/VERSION")" = 0.3.1 &&
+test ! -L "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php" &&
+SIMBIOZA_FPM_FIX_DIR="$(mktemp -d)" &&
+curl --fail --location https://raw.githubusercontent.com/kmihalj/Simbioza/bec34dfae76dd5446b9e15ba570089724f69cadb/scripts/configure_fpm_setup.php \
+  --output "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" &&
+printf '%s  %s\n' b9f4c61d323ded770cce2444ef0817ce6dbcd5630d3003122b3d303c5a7fd9ec "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" | shasum -a 256 -c - &&
+php -l "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" &&
+sudo cp -p "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php" "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.before.php" &&
+sudo cp "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php" &&
+cmp "$SIMBIOZA_FPM_FIX_DIR/configure_fpm_setup.php" "$SIMBIOZA_APP_ROOT/scripts/configure_fpm_setup.php"
+```
+
+Očekuje se `OK` za kontrolni zbroj i `No syntax errors detected`; uspješni `cmp`
+nema izlaza. Stanite nakon greške. Ako je setup već stao uz `empty value`, ne
+brišite aplikaciju/korisnike, ne ponavljajte Composer niti resetirajte bazu.
+Primijenite isti ciljani ispravak pa ponovite izvornu **FPM setup** naredbu
+`--install` s istom instancom, aplikacijskom putanjom i portom, pod uvjetom da
+čarobnjak još nije dovršen i nema početne kopije reseta. Postojeći računi koriste
+se ponovno; to nije reinstalacija Simbioze. Zatim slijedite redovne provjere i
+ponovno spojite SSH radi članstva u grupama. Regresijska provjera generatora
+koristi stvarni FPM parser za izostale, prazne, razmake te jedan i više slojeva.
+
 Na Debianu instalirajte PHP-FPM za istu verziju PHP-a koju koristi CLI i paket
 `acl`. Iz direktorija izdanja jednokratno pokrenite:
 
