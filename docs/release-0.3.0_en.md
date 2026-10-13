@@ -2,6 +2,8 @@
 
 [Croatian version](release-0.3.0_hr.md)
 
+> Historical release note — for the current installation guides, use [installation](installation_en.md) and [release 0.3.1](release-0.3.1_en.md). The original 0.3.0 tag remains unchanged.
+
 This is the clean initial release. Install into a new database and runtime
 configuration/data directories. Upgrades from 0.2.x and old Simbioza backup
 formats are not supported; external Confluence exports remain supported.

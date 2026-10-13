@@ -56,12 +56,13 @@ final class BundledGuideArchivesTest extends TestCase
     public function testInstallationModesAreSelfContainedAndShellExamplesParse(): void
     {
         $root = dirname(__DIR__, 3);
+        $version = trim((string)file_get_contents($root . '/VERSION'));
         foreach (['mod_php', 'fpm', 'fpm_secured'] as $mode) {
             foreach (['en', 'hr'] as $locale) {
                 $name = 'installation_' . $mode . '_' . $locale . '.md';
                 $text = (string)file_get_contents($root . '/docs/' . $name);
                 foreach (
-                    ['test ! -e "$SIMBIOZA_APP_ROOT"', 'git clone --depth 1 --branch 0.3.0',
+                    ['test ! -e "$SIMBIOZA_APP_ROOT"', 'git clone --depth 1 --branch ' . $version,
                     'composer check-platform-reqs', 'CREATE DATABASE simbioza', 'createuser --pwprompt',
                     'install:prepare', 'modules migrate-status', 'php update.php --check'] as $required
                 ) {

@@ -1,6 +1,6 @@
 # Simbioza
 
-> Priprema izdanja 0.3.0: navedene naredbe za označena izdanja vrijede nakon koordinirane objave aplikacije i modula. Razvojna provjera koristi lokalne pakete; starija izdanja nisu zamjena za ovu konfiguraciju i shemu.
+> Simbioza 0.3.1 donosi obnovljene cjelovite instalacijske upute. Moduli ostaju na 0.3.0, a HeartPhrame Framework je nepromijenjen. Vidi [bilješke izdanja](docs/release-0.3.1_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -149,11 +149,17 @@ modulima koristi se nespremljeni `composer.local.json` preko varijable
 
 ## Instalacija i provjera
 
-Klasična instalacija ostaje podržana. Dodatni provjereni Docker/Colima kandidat
-koristi jedan runtime volumen za privatni config/podatke i zaseban PostgreSQL
-volumen. [Docker upute](docs/docker_hr.md) opisuju gradnju, inicijalizaciju,
-izričite migracije i opcionalni SimpleSAMLphp. Candidate upute ne znače da je
-objavljen javni image ili release 0.3.0.
+Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.md),
+[obični PHP-FPM](docs/installation_fpm_hr.md) ili
+[sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
+administratorskom terminalu i sadrži cijeli postupak instalacije.
+
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.1` dodatni je
+Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
+te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
+inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
+
+### Razvojna provjera
 
 ```bash
 composer update --with-all-dependencies
@@ -249,11 +255,13 @@ Updater i backup/vraćanje aplikacijskih postavki također prate te putanje;
 povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni sloj.
 [Konfiguracijske upute](docs/configuration_hr.md) opisuju aktualni raspored čiste
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
-povijesni je zapis implementacije; [audit prije releasea](docs/pre-release-audit-0.3.0_hr.md)
-aktualni je popis provjera prije objave.
+povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
+bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
+[bilješkama izdanja 0.3.1](docs/release-0.3.1_hr.md).
 
 ## Dokumentacija
 
+- [Dokumentacijsko izdanje 0.3.1](docs/release-0.3.1_hr.md)
 - [Čisto početno izdanje 0.3.0](docs/initial-release-0.3.0_hr.md)
 
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)

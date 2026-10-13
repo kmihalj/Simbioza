@@ -1,13 +1,13 @@
-# Docker instalacija — 0.3.0
+# Docker instalacija — 0.3.1
 
 [Engleska verzija](docker_en.md)
 
 Klasična instalacija ostaje podržana. Docker je dodatni način instalacije, ne
 pretvorba postojećeg sitea. Verzionirani image je
-`ghcr.io/kmihalj/simbioza:0.3.0` za Linux AMD64 i ARM64, uključujući Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.1` za Linux AMD64 i ARM64, uključujući Apple Silicon
 kroz Colimu. Compose paket i kontrolne sume preuzimaju se iz
-[izdanja 0.3.0](https://github.com/kmihalj/Simbioza/releases/tag/0.3.0).
-Dok to izdanje nije objavljeno, dostupan je samo lokalno izgrađeni kandidat.
+[izdanja 0.3.1](https://github.com/kmihalj/Simbioza/releases/tag/0.3.1).
+Moduli ostaju na 0.3.0; Framework i raspored instalacije nisu promijenjeni.
 
 ## Što se trajno čuva
 
@@ -51,7 +51,7 @@ Iz razvojnog/release checkouta s instaliranim Composer autoloaderom:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.0-candidate \
+docker build -t simbioza:0.3.1-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -238,4 +238,4 @@ Docker testovi koriste samo privremene izmišljene siteove. HFC ostaje klasična
 razvojna instalacija; demo/apps-test ostaju pod korisnikovim upravljanjem.
 Objava i skeniranje imagea dio su CI-ja izdanja. Stvarna HTTPS/proxy provjera i
 registracija/prijava SAML SP-a/IdP-a ostaju održavateljeve provjere deploymenta.
-Aktualno stanje izdanja pratiti u [popisu za objavu](release-publication-0.3.0_hr.md).
+Vidi [bilješke izdanja 0.3.1](release-0.3.1_hr.md) i priložene CI/sigurnosne dokaze.

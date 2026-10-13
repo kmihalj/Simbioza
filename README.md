@@ -1,6 +1,6 @@
 # Simbioza
 
-> Release 0.3.0 preparation: the tagged installation commands below apply after coordinated publication of the application and modules. Development verification uses local packages; older releases cannot replace this configuration and schema.
+> Simbioza 0.3.1 refreshes the complete installation guides. Modules remain at 0.3.0 and HeartPhrame Framework is unchanged. See the [release notes](docs/release-0.3.1_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -148,11 +148,17 @@ variable; do not commit local `path` repositories into the shared manifest.
 
 ## Installation and verification
 
-The classical installer remains supported. An additional tested immutable
-Docker/Colima candidate uses one runtime volume for private configuration/data
-and a separate PostgreSQL volume. See the [Docker guide](docs/docker_en.md)
-for image builds, initialization, explicit migrations and optional SimpleSAMLphp.
-No public image or 0.3.0 release is implied by these candidate instructions.
+Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
+[ordinary PHP-FPM](docs/installation_fpm_en.md) or
+[secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
+administrator terminal and includes the full installation procedure.
+
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.1` is an additional
+Docker/Colima route, with one runtime configuration/data volume and a separate
+PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
+explicit migrations and optional SimpleSAMLphp.
+
+### Development verification
 
 ```bash
 composer update --with-all-dependencies
@@ -245,14 +251,16 @@ The updater and application settings backup/restore also follow these paths;
 restore preserves dynamic bootstrap code and writes approved settings into the
 final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
-is a historical implementation record; the [pre-release audit](docs/pre-release-audit-0.3.0_en.md)
-is the current publication checklist.
+is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
+records the initial release checks. Current documentation changes are listed in
+the [0.3.1 release notes](docs/release-0.3.1_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Documentation release 0.3.1](docs/release-0.3.1_en.md)
 - [Clean initial release 0.3.0](docs/initial-release-0.3.0_en.md)
 - [Ordinary PHP-FPM installation](docs/installation_fpm_en.md)
 - [Secured PHP-FPM installation](docs/installation_fpm_secured_en.md)

@@ -2,6 +2,8 @@
 
 [Engleska verzija](release-0.3.0_en.md)
 
+> Povijesna bilješka izdanja — aktualne upute nalaze se u [instalaciji](installation_hr.md) i [izdanju 0.3.1](release-0.3.1_hr.md). Izvorni tag 0.3.0 ostaje nepromijenjen.
+
 Ovo je čisto inicijalno izdanje. Instalirati u novu bazu i nove direktorije runtime
 konfiguracije/podataka. Nadogradnje s 0.2.x i stari Simbioza backup formati nisu
 podržani; vanjski Confluence exporti ostaju podržani.

@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Documentation release 0.3.1](release-0.3.1_en.md)
 - [Initial release 0.3.0 and verification checklist](initial-release-0.3.0_en.md)
 - [Expanded pre-release audit and continuation](pre-release-audit-0.3.0_en.md)
 - [Current configuration and module-owned files](configuration_en.md)

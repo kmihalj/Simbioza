@@ -2,7 +2,8 @@
 
 [Engleska verzija](installation_en.md)
 
-Simbioza 0.3.0 kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
+Ove upute instaliraju Simbiozu **0.3.1**, uz module **0.3.0** i nepromijenjen
+Framework. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 
 Odaberite **jednu cjelovitu uputu** ispod. Svaka kreće iz administratorskog
