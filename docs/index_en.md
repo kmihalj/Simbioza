@@ -39,7 +39,9 @@ Suggested path for advanced users:
 ## Getting started
 
 - [Installation overview](installation_en.md)
-- [Dedicated PHP-FPM installation](installation_fpm_en.md)
+- [Ordinary PHP-FPM installation](installation_fpm_en.md)
+- [Secured PHP-FPM installation](installation_fpm_secured_en.md)
+- [Maintaining installation guides](maintaining_installation_guides_en.md)
 - [Apache mod_php installation](installation_mod_php_en.md)
 - [Six clean installations and screenshots](installation-lab_en.md)
 - [Module dependencies](module-dependencies_en.md)

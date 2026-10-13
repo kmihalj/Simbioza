@@ -39,7 +39,9 @@ Predloženi put za napredne korisnike:
 ## Početak
 
 - [Pregled instalacije](installation_hr.md)
-- [Instalacija s namjenskim PHP-FPM-om](installation_fpm_hr.md)
+- [Instalacija s običnim PHP-FPM-om](installation_fpm_hr.md)
+- [Instalacija sa secured PHP-FPM-om](installation_fpm_secured_hr.md)
+- [Održavanje instalacijskih uputa](maintaining_installation_guides_hr.md)
 - [Instalacija s Apache mod_php modulom](installation_mod_php_hr.md)
 - [Zapis šest čistih instalacija i screenshotovi](installation-lab_hr.md)
 - [Ovisnosti modula](module-dependencies_hr.md)

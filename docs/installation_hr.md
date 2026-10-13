@@ -1,235 +1,65 @@
-# Instalacija i održavanje Simbioze
+# Odaberite instalaciju Simbioze
 
 [Engleska verzija](installation_en.md)
 
-[Docker/Colima candidate upute](docker_hr.md) opisuju dodatni način instalacije.
-Klasični installeri u nastavku ostaju; Docker koristi zamjenu imagea i izričite
-migracije, ne Composer/updater nadogradnju koda unutar containera.
+Simbioza 0.3.0 kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
+Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 
-Šest ugrađenih vodiča koristi aktualni format-2 backup spremnik. Instalacija
-koristi rezerviranu adresu koja nije mrežni cilj samo za razrješavanje poveznica
-prema odabranoj osnovnoj putanji instalacije; ne dohvaća tu adresu i ne sprema je
-kao javnu adresu sitea. Korisničke kopije zahtijevaju stvarne izvornu i ciljnu adresu.
+Odaberite **jednu cjelovitu uputu** ispod. Svaka kreće iz administratorskog
+terminala, instalira/provjerava alate, preuzima izdanje, priprema bazu i prava,
+podešava web-poslužitelj, provodi čarobnjak i potvrđuje prvu prijavu.
+Ovaj pregled nije dodatni korak instalacije.
 
-Način izvršavanja PHP-a odaberite **prije** podešavanja web-poslužitelja.
-Slijedite jedan cjelovit postupak; nemojte miješati direktive ili prava iz
-različitih načina:
-
-| Način rada PHP-a | Web-poslužitelj | Početni grafički instaler | Kasnije GUI radnje s paketima i nadogradnjom |
+| Instalacija | PHP identitet | Priprema paketa i kasnije nadogradnje aplikacije | Cjelovita uputa |
 |---|---|---|---|
-| [Namjenski PHP-FPM](installation_fpm_hr.md) | Apache ili Nginx | Da; odabrani opcionalni paketi mogu se instalirati u čarobnjaku | Da, ako namjenski setup i provjera prava prolaze |
-| [Apache mod_php](installation_mod_php_hr.md) | Samo Apache | Da; opcionalne pakete prvo treba pripremiti u CLI-ju | Ne; za paketne radnje i nadogradnje koristite CLI |
+| Apache mod_php | Zajednički Apache račun | CLI, kao vlasnik koda | [Počnite mod_php instalaciju](installation_mod_php_hr.md) |
+| Obični PHP-FPM | Zajednički sistemski web-račun u FPM poolu | CLI, kao vlasnik koda | [Počnite običnu FPM instalaciju](installation_fpm_hr.md) |
+| Secured PHP-FPM (preporučeno) | Zasebni FPM i deploy računi, ograničeni helper | GUI preko radnika ili CLI kao deploy održavatelj | [Počnite secured FPM instalaciju](installation_fpm_secured_hr.md) |
 
-Početni čarobnjak u pregledniku **nije ograničen na FPM**. U oba načina
-podešava site, bazu, jezike, administratora i module. Svi opcionalni moduli
-unaprijed su odabrani, a nepotrebne možete odznačiti. Razlika je u
-tome smije li web-proces zatražiti instalaciju nedostajućih Composer paketa i
-kasnije nadogradnje. Za novu instalaciju preporučuje se namjenski FPM.
-Nginx ne podržava Apacheov `mod_php`.
+Sva tri načina imaju grafički **početni installer** i GUI konfiguracije.
+Obični i secured FPM nisu isto: sam FastCGI handler ne stvara deploy izolaciju
+niti omogućuje GUI Composer radnje i nadogradnje aplikacije.
+Nginx treba FPM; ne može izvršavati Apacheov mod_php.
+[Docker instalacija](docker_hr.md) zaseban je, opcionalan postupak s imageima.
 
 ## Prije odabira načina izvršavanja PHP-a
 
-### 1. Provjerite poslužitelj
+Zadani primjeri namijenjeni su novom Linux ili macOS poslužitelju, ne postojećem
+produkcijskom poolu. Trebate administratorski terminal, domenu/TLS certifikat
+za javni site i odabranu bazu. SQLite ne treba bazni servis.
+Svaka odabrana uputa ponavlja točne naredbe pripreme i ne pretpostavlja
+postojeće Simbioza FPM/deploy račune.
 
-Potrebni su Linux ili macOS, PHP 8.2 ili noviji, Composer 2, Git, Apache 2.4
-ili Nginx te HTTPS za javni site. PHP proces web-poslužitelja mora imati iste
-potrebne ekstenzije kao CLI PHP:
+Pri reinstalaciji sistemac prethodno zbrinjava procese i podatke starog sitea,
+provjerava postojeće identitete i odabire odgovarajuću instancu i port.
+Upute ne brišu drugu instalaciju niti ponovno stvaraju aktivni site samo zato
+što direktorij preuzimanja postoji.
 
-```text
-ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip
-```
+Privatna modulna konfiguracija koristi `HPH_CONFIG_PATH` (zadano `config/`);
+trajni datotečni sadržaj koristi `data/`. Web-poslužitelj izlaže samo `public/`.
 
-Instalirajte PDO ekstenziju za odabranu bazu: `pdo_sqlite`, `pdo_mysql` ili
-`pdo_pgsql`. CLI provjerite naredbama `php -v` i `php -m`, a zatim potvrdite
-i verziju i ekstenzije **web** PHP handlera. Ispravan CLI ne dokazuje da Apache
-ili FPM izvršavaju istu PHP verziju.
+## Demo instalacije
 
-### 2. Dohvatite označeno izdanje
+Najprije dovršite i provjerite **standardnu instalaciju Simbioze** prema jednoj
+uputi iznad. Tek zatim dodajte demo modul, izradite javne probne račune i sadržaj,
+uključite ograničenja i pripremite početnu kopiju reseta.
+Demo modul ne zamjenjuje uobičajeni installer aplikacije.
 
-Označeno izdanje instalirajte u direktorij **bez** `.git` direktorija.
-Nakon koordinirane objave koristite `0.3.0` ili noviji kompatibilni stabilni tag na
-[stranici izdanja](https://github.com/kmihalj/Simbioza/releases). Ove upute opisuju
-osnovu 0.3.0; tijekom pripreme izdanja nemojte umjesto nje uzeti tag 0.2.x:
-
-```bash
-SIMBIOZA_TAG=0.3.0
-SIMBIOZA_FETCH_DIR="$(mktemp -d)"
-mkdir "$SIMBIOZA_FETCH_DIR/release"
-git -C "$SIMBIOZA_FETCH_DIR/release" init -q
-git -C "$SIMBIOZA_FETCH_DIR/release" remote add origin \
-  https://github.com/kmihalj/Simbioza.git
-git -C "$SIMBIOZA_FETCH_DIR/release" fetch --quiet --depth 1 origin \
-  "refs/tags/$SIMBIOZA_TAG:refs/tags/$SIMBIOZA_TAG"
-git -C "$SIMBIOZA_FETCH_DIR/release" -c advice.detachedHead=false checkout --quiet "$SIMBIOZA_TAG"
-mkdir -p /srv/simbioza
-rsync --archive --exclude=.git/ "$SIMBIOZA_FETCH_DIR/release/" /srv/simbioza/
-cd /srv/simbioza
-composer update --with-all-dependencies --optimize-autoloader
-composer check-platform-reqs
-```
-
-Naredbe pokrenite kao isti sistemski račun koji će biti vlasnik i održavatelj
-izdanja. Na macOS-u zamijenite `/srv/simbioza` putanjom na lokalnom volumenu
-koji primjenjuje vlasništvo, npr. `/Users/Shared/Simbioza/simbioza`.
-Aplikacijski manifest koristi tagirane pakete; nemojte podmetati lokalne
-razvojne module ni koristiti `--no-dev`. Obvezna jezgra uključuje Framework,
-ORM, Menu, Auth, Notification, HTML Editor, Workspace, Workspace Search i
-Simbioza User. Ostale module možete odabrati tijekom ili nakon instalacije.
-
-Webu smije biti izložen samo `public/`. `config/`, `data/`, Composer datoteke,
-migracije i ugrađene upute nikad ne smiju biti korijenski web direktorij.
-Pripremite radne putanje:
-
-```bash
-mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
-```
-
-Ne koristite `chmod 777`. Namjenski FPM alat sam postavlja precizno
-vlasništvo; uputa za mod_php navodi uske zapisive putanje.
-
-### 3. Pripremite praznu bazu
-
-SQLite ne treba bazni servis. Odaberite ga u instaleru pa Simbioza stvara
-`data/simbioza.sqlite`. Za MySQL ili PostgreSQL stvorite **praznu** bazu i
-zasebnog aplikacijskog korisnika bez globalnih ovlasti.
-
-Primjer za MySQL:
-
-```sql
-CREATE DATABASE simbioza CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'simbioza'@'127.0.0.1' IDENTIFIED BY '<jedinstvena-lozinka>';
-GRANT ALL PRIVILEGES ON simbioza.* TO 'simbioza'@'127.0.0.1';
-```
-
-Primjer za PostgreSQL:
-
-```bash
-createuser --pwprompt --no-superuser --no-createdb --no-createrole simbioza
-createdb --owner=simbioza --encoding=UTF8 simbioza
-```
-
-Nastavite **ili** [FPM postupkom](installation_fpm_hr.md) **ili**
-[Apache mod_php postupkom](installation_mod_php_hr.md). Svaki sadrži vlastitu
-konfiguraciju web-poslužitelja, instaler, završnu provjeru i odgovarajuća
-prava. Za više izoliranih FPM instalacija na istom računalu svakoj zadajte
-zasebnu oznaku `--instance` i vrata `--listen`, kao u FPM uputi. Alat odbija
-ponovnu uporabu iste oznake za drugi direktorij aplikacije.
+[Privatni demo modul](https://github.com/kmihalj/simbioza-module-demo) vlasnika
+repozitorija ima zaseban vodič za određenu sistemsku instalaciju.
+Traži pristup repozitoriju i nije potreban za običnu Simbiozu.
+Njegovi lokalni predlošci pretpostavljaju određene korisnike, oznake servisa i
+putanje: ne miješajte ih s javnim secured setupom bez svjesnog usklađivanja
+tih identiteta.
 
 ## Nakon instalacije
 
-### Moduli
+Svaka cjelovita uputa sadrži vlastite naredbe modula, jezika i nadogradnje,
+granice sigurnosnog kopiranja i završne provjere. Redovne paketne/kodne radnje
+izvršava održavatelj/deploy identitet, ne web-račun i ne root. Jezični paketi
+mogu se nadograditi neovisno o izdanju aplikacije.
 
-Administrator otvara **Postavke → Setup i moduli**. Na namjenskom FPM-u GUI
-može instalirati, ukloniti, uključiti ili isključiti opcionalne module ako su
-sve provjere okruženja uspješne. Na mod_php-u GUI može uključiti ili
-isključiti već instalirane module, dok se paketne radnje rade u CLI-ju.
-CLI naredbe iste su u oba načina:
-
-```bash
-vendor/bin/hph modules list
-vendor/bin/hph modules add calendar --fresh
-vendor/bin/hph modules disable calendar
-vendor/bin/hph modules enable calendar
-vendor/bin/hph modules backups calendar
-vendor/bin/hph modules remove calendar --yes
-vendor/bin/hph modules add calendar --restore
-vendor/bin/hph modules migrate-status
-```
-
-Isključivanje zadržava paket, tablice i podatke, ali pri sljedećem zahtjevu
-prestaje učitavati njegove rute, servise, izbornike i tablice. Uklanjanje
-najprije izrađuje NDJSON kopiju u `data/module-backups/`, a zatim uklanja
-migracije, tablice i paket. Pri ponovnom dodavanju izričito odaberite čistu
-instalaciju ili povrat. Obvezne module nije moguće ukloniti; ovisnosti se
-provjeravaju. Već uvezene Confluence stranice rade bez import-modula, ali se
-uklanjanje blokira dok postoje nerazriješene privremene import-referencije.
-
-Odabir modula sprema se u `HPH_CONFIG_PATH/modules.php` (zadano
-`config/modules.php`), ne pod `data/`. GUI i CLI koriste istu datoteku; kod
-override slojeva zapis ide samo u zadnji deklarirani sloj. U
-[konfiguracijskim uputama](configuration_hr.md) opisani su `.dist` predložak,
-aktualne putanje modula i potrebna prava. Instaler također koristi
-ove zajedničke putanje, kao i upravljanje jezicima, updater i backup/vraćanje
-aplikacijskih postavki. Prije odabira vanjskog korijena pripremite potpunu aktualnu konfiguraciju.
-
-### Jezici
-
-Instaler dohvaća objavljene jezike iz
-[repozitorija jezika](https://github.com/kmihalj/simbioza-languages).
-Hrvatski i engleski unaprijed su označeni, ali ih možete odznačiti ako
-ostane barem jedan jezik. Administrator upravlja objavljenim paketima u GUI-ju
-na mod_php ili FPM instalaciji ako su runtime podaci i završni konfiguracijski sloj zapisivi.
-Instalirani katalozi su podatkovni JSON, ne kod aplikacije. Dostupan je i CLI:
-
-```bash
-vendor/bin/hph languages list
-vendor/bin/hph languages available
-vendor/bin/hph languages install de
-vendor/bin/hph languages disable de
-vendor/bin/hph languages enable de
-vendor/bin/hph languages update
-vendor/bin/hph languages remove de
-```
-
-`languages update` provjerava instalirane pakete neovisno o izdanju
-aplikacije. Posljednji aktivni jezik nije moguće isključiti ni ukloniti.
-Čarobnjak uvozi engleske i/ili hrvatske korisničke upute odabrane pri
-instalaciji; dodatni jezici sučelja mogu se instalirati i prije nego što
-postoje prijevodi svih uputa.
-
-### Nadogradnje aplikacije
-
-Simbioza 0.3.0 zahtijeva novu instalaciju. Nadogradnje s 0.2.x i stare Simbioza backup arhive nisu podržane. Buduće nadogradnje 0.3.x+ koriste samonadogradivi updater.
-
-Na ispravno podešenom namjenskom FPM-u administrator može provjeriti i
-pokrenuti nadogradnju u GUI Setupu. Stvarni posao radi ograničeni deploy
-račun, a ne web-proces. Održavatelj može koristiti i CLI nakon što dobije
-članstvo u deploy i runtime grupama te se ponovno prijavi u shell. Na
-mod_php-u CLI koristi Unix vlasnik koda. Redovne radnje ne trebaju root:
-
-```bash
-cd /srv/simbioza
-php update.php --check
-php update.php
-```
-
-Za određeni objavljeni tag koristite `php update.php --tag=<TAG>`. Aktualni
-updater prvo provjerava updater iz najnovijeg stabilnog izdanja, čak i ako
-odaberete drugi aplikacijski tag. Novi updater dobiva privatnu sigurnosnu
-kopiju, atomski se zamjenjuje i pokreće u svježem PHP procesu uz isto
-zaključavanje, deploy identitet, jezik, ciljni tag i prijenos GUI napretka.
-Tek zatim izrađuje kopiju koda, uključuje održavanje, čuva privatnu konfiguraciju i
-podatke, zadržava odabrane opcionalne module, instalira kompatibilne tagirane
-pakete, provjerava pokretanje, primjenjuje migracije, osvježava upute i temu
-te čisti cache. Na postojećoj instalaciji **nemojte** ga zamijeniti
-samostalnim `composer update`: time se mogu izgubiti odabrani opcionalni
-paketi iz aplikacijskog manifesta.
-
-Kopije updatera nalaze se u `data/backups/updater/` s pravima `0600`.
-Privremeni rad i podaci predaje ostaju unutar `data/` i uklanjaju se po završetku.
-Povrat aplikacijskog koda ne vraća zastarjeli updater. `--check` je samo
-read-only provjera; `--updater-info` prikazuje verziju updatera i protokol predaje
-bez aplikacijskih ovisnosti. Izdanja starija od 0.3.0
-nisu valjani ciljevi ovog updatera.
-
-Greška **prije** migracija automatski vraća kod i Composer pakete. Kada
-migracije već počnu, održavanje namjerno ostaje uključeno radi kontroliranog
-oporavka. `data/update-maintenance.json` zaštitni je zapis: nikad ga ne
-premještajte niti brišite dok ne dokažete da nema aktivnog updatera i ne
-pregledate dnevnik i putanju kopije. Nakon svake nadogradnje potvrdite
-završni status, nula migracija na čekanju te stvarnu prijavu i prikaz
-sadržaja. Bazu, postavke, datoteke i teme kopirajte i zasebno.
-
-Ne koristite redovno `sudo php update.php` i ne pokrećite updater
-kao web/FPM račun.
-
-Aktualni updater prati `framework.php`, `HPH_CONFIG_PATH` i uređene override
-slojeve bez pokretanja aplikacije prije osvježavanja samog updatera. Zastarjelo
-spremište odabira modula prenosi prije aplikacijskog preflighta i može vratiti taj
-prijenos prije početka migracija baze. Privatni vanjski slojevi izuzeti su iz
-sinkronizacije i arhiva za povrat koda; kopirajte ih zasebno sigurnim postupkom.
-Povrat aplikacijskih postavki cilja aktivni završni sloj i ne zamjenjuje dinamički
-`app.php` izračunatim podacima. Pogledajte
-[konfiguracijsku uputu](configuration_hr.md#backup-i-prava).
-Nakon promjene putanja namjenskog FPM-a izričito ponovno stvorite pool/helper uz
-istu instancu/opcije i pripremite prava vanjske konfiguracije.
+Updater osvježava ugrađene Korisničke upute iz paketa instaliranog izdanja.
+Čitanje GitHubova `main` ne zamjenjuje automatski stranice pohranjene na siteu;
+njihov sadržaj može pripadati starijem izdanju. Ugrađene instalacijske stranice
+izrađuju se iz ovih Markdown izvora.
