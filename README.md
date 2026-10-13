@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.1 refreshes the complete installation guides. Modules remain at 0.3.0 and HeartPhrame Framework is unchanged. See the [release notes](docs/release-0.3.1_en.md).
+> Simbioza 0.3.2 fixes fresh secured-FPM setup without extra configuration layers. Complete installation guides use this release directly. Public modules remain at 0.3.0 and HeartPhrame Framework is unchanged. See the [release notes](docs/release-0.3.2_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -153,7 +153,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.1` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.2` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -253,13 +253,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.1 release notes](docs/release-0.3.1_en.md).
+the [0.3.2 release notes](docs/release-0.3.2_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Secured-FPM fix release 0.3.2](docs/release-0.3.2_en.md)
 - [Documentation release 0.3.1](docs/release-0.3.1_en.md)
 - [Clean initial release 0.3.0](docs/initial-release-0.3.0_en.md)
 - [Ordinary PHP-FPM installation](docs/installation_fpm_en.md)

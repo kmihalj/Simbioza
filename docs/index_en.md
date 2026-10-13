@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Secured-FPM fix release 0.3.2](release-0.3.2_en.md)
 - [Documentation release 0.3.1](release-0.3.1_en.md)
 - [Initial release 0.3.0 and verification checklist](initial-release-0.3.0_en.md)
 - [Expanded pre-release audit and continuation](pre-release-audit-0.3.0_en.md)

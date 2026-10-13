@@ -262,9 +262,9 @@ jobs:
       # HR: Parsira generirane poolove, uključujući rad bez dodatnih slojeva; provjera ne pokreće FPM servis.
       - name: Verify real FPM configuration parser / Provjeri stvarni FPM parser konfiguracije
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install --no-install-recommends -y "php${{ matrix.php }}-fpm"
-          php scripts/verify_fpm_pool_configuration.php --php-fpm="/usr/sbin/php-fpm${{ matrix.php }}"
+          docker run --rm --entrypoint php \
+            -v "$GITHUB_WORKSPACE:/source:ro" "php:${{ matrix.php }}-fpm" \
+            /source/scripts/verify_fpm_pool_configuration.php --php-fpm=/usr/local/sbin/php-fpm
 
       - name: Run quality and test suite / Pokreni provjere i testove
         run: |

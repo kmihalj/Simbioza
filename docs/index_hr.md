@@ -6,6 +6,7 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Izdanje 0.3.2 s ispravkom secured-FPM setupa](release-0.3.2_hr.md)
 - [Dokumentacijsko izdanje 0.3.1](release-0.3.1_hr.md)
 - [Početno izdanje 0.3.0 i popis provjera](initial-release-0.3.0_hr.md)
 - [Prošireni audit prije releasea i nastavak](pre-release-audit-0.3.0_hr.md)

@@ -153,9 +153,9 @@ final class FpmConfigurationPathsTest extends TestCase
         foreach ([false, '', " \t "] as $override) {
             putenv($override === false ? 'HPH_CONFIG_OVERRIDE_PATHS' : 'HPH_CONFIG_OVERRIDE_PATHS=' . $override);
             $pool = \fpmPool($this->root, '127.0.0.1:9999', false, null);
-            $this->assertStringNotContainsString('env[HPH_CONFIG_OVERRIDE_PATHS]', $pool);
-            $this->assertStringContainsString('clear_env = yes', $pool);
-            $this->assertStringContainsString('env[HPH_CONFIG_PATH] = "' . $this->root . '/config"', $pool);
+            $this->assertStringNotContainsString('env[HPH_CONFIG_OVERRIDE_PATHS]', (string) $pool);
+            $this->assertStringContainsString('clear_env = yes', (string) $pool);
+            $this->assertStringContainsString('env[HPH_CONFIG_PATH] = "' . $this->root . '/config"', (string) $pool);
         }
     }
 
@@ -169,7 +169,7 @@ final class FpmConfigurationPathsTest extends TestCase
         $overrides = $this->root . '/config' . PATH_SEPARATOR . $this->root . '/override';
         putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $overrides);
         $pool = \fpmPool($this->root, '127.0.0.1:9999', true, null);
-        $this->assertStringContainsString('env[HPH_CONFIG_OVERRIDE_PATHS] = "' . $overrides . '"', $pool);
+        $this->assertStringContainsString('env[HPH_CONFIG_OVERRIDE_PATHS] = "' . $overrides . '"', (string) $pool);
         $this->assertSame(1, substr_count($pool, 'env[HPH_CONFIG_OVERRIDE_PATHS]'));
     }
 

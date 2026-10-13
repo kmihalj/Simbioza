@@ -42,7 +42,7 @@ PHP must be **8.2 or newer**, Composer must be version 2, and PHP needs
 Use `pdo_sqlite`, `pdo_mysql` or `pdo_pgsql` for your chosen database.
 CLI PHP and the web PHP handler must have matching versions and extensions.
 
-## 2. Download a clean Simbioza 0.3.1 release
+## 2. Download a clean Simbioza 0.3.2 release
 
 Choose **one** application directory. On Linux:
 
@@ -68,7 +68,7 @@ Run the complete download block as your normal maintainer account:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.1 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.2 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -77,7 +77,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Expect `0.3.1` and `success` for every platform requirement.
+Expect `0.3.2` and `success` for every platform requirement.
 Git's **detached HEAD** notice is normal when checking out a release tag.
 Do not run Composer with `sudo`, copy another site's configuration or database,
 include `.git/` in the deployed application, or use `--no-dev` here.
