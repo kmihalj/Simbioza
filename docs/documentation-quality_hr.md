@@ -1,6 +1,6 @@
 # Provjere dokumentacije i komentara
 
-Pravila vrijede za aplikaciju 0.3.0 i njezinih 18 javnih modula. Framework je
+Pravila vrijede za aplikaciju 0.3.3 i njezinih 18 javnih modula. Framework je
 uzvodni kod i ovi ga alati ne prepisuju.
 
 ## Pravila jezika i primjera
@@ -40,7 +40,9 @@ uključujući predloške/testove, te dvojezičnu dokumentaciju metoda produkcijs
 koda. Dug neposredni PHPDoc je valjan. Stringovi s primjerima nisu komentari i
 ne prepisuju se. Drugi provjerava rano navedene obavezne Composer ovisnosti u
 README-ju, parove dokumenata, relativne poveznice na datoteke, sidra naslova,
-cjelovite PHP/JSON primjere i opise početnih primjera. Ne dohvaća udaljene stranice
+cjelovite PHP/JSON primjere i opise početnih primjera. Povijesne napomene uspoređuju
+aplikacijsku verziju samo za aplikacijske bilješke izdanja. Moduli imaju vlastite
+brojeve izdanja; njihovi PHP/JSON primjeri i dalje se provjeravaju. Ne dohvaća udaljene stranice
 niti dokazuje primjenjivost svakog primjera u prilagođenoj aplikaciji. Treći
 provjerava pokrivenost jezičnih ključeva aplikacije/modula.
 
@@ -56,6 +58,6 @@ komentari slijede isto jezično pravilo, ali ovaj PHP formatter ne parsira te je
 [Instalacija](installation_hr.md), [konfiguracija](configuration_hr.md) i
 [Docker](docker_hr.md) opisuju aktualni raspored čiste instalacije. Starije bilješke
 izdanja čuvaju izvorne pojedinosti uz izričitu povijesnu napomenu; nisu upute za
-instalaciju/nadogradnju 0.3.0. [Audit prije releasea](pre-release-audit-0.3.0_hr.md)
-aktualni je nastavak i popis provjera prije objave. Prolaz ovih provjera nije
-odobrenje izdanja.
+aktualnu instalaciju/nadogradnju. [Početni audit prije releasea](pre-release-audit-0.3.0_hr.md)
+bilježi početne provjere, a [bilješke izdanja 0.3.3](release-0.3.3_hr.md) opisuju
+aktualnu objavu. Prolaz ovih provjera nije odobrenje izdanja.

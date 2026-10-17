@@ -30,6 +30,33 @@ final class DeploymentTest extends TestCase
     private string|false $mode;
 
     /**
+     * EN: Published installation examples and download links follow the application's current version.
+     *
+     * HR: Objavljeni instalacijski primjeri i poveznice preuzimanja prate aktualnu verziju aplikacije.
+     */
+    public function testDockerExamplesUseCurrentApplicationVersion(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $version = trim((string)file_get_contents($root . '/VERSION'));
+        $this->assertStringContainsString(
+            'ARG VERSION=' . $version,
+            (string)file_get_contents($root . '/docker/Dockerfile'),
+        );
+        $this->assertStringContainsString(
+            'SIMBIOZA_IMAGE=ghcr.io/kmihalj/simbioza:' . $version,
+            (string)file_get_contents($root . '/docker/.env.example'),
+        );
+        foreach (['en', 'hr'] as $locale) {
+            $guide = (string)file_get_contents($root . '/docs/docker_' . $locale . '.md');
+            $readme = (string)file_get_contents($root . ($locale === 'en' ? '/README.md' : '/README_hr.md'));
+            foreach ([$guide, $readme] as $source) {
+                $this->assertStringContainsString('ghcr.io/kmihalj/simbioza:' . $version, $source);
+                $this->assertStringContainsString('release-' . $version . '_' . $locale . '.md', $source);
+            }
+        }
+    }
+
+    /**
      * EN: Both build stages inherit OS updates, including packages already present in the pinned base.
      *
      * HR: Obje faze gradnje nasljeđuju OS zakrpe, uključujući pakete već prisutne u zaključanoj osnovi.

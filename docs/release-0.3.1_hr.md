@@ -2,7 +2,7 @@
 
 [Engleska verzija](release-0.3.1_en.md)
 
-> Povijesna bilješka izdanja — koristite aktualne [instalacijske upute](installation_hr.md) i [izdanje 0.3.2](release-0.3.2_hr.md), koje popravlja novu secured-FPM instalaciju. Izvorni tag 0.3.1 ostaje nepromijenjen.
+> Povijesna bilješka izdanja — koristite aktualne [instalacijske upute](installation_hr.md) i [izdanje 0.3.3](release-0.3.3_hr.md). Izvorni tag 0.3.1 ostaje nepromijenjen.
 
 Ovo je dokumentacijsko izdanje na osnovi 0.3.0. Samo aplikacija dobiva tag
 **0.3.1**. Svi javni moduli i privatni demo modul ostaju na **0.3.0**, a

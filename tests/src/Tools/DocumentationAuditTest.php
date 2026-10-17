@@ -78,6 +78,31 @@ final class DocumentationAuditTest extends TestCase
     }
 
     /**
+     * EN: Independent module releases do not inherit the application's version, but examples remain checked.
+     *
+     * HR: Samostalna izdanja modula ne nasljeđuju verziju aplikacije, ali primjeri se i dalje provjeravaju.
+     */
+    public function testModuleReleaseVersionIsIndependentAndExamplesRemainValidated(): void
+    {
+        $issues = [];
+        \auditDocumentationExamples(
+            "# API 0.3.1\n```json\n{\"enabled\":true}\n```",
+            'module/release-0.3.1_en.md',
+            $issues,
+            false,
+        );
+        $this->assertSame([], $issues);
+        \auditDocumentationExamples(
+            "```json\ninvalid\n```",
+            'module/release-0.3.1_en.md',
+            $issues,
+            false,
+        );
+        $this->assertCount(1, $issues);
+        $this->assertStringContainsString('invalid json example', (string)$issues[0]);
+    }
+
+    /**
      * EN: Starting examples need valid JSON and two non-empty ordered language sections.
      *
      * HR: Početni primjeri trebaju valjan JSON i dva neprazna uređena jezična odjeljka.

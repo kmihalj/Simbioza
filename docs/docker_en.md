@@ -1,13 +1,14 @@
-# Docker deployment — 0.3.2
+# Docker deployment — 0.3.3
 
 [Croatian version](docker_hr.md)
 
 The classical installer remains supported. Docker is an additional deployment
 method, not a conversion of an existing site. The versioned image is
-`ghcr.io/kmihalj/simbioza:0.3.2` for Linux AMD64 and ARM64, including Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.3` for Linux AMD64 and ARM64, including Apple Silicon
 through Colima. Get the Compose bundle and checksums from the
-[0.3.2 release](https://github.com/kmihalj/Simbioza/releases/tag/0.3.2).
-Modules remain at 0.3.0; the Framework and deployment layout are unchanged.
+[0.3.3 release](https://github.com/kmihalj/Simbioza/releases/tag/0.3.3).
+API is 0.3.1 and the other public modules remain 0.3.0; Framework v0.0.25
+and the deployment layout are unchanged.
 
 ## What persists
 
@@ -51,7 +52,7 @@ From an installed development/release checkout with its Composer autoloader:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.2-candidate \
+docker build -t simbioza:0.3.3-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -249,4 +250,4 @@ Only disposable fictional sites are used for container tests. HFC remains the
 classical development installation; demo/apps-test remain user-managed. Image
 publication and scanning are part of release CI. Real HTTPS/proxy and SAML SP/IdP
 registration/login remain operator-specific deployment checks. See the
-[0.3.2 release notes](release-0.3.2_en.md) and the release's CI/security evidence.
+[0.3.3 release notes](release-0.3.3_en.md) and the release's CI/security evidence.

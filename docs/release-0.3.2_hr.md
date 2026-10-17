@@ -2,6 +2,8 @@
 
 [Engleska verzija](release-0.3.2_en.md)
 
+> Povijesna bilješka izdanja — aktualne instalacijske upute i sigurnosne Docker nadogradnje nalaze se u [izdanju 0.3.3](release-0.3.3_hr.md). Izvorni tag i image 0.3.2 ostaju nepromijenjeni.
+
 Ova dopuna aplikacije popravlja FPM generator za nove macOS i Linux secured
 instalacije. Javni moduli ostaju **0.3.0**, privatni DEMO modul **0.3.1**, a
 Framework **v0.0.25**. Postojeći tagovi ne pomiču se.

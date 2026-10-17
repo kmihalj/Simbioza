@@ -1,6 +1,6 @@
 # Documentation and comment checks
 
-These rules apply to the 0.3.0 application and its 18 public modules. Framework
+These rules apply to the 0.3.3 application and its 18 public modules. Framework
 is upstream code and is not rewritten by these tools.
 
 ## Language and example rules
@@ -40,7 +40,9 @@ including templates/tests, and bilingual method documentation in production
 source. Long adjacent PHPDoc is valid. Strings containing examples are not
 comments and are not rewritten. The second checks required Composer dependencies
 early in README, document pairs, relative file links, heading anchors, complete
-PHP/JSON examples and starting-example descriptions. It does not fetch remote
+PHP/JSON examples and starting-example descriptions. Historical notices use the
+application version only for application release notes. Module releases have
+independent version numbers; their PHP/JSON examples are still checked. It does not fetch remote
 websites or prove that every example fits a custom host. The third checks
 application/module translation-key coverage.
 
@@ -56,6 +58,7 @@ the same language rule, but this PHP formatter does not parse those languages.
 [Installation](installation_en.md), [configuration](configuration_en.md) and
 [Docker](docker_en.md) describe the current clean-install layout. Older release
 notes retain original details under explicit historical notices; they are not
-0.3.0 installation/upgrade instructions. The
-[pre-release audit](pre-release-audit-0.3.0_en.md) is the current continuation and
-publication checklist. Passing these checks is not release approval.
+current installation/upgrade instructions. The
+[initial pre-release audit](pre-release-audit-0.3.0_en.md) records the initial
+acceptance checks; [0.3.3 release notes](release-0.3.3_en.md) describe the current
+publication. Passing these checks is not release approval.

@@ -2,7 +2,7 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.2**, uz module **0.3.0** i nepromijenjen
+Ove upute instaliraju Simbiozu **0.3.3**, uz API **0.3.1**, ostale javne module **0.3.0** i nepromijenjen
 Framework. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 

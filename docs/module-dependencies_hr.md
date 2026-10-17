@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Priprema izdanja 0.3.0: navedene naredbe za označena izdanja vrijede nakon koordinirane objave aplikacije i modula. Razvojna provjera koristi lokalne pakete; starija izdanja nisu zamjena za ovu konfiguraciju i shemu.
+> Simbioza 0.3.3 koristi API 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25. Razvojne instalacije nisu zamjena za ove objavljene pakete.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je

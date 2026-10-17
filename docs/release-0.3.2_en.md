@@ -2,6 +2,8 @@
 
 [Croatian version](release-0.3.2_hr.md)
 
+> Historical release note — current installation instructions and Docker security updates are in [release 0.3.3](release-0.3.3_en.md). The original 0.3.2 tag and image remain unchanged.
+
 This application patch fixes the FPM generator used by fresh macOS and Linux
 secured installations. Public modules remain **0.3.0**, the private DEMO module
 remains **0.3.1**, and Framework remains **v0.0.25**. Existing tags are not moved.

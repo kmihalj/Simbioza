@@ -1,6 +1,6 @@
 # Module dependencies
 
-> Release 0.3.0 preparation: the tagged installation commands below apply after coordinated publication of the application and modules. Development verification uses local packages; older releases cannot replace this configuration and schema.
+> Simbioza 0.3.3 uses API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
 
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the

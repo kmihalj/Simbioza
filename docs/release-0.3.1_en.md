@@ -2,7 +2,7 @@
 
 [Croatian version](release-0.3.1_hr.md)
 
-> Historical release note — use the current [installation guides](installation_en.md) and [release 0.3.2](release-0.3.2_en.md), which fixes fresh secured-FPM setup. The original 0.3.1 tag remains unchanged.
+> Historical release note — use the current [installation guides](installation_en.md) and [release 0.3.3](release-0.3.3_en.md). The original 0.3.1 tag remains unchanged.
 
 This is a documentation release on the 0.3.0 baseline. Only the application
 receives tag **0.3.1**. All public modules and the private demo module remain

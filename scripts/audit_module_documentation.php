@@ -80,6 +80,7 @@ function documentedModuleRoot(string $applicationRoot, string $module): string
  */
 function auditDocumentationPairs(string $root, string $label, array &$issues): void
 {
+    $applicationRelease = realpath($root) === realpath(dirname(__DIR__));
     $documentationRoot = $root . '/docs';
     $english = glob($documentationRoot . '/*_en.md') ?: [];
     $croatian = glob($documentationRoot . '/*_hr.md') ?: [];
@@ -113,7 +114,7 @@ function auditDocumentationPairs(string $root, string $label, array &$issues): v
         }
 
         $text = documentationText($document);
-        auditDocumentationExamples($text, $label . '/' . $basename, $issues);
+        auditDocumentationExamples($text, $label . '/' . $basename, $issues, $applicationRelease);
         auditDocumentationAnchors($document, $label . '/' . $basename, $issues);
         if (
             preg_match_all(
@@ -184,17 +185,24 @@ function auditDocumentationAnchors(string $document, string $label, array &$issu
 /**
  * EN: Checks complete PHP and JSON examples without executing code or contacting services.
  * Historical release notes retain their original examples and are not installation instructions.
+ * Only application notes share VERSION; independently versioned module notes still validate examples.
  *
  * HR: Provjerava cjelovite PHP i JSON primjere bez izvršavanja koda ili povezivanja sa servisima.
  * Povijesne bilješke izdanja čuvaju izvorne primjere i nisu upute za instalaciju.
+ * Samo aplikacijske bilješke dijele VERSION; samostalno verzionirani moduli i dalje provjeravaju primjere.
  *
  * @param list<string> $issues
  */
-function auditDocumentationExamples(string $text, string $label, array &$issues): void
-{
+function auditDocumentationExamples(
+    string $text,
+    string $label,
+    array &$issues,
+    bool $applicationRelease = true,
+): void {
     $currentVersion = trim((string)file_get_contents(dirname(__DIR__) . '/VERSION'));
     if (
-        preg_match('~/(?:release-|release_)([0-9]+\.[0-9]+\.[0-9]+)~', $label, $version) === 1
+        $applicationRelease
+        && preg_match('~/(?:release-|release_)([0-9]+\.[0-9]+\.[0-9]+)~', $label, $version) === 1
         && $version[1] !== $currentVersion
     ) {
         if (!str_contains($text, 'Historical release note') && !str_contains($text, 'Povijesna bilješka izdanja')) {

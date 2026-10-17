@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.2 popravlja novu secured-FPM instalaciju bez dodatnih konfiguracijskih slojeva. Cjelovite upute izravno koriste ovo izdanje. Javni moduli ostaju na 0.3.0, a HeartPhrame Framework je nepromijenjen. Vidi [bilješke izdanja](docs/release-0.3.2_hr.md).
+> Simbioza 0.3.3 donosi zakrpane Debian pakete u provjerenim AMD64/ARM64 Docker imageima i usklađene instalacijske upute. API je 0.3.1; ostali javni moduli ostaju 0.3.0, a HeartPhrame Framework je nepromijenjen. Vidi [bilješke izdanja](docs/release-0.3.3_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -136,7 +136,7 @@ ovisnosti.
 
 ## Politika ovisnosti
 
-Framework je ograničen na `^0.0.25`, a Simbioza moduli koriste kompatibilnu
+Framework je ograničen na `^0.0.25`, API na `^0.3.1`, a ostali Simbioza moduli koriste kompatibilnu
 liniju izdanja `^0.3.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
 najnovija kompatibilna označena izdanja i pokreće cijeli skup provjera kvalitete.
 Produkcijski deployment može izvan izvornog repozitorija čuvati vlastiti
@@ -154,7 +154,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.2` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.3` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -257,10 +257,11 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.2](docs/release-0.3.2_hr.md).
+[bilješkama izdanja 0.3.3](docs/release-0.3.3_hr.md).
 
 ## Dokumentacija
 
+- [Sigurnosno Docker izdanje 0.3.3](docs/release-0.3.3_hr.md)
 - [Izdanje 0.3.2 s ispravkom secured-FPM setupa](docs/release-0.3.2_hr.md)
 - [Dokumentacijsko izdanje 0.3.1](docs/release-0.3.1_hr.md)
 - [Čisto početno izdanje 0.3.0](docs/initial-release-0.3.0_hr.md)
