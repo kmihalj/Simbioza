@@ -18,6 +18,21 @@ use PHPUnit\Framework\TestCase;
 final class FpmConfigurationPathsTest extends TestCase
 {
     /**
+     * EN: Transient workers omit absent bind properties and preserve quoted non-empty paths.
+     *
+     * HR: Privremeni workeri izostavljaju prazna bind svojstva i čuvaju navodnike nepraznih putanja.
+     */
+    public function testTransientWorkerOmitsEmptyBindProperties(): void
+    {
+        $this->assertSame('', \systemdBindArgument('BindReadOnlyPaths', []));
+        $this->assertSame('', \systemdBindArgument('BindPaths', []));
+        $argument = \systemdBindArgument('BindReadOnlyPaths', ['/srv/private config', '/srv/override']);
+        $this->assertStringContainsString('--property=BindReadOnlyPaths=', (string)$argument);
+        $this->assertStringContainsString('"/srv/private config" "/srv/override"', (string)$argument);
+        $this->assertStringEndsWith(" \\\n", $argument);
+    }
+
+    /**
      * EN: Optional SimpleSAMLphp paths do not block a fresh Linux service.
      *
      * HR: Opcionalne SimpleSAMLphp putanje ne blokiraju novi Linux servis.
@@ -138,6 +153,51 @@ final class FpmConfigurationPathsTest extends TestCase
             'env[HPH_CONFIG_OVERRIDE_PATHS] = "' . $this->root . '/override"',
             (string) $pool,
         );
+    }
+
+    /**
+     * EN: A deploy upgrade can replace shipped config code without relaxing the FPM sandbox.
+     *
+     * HR: Deploy nadogradnja može zamijeniti isporučeni config kod bez ublažavanja FPM sandboxa.
+     */
+    public function testDeployWorkerCanUpdateReleaseConfigurationWithAnOverrideLayer(): void
+    {
+        $web = \fpmFilesystemPolicy($this->root);
+        $worker = \setupFilesystemPolicy($this->root);
+        $this->assertSame([realpath($this->root . '/config')], $web['read_only_config']);
+        $this->assertSame([], $worker['read_only_config']);
+        $this->assertSame($web['write_bind'], $worker['write_bind']);
+        $source = (string)file_get_contents(dirname(__DIR__, 3) . '/scripts/configure_fpm_setup.php');
+        $this->assertStringContainsString('$policy = setupFilesystemPolicy($root);', $source);
+    }
+
+    /**
+     * EN: Non-release layers remain read-only for the trusted worker as well.
+     *
+     * HR: Slojevi izvan konfiguracije izdanja ostaju read-only i za pouzdani worker.
+     */
+    public function testDeployWorkerKeepsPrivateLowerLayersReadOnly(): void
+    {
+        mkdir($this->root . '/private', 0700);
+        putenv('HPH_CONFIG_PATH=' . $this->root . '/private');
+        $web = \fpmFilesystemPolicy($this->root);
+        $worker = \setupFilesystemPolicy($this->root);
+        $this->assertSame([realpath($this->root . '/private')], $worker['read_only_config']);
+        $this->assertSame($web, $worker);
+    }
+
+    /**
+     * EN: A symlinked config root is private, not an updatable release directory.
+     *
+     * HR: Symlinkani config korijen je privatan, ne direktorij izdanja za nadogradnju.
+     */
+    public function testDeployWorkerDoesNotExemptSymlinkedConfiguration(): void
+    {
+        rename($this->root . '/config', $this->root . '/private');
+        symlink($this->root . '/private', $this->root . '/config');
+        $worker = \setupFilesystemPolicy($this->root);
+        $this->assertSame([realpath($this->root . '/private')], $worker['read_only_config']);
+        $this->assertSame(\fpmFilesystemPolicy($this->root), $worker);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 [Engleska verzija](installation_fpm_secured_en.md)
 
+> Lokalna uputa kandidata **0.3.3**. Tag za preuzimanje nije javan prije odobrenja izdanja.
+
 Ova cjelovita uputa kreće od praznog direktorija aplikacije i ne pretpostavlja
 postojeće Simbioza FPM/deploy račune. Ne treba druga instalacijska uputa.
 Setup alat izrađuje zasebne račune, grupe, pool/servis i ograničeni pomoćni
@@ -43,7 +45,7 @@ su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.2
+## 2. Preuzmite čisto izdanje Simbioze 0.3.3
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -69,7 +71,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.2 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.3 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -78,7 +80,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.2` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.3` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -444,6 +446,18 @@ Na instaliranom siteu nemojte ga zamijeniti samostalnim `composer update`.
 Prije migracija neuspjeh može vratiti kod; nakon početka migracija održavanje
 ostaje uključeno radi kontroliranog oporavka. Nemojte brisati
 `data/update-maintenance.json` kako biste prikrili nedovršenu nadogradnju.
+
+Na postojećoj **Linux instalaciji 0.3.2**, helper generiran bez read-only
+override slojeva može pasti s porukom `Source path is not absolute`. S dodatnim
+slojem može stati na 60% jer deploy worker ne može zamijeniti isporučene datoteke
+u read-only `config/`. Ne isključujte izolaciju web procesa niti uređujte bazu.
+Prvu nadogradnju pokrenite iz CLI-ja kao
+stvarni deploy/vlasnik koda; zatim konfiguratorom nove verzije ponovno generirajte
+helper uz istu instancu, listener i konfiguracijske putanje. Nove instalacije 0.3.3
+izostavljaju prazna bind svojstva i razlikuju upis isporučenih datoteka pouzdanog
+deploy workera od nepromijenjenih read-only nižih slojeva FPM-a. Privatni vanjski
+niži slojevi ostaju read-only za oba procesa, a updater zasebno čuva privatnu
+konfiguraciju.
 
 Nakon toga potvrdite nula migracija na čekanju, stvarnu prijavu, sadržaj i
 privitke. Primjeri koriste zadane putanje `config/` i `data/`; ako kasnije

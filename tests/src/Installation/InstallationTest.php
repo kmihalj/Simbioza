@@ -622,7 +622,7 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(14, $result['migration_count']);
+        $this->assertSame(16, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -648,7 +648,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(14, $database->table('_hph_migrations')->get());
+        $this->assertCount(16, $database->table('_hph_migrations')->get());
         $this->assertFalse($database->schema()->hasTable('auth_provider_settings'));
         $this->assertFalse($database->schema()->hasColumn(ModuleAuth::TABLE_AUTH_PROVIDER_PROFILES, 'config_json'));
         $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)

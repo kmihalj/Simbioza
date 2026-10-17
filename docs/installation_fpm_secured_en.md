@@ -2,6 +2,8 @@
 
 [Croatian version](installation_fpm_secured_hr.md)
 
+> Local pre-release guide for **0.3.3**. The download tag is not public until release approval.
+
 This complete guide starts from an empty application directory and assumes no
 Simbioza FPM/deploy accounts exist yet. You do not need another installation
 guide. The setup tool creates dedicated accounts, groups, a pool/service and a
@@ -43,7 +45,7 @@ PHP must be **8.2 or newer**, Composer must be version 2, and PHP needs
 Use `pdo_sqlite`, `pdo_mysql` or `pdo_pgsql` for your chosen database.
 CLI PHP and the web PHP handler must have matching versions and extensions.
 
-## 2. Download a clean Simbioza 0.3.2 release
+## 2. Download a clean Simbioza 0.3.3 release
 
 Choose **one** application directory. On Linux:
 
@@ -69,7 +71,7 @@ Run the complete download block as your normal maintainer account:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.2 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.3 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -78,7 +80,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Expect `0.3.2` and `success` for every platform requirement.
+Expect `0.3.3` and `success` for every platform requirement.
 Git's **detached HEAD** notice is normal when checking out a release tag.
 Do not run Composer with `sudo`, copy another site's configuration or database,
 include `.git/` in the deployed application, or use `--no-dev` here.
@@ -451,6 +453,18 @@ guides. Do not substitute a standalone `composer update` on an installed site.
 Before migrations, a failed update can roll back code; after migrations start,
 maintenance stays enabled for controlled recovery. Never delete
 `data/update-maintenance.json` to hide an unfinished update.
+
+For an existing **0.3.2 Linux** installation, a helper generated without any
+read-only override layers can fail with `Source path is not absolute`. With an
+override layer, it can instead stop at 60% because the deploy worker cannot
+replace release-owned files in read-only `config/`. Do not disable the web
+sandbox or edit the database. Use the CLI as the actual
+deploy/code owner for that first update; after the update, regenerate the helper
+with this version's configurator and the same instance, listener and configuration
+paths. New 0.3.3 installations omit empty bind properties and distinguish the
+trusted deploy worker's release writes from FPM's unchanged read-only lower layers.
+Private external lower layers stay read-only for both processes, and the updater
+preserves private configuration separately.
 
 Afterwards check zero pending migrations, real sign-in, content and attachments.
 The examples use the default `config/` and `data/` paths; if you later choose

@@ -258,6 +258,33 @@ final class DeploymentTest extends TestCase
         );
         $this->assertArrayHasKey('aaieduhr/heartphrame-module-backup', $manifest['require']);
         $this->assertArrayNotHasKey('aaieduhr/heartphrame-module-calendar', $manifest['require']);
+
+        $requirements['aaieduhr/simbioza-module-user'] = '^0.3.1';
+        file_put_contents($source . '/composer.json', json_encode(['require' => $requirements, 'repositories' => [
+            ['type' => 'vcs', 'url' => 'https://example.invalid/heartphrame-framework.git'],
+        ]], JSON_THROW_ON_ERROR));
+        foreach ($catalog->definitions() as $definition) {
+            $directory = $this->root . '/' . basename($definition['package']);
+            mkdir($directory, 0700);
+            file_put_contents(
+                $directory . '/composer.json',
+                json_encode(['name' => $definition['package']], JSON_THROW_ON_ERROR),
+            );
+            $this->assertSame(0, $processes->run(['git', 'init', '--quiet'], $directory)->exitCode);
+        }
+
+        $localContext = $this->root . '/local-context';
+        $builder->build($localContext, true, []);
+        $local = json_decode(
+            (string)file_get_contents($localContext . '/app/composer.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertSame('^0.0.25', $local['require']['aaieduhr/heartphrame-framework']);
+        $this->assertSame('0.3.1', $local['require']['aaieduhr/simbioza-module-user']);
+        $this->assertSame('vcs', $local['repositories'][0]['type']);
+        $this->assertDirectoryDoesNotExist($localContext . '/packages/heartphrame-framework');
         $this->expectException(RuntimeException::class);
         $builder->build($context, false, []);
     }

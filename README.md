@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.2 fixes fresh secured-FPM setup without extra configuration layers. Complete installation guides use this release directly. Public modules remain at 0.3.0 and HeartPhrame Framework is unchanged. See the [release notes](docs/release-0.3.2_en.md).
+> Simbioza 0.3.3 is an unpublished local candidate with full-site Confluence migration. Importer, Calendar and User candidates are 0.3.1; Auth and Framework are unchanged. See the [preflight record](docs/release-preflight-0.3.3_en.md). Public release commands require publication approval first.
 
 [Croatian version](README_hr.md)
 
@@ -153,7 +153,8 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.2` is an additional
+The candidate immutable image targets `ghcr.io/kmihalj/simbioza:0.3.3` after
+publication; that tag is not public yet. It is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.

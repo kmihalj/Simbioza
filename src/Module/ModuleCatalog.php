@@ -147,6 +147,7 @@ final readonly class ModuleCatalog
                 ['auth', 'notification'],
                 [
                     '20260608000212_install_calendar_module_schema',
+                    '20261016130000_widen_calendar_event_text',
                 ],
                 [
                     'calendar_calendars',

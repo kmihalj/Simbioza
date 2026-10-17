@@ -2,8 +2,10 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.2**, uz module **0.3.0** i nepromijenjen
-Framework. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
+Ove upute ciljaju Simbiozu **0.3.3**, uz Importer, Calendar i User **0.3.1**, ostale
+module **0.3.0** i nepromijenjen Framework **0.0.25**. Ovo je trenutačno
+neobjavljeni kandidat: javne naredbe preuzimanja koristite tek nakon odobrenja izdanja.
+Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 
 Odaberite **jednu cjelovitu uputu** ispod. Svaka kreće iz administratorskog

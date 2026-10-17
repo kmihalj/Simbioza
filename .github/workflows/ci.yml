@@ -89,7 +89,7 @@ jobs:
           docker compose -p simbioza-release-ci up -d --force-recreate --wait app
           docker compose -p simbioza-release-ci exec -T app php /dev/stdin state < ../tests/Fixtures/container_probe.php > ../build/docker/state-after.json
           cmp ../build/docker/state-before.json ../build/docker/state-after.json
-          docker compose -p simbioza-release-ci exec -T app php -r '$s=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); foreach($s["packages"] as $p){if(str_starts_with($p["name"],"aaieduhr/") && $p["name"]!=="aaieduhr/heartphrame-framework" && $p["version"]!=="0.3.0"){throw new RuntimeException("Unexpected module version");}}'
+          docker compose -p simbioza-release-ci exec -T app php /dev/stdin < ../scripts/verify_release_dependencies.php
           docker compose -p simbioza-release-ci cp app:/opt/simbioza/composer.lock ../build/docker/composer.lock
       - name: Record all vulnerability findings
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8

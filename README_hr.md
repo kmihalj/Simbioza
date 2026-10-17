@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.2 popravlja novu secured-FPM instalaciju bez dodatnih konfiguracijskih slojeva. Cjelovite upute izravno koriste ovo izdanje. Javni moduli ostaju na 0.3.0, a HeartPhrame Framework je nepromijenjen. Vidi [bilješke izdanja](docs/release-0.3.2_hr.md).
+> Simbioza 0.3.3 neobjavljeni je lokalni kandidat s uvozom cijelog Confluence sitea. Kandidati Importer, Calendar i User su 0.3.1; Auth i Framework su nepromijenjeni. Vidi [zapis provjera](docs/release-preflight-0.3.3_hr.md). Naredbe za javno izdanje koriste se tek nakon odobrenja objave.
 
 [Engleska verzija](README.md)
 
@@ -154,7 +154,8 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.2` dodatni je
+Kandidat nepromjenjivog imagea cilja `ghcr.io/kmihalj/simbioza:0.3.3` nakon
+objave; taj tag još nije javan. To je dodatni
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.

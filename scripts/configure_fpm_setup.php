@@ -658,6 +658,19 @@ function applyMetadata(string $path, string $owner, string $group, int $mode): v
 }
 
 /**
+ * EN: Omits empty bind lists: systemd-run treats an empty argument as an invalid source path.
+ *
+ * HR: Izostavlja prazne bind popise: systemd-run prazan argument smatra neispravnom izvornom putanjom.
+ *
+ * @param list<string> $paths
+ */
+function systemdBindArgument(string $property, array $paths): string
+{
+    return $paths === [] ? ''
+    : '  --property=' . $property . '=' . escapeshellarg(implode(' ', array_map(systemdQuote(...), $paths))) . " \\\n";
+}
+
+/**
  * EN: Installs a fixed helper and minimal sudoers rule for the FPM account.
  *
  * HR: Instalira fiksni helper i minimalno sudoers pravilo za FPM račun.
@@ -665,7 +678,7 @@ function applyMetadata(string $path, string $owner, string $group, int $mode): v
 function installHelper(string $root, string $phpFpm, string $home): void
 {
     $environment = configurationEnvironment($root);
-    $policy = fpmFilesystemPolicy($root);
+    $policy = setupFilesystemPolicy($root);
     $php = dirname($phpFpm) . '/php';
     if (!is_file($php)) {
         $php = PHP_BINARY;
@@ -692,9 +705,7 @@ result=__REQUEST_DIRECTORY__/"$1.result.json"
   --property=ExitType=cgroup \
   --property=SupplementaryGroups=__RUNTIME_GROUP__ \
   --property=ProtectSystem=full --property=ProtectHome=true \
-  --property=BindReadOnlyPaths=__READ_ONLY_CONFIG__ \
-  --property=BindPaths=__WRITABLE_CONFIG__ \
-  --property=PrivateTmp=true --property=PrivateDevices=true \
+__READ_ONLY_BIND____WRITABLE_BIND__  --property=PrivateTmp=true --property=PrivateDevices=true \
   --property=NoNewPrivileges=true --property=UMask=0007 \
   --working-directory=__ROOT__ \
   --setenv=HOME=__HOME__ --setenv=COMPOSER_HOME=__HOME__/.composer \
@@ -703,10 +714,11 @@ result=__REQUEST_DIRECTORY__/"$1.result.json"
   --setenv=HPH_CONFIG_OVERRIDE_PATHS=__CONFIG_OVERRIDES__ \
   __PHP__ __WORKER__ "$1"
 
-# HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
-# pozadinske nadogradnje. ExitType=cgroup čuva updater unutar privremene jedinice.
 # EN: The worker returns a small validated result to the web request before the
 # background update finishes. ExitType=cgroup keeps it in the transient unit.
+#
+# HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
+# pozadinske nadogradnje. ExitType=cgroup čuva updater unutar privremene jedinice.
 attempt=0
 while [ "$attempt" -lt 36000 ]; do
   [ -f "$result" ] && exit 0
@@ -741,7 +753,7 @@ SH;
             '__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__',
             '__DEPLOY_USER__', '__DEPLOY_GROUP__', '__RUNTIME_GROUP__', '__SETUP_UNIT_PREFIX__',
             '__CONFIG_PATH__', '__CONFIG_OVERRIDES__',
-            '__READ_ONLY_CONFIG__', '__WRITABLE_CONFIG__',
+            '__READ_ONLY_BIND__', '__WRITABLE_BIND__',
         ],
         [
             escapeshellarg($root),
@@ -755,8 +767,8 @@ SH;
             'simbioza-setup' . FPM_INSTANCE_SUFFIX,
             escapeshellarg($environment['HPH_CONFIG_PATH']),
             escapeshellarg($environment['HPH_CONFIG_OVERRIDE_PATHS']),
-            escapeshellarg(implode(' ', array_map(systemdQuote(...), $policy['read_only_config']))),
-            escapeshellarg(implode(' ', array_map(systemdQuote(...), $policy['write_bind']))),
+            systemdBindArgument('BindReadOnlyPaths', $policy['read_only_config']),
+            systemdBindArgument('BindPaths', $policy['write_bind']),
         ],
         $helper,
     );
@@ -1144,6 +1156,33 @@ function fpmFilesystemPolicy(string $root): array
     return ['read_only_config' => $readOnly, 'write_bind' => array_values(array_unique([
         $last, realpath($requests) ?: $requests,
     ]))];
+}
+
+/**
+ * EN: The trusted deploy worker updates release-owned config code, unlike FPM.
+ *     Only the real, non-symlinked config directory inside the release is exempt
+ *     from lower-layer read-only mounts. External/private layers stay protected;
+ *     the updater separately preserves all private configuration files.
+ *
+ * HR: Pouzdani deploy worker nadograđuje isporučeni konfiguracijski kod, za razliku od FPM-a.
+ *     Od read-only montiranja nižih slojeva izuzet je samo stvarni config direktorij
+ *     unutar izdanja koji nije symlink. Vanjski/privatni slojevi ostaju zaštićeni;
+ *     updater zasebno čuva sve privatne konfiguracijske datoteke.
+ *
+ * @return array{read_only_config:list<string>,write_bind:list<string>}
+ */
+function setupFilesystemPolicy(string $root): array
+{
+    $policy = fpmFilesystemPolicy($root);
+    $releaseConfig = realpath($root . '/config');
+    if (is_string($releaseConfig) && !is_link($root . '/config')) {
+        $policy['read_only_config'] = array_values(array_filter(
+            $policy['read_only_config'],
+            static fn(string $path): bool => $path !== $releaseConfig,
+        ));
+    }
+
+    return $policy;
 }
 
 /**

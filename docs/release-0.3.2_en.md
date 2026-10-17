@@ -2,6 +2,8 @@
 
 [Croatian version](release-0.3.2_hr.md)
 
+> Historical release note. Current candidate checks are recorded in [the local preflight](release-preflight-0.3.3_en.md); 0.3.3 is not published yet. This 0.3.2 tag remains unchanged.
+
 This application patch fixes the FPM generator used by fresh macOS and Linux
 secured installations. Public modules remain **0.3.0**, the private DEMO module
 remains **0.3.1**, and Framework remains **v0.0.25**. Existing tags are not moved.

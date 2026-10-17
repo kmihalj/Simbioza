@@ -27,6 +27,38 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class InitialMigrationsTest extends TestCase
 {
+    /**
+     * EN: Calendar mapping rollback never drops pre-existing import jobs or identity/content mappings.
+     *
+     * HR: Povrat mapiranja kalendara ne briše postojeće poslove uvoza niti mapiranja identiteta/sadržaja.
+     */
+    public function testCalendarMappingUpgradeIsAdditiveAndRollbackPreservesImportHistory(): void
+    {
+        $tables = [ModuleSimbiozaConfluenceImport::TABLE_JOBS, ModuleSimbiozaConfluenceImport::TABLE_IDENTITIES,
+            ModuleSimbiozaConfluenceImport::TABLE_CONTENT];
+        foreach ($tables as $name) {
+            $this->database->schema()->create(
+                $name,
+                static function (\AaiEduHr\HeartPhrameModuleOrm\Database\Schema\Blueprint $table): void {
+                    $table->id();
+                    $table->string('marker');
+                },
+            );
+            $this->database->table($name)->insert(['marker' => 'keep']);
+        }
+
+        $path = '/database/migrations/20261015164221_install_simbioza_confluence_import_schema.php';
+        $migration = require dirname(__DIR__, 3) . $path;
+        $migration->up($this->database);
+        $migration->up($this->database);
+        $this->assertTrue($this->database->schema()->hasTable(ModuleSimbiozaConfluenceImport::TABLE_CALENDARS));
+        $migration->down($this->database);
+        $this->assertFalse($this->database->schema()->hasTable(ModuleSimbiozaConfluenceImport::TABLE_CALENDARS));
+        foreach ($tables as $name) {
+            $this->assertSame('keep', $this->database->table($name)->first()['marker']);
+        }
+    }
+
     private Database $database;
 
     private string $configurationDirectory;
@@ -98,12 +130,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * EN: Verifies fourteen initial application migrations and the current Auth,
+     * EN: Verifies sixteen current application migrations and the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
      *
-     * HR: Provjerava četrnaest početnih aplikacijskih migracija i aktualne
+     * HR: Provjerava šesnaest aktualnih aplikacijskih migracija i aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
@@ -113,7 +145,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(14, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(16, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             // EN: Fresh installs stamp application-only data relocation without executing it.

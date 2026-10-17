@@ -157,10 +157,22 @@ final readonly class ImageContextBuilder
         $configuration['allow-plugins'] = false;
         $manifest['config'] = $configuration;
         if ($local) {
+            // EN: Framework remains a published dependency, never a dirty local working tree.
+            //
+            // HR: Framework ostaje objavljena ovisnost, nikada lokalna radna kopija s izmjenama.
             $repositories = [];
-            foreach (['aaieduhr/heartphrame-framework', ...$packages] as $package) {
-                $directory = $package === 'aaieduhr/heartphrame-framework'
-                ? 'heartphrame-framework' : basename($package);
+            $sources = is_array($manifest['repositories'] ?? null) ? $manifest['repositories'] : [];
+            foreach ($sources as $repository) {
+                if (
+                    is_array($repository) && is_string($repository['url'] ?? null)
+                    && str_ends_with($repository['url'], '/heartphrame-framework.git')
+                ) {
+                    $repositories[] = $repository;
+                }
+            }
+
+            foreach ($packages as $package) {
+                $directory = basename($package);
                 $source = $this->workspaceRoot . '/' . $directory;
                 foreach ($this->gitFiles($source) as $file) {
                     $code = preg_match('~\A(?:src|views|resources|public|lang|bin)/~', $file) === 1
@@ -180,7 +192,12 @@ final readonly class ImageContextBuilder
                 //
                 // HR: Izričite candidate verzije zadovoljavaju neizmijenjene međumodulske ovisnosti.
                 // Mijenja se samo izvoz, nikada manifest susjednog repozitorija.
-                $version = $package === 'aaieduhr/heartphrame-framework' ? '0.0.25' : '0.3.0';
+                $constraint = $manifest['require'][$package] ?? null;
+                if (!is_string($constraint) || preg_match('/\A\^?(\d+\.\d+\.\d+)\z/D', $constraint, $match) !== 1) {
+                    throw new RuntimeException('Unsupported local candidate version: ' . $package);
+                }
+
+                $version = $match[1];
                 $repositories[] = ['type' => 'path', 'url' => '/opt/simbioza-build/packages/' . $directory,
                     'options' => ['symlink' => false, 'versions' => [$package => $version]]];
                 $manifest['require'][$package] = $version;

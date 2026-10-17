@@ -5,7 +5,11 @@
 # Privatni HFC config, podatke, tajne i žive vendor linkove nikada ne slati Dockeru.
 ARG PHP_IMAGE=php:8.4-apache-trixie@sha256:901b0dbcd2419cc9cd307ea05e57403449ce722ccd5b32335da6e8d39f2b1ee0
 FROM ${PHP_IMAGE} AS php-runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# EN: A pinned base still needs current distribution security fixes before export.
+#
+# HR: I pinana osnova treba aktualne sigurnosne ispravke distribucije prije izvoza.
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
     libicu-dev libzip-dev libpq-dev libonig-dev libsqlite3-dev \
     libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -33,7 +37,7 @@ RUN composer update --no-dev --no-interaction --no-progress --no-scripts --prefe
     && find vendor -type d -name .git -prune -exec rm -r {} +
 
 FROM php-runtime AS application
-ARG VERSION=0.3.2
+ARG VERSION=0.3.3
 ARG REVISION=unknown
 LABEL org.opencontainers.image.title="Simbioza" \
     org.opencontainers.image.source="https://github.com/kmihalj/Simbioza" \
