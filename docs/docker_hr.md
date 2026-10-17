@@ -136,6 +136,16 @@ zaključane ovisnosti, SBOM-ove, izvještaje ranjivosti i digeste imagea.
 Popravljivi visoki/kritični nalazi blokiraju objavu; potpuni izvještaji zadržavaju
 i nalaze bez dostupnog upstream popravka za pregled održavatelja.
 
+Dockerfile u ovom izvornom kodu zadržava PHP osnovni image zaključan digestom,
+a naslijeđene Debian pakete nadograđuje prije instaliranja PHP proširenja.
+Sama instalacija build ovisnosti ne nadograđuje pouzdano pakete koji već postoje
+u osnovi, primjerice `curl` i `libcurl`. Builder i završna aplikacija nasljeđuju
+nadograđenu runtime fazu; sigurnosna provjera ostaje nepromijenjena.
+Za novu sigurnosnu gradnju dodati `--pull --no-cache` gornjoj naredbi gradnje
+kako se ne bi ponovno koristio stari sloj paketa iz cachea. Zabilježiti novi
+digest imagea, zaključane ovisnosti i rezultate skeniranja. Nova gradnja ne
+mijenja već pokrenuti image niti zamjenjuje postojeće izdanje/tag.
+
 ## Nadogradnja i migracije
 
 Oznaka nepromjenjivog deploymenta dio je koda imagea; privatne postavke je ne

@@ -30,6 +30,24 @@ final class DeploymentTest extends TestCase
     private string|false $mode;
 
     /**
+     * EN: Both build stages inherit OS updates, including packages already present in the pinned base.
+     *
+     * HR: Obje faze gradnje nasljeđuju OS zakrpe, uključujući pakete već prisutne u zaključanoj osnovi.
+     */
+    public function testRuntimeStageUpgradesInheritedOperatingSystemPackages(): void
+    {
+        $dockerfile = (string)file_get_contents(dirname(__DIR__, 3) . '/docker/Dockerfile');
+        $instructions = str_replace("\\\n", '', $dockerfile);
+        $this->assertMatchesRegularExpression(
+            '/FROM \$\{PHP_IMAGE\} AS php-runtime\s+RUN apt-get update\s+'
+            . '&& apt-get upgrade -y --no-install-recommends\s+&& apt-get install\b/',
+            $instructions,
+        );
+        $this->assertStringContainsString('FROM php-runtime AS builder', $instructions);
+        $this->assertStringContainsString('FROM php-runtime AS application', $instructions);
+    }
+
+    /**
      * EN: The same source with different dependency locks needs another migration generation.
      *
      * HR: Isti izvor uz različite zaključane ovisnosti zahtijeva drugu migracijsku generaciju.

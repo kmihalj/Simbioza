@@ -136,6 +136,16 @@ includes dependency locks, SBOMs, vulnerability reports and image digests.
 Fixable high/critical findings block publication; the full reports also retain
 findings without an available upstream fix for operator review.
 
+The Dockerfile in this source checkout keeps the PHP base image pinned by digest
+and upgrades its inherited Debian packages before installing PHP extensions.
+Installing build dependencies alone does not reliably upgrade packages already
+present in the base, such as `curl` and `libcurl`. Both the builder and final
+application inherit the updated runtime stage; the security gate is unchanged.
+For a fresh security rebuild, add `--pull --no-cache` to the build command above
+so an older cached package layer is not reused. Record the new image digest,
+dependency lock and scan results. A rebuild does not modify an existing deployed
+image or replace an already published release/tag.
+
 ## Updates and migrations
 
 The immutable marker is part of the code image. Private settings cannot disable

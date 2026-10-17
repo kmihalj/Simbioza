@@ -4,8 +4,15 @@
 # HR: Graditi samo očišćeni kontekst iz scripts/build_container_context.php.
 # Privatni HFC config, podatke, tajne i žive vendor linkove nikada ne slati Dockeru.
 ARG PHP_IMAGE=php:8.4-apache-trixie@sha256:901b0dbcd2419cc9cd307ea05e57403449ce722ccd5b32335da6e8d39f2b1ee0
+# EN: Refresh inherited OS packages too; installing build dependencies alone can leave base CVEs.
+# The builder and application both inherit these updates. CI still blocks fixable high/critical findings.
+#
+# HR: Nadograditi i naslijeđene OS pakete; samo instaliranje build ovisnosti može ostaviti ranjivosti osnove.
+# Builder i aplikacija nasljeđuju ove zakrpe. CI i dalje blokira popravljive visoke/kritične nalaze.
 FROM ${PHP_IMAGE} AS php-runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
     libicu-dev libzip-dev libpq-dev libonig-dev libsqlite3-dev \
     libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
