@@ -128,7 +128,7 @@ JavaScript trećih strana pripada zasebnom registru Editora, ne skriptama aplika
 U **Postavke → HTML Editor → Vanjske skripte** administrator može odobriti/opozvati
 skriptu, promijeniti naziv i kroz **Gdje se koristi?** pregledati objave, nacrte i
 opcionalnu povijest. Odobrenje nikada ne učitava skriptu na svakoj stranici.
-Pogledajte [upute registra](../vendor/aaieduhr/heartphrame-module-editor-html/docs/external-scripts_hr.md).
+Pogledajte [upute registra](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/0.3.0/docs/external-scripts_hr.md).
 
 ### Moduli bez zasebne politike
 

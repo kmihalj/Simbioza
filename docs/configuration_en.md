@@ -130,7 +130,7 @@ Third-party JavaScript belongs to the Editor's separate registry, not applicatio
 JavaScript. In **Settings → HTML Editor → External scripts**, an administrator
 can approve/revoke scripts, rename them and use **Where is it used?** to inspect
 published pages, drafts and optional history. Approval never loads a script on
-every page. See the [registry instructions](../vendor/aaieduhr/heartphrame-module-editor-html/docs/external-scripts_en.md).
+every page. See the [registry instructions](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/0.3.0/docs/external-scripts_en.md).
 
 ### Modules without separate policy files
 
