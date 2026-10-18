@@ -220,10 +220,10 @@ final class FpmConfigurationPathsTest extends TestCase
     public function testDarwinWorkerSetsUmaskInsideTargetAccount(): void
     {
         $helper = \darwinSetupHelper();
-        $this->assertStringContainsString("/bin/sh -c 'umask 0007; exec \"\$@\"' simbioza-setup", $helper);
-        $this->assertStringContainsString('[ "${#1}" -eq 48 ] || exit 64', $helper);
-        $this->assertStringContainsString('__WORKER__ "$1"', $helper);
-        $this->assertStringContainsString('TMPDIR=__ROOT__/data/tmp', $helper);
+        $this->assertStringContainsString("/bin/sh -c 'umask 0007; exec \"\$@\"' simbioza-setup", (string)$helper);
+        $this->assertStringContainsString('[ "${#1}" -eq 48 ] || exit 64', (string)$helper);
+        $this->assertStringContainsString('__WORKER__ "$1"', (string)$helper);
+        $this->assertStringContainsString('TMPDIR=__ROOT__/data/tmp', (string)$helper);
         $process = proc_open([
             '/bin/sh', '-c', 'umask 0077; exec /bin/sh -c \'umask 0007; exec "$@"\' simbioza-setup "$@"',
             'fixture', PHP_BINARY, '-r', 'echo sprintf("%04o", umask()), "|", $argv[1];', 'literal token; not code',
