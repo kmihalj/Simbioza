@@ -701,6 +701,7 @@ result=__REQUEST_DIRECTORY__/"$1.result.json"
   --setenv=PATH=/usr/local/bin:/usr/bin:/bin \
   --setenv=HPH_APP_PATH=__ROOT__ --setenv=HPH_CONFIG_PATH=__CONFIG_PATH__ \
   --setenv=HPH_CONFIG_OVERRIDE_PATHS=__CONFIG_OVERRIDES__ \
+  --setenv=TMPDIR=__ROOT__/data/tmp \
   __PHP__ __WORKER__ "$1"
 
 # HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
@@ -721,19 +722,7 @@ done
 exit 75
 SH;
     } else {
-        $helper = <<<'SH'
-#!/bin/sh
-set -eu
-[ "$#" -eq 1 ] || exit 64
-case "$1" in
-  *[!0-9a-f]*|'') exit 64 ;;
-esac
-[ "${#1}" -eq 48 ] || exit 64
-export HOME=__HOME__
-export COMPOSER_HOME="$HOME/.composer"
-export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
-exec /usr/bin/sudo -n -u __DEPLOY_USER__ -- /usr/bin/env HPH_APP_PATH=__ROOT__ HPH_CONFIG_PATH=__CONFIG_PATH__ HPH_CONFIG_OVERRIDE_PATHS=__CONFIG_OVERRIDES__ __PHP__ __WORKER__ "$1"
-SH;
+        $helper = darwinSetupHelper();
     }
 
     $helper = str_replace(
@@ -765,6 +754,55 @@ SH;
     . '%' . FPM_DEPLOY_GROUP . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n";
     writeSystemFile(FPM_SUDOERS, $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
     runCommand(['visudo', '-cf', FPM_SUDOERS]);
+}
+
+/**
+ * EN: Sets the shared runtime umask after sudo, which may reset an inherited mask.
+ * The allowlisted worker and token remain separate arguments, never shell input.
+ *
+ * HR: Postavlja zajedničku runtime masku nakon sudo, koji može promijeniti naslijeđenu masku.
+ * Dopušteni worker i token ostaju zasebni argumenti, nikada ulazni kod ljuske.
+ */
+function darwinSetupHelper(): string
+{
+    return <<<'SH'
+#!/bin/sh
+set -eu
+[ "$#" -eq 1 ] || exit 64
+case "$1" in
+  *[!0-9a-f]*|'') exit 64 ;;
+esac
+[ "${#1}" -eq 48 ] || exit 64
+export HOME=__HOME__
+export COMPOSER_HOME="$HOME/.composer"
+export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
+exec /usr/bin/sudo -n -u __DEPLOY_USER__ -- /usr/bin/env HPH_APP_PATH=__ROOT__ HPH_CONFIG_PATH=__CONFIG_PATH__ HPH_CONFIG_OVERRIDE_PATHS=__CONFIG_OVERRIDES__ TMPDIR=__ROOT__/data/tmp /bin/sh -c 'umask 0007; exec "$@"' simbioza-setup __PHP__ __WORKER__ "$1"
+SH;
+}
+
+/**
+ * EN: Renders a launchd service with the same private shared-runtime mask as Linux.
+ * Integer 7 is decimal for octal 0007; it is not the string "0007" or decimal 777.
+ *
+ * HR: Generira launchd servis s istom privatnom zajedničkom runtime maskom kao Linux.
+ * Cijeli broj 7 decimalni je zapis oktalnog 0007; nije string "0007" ni decimalni 777.
+ */
+function darwinFpmPlist(string $root, string $phpFpm, string $configurationPath): string
+{
+    return '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+    . '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
+    . '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n"
+    . '<plist version="1.0"><dict>'
+    . '<key>Label</key><string>' . FPM_SERVICE_LABEL . '</string>'
+    . '<key>UserName</key><string>' . FPM_USER . '</string>'
+    . '<key>Umask</key><integer>7</integer>'
+    . '<key>ProgramArguments</key><array><string>' . htmlspecialchars($phpFpm, ENT_XML1) . '</string>'
+    . '<string>--nodaemonize</string><string>--fpm-config</string>'
+    . '<string>' . htmlspecialchars($configurationPath, ENT_XML1) . '</string></array>'
+    . '<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>'
+    . '<key>StandardOutPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
+    . '<key>StandardErrorPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
+    . '</dict></plist>' . "\n";
 }
 
 /**
@@ -869,19 +907,7 @@ function installFpm(
     //     sintaktičku provjeru i ne ulazi u servisnu konfiguraciju.
     runCommand([$phpFpm, '--test', '--allow-to-run-as-root', '--fpm-config', $configurationDirectory . '/php-fpm.conf']);
 
-    $plist = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-    . '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
-    . '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">' . "\n"
-    . '<plist version="1.0"><dict>'
-    . '<key>Label</key><string>' . FPM_SERVICE_LABEL . '</string>'
-    . '<key>UserName</key><string>' . FPM_USER . '</string>'
-    . '<key>ProgramArguments</key><array><string>' . htmlspecialchars($phpFpm, ENT_XML1) . '</string>'
-    . '<string>--nodaemonize</string><string>--fpm-config</string>'
-    . '<string>' . htmlspecialchars($configurationDirectory . '/php-fpm.conf', ENT_XML1) . '</string></array>'
-    . '<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>'
-    . '<key>StandardOutPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
-    . '<key>StandardErrorPath</key><string>' . htmlspecialchars($root . '/data/logs/php-fpm-launchd.log', ENT_XML1) . '</string>'
-    . '</dict></plist>' . "\n";
+    $plist = darwinFpmPlist($root, $phpFpm, $configurationDirectory . '/php-fpm.conf');
     $plistPath = '/Library/LaunchDaemons/' . FPM_SERVICE_LABEL . '.plist';
     writeSystemFile($plistPath, $plist, 0644, 'root', 'wheel');
     runCommand(['launchctl', 'bootout', 'system/' . FPM_SERVICE_LABEL], true);

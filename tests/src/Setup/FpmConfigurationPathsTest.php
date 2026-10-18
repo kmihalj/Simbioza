@@ -62,7 +62,7 @@ final class FpmConfigurationPathsTest extends TestCase
         class_exists(ConfigArrayMerger::class);
         enum_exists(\HeartPhrame\CodeBook\EnvKeyEnum::class);
         define('SIMBIOZA_FPM_SETUP_LIBRARY', true);
-        foreach (['FPM_USER', 'FPM_APP_GROUP', 'FPM_CONFIG_NAME', 'FPM_HELPER'] as $name) {
+        foreach (['FPM_USER', 'FPM_APP_GROUP', 'FPM_CONFIG_NAME', 'FPM_HELPER', 'FPM_SERVICE_LABEL'] as $name) {
             define($name, 'fixture-' . strtolower($name));
         }
 
@@ -185,5 +185,54 @@ final class FpmConfigurationPathsTest extends TestCase
         $policy = \fpmFilesystemPolicy($this->root);
         $this->assertSame([realpath($this->root . '/override')], $policy['read_only_config']);
         $this->assertSame(realpath($this->root . '/config'), $policy['write_bind'][0]);
+    }
+
+    /**
+     * EN: launchd receives an integer umask, preserving shared writes without world access.
+     * The generator remains pure: no installed service is read or restarted by this test.
+     *
+     * HR: launchd prima cjelobrojnu masku, uz zajednički upis i bez pristupa ostalih korisnika.
+     * Generator je čist: ovaj test ne čita niti ponovno pokreće instalirani servis.
+     */
+    public function testDarwinServiceUsesPrivateSharedRuntimeMask(): void
+    {
+        $document = new \DOMDocument();
+        $this->assertTrue($document->loadXML(\darwinFpmPlist(
+            $this->root . '/A & B',
+            '/fixture/php-fpm',
+            '/fixture/pool & config.conf',
+        ), LIBXML_NONET));
+        $xpath = new \DOMXPath($document);
+        $mask = 'string(/plist/dict/key[.="Umask"]/following-sibling::*[1][self::integer])';
+        $user = 'string(/plist/dict/key[.="UserName"]/following-sibling::string[1])';
+        $this->assertSame('7', $xpath->evaluate($mask));
+        $this->assertSame(FPM_USER, $xpath->evaluate($user));
+        $this->assertSame('/fixture/pool & config.conf', $xpath->evaluate('string(/plist/dict/array/string[last()])'));
+    }
+
+    /**
+     * EN: The worker sets its mask after the account switch, even under restrictive sudo defaults.
+     * This exercises the real generated shell wrapper and verifies its argument boundary.
+     *
+     * HR: Worker postavlja masku nakon promjene računa, i uz restriktivne sudo postavke.
+     * Provjerava stvarni generirani omotač ljuske i granicu njegovih argumenata.
+     */
+    public function testDarwinWorkerSetsUmaskInsideTargetAccount(): void
+    {
+        $helper = \darwinSetupHelper();
+        $this->assertStringContainsString("/bin/sh -c 'umask 0007; exec \"\$@\"' simbioza-setup", $helper);
+        $this->assertStringContainsString('[ "${#1}" -eq 48 ] || exit 64', $helper);
+        $this->assertStringContainsString('__WORKER__ "$1"', $helper);
+        $this->assertStringContainsString('TMPDIR=__ROOT__/data/tmp', $helper);
+        $process = proc_open([
+            '/bin/sh', '-c', 'umask 0077; exec /bin/sh -c \'umask 0007; exec "$@"\' simbioza-setup "$@"',
+            'fixture', PHP_BINARY, '-r', 'echo sprintf("%04o", umask()), "|", $argv[1];', 'literal token; not code',
+        ], [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        $this->assertIsResource($process);
+        $output = stream_get_contents($pipes[1]) . stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $this->assertSame(0, proc_close($process), $output);
+        $this->assertSame('0007|literal token; not code', $output);
     }
 }

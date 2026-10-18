@@ -1,6 +1,6 @@
 # Module dependencies
 
-> Simbioza 0.3.3 uses API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
+> Simbioza 0.3.4 uses API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
 
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the

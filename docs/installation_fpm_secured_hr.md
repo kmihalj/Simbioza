@@ -43,7 +43,7 @@ su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.3
+## 2. Preuzmite čisto izdanje Simbioze 0.3.4
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -69,7 +69,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.3 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.4 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -78,7 +78,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.3` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.4` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -150,6 +150,26 @@ php scripts/configure_fpm_setup.php --check \
 Za drugu instalaciju ponovite obje naredbe s istim dodatnim opcijama, npr.
 `--instance=druga --listen=127.0.0.1:9076`. Iste opcije zatim navedite uz
 `--finalize` u 7. koraku. Njihovo izostavljanje odabire drugi, zadani servis.
+
+Generator iz 0.3.4 postavlja launchd `Umask` na cijeli broj **7** (oktalno
+`0007`), jednako Linux postavci `UMask=0007`. Masku koriste web-proces i
+ograničeni deploy worker; worker je postavlja **nakon** promjene računa.
+Njihov `TMPDIR` jest `data/tmp` ove aplikacije, pa su zajednički privremeni
+lockovi u istom privatnom direktoriju runtime grupe. Novi obični logovi imaju
+`0660`, a ne `0644` uz koje updater ne može pisati u FPM-ov log.
+
+Na macOS-u provjerite generirani servis prije otvaranja čarobnjaka:
+
+```bash
+/usr/libexec/PlistBuddy -c 'Print :Umask' /Library/LaunchDaemons/hr.simbioza.php-fpm.plist | grep -qx 7
+```
+
+Za imenovanu instancu odaberite odgovarajuću servisnu datoteku, npr.
+`hr.simbioza-druga.php-fpm.plist`. Izostala maska neuspješan je preduvjet,
+a ne razlog da kod postane zapisiv ili da se updater pokreće kao root.
+Ne ponavljajte opću finalizaciju nad postojećom DEMO reset kopijom radi
+popravka prava. Sesije ostaju privatne (`0600`); ne proširujte rekurzivno
+prava cijelog direktorija podataka.
 
 Provjera ništa ne mijenja. Zadani pool sluša na `127.0.0.1:9075`; ta vrata
 smiju biti dostupna samo lokalno. Alat daje FPM računu pravo pisanja po

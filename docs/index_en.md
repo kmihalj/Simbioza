@@ -7,6 +7,7 @@ is not developed in this repository.
 Brand slogan: **Knowledge that lives together.**
 
 - [Docker security patch release 0.3.3](release-0.3.3_en.md)
+- [Secured FPM runtime permissions in 0.3.4](release-0.3.4_en.md)
 - [Secured-FPM fix release 0.3.2](release-0.3.2_en.md)
 - [Documentation release 0.3.1](release-0.3.1_en.md)
 - [Initial release 0.3.0 and verification checklist](initial-release-0.3.0_en.md)
