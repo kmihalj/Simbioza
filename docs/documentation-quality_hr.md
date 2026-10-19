@@ -1,6 +1,6 @@
 # Provjere dokumentacije i komentara
 
-Pravila vrijede za aplikaciju 0.3.5 i njezinih 18 javnih modula. Framework je
+Pravila vrijede za aplikaciju 0.3.6 i njezinih 18 javnih modula. Framework je
 uzvodni kod i ovi ga alati ne prepisuju.
 
 ## Pravila jezika i primjera
@@ -59,5 +59,5 @@ komentari slijede isto jezično pravilo, ali ovaj PHP formatter ne parsira te je
 [Docker](docker_hr.md) opisuju aktualni raspored čiste instalacije. Starije bilješke
 izdanja čuvaju izvorne pojedinosti uz izričitu povijesnu napomenu; nisu upute za
 aktualnu instalaciju/nadogradnju. [Početni audit prije releasea](pre-release-audit-0.3.0_hr.md)
-bilježi početne provjere, a [bilješke izdanja 0.3.5](release-0.3.5_hr.md) opisuju
+bilježi početne provjere, a [bilješke izdanja 0.3.6](release-0.3.6_hr.md) opisuju
 aktualnu objavu. Prolaz ovih provjera nije odobrenje izdanja.

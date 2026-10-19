@@ -2,6 +2,8 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.5/docs/release-0.3.5_en.md)
 
+> Povijesna bilješka izdanja — za novu instalaciju koristite [aktualni pregled instalacije](installation_hr.md). Izvorni tag i imagei 0.3.5 ostaju nepromijenjeni.
+
 Ova aplikacijska zakrpa donosi updater **1.0.8**. Framework ostaje **v0.0.25**,
 API **0.3.1**, ostali javni moduli **0.3.0**, a privatni DEMO modul **0.3.6**.
 Postojeći tagovi ne pomiču se i nema novih migracija baze.

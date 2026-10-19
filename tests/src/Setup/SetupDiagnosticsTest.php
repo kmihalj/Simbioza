@@ -236,6 +236,24 @@ final class SetupDiagnosticsTest extends TestCase
     }
 
     /**
+     * EN: A blocked helper leaves the dependent CLI check untested, not falsely missing extensions.
+     *
+     * HR: Nedostupan helper ostavlja ovisnu CLI provjeru neizvršenom, bez lažne tvrdnje o ekstenzijama.
+     */
+    public function testUnavailableHelperDoesNotClaimMissingCliExtensions(): void
+    {
+        $report = $this->diagnostics()->report();
+        $checks = array_column($report['checks'], null, 'id');
+        $this->assertFalse($report['application_updates_allowed']);
+        $this->assertFalse($checks['application_update_runtime']['checked']);
+        $this->assertSame(
+            'CLI provjera nije provedena jer Setup helper nije dostupan.',
+            $checks['application_update_runtime']['detail'],
+        );
+        $this->assertDirectoryDoesNotExist($this->root . '/data');
+    }
+
+    /**
      * EN: Keeps package operations disabled in the CLI test.
      *
      * HR: Zadržava paketne radnje isključenima u CLI testu.

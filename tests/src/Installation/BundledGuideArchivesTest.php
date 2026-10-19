@@ -177,6 +177,41 @@ final class BundledGuideArchivesTest extends TestCase
     }
 
     /**
+     * EN: Fresh setup checks the real helper before the wizard, without stale SSH group membership.
+     * Both guides require a successful runtime probe and stop chained commands after a failure.
+     *
+     * HR: Nova instalacija provjerava stvarni helper prije čarobnjaka, bez starih SSH članstava grupa.
+     * Obje upute zahtijevaju uspješnu runtime provjeru i prekidaju niz naredbi nakon greške.
+     */
+    public function testSecuredFpmRequiresRealHelperChecksBeforeContinuing(): void
+    {
+        $root = dirname(__DIR__, 3);
+        foreach (['en', 'hr'] as $locale) {
+            $text = (string)file_get_contents($root . '/docs/installation_fpm_secured_' . $locale . '.md');
+            foreach (
+                ['[OK] Real Setup helper round trip', '[OK] Background updater CLI runtime',
+                'sudo -H -u fpm-simbioza php scripts/configure_fpm_setup.php --check'] as $required
+            ) {
+                $this->assertStringContainsString($required, $text, $locale);
+            }
+
+            preg_match_all('/^```bash\R(.*?)^```/ms', $text, $examples);
+            $installBlocks = 0;
+            foreach ($examples[1] as $example) {
+                if (!str_contains($example, 'scripts/configure_fpm_setup.php --install')) {
+                    continue;
+                }
+
+                ++$installBlocks;
+                $this->assertMatchesRegularExpression('/--maintainer=.*?&&\R/s', $example, $locale);
+                $this->assertStringContainsString('scripts/configure_fpm_setup.php --check', $example, $locale);
+            }
+
+            $this->assertGreaterThanOrEqual(2, $installBlocks, $locale);
+        }
+    }
+
+    /**
      * EN: Shared-host instructions bind the PHP handler to the alias's actual public directory.
      * Managed-vhost changes and obsolete custom bind cleanup are explicit, not new-install prerequisites.
      *

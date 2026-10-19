@@ -115,10 +115,26 @@ final readonly class SetupGateway
      */
     public function probe(): bool
     {
+        return $this->probeResult()['ready'];
+    }
+
+    /**
+     * EN: Retains the no-op helper error for administrator diagnostics instead of hiding it.
+     * This action contains no passwords, installer tokens or user-supplied parameters.
+     *
+     * HR: Zadržava grešku probnog helper poziva za administratorsku dijagnostiku umjesto skrivanja.
+     * Ova radnja ne sadrži lozinke, instalacijske tokene ni korisničke parametre.
+     *
+     * @return array{ready:bool,detail:string}
+     */
+    public function probeResult(): array
+    {
         try {
-            return $this->execute('health-check') !== '';
-        } catch (\Throwable) {
-            return false;
+            $message = $this->execute('health-check');
+            return ['ready' => $message !== '', 'detail' => $message];
+        } catch (\Throwable $throwable) {
+            $message = str_replace(["\r", "\n", "\0"], ' ', $throwable->getMessage());
+            return ['ready' => false, 'detail' => substr($message, 0, 1000)];
         }
     }
 }

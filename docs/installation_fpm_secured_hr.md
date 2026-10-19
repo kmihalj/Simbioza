@@ -47,7 +47,7 @@ su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.5
+## 2. Preuzmite čisto izdanje Simbioze 0.3.6
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -73,7 +73,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.5 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.6 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.5` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.6` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -134,8 +134,8 @@ Na Debianu instalirajte PHP-FPM za istu verziju PHP-a koju koristi CLI i paket
 ```bash
 cd "$SIMBIOZA_APP_ROOT"
 sudo php scripts/configure_fpm_setup.php --install \
-  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
-php scripts/configure_fpm_setup.php --check \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" &&
+sudo -H -u fpm-simbioza php scripts/configure_fpm_setup.php --check \
   --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
 ```
 
@@ -145,8 +145,8 @@ Na macOS-u s Homebrew PHP-om navedite stvarnu putanju aplikacije i FPM-a:
 cd "$SIMBIOZA_APP_ROOT"
 sudo php scripts/configure_fpm_setup.php --install \
   --app-root="$SIMBIOZA_APP_ROOT" \
-  --maintainer="$(id -un)" --php-fpm="$(brew --prefix)/sbin/php-fpm"
-php scripts/configure_fpm_setup.php --check \
+  --maintainer="$(id -un)" --php-fpm="$(brew --prefix)/sbin/php-fpm" &&
+sudo -H -u fpm-simbioza php scripts/configure_fpm_setup.php --check \
   --app-root="$SIMBIOZA_APP_ROOT" \
   --maintainer="$(id -un)" --php-fpm="$(brew --prefix)/sbin/php-fpm"
 ```
@@ -160,8 +160,18 @@ Za drugu instalaciju ponovite obje naredbe s istim dodatnim opcijama, npr.
 **Nemojte ručno stvarati ni popunjavati `php-fpm.conf`.** Gornja naredba
 `--install` zapisuje cijelu namjensku FPM konfiguraciju, provjerava njezinu
 sintaksu, registrira servis i pokreće ga odnosno ponovno pokreće. Naredba
-`--check` nakon nje samo pregledava rezultat; nastavite tek kada sve provjere
-uspiju.
+`--check` nakon nje ne mijenja postavke: stvara i uklanja kratkotrajne probne
+zahtjeve kroz stvarni helper. Provjerava i prolaz helpera i CLI podršku za
+pozadinsku nadogradnju. Neuspješna provjera vraća izlazni status različit od
+nule. Očekuju se `[OK] Real Setup helper round trip` i
+`[OK] Background updater CLI runtime`; ne nastavljajte na Apache ni čarobnjak
+ako neka od njih izostaje ili ne prođe.
+
+Izričita provjera sa `sudo -H -u fpm-simbioza` odmah koristi novi radni račun,
+bez ovisnosti o osvježenom članstvu grupa u vašoj trenutačnoj SSH prijavi.
+Za imenovanu instancu koristite i njezin radni račun, npr. `fpm-simbioza-druga`.
+Helper ostaje u vlasništvu root računa i ograničen na dopuštene radnje; web-procesu
+nemojte dati pravo pisanja po kodu niti isključivati izolaciju datotečnog sustava.
 
 Na Linuxu zadana instanca koristi
 `/etc/php/<major.minor>/php-fpm-simbioza/php-fpm.conf`, pri čemu verzija odgovara
@@ -208,7 +218,7 @@ Ne ponavljajte opću finalizaciju nad postojećom DEMO reset kopijom radi
 popravka prava. Sesije ostaju privatne (`0600`); ne proširujte rekurzivno
 prava cijelog direktorija podataka.
 
-Provjera ništa ne mijenja. Zadani pool sluša na `127.0.0.1:9075`; ta vrata
+Provjera ne mijenja postavke aplikacije. Zadani pool sluša na `127.0.0.1:9075`; ta vrata
 smiju biti dostupna samo lokalno. Alat daje FPM računu pravo pisanja po
 radnim podacima, ali ne i po cijelom izdanju, te postavlja strogo ograničeni
 pomoćni program za paketne radnje. Stvara i grupe za održavanje i rad.
@@ -221,6 +231,13 @@ zasebno stvarati naredbama `useradd` i `groupadd`. Nepostojeći identiteti se
 stvaraju, a postojeći s tim imenima koriste se bez zamjene UID/GID vrijednosti.
 Alat usklađuje potrebne primarne grupe i dodatna članstva. Za imenovanu instancu
 sva imena ispod dobivaju isti nastavak `-instanca`.
+
+Pri reinstalaciji na **istoj aplikacijskoj putanji** ipak pokrenite `--install`
+iz 4. koraka: on osvježava i root-owned helper izvan aplikacijskog direktorija.
+Brisanje aplikacijskih datoteka ne uklanja taj helper. Postojeći računi/grupe
+koriste se bez ručnog ponovnog stvaranja. Postojeća Apache konfiguracija može
+ostati ako odgovara 5. koraku, uključujući stvarnu javnu putanju, ispravan
+handler i kategorije `AllowOverride`.
 
 | Identitet | Svrha |
 | --- | --- |
@@ -553,7 +570,11 @@ može pisati u te direktorije; vidi [lokalizaciju](localization_hr.md).
 
 Nakon instalacije prijavite se kao administrator. U **Postavke → Setup i
 moduli** provjerite da su namjenski pool, pomoćni program i radna prava u
-redu. Čarobnjak uvozi korisničke upute na odabranim jezicima.
+redu. Mora proći i CLI provjera pozadinske nadogradnje, a GUI upravljanje
+paketima i nadogradnja aplikacije moraju biti dostupni. Sivi rezultat **Nije
+provjereno** nije prolaz: prvo riješite prethodnu neuspješnu provjeru helpera;
+ne znači da CLI ekstenzije nedostaju. Čarobnjak uvozi korisničke upute na
+odabranim jezicima.
 
 ## 7. Učvrstite prava i provjerite instalaciju
 
@@ -563,10 +584,10 @@ aktivirala nova članstva u deploy/runtime grupama. Ponovno postavite
 
 ```bash
 sudo php scripts/configure_fpm_setup.php --finalize \
-  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" &&
 php scripts/configure_fpm_setup.php --check \
-  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
-vendor/bin/hph modules migrate-status
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" &&
+vendor/bin/hph modules migrate-status &&
 composer check-platform-reqs
 ```
 

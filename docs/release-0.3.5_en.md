@@ -2,6 +2,8 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.5/docs/release-0.3.5_hr.md)
 
+> Historical release note — use the [current installation index](installation_en.md) for a new installation. The original 0.3.5 tag and images remain unchanged.
+
 This application patch ships updater **1.0.8**. Framework stays **v0.0.25**,
 API **0.3.1**, other public modules **0.3.0**, and the private DEMO module
 **0.3.6**. No existing tag is moved and no new database migration is added.

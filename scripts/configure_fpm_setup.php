@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 // EN: This tool changes system accounts and FPM only with explicit --install
-//     or --finalize. The default --check mode is entirely read-only.
+//     or --finalize. --check changes no settings; its temporary health requests are removed.
 //
 // HR: Ovaj alat mijenja sistemske račune i FPM samo uz izričiti --install ili
-//     --finalize. Zadani --check je potpuno read-only.
+//     --finalize. --check ne mijenja postavke; njegovi privremeni probni zahtjevi uklanjaju se.
 
 if (PHP_SAPI !== 'cli') {
     fwrite(STDERR, "This tool is CLI-only.\n");
@@ -114,8 +114,7 @@ if ($platform === 'unsupported') {
 }
 
 if ($mode === 'check') {
-    printChecks($root, $maintainer, $phpFpm, $listen, $platform, $simpleSamlConfig);
-    exit(0);
+    exit(printChecks($root, $maintainer, $phpFpm, $listen, $platform, $simpleSamlConfig) ? 0 : 2);
 }
 
 if (!function_exists('posix_geteuid') || posix_geteuid() !== 0) {
@@ -137,7 +136,7 @@ if ($mode === 'install') {
     fwrite(STDOUT, "Simbioza ownership was finalized. Re-login to activate new group membership.\n");
 }
 
-printChecks($root, $maintainer, $phpFpm, $listen, $platform, $simpleSamlConfig);
+exit(printChecks($root, $maintainer, $phpFpm, $listen, $platform, $simpleSamlConfig) ? 0 : 2);
 
 /**
  * EN: Stops the tool with a clear message.
@@ -677,7 +676,59 @@ function installHelper(string $root, string $phpFpm, string $home): void
             throw new RuntimeException('systemd-run is required for the isolated Setup worker.');
         }
 
-        $helper = <<<'SH'
+        $helper = linuxSetupHelper($policy['read_only_config'], $policy['write_bind']);
+    } else {
+        $helper = darwinSetupHelper();
+    }
+
+    $helper = str_replace(
+        [
+            '__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__',
+            '__DEPLOY_USER__', '__DEPLOY_GROUP__', '__RUNTIME_GROUP__', '__SETUP_UNIT_PREFIX__',
+            '__CONFIG_PATH__', '__CONFIG_OVERRIDES__',
+        ],
+        [
+            escapeshellarg($root),
+            escapeshellarg(setupRequestDirectory($root)),
+            escapeshellarg($home),
+            escapeshellarg($php),
+            escapeshellarg($worker),
+            FPM_DEPLOY_USER,
+            FPM_DEPLOY_GROUP,
+            FPM_RUNTIME_GROUP,
+            'simbioza-setup' . FPM_INSTANCE_SUFFIX,
+            escapeshellarg($environment['HPH_CONFIG_PATH']),
+            escapeshellarg($environment['HPH_CONFIG_OVERRIDE_PATHS']),
+        ],
+        $helper,
+    );
+    writeSystemFile(FPM_HELPER, $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
+    $sudoers = FPM_USER . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n"
+    . '%' . FPM_DEPLOY_GROUP . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n";
+    writeSystemFile(FPM_SUDOERS, $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
+    runCommand(['visudo', '-cf', FPM_SUDOERS]);
+}
+
+/**
+ * EN: Builds the Linux helper with one quoted bind property per actual path.
+ * Empty lists emit no property: systemd-run rejects an empty bind source.
+ *
+ * HR: Izrađuje Linux helper s jednom navedenom bind postavkom po stvarnoj putanji.
+ * Prazni popisi ne stvaraju postavku: systemd-run odbija praznu izvornu putanju.
+ *
+ * @param list<string> $readOnlyPaths
+ * @param list<string> $writablePaths
+ */
+function linuxSetupHelper(array $readOnlyPaths, array $writablePaths): string
+{
+    $bindArguments = '';
+    foreach (['BindReadOnlyPaths' => $readOnlyPaths, 'BindPaths' => $writablePaths] as $property => $paths) {
+        foreach ($paths as $path) {
+            $bindArguments .= '  --property=' . escapeshellarg($property . '=' . systemdQuote($path)) . " \\\n";
+        }
+    }
+
+    $helper = <<<'SH'
 #!/bin/sh
 set -eu
 [ "$#" -eq 1 ] || exit 64
@@ -692,9 +743,7 @@ result=__REQUEST_DIRECTORY__/"$1.result.json"
   --property=ExitType=cgroup \
   --property=SupplementaryGroups=__RUNTIME_GROUP__ \
   --property=ProtectSystem=full --property=ProtectHome=true \
-  --property=BindReadOnlyPaths=__READ_ONLY_CONFIG__ \
-  --property=BindPaths=__WRITABLE_CONFIG__ \
-  --property=PrivateTmp=true --property=PrivateDevices=true \
+__CONFIG_BINDS__  --property=PrivateTmp=true --property=PrivateDevices=true \
   --property=NoNewPrivileges=true --property=UMask=0007 \
   --working-directory=__ROOT__ \
   --setenv=HOME=__HOME__ --setenv=COMPOSER_HOME=__HOME__/.composer \
@@ -704,10 +753,11 @@ result=__REQUEST_DIRECTORY__/"$1.result.json"
   --setenv=TMPDIR=__ROOT__/data/tmp \
   __PHP__ __WORKER__ "$1"
 
-# HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
-# pozadinske nadogradnje. ExitType=cgroup čuva updater unutar privremene jedinice.
 # EN: The worker returns a small validated result to the web request before the
 # background update finishes. ExitType=cgroup keeps it in the transient unit.
+#
+# HR: Worker vraća mali provjeren rezultat web zahtjevu prije završetka
+# pozadinske nadogradnje. ExitType=cgroup čuva updater unutar privremene jedinice.
 attempt=0
 while [ "$attempt" -lt 36000 ]; do
   [ -f "$result" ] && exit 0
@@ -721,39 +771,8 @@ while [ "$attempt" -lt 36000 ]; do
 done
 exit 75
 SH;
-    } else {
-        $helper = darwinSetupHelper();
-    }
 
-    $helper = str_replace(
-        [
-            '__ROOT__', '__REQUEST_DIRECTORY__', '__HOME__', '__PHP__', '__WORKER__',
-            '__DEPLOY_USER__', '__DEPLOY_GROUP__', '__RUNTIME_GROUP__', '__SETUP_UNIT_PREFIX__',
-            '__CONFIG_PATH__', '__CONFIG_OVERRIDES__',
-            '__READ_ONLY_CONFIG__', '__WRITABLE_CONFIG__',
-        ],
-        [
-            escapeshellarg($root),
-            escapeshellarg(setupRequestDirectory($root)),
-            escapeshellarg($home),
-            escapeshellarg($php),
-            escapeshellarg($worker),
-            FPM_DEPLOY_USER,
-            FPM_DEPLOY_GROUP,
-            FPM_RUNTIME_GROUP,
-            'simbioza-setup' . FPM_INSTANCE_SUFFIX,
-            escapeshellarg($environment['HPH_CONFIG_PATH']),
-            escapeshellarg($environment['HPH_CONFIG_OVERRIDE_PATHS']),
-            escapeshellarg(implode(' ', array_map(systemdQuote(...), $policy['read_only_config']))),
-            escapeshellarg(implode(' ', array_map(systemdQuote(...), $policy['write_bind']))),
-        ],
-        $helper,
-    );
-    writeSystemFile(FPM_HELPER, $helper . "\n", 0755, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
-    $sudoers = FPM_USER . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n"
-    . '%' . FPM_DEPLOY_GROUP . ' ALL=(root) NOPASSWD: ' . FPM_HELPER . " *\n";
-    writeSystemFile(FPM_SUDOERS, $sudoers, 0440, 'root', PHP_OS_FAMILY === 'Darwin' ? 'wheel' : 'root');
-    runCommand(['visudo', '-cf', FPM_SUDOERS]);
+    return str_replace('__CONFIG_BINDS__', $bindArguments, $helper);
 }
 
 /**
@@ -1246,7 +1265,7 @@ function printChecks(
     string $listen,
     string $platform,
     ?string $simpleSamlConfig,
-): void {
+): bool {
     $checks = [
         ['FPM user', identityExists($platform, FPM_USER, false)],
         ['Deploy user', identityExists($platform, FPM_DEPLOY_USER, false)],
@@ -1266,12 +1285,42 @@ function printChecks(
         ];
     }
 
+    $helperError = '';
+    $helperReady = false;
+    $runtimeReady = false;
+    try {
+        require_once $root . '/vendor/autoload.php';
+        $gateway = new \App\Setup\SetupGateway(
+            new \App\Setup\SetupRequestStore(setupRequestDirectory($root)),
+            new \App\Module\NativeProcessRunner(),
+            $root,
+            FPM_HELPER,
+            false,
+        );
+        $helperReady = $gateway->execute('health-check') !== '';
+        if ($helperReady) {
+            $runtimeReady = $gateway->execute('application-update-runtime-check') !== '';
+        }
+    } catch (Throwable $throwable) {
+        $helperError = $throwable->getMessage();
+    }
+
+    $checks[] = ['Real Setup helper round trip', $helperReady];
+    $checks[] = ['Background updater CLI runtime', $runtimeReady];
+
     fwrite(STDOUT, "\nSimbioza FPM check ({$listen}, {$phpFpm})\n");
+    $ready = true;
     foreach ($checks as [$label, $passed]) {
         fwrite(STDOUT, sprintf("  [%s] %s\n", $passed ? 'OK' : '--', $label));
+        $ready = $ready && $passed;
     }
 
     fwrite(STDOUT, "  Platform: {$platform}\n");
+    if ($helperError !== '') {
+        fwrite(STDERR, '  Setup worker: ' . $helperError . PHP_EOL);
+    }
+
+    return $ready;
 }
 
 /**

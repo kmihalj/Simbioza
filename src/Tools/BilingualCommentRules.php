@@ -25,7 +25,7 @@ final class BilingualCommentRules
     public function markers(string $comment): array
     {
         preg_match_all('/(?<![a-zA-Z0-9_])(EN|HR):/', $comment, $matches);
-        return array_values($matches[1]);
+        return $matches[1];
     }
 
     /**

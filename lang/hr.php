@@ -6,6 +6,9 @@ declare(strict_types=1);
 //
 // HR: Paketni prijevodi aplikacije; instalirani paketi žive u data/languages/catalogs/.
 return [
+  'CLI provjera nije provedena jer Setup helper nije dostupan.' => 'CLI provjera nije provedena jer Setup helper nije dostupan.',
+  'Helper nije provjeren u ovom okruženju.' => 'Helper nije provjeren u ovom okruženju.',
+  'Nije provjereno' => 'Nije provjereno',
   'Sastav paketa mijenja se gradnjom zamjenskog imagea. Instalirane module i dalje možete uključiti ili isključiti.' => 'Sastav paketa mijenja se gradnjom zamjenskog imagea. Instalirane module i dalje možete uključiti ili isključiti.',
   'Zaustavite aplikaciju i workere, sačuvajte bazu i runtime, odaberite novi image, pokrenite migrate i ponovno pokrenite aplikaciju.' => 'Zaustavite aplikaciju i workere, sačuvajte bazu i runtime, odaberite novi image, pokrenite migrate i ponovno pokrenite aplikaciju.',
   'Nadogradnja zamjenom imagea' => 'Nadogradnja zamjenom imagea',

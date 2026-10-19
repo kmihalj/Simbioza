@@ -22,7 +22,7 @@ jobs:
   docker-images:
     name: Docker ${{ matrix.arch }}
     if: github.event_name != 'pull_request'
-    needs: [release-metadata, quality, clean-install-sqlite, clean-install-network-databases, browser-and-api-e2e, postgresql-e2e, mysql-e2e]
+    needs: [release-metadata, quality, secured-fpm-linux, clean-install-sqlite, clean-install-network-databases, browser-and-api-e2e, postgresql-e2e, mysql-e2e]
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -281,6 +281,53 @@ jobs:
         run: |
           sudo -n "$(command -v php)" scripts/verify_root_asset_permissions.php
           sudo -n "$(command -v php)" scripts/verify_updater_permissions.php
+
+  secured-fpm-linux:
+    name: Secured FPM fresh installation / Nova sigurna FPM instalacija
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: dom, mbstring, pdo_sqlite, zip
+          coverage: none
+      - name: Export public fixture inputs / Izvezi javne testne izvore
+        run: |
+          php scripts/build_ci_composer.php
+          COMPOSER=composer.ci.json composer update --no-interaction --no-progress --prefer-dist
+          php tests/Fixtures/secured_fpm/export.php "$RUNNER_TEMP/secured-fpm-context"
+          mkdir -p build/secured-fpm
+      # EN: Real systemd and isolated namespaces require a privileged disposable container, never a deployment host.
+      #
+      # HR: Stvarni systemd i izolacije trebaju privilegirani privremeni container, nikada deployment poslužitelj.
+      - name: Verify documented secured FPM flow / Provjeri dokumentirani sigurni FPM postupak
+        run: |
+          docker build -t simbioza-secured-fpm-fixture tests/Fixtures/secured_fpm
+          docker run --detach --privileged --cgroupns=private --name "simbioza-secured-fpm-$GITHUB_RUN_ID" \
+            --tmpfs /run --tmpfs /run/lock --tmpfs /tmp \
+            --mount "type=bind,source=$RUNNER_TEMP/secured-fpm-context,target=/source,readonly" \
+            simbioza-secured-fpm-fixture
+          for attempt in $(seq 1 60); do
+            if docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" test -S /run/systemd/private; then break; fi
+            sleep 1
+          done
+          docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" sh /source/app/tests/Fixtures/secured_fpm/prepare.sh > build/secured-fpm/install.log 2>&1
+          docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" sh /srv/simbioza/tests/Fixtures/secured_fpm/verify.sh > build/secured-fpm/verify.log 2>&1
+          docker cp "simbioza-secured-fpm-$GITHUB_RUN_ID:/tmp/secured-fpm-report.json" build/secured-fpm/report.json
+      - name: Collect isolated service diagnostics / Prikupi izdvojenu servisnu dijagnostiku
+        if: always()
+        run: |
+          docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" journalctl --no-pager -n 200 > build/secured-fpm/journal.log 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: secured-fpm-evidence
+          path: build/secured-fpm/
+          retention-days: 30
+      - name: Remove only the disposable fixture / Ukloni samo privremeni test
+        if: always()
+        run: docker rm -f "simbioza-secured-fpm-$GITHUB_RUN_ID" || true
 
   clean-install-sqlite:
     name: Clean module matrix / Čista matrica modula

@@ -46,6 +46,7 @@ final readonly class SetupDiagnostics
      *         label_en:string,
      *         passed:bool,
      *         required:bool,
+     *         checked:bool,
      *         detail:string
      *     }>
      * }
@@ -56,13 +57,20 @@ final readonly class SetupDiagnostics
         $isFpm = PHP_SAPI === 'fpm-fcgi';
         $dedicatedPool = trim((string)getenv('SIMBIOZA_SETUP_POOL')) === '1';
         $helperAvailable = $this->gateway->isAvailable();
-        $helperReady = !$immutable && $isFpm && $dedicatedPool && $helperAvailable && $this->gateway->probe();
+        $helperChecked = !$immutable && $isFpm && $dedicatedPool && $helperAvailable;
+        $helper = $helperChecked
+        ? $this->gateway->probeResult()
+        : ['ready' => false, 'detail' => $helperAvailable ? 'Helper nije provjeren u ovom okruženju.' : 'missing'];
+        $helperReady = $helper['ready'];
         $applicationUpdateRuntime = false;
+        $runtimeDetail = 'CLI provjera nije provedena jer Setup helper nije dostupan.';
         if ($helperReady) {
             try {
                 $applicationUpdateRuntime = $this->gateway->execute('application-update-runtime-check') !== '';
-            } catch (\Throwable) {
+                $runtimeDetail = $applicationUpdateRuntime ? 'pcntl + posix' : 'CLI runtime check returned no result.';
+            } catch (\Throwable $throwable) {
                 $applicationUpdateRuntime = false;
+                $runtimeDetail = substr(str_replace(["\r", "\n", "\0"], ' ', $throwable->getMessage()), 0, 1000);
             }
         }
 
@@ -89,7 +97,8 @@ final readonly class SetupDiagnostics
                 'Restricted Setup helper passes a real probe',
                 $helperReady,
                 true,
-                $helperAvailable ? 'configured and probed' : 'missing',
+                $helper['detail'],
+                $helperChecked,
             ),
             $this->check(
                 'application_update_runtime',
@@ -97,7 +106,8 @@ final readonly class SetupDiagnostics
                 'CLI supports safe background updates',
                 $applicationUpdateRuntime,
                 false,
-                $applicationUpdateRuntime ? 'pcntl + posix' : 'pcntl/posix unavailable',
+                $runtimeDetail,
+                $helperReady,
             ),
             $this->pathCheck(
                 'code_readable',
@@ -282,7 +292,7 @@ final readonly class SetupDiagnostics
      *
      * HR: GUI prekidač provjerava isti posljednji cilj i lock kao spremište modula.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function moduleStateCheck(): array
     {
@@ -319,7 +329,7 @@ final readonly class SetupDiagnostics
      * HR: Runtime jezici trebaju zapisive podatke, ne zapisivi aplikacijski/vendor kod.
      * Ova dijagnostika nikada ne stvara direktorij ili lock.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function languageDataCheck(): array
     {
@@ -354,7 +364,7 @@ final readonly class SetupDiagnostics
      *
      * HR: Prikazuje zadnji config direktorij bez stvaranja ili otkrivanja vrijednosti.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function configurationDirectoryCheck(
         string $id,
@@ -381,7 +391,7 @@ final readonly class SetupDiagnostics
      *
      * HR: Čitljivost uzima iz efektivnog sloja, zapis i lock samo iz zadnjeg.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function configurationFileCheck(
         string $id,
@@ -420,7 +430,7 @@ final readonly class SetupDiagnostics
      *
      * HR: Provjerava jednu putanju i prikazuje vlasnika, grupu i oktalna prava.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function pathCheck(
         string $id,
@@ -465,7 +475,7 @@ final readonly class SetupDiagnostics
      *
      * HR: Provjerava obveznu Unix mode zastavicu bez promjene putanje.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function modeCheck(
         string $id,
@@ -486,7 +496,7 @@ final readonly class SetupDiagnostics
      *
      * HR: Gradi stabilan zapis jedne dijagnostičke provjere.
      *
-     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}
+     * @return array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string,checked:bool}
      */
     private function check(
         string $id,
@@ -495,6 +505,7 @@ final readonly class SetupDiagnostics
         bool $passed,
         bool $required,
         string $detail,
+        bool $checked = true,
     ): array {
         return [
             'id' => $id,
@@ -503,6 +514,7 @@ final readonly class SetupDiagnostics
             'passed' => $passed,
             'required' => $required,
             'detail' => $detail,
+            'checked' => $checked,
         ];
     }
 }

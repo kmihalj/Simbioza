@@ -47,7 +47,7 @@ PHP must be **8.2 or newer**, Composer must be version 2, and PHP needs
 Use `pdo_sqlite`, `pdo_mysql` or `pdo_pgsql` for your chosen database.
 CLI PHP and the web PHP handler must have matching versions and extensions.
 
-## 2. Download a clean Simbioza 0.3.5 release
+## 2. Download a clean Simbioza 0.3.6 release
 
 Choose **one** application directory. On Linux:
 
@@ -73,7 +73,7 @@ Run the complete download block as your normal maintainer account:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.5 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.6 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Expect `0.3.5` and `success` for every platform requirement.
+Expect `0.3.6` and `success` for every platform requirement.
 Git's **detached HEAD** notice is normal when checking out a release tag.
 Do not run Composer with `sudo`, copy another site's configuration or database,
 include `.git/` in the deployed application, or use `--no-dev` here.
@@ -142,8 +142,8 @@ and the `acl` package. From the release directory, run the one-time system step:
 ```bash
 cd "$SIMBIOZA_APP_ROOT"
 sudo php scripts/configure_fpm_setup.php --install \
-  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
-php scripts/configure_fpm_setup.php --check \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" &&
+sudo -H -u fpm-simbioza php scripts/configure_fpm_setup.php --check \
   --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
 ```
 
@@ -153,8 +153,8 @@ On macOS with Homebrew PHP, use the actual application path and FPM binary:
 cd "$SIMBIOZA_APP_ROOT"
 sudo php scripts/configure_fpm_setup.php --install \
   --app-root="$SIMBIOZA_APP_ROOT" \
-  --maintainer="$(id -un)" --php-fpm="$(brew --prefix)/sbin/php-fpm"
-php scripts/configure_fpm_setup.php --check \
+  --maintainer="$(id -un)" --php-fpm="$(brew --prefix)/sbin/php-fpm" &&
+sudo -H -u fpm-simbioza php scripts/configure_fpm_setup.php --check \
   --app-root="$SIMBIOZA_APP_ROOT" \
   --maintainer="$(id -un)" --php-fpm="$(brew --prefix)/sbin/php-fpm"
 ```
@@ -169,7 +169,18 @@ default instance is a different system service.
 **Do not create or fill in `php-fpm.conf` manually.** The `--install` command
 above writes the complete dedicated FPM configuration, tests its syntax,
 registers the service and starts/restarts it. The following `--check` command
-only inspects the result; continue only when all checks succeed.
+does not change settings: it creates and removes short-lived diagnostic requests
+through the real helper. It verifies both the helper round trip and CLI support
+for background updates. A failed check returns a nonzero exit status. Expect
+`[OK] Real Setup helper round trip` and `[OK] Background updater CLI runtime`;
+do not continue to Apache or the wizard if either is missing or fails.
+
+The explicit `sudo -H -u fpm-simbioza` check uses the newly created runtime
+account immediately, without depending on your current SSH session having
+refreshed group membership. For a named instance, use that instance's runtime
+account as well, for example `fpm-simbioza-second`. The helper remains root-owned
+and restricted to approved actions; do not give the web process code-write
+permissions or disable the filesystem sandbox.
 
 On Linux, the default instance uses
 `/etc/php/<major.minor>/php-fpm-simbioza/php-fpm.conf`, where the version matches
@@ -216,7 +227,7 @@ not a reason to make code writable or run the updater as root. Do not rerun
 generic finalization on an existing DEMO reset snapshot to repair permissions.
 Session files remain private (`0600`); do not recursively make all data writable.
 
-The check is read-only. The default pool listens on `127.0.0.1:9075`; keep
+The check changes no application settings. The default pool listens on `127.0.0.1:9075`; keep
 that port local to the server. The tool gives the FPM account write access to
 runtime data, not to the whole release, and installs a narrowly restricted
 helper for package changes. It also creates the deploy and runtime groups.
@@ -229,6 +240,13 @@ run `useradd` or `groupadd`. Missing identities are created, while existing
 identities with these names are reused without replacing their UID/GID.
 The tool ensures the required primary groups and supplementary memberships.
 For a named instance, every name below receives the same `-instance` suffix.
+
+When reinstalling at the **same application path**, still run step 4's
+`--install`: it also refreshes the root-owned helper outside the application
+directory. Deleting application files does not remove that helper. Existing
+accounts/groups are reused; there is no manual account recreation. An existing
+Apache configuration may be retained if it matches step 5, including the real
+public path, correct handler and `AllowOverride` classes.
 
 | Identity | Purpose |
 | --- | --- |
@@ -560,7 +578,11 @@ directories are writable by PHP; see [localization](localization_en.md).
 
 After installation, sign in as the administrator. In **Settings → Setup and
 modules**, verify that the dedicated pool, helper, and runtime permissions are
-all reported as ready. The wizard imports the selected user-guide languages.
+all reported as ready. The CLI background-update check must also pass, and GUI
+package operations and application updates must be available. A gray **Not
+checked** result is not a pass: resolve the earlier failed helper check first;
+it does not mean the CLI extensions are missing. The wizard imports the
+selected user-guide languages.
 
 ## 7. Finalize permissions and verify
 
@@ -570,10 +592,10 @@ selected in step 2, then run the matching commands:
 
 ```bash
 sudo php scripts/configure_fpm_setup.php --finalize \
-  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" &&
 php scripts/configure_fpm_setup.php --check \
-  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)"
-vendor/bin/hph modules migrate-status
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" &&
+vendor/bin/hph modules migrate-status &&
 composer check-platform-reqs
 ```
 

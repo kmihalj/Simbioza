@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @var string $title
  * @var list<array{slug:string,package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,package_installed:bool,enabled:bool,schema_installed:bool,backup_available:bool,state:string}> $modules
  * @var array<string,array{package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,dependencies:list<string>,migrations:list<string>,tables:list<string>}> $definitions
- * @var array{immutable:bool,is_fpm:bool,helper_ready:bool,state_changes_allowed:bool,language_changes_allowed:bool,package_changes_allowed:bool,application_updates_allowed:bool,checks:list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,detail:string}>} $diagnostics
+ * @var array{immutable:bool,is_fpm:bool,helper_ready:bool,state_changes_allowed:bool,language_changes_allowed:bool,package_changes_allowed:bool,application_updates_allowed:bool,checks:list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,checked:bool,detail:string}>} $diagnostics
  * @var list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float,active:bool}> $languages
  * @var list<array{locale:string,native_name:string,version:string,local_version:string,revision_known:bool,installed:bool,active:bool,update_available:bool}> $repositoryLanguages
  * @var array{components:list<array{package:string,name:string,kind:string,installed_version:string,latest_version:?string,status:string}>,checked_at:?int,failures:int,updates:int} $componentUpdates
@@ -325,14 +325,15 @@ $applicationUpdateUi = json_encode(
                             </tr></thead>
                             <tbody>
                             <?php foreach ($diagnostics['checks'] as $check) : ?>
+                                <?php $checked = $check['checked']; ?>
                                 <tr>
                                     <td><?= $this->escape(__($check['label_hr'])) ?></td>
                                     <td>
-                                        <span class="badge <?= $check['passed'] ? 'text-bg-success' : 'text-bg-danger' ?>">
-                                <?= $this->escape($check['passed'] ? __('U redu') : __('Potrebna dorada')) ?>
+                                        <span class="badge <?= !$checked ? 'text-bg-secondary' : ($check['passed'] ? 'text-bg-success' : 'text-bg-danger') ?>">
+                                <?= $this->escape(!$checked ? __('Nije provjereno') : ($check['passed'] ? __('U redu') : __('Potrebna dorada'))) ?>
                                         </span>
                                     </td>
-                                    <td><code class="text-break"><?= $this->escape($check['detail']) ?></code></td>
+                                    <td><code class="text-break"><?= $this->escape(__($check['detail'])) ?></code></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>

@@ -188,6 +188,64 @@ final class FpmConfigurationPathsTest extends TestCase
     }
 
     /**
+     * EN: Linux helpers omit empty bind lists and quote each actual path as one property.
+     * A shell-only capture checks the real argument boundary without sudo or systemd.
+     *
+     * HR: Linux helperi izostavljaju prazne bind popise i svaku stvarnu putanju navode zasebno.
+     * Hvatanje u ljusci provjerava stvarne argumente bez sudo ili systemd poziva.
+     */
+    public function testLinuxHelperOmitsEmptyBindSourcesAndPreservesQuotedPaths(): void
+    {
+        foreach (
+            [
+            [[], []],
+            [[], ['/fixture/config', '/fixture/requests']],
+            [['/fixture/lower config'], ['/fixture/upper "config"', '/fixture/requests']],
+            ] as [$readOnly, $writable]
+        ) {
+            $helper = \linuxSetupHelper($readOnly, $writable);
+            $this->assertStringNotContainsString("BindReadOnlyPaths=''", (string)$helper);
+            $this->assertStringNotContainsString("BindPaths=''", (string)$helper);
+            $command = explode("\n# EN: The worker returns", $helper, 2)[0];
+            $command = str_replace('/usr/bin/systemd-run', "printf '%s\\n'", $command);
+            $process = proc_open(
+                ['/bin/sh', '-c', $command, 'fixture-helper', str_repeat('a', 48)],
+                [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+                $pipes,
+            );
+            $this->assertIsResource($process);
+            $output = stream_get_contents($pipes[1]);
+            $error = stream_get_contents($pipes[2]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            $this->assertSame(0, proc_close($process), $error);
+            $arguments = explode("\n", trim($output));
+            foreach (['BindReadOnlyPaths' => $readOnly, 'BindPaths' => $writable] as $property => $paths) {
+                $actual = array_values(array_filter(
+                    $arguments,
+                    static fn(string $argument): bool => str_starts_with($argument, '--property=' . $property . '='),
+                ));
+                $expected = array_map(
+                    static fn(string $path): string => '--property=' . $property . '=' . \systemdQuote($path),
+                    $paths,
+                );
+                $this->assertSame($expected, $actual);
+            }
+        }
+    }
+
+    /**
+     * EN: Relative bind paths fail before a root-owned helper can be written.
+     *
+     * HR: Relativne bind putanje odbijaju se prije zapisivanja root-owned helpera.
+     */
+    public function testLinuxHelperRejectsRelativeBindPaths(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        \linuxSetupHelper(['relative/config'], []);
+    }
+
+    /**
      * EN: launchd receives an integer umask, preserving shared writes without world access.
      * The generator remains pure: no installed service is read or restarted by this test.
      *
