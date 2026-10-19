@@ -1,6 +1,6 @@
 # Documentation and comment checks
 
-These rules apply to the 0.3.8 application and its 18 public modules. Framework
+These rules apply to the 0.3.9 application and its 18 public modules. Framework
 is upstream code and is not rewritten by these tools.
 
 ## Language and example rules
@@ -60,5 +60,5 @@ the same language rule, but this PHP formatter does not parse those languages.
 notes retain original details under explicit historical notices; they are not
 current installation/upgrade instructions. The
 [initial pre-release audit](pre-release-audit-0.3.0_en.md) records the initial
-acceptance checks; [0.3.8 release notes](release-0.3.8_en.md) describe the current
+acceptance checks; [0.3.9 release notes](release-0.3.9_en.md) describe the current
 publication. Passing these checks is not release approval.

@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.8 čuva administratorski uređene teme pri nadogradnji i uvažava odabranu boju prigušenog teksta. Theme i API su 0.3.1, ostali javni moduli ostaju 0.3.0 i HeartPhrame Framework v0.0.25. Vidi [bilješke izdanja](docs/release-0.3.8_hr.md).
+> Simbioza 0.3.9 čuva administratorski uređene teme pri nadogradnji i uvažava odabranu boju prigušenog teksta. Menu, Theme i API su 0.3.1, ostali javni moduli ostaju 0.3.0 i HeartPhrame Framework v0.0.25. Vidi [bilješke izdanja](docs/release-0.3.9_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -136,7 +136,7 @@ ovisnosti.
 
 ## Politika ovisnosti
 
-Framework je ograničen na `^0.0.25`, API i Theme na `^0.3.1`, a ostali Simbioza moduli koriste kompatibilnu
+Framework je ograničen na `^0.0.25`, API, Menu i Theme na `^0.3.1`, a ostali Simbioza moduli koriste kompatibilnu
 liniju izdanja `^0.3.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
 najnovija kompatibilna označena izdanja i pokreće cijeli skup provjera kvalitete.
 Produkcijski deployment može izvan izvornog repozitorija čuvati vlastiti
@@ -154,7 +154,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.8` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.9` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -257,11 +257,11 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.8](docs/release-0.3.8_hr.md).
+[bilješkama izdanja 0.3.9](docs/release-0.3.9_hr.md).
 
 ## Dokumentacija
 
-- [Očuvanje tema/postavki i odabranih boja u 0.3.8](docs/release-0.3.8_hr.md)
+- [Očuvanje tema/postavki i odabranih boja u 0.3.9](docs/release-0.3.9_hr.md)
 - [Revizije ugrađenih jezika u 0.3.7](docs/release-0.3.7_hr.md)
 - [Provjerena instalacija sigurnog FPM-a u 0.3.6](docs/release-0.3.6_hr.md)
 - [Zaštita privatnih konfiguracijskih direktorija u 0.3.5](docs/release-0.3.5_hr.md)

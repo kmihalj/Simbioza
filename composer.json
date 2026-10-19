@@ -94,7 +94,7 @@
         "aaieduhr/heartphrame-module-comment": "^0.3.0",
         "aaieduhr/heartphrame-module-editor-html": "^0.3.0",
         "aaieduhr/heartphrame-module-email": "^0.3.0",
-        "aaieduhr/heartphrame-module-menu": "^0.3.0",
+        "aaieduhr/heartphrame-module-menu": "^0.3.1",
         "aaieduhr/heartphrame-module-notification": "^0.3.0",
         "aaieduhr/heartphrame-module-orm": "^0.3.0",
         "aaieduhr/heartphrame-module-task": "^0.3.0",

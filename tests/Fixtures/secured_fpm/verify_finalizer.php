@@ -39,6 +39,20 @@ foreach ($themes as &$theme) {
 
 unset($theme);
 file_put_contents($themePath, json_encode($themes, JSON_THROW_ON_ERROR));
+$menuPath = $root . '/config/menu/settings.json';
+$menu = json_decode((string)file_get_contents($menuPath), true, 512, JSON_THROW_ON_ERROR);
+foreach ($menu as &$item) {
+    if ($item['id'] === 'theme') {
+        $item['label'] = ['en' => 'Preserved administrator theme entry'];
+        $item['enabled'] = false;
+    }
+}
+
+unset($item);
+file_put_contents($menuPath, json_encode(
+    $menu,
+    JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+) . "\n");
 $asset = $root . '/data/themes/simbioza/administrator-owned.txt';
 file_put_contents($asset, 'Fictional private theme asset.');
 chown($asset, 'fixture-admin');
