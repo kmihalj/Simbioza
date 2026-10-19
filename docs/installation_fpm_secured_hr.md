@@ -484,6 +484,9 @@ Na [upstream stranici](https://simplesamlphp.org/download/) provjerite sigurnosn
 nadogradnje; za drugu verziju zajedno promijenite URL i kontrolnu sumu.
 Sljedeće izvršite samo za **novi**, još nepostojeći direktorij biblioteke:
 
+Na Debianu/Ubuntuu najprije instalirajte alate za preuzimanje naredbom
+`sudo apt-get install curl openssl`. macOS već ima `curl` i `openssl`.
+
 ```bash
 test ! -e "$SIMBIOZA_SAML_ROOT" && test ! -L "$SIMBIOZA_SAML_ROOT" &&
 SIMBIOZA_SAML_FETCH="$(mktemp -d)" &&

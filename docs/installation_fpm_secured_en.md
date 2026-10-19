@@ -491,6 +491,9 @@ Check [upstream releases](https://simplesamlphp.org/download/) for security upda
 when choosing another version, change both URL and checksum together.
 Run the following only for a **new**, nonexistent library directory:
 
+On Debian/Ubuntu, first install the download tools with
+`sudo apt-get install curl openssl`. macOS already supplies `curl` and `openssl`.
+
 ```bash
 test ! -e "$SIMBIOZA_SAML_ROOT" && test ! -L "$SIMBIOZA_SAML_ROOT" &&
 SIMBIOZA_SAML_FETCH="$(mktemp -d)" &&
