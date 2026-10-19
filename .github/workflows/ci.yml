@@ -314,7 +314,7 @@ jobs:
           done
           docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" sh /source/app/tests/Fixtures/secured_fpm/prepare.sh > build/secured-fpm/install.log 2>&1
           docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" sh /srv/simbioza/tests/Fixtures/secured_fpm/verify.sh > build/secured-fpm/verify.log 2>&1
-          docker cp "simbioza-secured-fpm-$GITHUB_RUN_ID:/tmp/secured-fpm-report.json" build/secured-fpm/report.json
+          docker exec "simbioza-secured-fpm-$GITHUB_RUN_ID" cat /tmp/secured-fpm-report.json > build/secured-fpm/report.json
       - name: Collect isolated service diagnostics / Prikupi izdvojenu servisnu dijagnostiku
         if: always()
         run: |
