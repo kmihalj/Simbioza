@@ -17,6 +17,34 @@ use RuntimeException;
 final class BundledAssetsUpdaterTest extends TestCase
 {
     /**
+     * EN: Fresh-install normalization never adds a prefix already supplied by restore.
+     *
+     * HR: Normalizacija nove instalacije nikada ne dodaje prefiks koji je restore već upisao.
+     */
+    public function testGuidePathsAreNormalizedExactlyOnce(): void
+    {
+        $source = '<a href="/nested/app/workspace/docs/page?lang=hr#part">Already resolved</a>'
+        . '<a href="/workspace/docs/page?lang=en#part">Canonical</a>'
+        . '<a href="/nested/app?lang=hr#part">Application root</a>'
+        . '<a href="/nested/application/page">Different boundary</a>'
+        . '<img src="/editor-html/asset/file" data-editor-html-web-src="/nested/app/editor-html/asset/file">'
+        . '<a href="https://other.example/workspace/docs">External</a>'
+        . '<a href="//other.example/path">Network</a><a href="../page">Relative</a><a href="#part">Anchor</a>';
+        $once = BundledAssetsUpdater::normalizeGuideHtmlPaths($source, '/nested/app/');
+        $this->assertSame($once, BundledAssetsUpdater::normalizeGuideHtmlPaths($once, '/nested/app'));
+        $this->assertSame($source, BundledAssetsUpdater::normalizeGuideHtmlPaths($source, ''));
+        $this->assertStringContainsString('href="/nested/app/workspace/docs/page?lang=hr#part"', $once);
+        $this->assertStringContainsString('href="/nested/app/workspace/docs/page?lang=en#part"', $once);
+        $this->assertStringContainsString('href="/nested/app?lang=hr#part"', $once);
+        $this->assertStringContainsString('href="/nested/app/nested/application/page"', $once);
+        $this->assertStringContainsString('src="/nested/app/editor-html/asset/file"', $once);
+        $this->assertStringContainsString('href="https://other.example/workspace/docs"', $once);
+        $this->assertStringContainsString('href="//other.example/path"', $once);
+        $this->assertStringContainsString('href="../page"', $once);
+        $this->assertStringContainsString('href="#part"', $once);
+    }
+
+    /**
      * EN: Release finalization applies shared FPM-readable manifest permissions.
      *
      * HR: Završni korak izdanja primjenjuje zajednička, FPM-u čitljiva prava manifesta.

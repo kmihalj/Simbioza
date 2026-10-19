@@ -40,6 +40,14 @@ Nadogradnje aplikacije osvježavaju ugrađene stranice kroz
 `BundledAssetsUpdater`, bez zamjene nepovezanih stranica ili njihovih ACL-ova.
 Nova instalacija uvozi pakete uputa koji pripadaju odabranom izdanju.
 
+Poveznice uputa unutar arhiva relativne su aplikaciji. Instalacija i nadogradnja
+dodaju prefiks cilja točno jednom, uključujući ugniježđene instalacijske putanje.
+Updater popravlja i poznate poveznice ugrađenih uputa koje je ranija instalacija
+ostavila s ponovljenim prefiksom ili zabilježenom izvornom adresom. Razrješava samo
+isporučene ciljne upute koje lokalno postoje; nepovezane vanjske poveznice i primjeri
+koda ne preusmjeravaju se. Usklađivanje radi i kada su hashovi arhiva jednaki te ne
+zamjenjuje postavke teme, identitete stranica, prava ili tijek objave.
+
 Pri razvojnom osvježavanju samo dokumentacije objavite obnovljene pakete i
 osvježite upravljane upute razvojnog sitea njegovim aktualnim servisima.
 Nemojte pretpostaviti da su time objavljene i na drugom siteu. Arhiva starog

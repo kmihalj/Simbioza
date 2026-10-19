@@ -243,6 +243,13 @@ privitaka te prijavljuje nerazriješene linkove. Ne prenosi izvornu vezu baze ni
 instalacijske putanje. Povrat konfiguracije koristi modulske provjere, lockove i
 ciljne slojeve; rollback čuva prethodno stanje do uspjeha.
 
+Prenosivi Editor/Workspace URL atributi u arhivi nemaju instalacijski prefiks.
+Povrat dodaje prefiks cilja, uključujući povrat na isti site; ne smije ostaviti
+`/workspace/...` u korijenu hosta niti stvoriti `/demo/demo/...`.
+Prijenos na drugi site i dalje zahtijeva mapiranja uvezenih stranica/privitaka:
+sama relativna poveznica ne može pronaći stranicu koja nije uključena u arhivu.
+Vanjski URL-ovi, parametri upita i sidra zadržavaju svoje značenje.
+
 Privatne mape dijelite s runtime grupom (`2770`, datoteke/lockovi `0660`).
 FPM mora moći zamijeniti GUI datoteke; vlasništvo deploy računa u sticky mapi
 ne dopušta zamjenu samo zato što je datoteka group-writable. Koristite opisani

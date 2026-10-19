@@ -14,8 +14,12 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceConfig;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
+use HeartPhrame\Config\Config;
+use HeartPhrame\Helper\Helper;
 use RuntimeException;
+use ZipArchive;
 
 /**
  * EN: Updates individual bundled guide pages without importing installation themes.
@@ -152,11 +156,16 @@ final readonly class BundledAssetsUpdater
                 }
             }
 
+            if ($this->repairGuideLinks($root, $basePath) > 0) {
+                $actions[] = 'Bundled-guide links repaired; page identities, permissions and theme settings preserved.';
+            }
+
             return array_values(array_unique($actions));
         }
 
         if (!$this->backups instanceof BackupManager) {
             $actions[] = 'Bundled user-guide update skipped because the optional Backup module is not installed.';
+            $this->repairGuideLinks($root, $basePath);
 
             return array_values(array_unique($actions));
         }
@@ -229,7 +238,131 @@ final readonly class BundledAssetsUpdater
             }
         }
 
+        if ($this->repairGuideLinks($root, $basePath) > 0) {
+            $actions[] = 'Bundled-guide links repaired; page identities, permissions and theme settings preserved.';
+        }
+
         return $actions;
+    }
+
+    /**
+     * EN: Reconciles only shipped guide pages with existing target nodes, even when package hashes match.
+     * Source origin/routes come from the archive; custom routing comes from HPH_CONFIG_PATH.
+     * HTML changes in place without replacing user themes, page identities, workflows or ACL.
+     *
+     * HR: Usklađuje samo isporučene upute s postojećim ciljnim čvorovima, i kada su hashovi paketa jednaki.
+     * Izvor i rute čitaju se iz arhive, a prilagođeno usmjeravanje iz HPH_CONFIG_PATH.
+     * HTML se mijenja na mjestu, bez zamjene tema, identiteta stranica, workflowa ili ACL-a.
+     */
+    private function repairGuideLinks(string $root, string $basePath): int
+    {
+        $workspace = $this->workspaces->findWorkspaceBySlug('korisnicke-upute');
+        if (!is_array($workspace)) {
+            return 0;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($root . '/resources/installation/workspace/korisnicke-upute.zip') !== true) {
+            throw new RuntimeException('The bundled guide routing inventory is unavailable.');
+        }
+
+        try {
+            $zip->setPassword(self::PASSPHRASE);
+            $manifest = json_decode((string)$zip->getFromName('manifest.json'), true, 512, JSON_THROW_ON_ERROR);
+            $source = is_array($manifest) ? ($manifest['source'] ?? null) : null;
+            $routeRoots = is_array($source) ? ($source['link_route_roots'] ?? null) : null;
+            if (!is_array($source) || !is_array($routeRoots)) {
+                throw new RuntimeException('The bundled guide source metadata is invalid.');
+            }
+
+            $sourceSite = BackupValue::string($source['site_base_url'] ?? null, 'guide.source_url');
+            $sourceRoot = BackupValue::string($routeRoots['workspace'] ?? null, 'guide.route_root');
+            if (preg_match('~^/[A-Za-z0-9/_-]+$~D', $sourceRoot) !== 1) {
+                throw new RuntimeException('The bundled guide route root is invalid.');
+            }
+
+            $inventory = $zip->getFromName('data/workspace-scope/nodes.ndjson');
+            if (!is_string($inventory)) {
+                throw new RuntimeException('The bundled guide page inventory is unavailable.');
+            }
+
+            $slugs = [];
+            foreach (array_filter(explode("\n", $inventory)) as $line) {
+                $node = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+                if (!is_array($node)) {
+                    throw new RuntimeException('The bundled guide page inventory is invalid.');
+                }
+
+                $slugs[BackupValue::string($node['slug'] ?? null, 'guide.node_slug')] = true;
+            }
+        } finally {
+            $zip->close();
+        }
+
+        $configuration = new WorkspaceConfig(
+            new Config(new Helper(), [], $root),
+            $root . '/vendor/aaieduhr/simbioza-module-workspace',
+        );
+        $slug = rawurlencode(BackupValue::string($workspace['slug'], 'guide.workspace_slug'));
+        $sourcePath = rtrim($sourceRoot, '/') . '/' . $slug;
+        $targetPath = '/' . $configuration->rootPath() . '/' . $slug;
+        $routes = [$sourcePath => $basePath . $targetPath, $targetPath => $basePath . $targetPath];
+        $keys = [];
+        $workspaceId = BackupValue::integer($workspace['id'], 'guide.workspace_id');
+        foreach ($this->workspaces->nodesForWorkspace($workspaceId) as $node) {
+            $nodeSlug = BackupValue::string($node['slug'] ?? null, 'guide.node_slug');
+            if (
+                !isset($slugs[$nodeSlug]) || !is_string($node['document_key'] ?? null) || $node['document_key'] === ''
+            ) {
+                continue;
+            }
+
+            $suffix = '/' . rawurlencode($nodeSlug);
+            $routes[$sourcePath . $suffix] = $basePath . $targetPath . $suffix;
+            $routes[$targetPath . $suffix] = $basePath . $targetPath . $suffix;
+            $keys[] = $node['document_key'];
+        }
+
+        if ($keys === []) {
+            return 0;
+        }
+
+        $documents = $this->database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->whereIn('document_key', $keys)->get();
+        $ids = array_column($documents, 'id');
+        if ($ids === []) {
+            return 0;
+        }
+
+        $changed = 0;
+        $versions = $this->database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->whereIn('document_id', $ids)->get();
+        foreach ($versions as $version) {
+            $file = ($version['storage_driver'] ?? '') === 'filesystem'
+            ? $this->editorConfig->documentPayloadPath(BackupValue::string($version['content_path'], 'guide.path'))
+            : null;
+            $html = $file === null ? ($version['content_html'] ?? '') : file_get_contents($file);
+            if (!is_string($html)) {
+                throw new RuntimeException('The bundled guide version cannot be read.');
+            }
+
+            $fixed = BundledGuideLinkRepair::rewrite($html, $basePath, $routes, $sourceSite);
+            if ($fixed === $html) {
+                continue;
+            }
+
+            if ($file !== null) {
+                if (file_put_contents($file, $fixed, LOCK_EX) !== strlen($fixed)) {
+                    throw new RuntimeException('The bundled guide links cannot be written.');
+                }
+            } else {
+                $this->database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->where('id', '=', $version['id'])
+                    ->update(['content_html' => $fixed]);
+            }
+
+            ++$changed;
+        }
+
+        return $changed;
     }
 
     /**
@@ -402,15 +535,7 @@ final readonly class BundledAssetsUpdater
                 throw new RuntimeException('Bundled guide HTML is unavailable.');
             }
 
-            $html = preg_replace_callback(
-                '~\b(href|src|poster|data-editor-html-web-(?:href|src|poster))=(["\x27])(/(?!/)[^"\x27]*)\2~i',
-                static fn(array $m): string => $m[1] . '=' . $m[2]
-                    . (str_starts_with($m[3], $basePath . '/') ? '' : $basePath) . $m[3] . $m[2],
-                $sourceHtml,
-            );
-            if (!is_string($html)) {
-                throw new RuntimeException('Bundled guide links could not be normalized.');
-            }
+            $html = self::normalizeGuideHtmlPaths($sourceHtml, $basePath);
 
             if ($file !== null) {
                 if (file_put_contents($file, $html, LOCK_EX) !== strlen($html)) {
@@ -421,6 +546,39 @@ final readonly class BundledAssetsUpdater
                     ->where('id', '=', $version['id'])->update(['content_html' => $html]);
             }
         }
+    }
+
+    /**
+     * EN: Bundled guide URLs receive the installation prefix exactly once.
+     * Restore can already resolve internal URLs; unrelated text, absolute URLs,
+     * network-path URLs, document-relative references and fragments stay intact.
+     *
+     * HR: URL-ovi ugrađenih uputa dobivaju instalacijski prefiks točno jednom.
+     * Restore već može razriješiti interne URL-ove; nepovezani tekst, apsolutni URL-ovi,
+     * mrežne putanje, reference relativne dokumentu i sidra ostaju netaknuti.
+     */
+    public static function normalizeGuideHtmlPaths(string $html, string $basePath): string
+    {
+        $basePath = self::validatedBasePath($basePath);
+        if ($basePath === '') {
+            return $html;
+        }
+
+        $rewritten = preg_replace_callback(
+            '~\b(href|src|poster|data-editor-html-web-(?:href|src|poster))=(["\x27])(/(?!/)[^"\x27]*)\2~i',
+            static function (array $match) use ($basePath): string {
+                $path = parse_url($match[3], PHP_URL_PATH);
+                $hasBase = is_string($path)
+                && ($path === $basePath || str_starts_with($path, $basePath . '/'));
+                return $match[1] . '=' . $match[2] . ($hasBase ? '' : $basePath) . $match[3] . $match[2];
+            },
+            $html,
+        );
+        if (!is_string($rewritten)) {
+            throw new RuntimeException('Bundled guide links could not be normalized.');
+        }
+
+        return $rewritten;
     }
 
     /**

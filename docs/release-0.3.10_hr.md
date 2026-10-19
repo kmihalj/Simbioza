@@ -2,6 +2,10 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.10/docs/release-0.3.10_en.md)
 
+> Povijesna bilješka izdanja. Za aktualne naredbe instalacije i nadogradnje koristite
+> [uputu za instalaciju](installation_hr.md) i
+> [Simbiozu 0.3.11](release-0.3.11_hr.md).
+
 Ispravak čuva administratorske konfiguracije pri nadogradnji, uklanja automatsku
 zamjenu instalirane teme i usklađuje spremljenu boju prigušenog teksta s pregledom
 nakon osvježavanja. Auth, HTML Editor, Email, Theme i API su **0.3.1**, Menu je **0.3.2**, ostali javni moduli

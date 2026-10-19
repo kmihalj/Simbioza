@@ -572,12 +572,14 @@ final readonly class InstallationRunner
     /**
      * EN: The starter package stores internal links as canonical root-relative
      *     paths. A new installation may live at the domain root or in any
-     *     subdirectory, so the actual base path is added after import. External,
-     *     relative, and fragment links remain unchanged.
+     *     subdirectory. The shared, idempotent normalizer only adds a missing
+     *     base path: cross-site restore may already have resolved a link.
+     *     External, relative, and fragment links remain unchanged.
      *
      * HR: Početni paket sprema interne poveznice kao kanonske root-relative
      *     putanje. Nova instalacija može biti u korijenu ili bilo kojem
-     *     poddirektoriju, pa nakon uvoza tim putanjama dodajemo stvarni base path.
+     *     poddirektoriju. Zajednički, idempotentni normalizator dodaje samo
+     *     nedostajuću osnovnu putanju: prijenos na drugi site možda ju je već dodao.
      *     Vanjske, relativne i sidrene poveznice ostaju nepromijenjene.
      */
     private function rewriteImportedUserGuidePaths(Database $database, string $basePath): void
@@ -622,20 +624,10 @@ final readonly class InstallationRunner
                     continue;
                 }
 
-                $rewritten = preg_replace_callback(
-                    '~\b(href|src|poster|data-editor-html-web-(?:href|src|poster))='
-                    . '([' . "\"'" . '])(/(?!/)[^' . "\"'" . ']*)\2~i',
-                    static fn(array $matches): string => $matches[1]
-                    . '='
-                    . $matches[2]
-                    . $basePath
-                    . $matches[3]
-                    . $matches[2],
+                $rewritten = \App\Update\BundledAssetsUpdater::normalizeGuideHtmlPaths(
                     $html,
+                    $basePath,
                 );
-                if (!is_string($rewritten)) {
-                    throw new RuntimeException('The bundled user-guide paths could not be normalized.');
-                }
 
                 if ($rewritten !== $html) {
                     if ($file !== null) {

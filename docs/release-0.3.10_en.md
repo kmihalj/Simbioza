@@ -2,6 +2,10 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.10/docs/release-0.3.10_hr.md)
 
+> Historical release notes. For current installation and update commands, use
+> [the installation guide](installation_en.md) and
+> [Simbioza 0.3.11](release-0.3.11_en.md).
+
 This patch preserves administrator-owned configuration during updates, removes
 automatic replacement of the installed theme and makes the saved muted-text
 color match the preview after a reload. Auth, HTML Editor, Email, Theme and API

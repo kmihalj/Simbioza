@@ -709,6 +709,7 @@ final class InstallationTest extends TestCase
         $this->assertStringNotContainsString('/hfc', strtolower($guideHtml));
         $this->assertStringContainsString('/test-simbioza/editor-html/asset/', $guideHtml);
         $this->assertStringContainsString('/test-simbioza/workspace/korisnicke-upute/', $guideHtml);
+        $this->assertSame(0, substr_count($guideHtml, '/test-simbioza/test-simbioza/'));
         preg_match_all(
             '~(?:^|/)test-simbioza/editor-html/asset/([0-9a-f-]{36})(?:[?&#"\'\s<]|$)~i',
             $guideHtml,
@@ -1059,12 +1060,74 @@ PHP);
         }
 
         $versionCount = count($database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get());
+        // EN: Existing broken guide URLs are repaired even when shipped archive hashes have not changed.
+        // Page identities, history counts, ACL and unrelated external URLs remain intact.
+        //
+        // HR: Postojeći neispravni URL-ovi uputa popravljaju se i bez promjene hashova isporučenih arhiva.
+        // Identiteti stranica, broj verzija, ACL i nepovezani vanjski URL-ovi ostaju netaknuti.
+        $guideNode = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->where('slug', '=', 'simbioza')->first();
+        $this->assertIsArray($guideNode);
+        $guideDocument = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $guideNode['document_key'])->first();
+        $this->assertIsArray($guideDocument);
+        $guideVersion = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('document_id', '=', $guideDocument['id'])->first();
+        $this->assertIsArray($guideVersion);
+        $damaged = '<p>Čuvaj tekst /test-simbioza/test-simbioza/workspace/korisnicke-upute/instalacija</p>'
+        . '<a href="/test-simbioza/test-simbioza/workspace/korisnicke-upute/instalacija?lang=hr#part">Install</a>'
+        . '<a href="https://piko.webhop.me/hfc/workspace/korisnicke-upute/php-fpm-instalacija?lang=en">FPM</a>'
+        . '<a href="https://unrelated.example/workspace/korisnicke-upute/instalacija">External</a>';
+        $guideFile = ($guideVersion['storage_driver'] ?? '') === 'filesystem'
+        ? $payloadConfig->documentPayloadPath((string)$guideVersion['content_path']) : null;
+        if ($guideFile !== null) {
+            $this->assertNotFalse(file_put_contents($guideFile, $damaged));
+        } else {
+            $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->where('id', '=', $guideVersion['id'])
+                ->update(['content_html' => $damaged]);
+        }
+
+        $guideNodesBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get();
+        $guideAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)->get();
+        $themeSettingsHash = hash_file('sha256', $paths->themeConfigDirectory() . '/settings.json');
+        $themesHash = hash_file('sha256', $paths->themeConfigDirectory() . '/themes.json');
         $output = [];
         exec($command, $output, $exit);
         $this->assertSame(0, $exit, implode("\n", $output));
         $this->assertStringNotContainsString('updated;', implode("\n", $output));
         $this->assertCount($versionCount, $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)->get());
         $this->assertSame($stateHash, hash_file('sha256', $root . '/data/bundled-assets.json'));
+        $repairedVersion = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('id', '=', $guideVersion['id'])->first();
+        $this->assertIsArray($repairedVersion);
+        $repaired = $guideFile !== null ? file_get_contents($guideFile) : $repairedVersion['content_html'];
+        $this->assertIsString($repaired);
+        $this->assertStringContainsString(
+            'href="/test-simbioza/workspace/korisnicke-upute/instalacija?lang=hr#part"',
+            $repaired,
+        );
+        $this->assertStringContainsString(
+            'href="/test-simbioza/workspace/korisnicke-upute/php-fpm-instalacija?lang=en"',
+            $repaired,
+        );
+        $this->assertStringContainsString(
+            'href="https://unrelated.example/workspace/korisnicke-upute/instalacija"',
+            $repaired,
+        );
+        $this->assertStringContainsString(
+            'Čuvaj tekst /test-simbioza/test-simbioza/workspace/korisnicke-upute/instalacija',
+            $repaired,
+        );
+        $this->assertSame($guideNodesBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
+        $this->assertSame($guideAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)->get());
+        $this->assertSame($themeSettingsHash, hash_file('sha256', $paths->themeConfigDirectory() . '/settings.json'));
+        $this->assertSame($themesHash, hash_file('sha256', $paths->themeConfigDirectory() . '/themes.json'));
+
+        $unchangedTime = $guideFile !== null ? filemtime($guideFile) : null;
+        $output = [];
+        exec($command, $output, $exit);
+        $this->assertSame(0, $exit, implode("\n", $output));
+        $this->assertStringNotContainsString('links repaired', implode("\n", $output));
+        $this->assertSame($unchangedTime, $guideFile !== null ? filemtime($guideFile) : null);
         if ($repairPath !== null) {
             clearstatcache();
             $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($repairPath));

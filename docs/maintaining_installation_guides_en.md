@@ -41,6 +41,14 @@ updates refresh the bundled pages through `BundledAssetsUpdater` without
 replacing unrelated pages or their ACLs. A fresh installation imports the
 guide packages shipped with its chosen release.
 
+Guide links are application-relative inside the archives. Installation and update
+apply the destination prefix exactly once, including nested installation paths.
+The updater also repairs known bundled-guide links left with a repeated prefix or
+the recorded source address by an earlier installation. It resolves only shipped
+guide destinations that exist locally; unrelated external links and code examples
+are not redirected. This reconciliation runs even when archive hashes match and
+does not replace theme settings, page identities, permissions or workflow.
+
 For a documentation-only development refresh, publish the rebuilt packages
 and refresh the development site's managed guides using its current services.
 Do not assume this also deploys them to another site. An older release archive

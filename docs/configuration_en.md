@@ -244,6 +244,13 @@ unresolved links. It does not copy source database credentials or deployment
 paths. Configuration restore uses the module's validation, locks and destination
 layers; rollback retains prior configuration until restore succeeds.
 
+Portable Editor/Workspace URL attributes omit the installation prefix in the
+archive. Restore adds the destination prefix, including on the original site;
+it must not leave `/workspace/...` at the host root or add `/demo/demo/...`.
+Transfer to another site still requires imported page/attachment mappings:
+relative links alone cannot locate a page that was not included in the archive.
+External URLs, query strings and fragments retain their meaning.
+
 Private module directories should be shared with the runtime group
 (`2770`, files/locks `0660`). FPM must be able to replace GUI-managed files;
 a deploy-owned file in a sticky directory is not replaceable solely because it
