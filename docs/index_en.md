@@ -7,7 +7,7 @@ is not developed in this repository.
 Brand slogan: **Knowledge that lives together.**
 
 - [Theme/configuration preservation and selected colors in 0.3.10](release-0.3.10_en.md)
-- [Portable guide links and same-site restore in 0.3.11](release-0.3.11_en.md)
+- [Portable guide links and same-site restore in 0.3.12](release-0.3.12_en.md)
 - [Bundled language revisions in 0.3.7](release-0.3.7_en.md)
 - [Verified secured-FPM installation in 0.3.6](release-0.3.6_en.md)
 - [Private configuration directory protection in 0.3.5](release-0.3.5_en.md)

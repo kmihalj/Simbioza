@@ -204,7 +204,7 @@ U Setup → Jezici gumb **Provjeri nadogradnje jezika** osvježava javni katalog
 bez instaliranja koda ili jezičnih datoteka. Tablica razlikuje tri izvora:
 
 - **Ugrađeni prijevodi** prikazuju verziju instalirane aplikacije, primjerice
-  `Simbioza 0.3.11`. Prepoznaju se odmah nakon nove instalacije i nadogradnje
+  `Simbioza 0.3.12`. Prepoznaju se odmah nakon nove instalacije i nadogradnje
   aplikacije; dodatna CLI instalacija jezika nije potrebna.
 - **Jezični paket** prikazuje stvarnu reviziju instaliranu iz repozitorija.
 - **Ručni prijevod** nema potvrđenu reviziju repozitorija. Nikada se ne zamjenjuje

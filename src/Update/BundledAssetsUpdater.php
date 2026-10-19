@@ -98,6 +98,13 @@ final readonly class BundledAssetsUpdater
     public function run(string $root, string $basePath, array $skippedGuideProviders = []): array
     {
         $basePath = self::validatedBasePath($basePath);
+        // EN: Skip before touching archives or optional Backup value classes, including unchanged receipts.
+        //
+        // HR: Preskoči arhive i klase opcionalnog Backupa čak i kada se evidencija paketa nije promijenila.
+        if (!$this->backups instanceof BackupManager) {
+            return ['Bundled user-guide update skipped because the optional Backup module is not installed.'];
+        }
+
         $statePath = $root . '/data/bundled-assets.json';
         $state = is_file($statePath)
         ? json_decode((string)file_get_contents($statePath), true, 512, JSON_THROW_ON_ERROR)
@@ -161,13 +168,6 @@ final readonly class BundledAssetsUpdater
             if ($this->repairGuideLinks($root, $basePath) > 0) {
                 $actions[] = 'Bundled-guide links repaired; page identities, permissions and theme settings preserved.';
             }
-
-            return array_values(array_unique($actions));
-        }
-
-        if (!$this->backups instanceof BackupManager) {
-            $actions[] = 'Bundled user-guide update skipped because the optional Backup module is not installed.';
-            $this->repairGuideLinks($root, $basePath);
 
             return array_values(array_unique($actions));
         }

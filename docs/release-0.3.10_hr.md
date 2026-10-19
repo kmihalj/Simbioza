@@ -4,7 +4,7 @@
 
 > Povijesna bilješka izdanja. Za aktualne naredbe instalacije i nadogradnje koristite
 > [uputu za instalaciju](installation_hr.md) i
-> [Simbiozu 0.3.11](release-0.3.11_hr.md).
+> [Simbiozu 0.3.12](release-0.3.12_hr.md).
 
 Ispravak čuva administratorske konfiguracije pri nadogradnji, uklanja automatsku
 zamjenu instalirane teme i usklađuje spremljenu boju prigušenog teksta s pregledom

@@ -4,7 +4,7 @@
 
 > Historical release notes. For current installation and update commands, use
 > [the installation guide](installation_en.md) and
-> [Simbioza 0.3.11](release-0.3.11_en.md).
+> [Simbioza 0.3.12](release-0.3.12_en.md).
 
 This patch preserves administrator-owned configuration during updates, removes
 automatic replacement of the installed theme and makes the saved muted-text

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Installation;
 
 use AaiEduHr\HeartPhrameModuleAuth\ModuleAuth;
+use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
 use AaiEduHr\HeartPhrameModuleComment\ModuleComment;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
@@ -12,6 +13,7 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace;
+use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use App\Configuration\ConfigurationPaths;
 use App\Configuration\PhpConfigurationReader;
 use App\Installation\InstallationAccessToken;
@@ -1139,6 +1141,23 @@ PHP);
             $this->assertSame(fileowner($root . '/data/editor-html/uploads'), fileowner($repairPath));
             $this->assertSame(filegroup($root . '/data/editor-html/uploads'), filegroup($repairPath));
         }
+
+        // EN: An uninstalled optional Backup package skips all archive-dependent guide work in either receipt state.
+        //
+        // HR: Uklonjen opcionalni Backup paket preskače rad s arhivama uputa, neovisno o stanju evidencije paketa.
+        $withoutBackup = new BundledAssetsUpdater(
+            $database,
+            null,
+            new WorkspaceRepository($database),
+            new AuthUserService($database),
+            $payloadConfig,
+        );
+        $guideArchive = $root . '/resources/installation/workspace/korisnicke-upute.zip';
+        $this->assertTrue(rename($guideArchive, $guideArchive . '.unavailable'));
+        $skipped = ['Bundled user-guide update skipped because the optional Backup module is not installed.'];
+        $this->assertSame($skipped, $withoutBackup->run($root, '/test-simbioza'));
+        $this->assertNotFalse(file_put_contents($root . '/data/bundled-assets.json', "{}\n"));
+        $this->assertSame($skipped, $withoutBackup->run($root, '/test-simbioza'));
     }
 
     /**

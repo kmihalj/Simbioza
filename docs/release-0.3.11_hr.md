@@ -2,6 +2,10 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/release-0.3.11_en.md)
 
+> Povijesna bilješka izdanja za neobjavljeni kandidat. Nepromjenjivi tag 0.3.11
+> ostaje sačuvan, ali koristite [Simbiozu 0.3.12](release-0.3.12_hr.md) i
+> [aktualne instalacijske upute](installation_hr.md).
+
 Ovo izdanje popravlja neispravne poveznice Korisničkih uputa nakon instalacije i
 prenosivi povrat HTML-a na izvorni site. HTML Editor je **0.3.2**, a Backup
 **0.3.1**. Auth, API, Email i Theme ostaju **0.3.1**, Menu **0.3.2**, ostali

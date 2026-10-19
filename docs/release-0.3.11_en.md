@@ -2,6 +2,10 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/release-0.3.11_hr.md)
 
+> Historical release note for an unpublished candidate. The immutable 0.3.11
+> tag is retained, but use [Simbioza 0.3.12](release-0.3.12_en.md) and the
+> [current installation guide](installation_en.md).
+
 This patch fixes broken User guides links after installation and corrects
 portable HTML restoration on the original site. HTML Editor is **0.3.2** and
 Backup **0.3.1**. Auth, API, Email and Theme remain **0.3.1**, Menu **0.3.2**,

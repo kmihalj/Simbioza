@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.11 popravlja prenosive poveznice uputa i povrat HTML-a na isti site. HTML Editor je 0.3.2, Backup 0.3.1; Auth, Email, Theme i API ostaju 0.3.1, Menu 0.3.2, ostali javni moduli 0.3.0 i HeartPhrame Framework v0.0.25. Postojeće administratorske postavke ostaju sačuvane. Vidi [bilješke izdanja](docs/release-0.3.11_hr.md).
+> Simbioza 0.3.12 popravlja prenosive poveznice uputa i povrat HTML-a na isti site. HTML Editor je 0.3.2, Backup 0.3.1; Auth, Email, Theme i API ostaju 0.3.1, Menu 0.3.2, ostali javni moduli 0.3.0 i HeartPhrame Framework v0.0.25. Postojeće administratorske postavke ostaju sačuvane. Vidi [bilješke izdanja](docs/release-0.3.12_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -154,7 +154,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.11` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.12` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -257,12 +257,12 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.11](docs/release-0.3.11_hr.md).
+[bilješkama izdanja 0.3.12](docs/release-0.3.12_hr.md).
 
 ## Dokumentacija
 
 - [Očuvanje tema/postavki i odabranih boja u 0.3.10](docs/release-0.3.10_hr.md)
-- [Prenosive poveznice uputa i povrat na isti site u 0.3.11](docs/release-0.3.11_hr.md)
+- [Prenosive poveznice uputa i povrat na isti site u 0.3.12](docs/release-0.3.12_hr.md)
 - [Revizije ugrađenih jezika u 0.3.7](docs/release-0.3.7_hr.md)
 - [Provjerena instalacija sigurnog FPM-a u 0.3.6](docs/release-0.3.6_hr.md)
 - [Zaštita privatnih konfiguracijskih direktorija u 0.3.5](docs/release-0.3.5_hr.md)
