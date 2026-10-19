@@ -7,7 +7,7 @@ declare(strict_types=1);
 //
 // HR: Testna krajnja točka koju provjera kopira u javni direktorij privremene instalacije.
 // Izvan tog testa ne radi te ne vraća tajne ni stvarne korisničke podatke.
-if (!is_file('/.dockerenv') || !is_file('/source/app/tests/Fixtures/secured_fpm/prepare.sh')) {
+if (!is_file('/.dockerenv') || !is_file('/usr/local/share/simbioza-fixture/secured-fpm')) {
     http_response_code(404);
     exit;
 }

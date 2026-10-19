@@ -7,7 +7,7 @@ declare(strict_types=1);
 //
 // HR: Provjerava točan održavani Alias/Directory primjer na zajedničkom testnom vhostu.
 // Piše samo Apache datoteku privremenog testa; ne čita stvarne postavke poslužitelja.
-if (!is_file('/.dockerenv') || !is_file('/source/app/tests/Fixtures/secured_fpm/prepare.sh')) {
+if (!is_file('/.dockerenv') || !is_file('/usr/local/share/simbioza-fixture/secured-fpm')) {
     throw new RuntimeException('Disposable fixture required.');
 }
 

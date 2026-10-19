@@ -13,6 +13,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --shell /bin/bash fixture-admin \
     && printf 'fixture-admin ALL=(ALL) NOPASSWD: ALL\n' > /etc/sudoers.d/fixture-admin \
-    && chmod 0440 /etc/sudoers.d/fixture-admin
+    && chmod 0440 /etc/sudoers.d/fixture-admin \
+    && install -d -m 0755 /usr/local/share/simbioza-fixture \
+    && touch /usr/local/share/simbioza-fixture/secured-fpm \
+    && chmod 0644 /usr/local/share/simbioza-fixture/secured-fpm
 STOPSIGNAL SIGRTMIN+3
 CMD ["/sbin/init"]

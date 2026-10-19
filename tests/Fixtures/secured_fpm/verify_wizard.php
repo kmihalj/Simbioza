@@ -9,7 +9,7 @@ declare(strict_types=1);
 //
 // HR: Prolazi stvarni HTTP čarobnjak samo na privremenom lokalnom testu s izmišljenim računom.
 // Ne čita niti mijenja stvarnu instalaciju i ne ispisuje jednokratnu adresu ni lozinku.
-if (!is_file('/.dockerenv') || !is_file('/source/app/tests/Fixtures/secured_fpm/prepare.sh')) {
+if (!is_file('/.dockerenv') || !is_file('/usr/local/share/simbioza-fixture/secured-fpm')) {
     throw new RuntimeException('Disposable fixture required.');
 }
 

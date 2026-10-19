@@ -5,7 +5,7 @@ set -eu
 #
 # HR: Pokretati samo unutar privremenog systemd testa, nikada nad instalacijom poslužitelja.
 test -f /.dockerenv
-test -f /source/app/tests/Fixtures/secured_fpm/prepare.sh
+test -f /usr/local/share/simbioza-fixture/secured-fpm
 fixture_source=${1:-/source/app}
 case "$fixture_source" in /source/app|/candidate/app) ;; *) exit 64 ;; esac
 test ! -e /srv/simbioza

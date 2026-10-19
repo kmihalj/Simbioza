@@ -7,7 +7,7 @@ declare(strict_types=1);
 //
 // HR: Vraća staru grešku praznog binda samo u privremenom testu i zatim vraća njegov ispravni helper.
 // Traži neuspješan CLI status i točnu ovisnu GUI dijagnostiku; ne pokreće nadogradnju aplikacije.
-if (!is_file('/.dockerenv') || !is_file('/source/app/tests/Fixtures/secured_fpm/prepare.sh')) {
+if (!is_file('/.dockerenv') || !is_file('/usr/local/share/simbioza-fixture/secured-fpm')) {
     throw new RuntimeException('Disposable fixture required.');
 }
 

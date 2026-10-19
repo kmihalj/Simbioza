@@ -5,7 +5,7 @@ set -eu
 #
 # HR: Provjerava stvarni čarobnjak, finalizaciju, izolaciju i helper samo na privremenoj instalaciji.
 test -f /.dockerenv
-test -f /source/app/tests/Fixtures/secured_fpm/prepare.sh
+test -f /usr/local/share/simbioza-fixture/secured-fpm
 runuser -u fpm-simbioza -- php /srv/simbioza/tests/Fixtures/secured_fpm/verify_wizard.php
 php /srv/simbioza/scripts/configure_fpm_setup.php --finalize --app-root=/srv/simbioza --maintainer=fixture-admin
 runuser -u fixture-admin -- php /srv/simbioza/scripts/configure_fpm_setup.php --check --app-root=/srv/simbioza --maintainer=fixture-admin
