@@ -583,4 +583,121 @@ PHP);
         $this->expectException(RuntimeException::class);
         $manager->status(true);
     }
+
+    /**
+     * EN: Both a fresh installation and a code upgrade recognize bundled translations without writes.
+     * The application version is not misrepresented as an installed repository-pack revision.
+     *
+     * HR: Nova instalacija i nadogradnja koda prepoznaju ugrađene prijevode bez zapisivanja.
+     * Verzija aplikacije ne prikazuje se kao revizija instaliranog paketa repozitorija.
+     */
+    public function testBundledLanguagesAreKnownOnFreshInstallAndAfterCodeUpgrade(): void
+    {
+        $this->bundledBaseline(['en' => ['version' => '2026.10.13.1', 'sha256' => str_repeat('a', 64)]]);
+        $manager = new LanguagePackManager($this->root, new ModuleCatalog());
+        $repository = new RepositoryLanguageManager(
+            new LanguageRepository($this->root, 'file://' . $this->root . '/offline.json'),
+            $manager,
+            $this->root,
+        );
+        $registry = (string)file_get_contents($this->root . '/config/languages.php');
+        foreach (['0.3.6', '0.3.7'] as $version) {
+            file_put_contents($this->root . '/VERSION', $version . "\n");
+            $status = array_column($repository->status(), null, 'locale')['en'];
+            $this->assertTrue($status['revision_known']);
+            $this->assertSame('bundled', $status['source']);
+            $this->assertSame($version, $status['local_version']);
+            $this->assertSame('', $status['version']);
+            $this->assertFalse($status['update_available']);
+        }
+
+        $this->assertSame($registry, file_get_contents($this->root . '/config/languages.php'));
+        $this->assertFileDoesNotExist($this->root . '/data/languages/catalogs/en.json');
+        $this->assertFileDoesNotExist($this->root . '/data/languages/repository-versions.json');
+    }
+
+    /**
+     * EN: A digest-only publication updates bundled translations and then records their real pack revision.
+     * A subsequent manual replacement remains manual and is never overwritten by an automatic update.
+     *
+     * HR: Objava promijenjenog digesta nadograđuje ugrađene prijevode i bilježi stvarnu reviziju paketa.
+     * Naknadna ručna zamjena ostaje ručna i automatska je nadogradnja nikada ne prepisuje.
+     */
+    public function testBundledLanguageUpdatesWithoutCliAdoptionAndPreservesManualOverride(): void
+    {
+        $registry = require $this->root . '/config/languages.php';
+        $registry['hr'] = ['names' => ['en' => 'Croatian', 'hr' => 'Hrvatski'],
+            'native_name' => 'Hrvatski', 'flag' => 'hr.svg'];
+        file_put_contents($this->root . '/config/languages.php', '<?php return ' . var_export($registry, true) . ';');
+        file_put_contents($this->root . '/config/installation.php', '<?php return ["supported_locales"=>["en","hr"]];');
+        $manager = new LanguagePackManager($this->root, new ModuleCatalog());
+        $manager->setActive('en', false);
+        mkdir($this->root . '/repository/packs', 0770, true);
+        $path = $manager->createTemplate('en', 'en', $this->root . '/repository/packs/en.json');
+        $pack = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $pack['native_name'] = 'English';
+        $pack['names'] = ['en' => 'English', 'hr' => 'Engleski'];
+        $pack['flag_svg'] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2">'
+        . '<rect width="3" height="2" fill="#123456"/></svg>';
+        file_put_contents($path, json_encode($pack, JSON_THROW_ON_ERROR));
+        $baselineHash = (string)hash_file('sha256', $path);
+        $this->bundledBaseline(['en' => ['version' => '2026.10.13.1', 'sha256' => $baselineHash]]);
+        $manifest = $this->root . '/repository/manifest.json';
+        $publish = static function () use ($manifest, $path): void {
+            file_put_contents($manifest, json_encode([
+                'format' => 'simbioza-language-catalog', 'version' => 1, 'languages' => [[
+                    'locale' => 'en', 'native_name' => 'English', 'version' => '2026.10.13.1',
+                    'file' => 'packs/en.json', 'sha256' => hash_file('sha256', $path), 'status' => 'released',
+                ]],
+            ], JSON_THROW_ON_ERROR));
+        };
+        $publish();
+        $repository = new RepositoryLanguageManager(
+            new LanguageRepository($this->root, 'file://' . $manifest),
+            $manager,
+            $this->root,
+        );
+        $before = $repository->status(true)[0];
+        $this->assertTrue($before['revision_known']);
+        $this->assertFalse($before['update_available']);
+        $this->assertSame('0.3.7', $before['local_version']);
+
+        $pack['translations']['Dobro došli, :name!'] = 'A warm welcome, :name!';
+        file_put_contents($path, json_encode($pack, JSON_THROW_ON_ERROR));
+        $publish();
+        $this->assertTrue($repository->status(true)[0]['update_available']);
+        $this->assertSame(['en'], $repository->updateInstalled());
+        $installed = $repository->status()[0];
+        $this->assertSame('repository', $installed['source']);
+        $this->assertFalse($installed['active']);
+        $this->assertSame('2026.10.13.1', $installed['local_version']);
+        $this->assertFalse($installed['update_available']);
+        $this->assertSame(['hr'], (require $this->root . '/config/installation.php')['supported_locales']);
+
+        $pack['translations']['Dobro došli, :name!'] = 'My custom welcome, :name!';
+        file_put_contents($path, json_encode($pack, JSON_THROW_ON_ERROR));
+        $manager->install($path, true);
+        $manual = $repository->status()[0];
+        $this->assertSame('manual', $manual['source']);
+        $this->assertFalse($manual['revision_known']);
+        $this->assertFalse($manual['update_available']);
+        $this->assertSame([], $repository->updateInstalled());
+        $this->assertSame('My custom welcome, :name!', $manager->catalog('en')['Dobro došli, :name!']);
+    }
+
+    /**
+     * EN: Installs immutable fixture metadata, not a fabricated runtime repository receipt.
+     *
+     * HR: Priprema nepromjenjive metapodatke testa, ne izmišljenu runtime potvrdu repozitorija.
+     *
+     * @param array<string,array{version:string,sha256:string}> $baseline
+     */
+    private function bundledBaseline(array $baseline): void
+    {
+        mkdir($this->root . '/resources/localization', 0770, true);
+        file_put_contents($this->root . '/VERSION', "0.3.7\n");
+        file_put_contents($this->root . '/resources/localization/bundled-languages.json', json_encode([
+            'format' => 'simbioza-bundled-languages', 'version' => 1, 'repository_baseline' => $baseline,
+        ], JSON_THROW_ON_ERROR));
+    }
 }

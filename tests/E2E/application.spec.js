@@ -273,6 +273,15 @@ test.describe('browser flows', () => {
     await expect(installedLanguages).toContainText('English');
     await expect(installedLanguages).toContainText('Hrvatski');
     await expect(installedLanguages).not.toContainText('E2E Test Language Alpha');
+    const bundledVersion = (await readFile(join(setupProject, 'VERSION'), 'utf8')).trim();
+    for (const bundledLocale of ['en', 'hr']) {
+      const bundledRow = installedLanguages.locator(`[data-language-locale="${bundledLocale}"]`);
+      await expect(bundledRow).toHaveAttribute('data-language-source', 'bundled');
+      await expect(bundledRow).toContainText(`Simbioza ${bundledVersion}`);
+      await expect(bundledRow).toContainText('Bundled translations');
+      await expect(bundledRow).not.toContainText('Local revision is not recorded');
+      await expect(bundledRow).not.toContainText('languages install');
+    }
     const languagePicker = page.locator('[data-setup-language-picker]');
     if (await languagePicker.count() === 1) {
       await expect(languagePicker).toBeVisible();

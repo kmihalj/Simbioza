@@ -47,7 +47,7 @@ su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.6
+## 2. Preuzmite čisto izdanje Simbioze 0.3.7
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -73,7 +73,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.6 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.7 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.6` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.7` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -273,6 +273,14 @@ datotekama `editor-html.php`, `email.php` ili `workspace.php`.
 
 ## 5. Podesite web-poslužitelj
 
+**Odaberite postupak prije pokretanja naredbi:**
+
+- **Postojeći HTTPS virtualni host i URL prefiks poput `/simbioza`:** prijeđite izravno na
+  [upute za URL podputanju](#neobvezno-instalacija-u-url-podputanji-npr-simbioza).
+  Uredite postojeći vhost. Ne stvarajte `simbioza.conf` i ne pokrećite
+  `a2ensite simbioza`; ta naredba uključuje samo novi, zasebni virtualni host.
+- **Nova zasebna domena:** koristite Apache ili Nginx konfiguraciju ispod.
+
 Odaberite **jednu** konfiguraciju. Primjeri služe zasebnoj domeni na `/`;
 zamijenite domenu, putanju izdanja i TLS certifikat. Za instalaciju u
 podputanji podesite i URL prefiks na web-poslužitelju te punu adresu predajte
@@ -343,12 +351,15 @@ Nakon ponovnog učitavanja provjerite stvarni javni URL prije nastavka na
 [Apacheovu uputu za DirectoryIndex](https://httpd.apache.org/docs/2.4/mod/mod_dir.html#directoryindex).
 Roditeljski direktorij izdanja nikada ne izlažite kao korijenski web direktorij.
 
-Nakon spremanja provjerite i pokrenite Apache. Na Debianu/Ubuntuu:
+**Samo za novi zasebni `simbioza.conf` izrađen iznad**, provjerite i pokrenite
+Apache. Preskočite ovaj blok kada koristite postojeći zajednički vhost.
+Na Debianu/Ubuntuu:
 
 ```bash
-sudo a2ensite simbioza
-sudo apache2ctl configtest
-sudo systemctl enable --now apache2
+test -f /etc/apache2/sites-available/simbioza.conf &&
+sudo a2ensite simbioza &&
+sudo apache2ctl configtest &&
+sudo systemctl enable --now apache2 &&
 sudo systemctl reload apache2
 ```
 

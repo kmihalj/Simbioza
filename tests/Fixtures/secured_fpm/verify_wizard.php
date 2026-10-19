@@ -106,4 +106,19 @@ if (!(new App\Installation\InstallationPaths($root))->isInstalled()) {
     throw new RuntimeException('The real HTTP wizard did not lock a completed installation.');
 }
 
+$languages = new App\Localization\LanguagePackManager($root, new App\Module\ModuleCatalog());
+$repository = new App\Localization\RepositoryLanguageManager(
+    new App\Localization\LanguageRepository($root, 'file:///nonexistent-fixture-catalogue'),
+    $languages,
+    $root,
+);
+$english = array_column($repository->status(), null, 'locale')['en'];
+if (
+    $english['source'] !== 'bundled' || !$english['revision_known']
+    || $english['local_version'] !== trim((string)file_get_contents($root . '/VERSION'))
+) {
+    throw new RuntimeException('Fresh wizard did not recognize its bundled language revision.');
+}
+
 echo "PASS real HTTP wizard, fictional administrator, guide import and installation lock.\n";
+echo "PASS bundled language revision recognized without a CLI language installation.\n";

@@ -1,0 +1,14 @@
+{
+    "format": "simbioza-bundled-languages",
+    "version": 1,
+    "repository_baseline": {
+        "en": {
+            "version": "2026.10.13.1",
+            "sha256": "66add801ce411c72e319fd6af72cecdc4bed599740c5a802385af736aa12d93c"
+        },
+        "hr": {
+            "version": "2026.10.13.1",
+            "sha256": "f793135f0971ff77d52a426b5eb396db567114cd2fbe592e693df19d790bf3aa"
+        }
+    }
+}

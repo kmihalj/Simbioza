@@ -47,7 +47,7 @@ PHP must be **8.2 or newer**, Composer must be version 2, and PHP needs
 Use `pdo_sqlite`, `pdo_mysql` or `pdo_pgsql` for your chosen database.
 CLI PHP and the web PHP handler must have matching versions and extensions.
 
-## 2. Download a clean Simbioza 0.3.6 release
+## 2. Download a clean Simbioza 0.3.7 release
 
 Choose **one** application directory. On Linux:
 
@@ -73,7 +73,7 @@ Run the complete download block as your normal maintainer account:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.6 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.7 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Expect `0.3.6` and `success` for every platform requirement.
+Expect `0.3.7` and `success` for every platform requirement.
 Git's **detached HEAD** notice is normal when checking out a release tag.
 Do not run Composer with `sudo`, copy another site's configuration or database,
 include `.git/` in the deployed application, or use `--no-dev` here.
@@ -281,6 +281,14 @@ does not recreate `data/config` or grant runtime rights to removed legacy
 
 ## 5. Configure the web server
 
+**Choose the route before running commands:**
+
+- **Existing HTTPS virtual host and a URL prefix such as `/simbioza`:** go directly to
+  [the URL-prefix instructions](#optional-install-under-a-url-prefix-such-as-simbioza).
+  Edit that existing vhost. Do not create `simbioza.conf` and do not run
+  `a2ensite simbioza`; that command enables a newly created, separate vhost only.
+- **A new dedicated hostname:** use the Apache or Nginx configuration below.
+
 Choose **one** of these configurations. They serve a dedicated hostname at
 `/`; replace the hostname, release path, and TLS certificate settings. For a
 subdirectory installation, also configure the URL prefix in the web server
@@ -350,12 +358,14 @@ public URL before continuing to the wizard. See the
 [Apache DirectoryIndex reference](https://httpd.apache.org/docs/2.4/mod/mod_dir.html#directoryindex).
 Do not expose the parent release directory as a document root.
 
-After saving, test and start Apache. On Debian/Ubuntu:
+For the **new separate `simbioza.conf` created above only**, test and start
+Apache. Skip this block when using an existing shared vhost. On Debian/Ubuntu:
 
 ```bash
-sudo a2ensite simbioza
-sudo apache2ctl configtest
-sudo systemctl enable --now apache2
+test -f /etc/apache2/sites-available/simbioza.conf &&
+sudo a2ensite simbioza &&
+sudo apache2ctl configtest &&
+sudo systemctl enable --now apache2 &&
 sudo systemctl reload apache2
 ```
 

@@ -1,5 +1,7 @@
 # Simbioza 0.3.6 — provjerena instalacija sigurnog FPM-a
 
+> Povijesna bilješka izdanja. Za aktualne instalacijske upute koristite [instalacijsku uputu](installation_hr.md).
+
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.6/docs/release-0.3.6_en.md)
 
 Ova aplikacijska zakrpa popravlja Linux Setup helper i dopunjuje postupak nove

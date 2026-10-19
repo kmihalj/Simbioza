@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.6 fixes the secured-FPM Setup helper, verifies its real CLI round trip before the wizard, and ships corrected complete installation guides. API remains 0.3.1, other public modules 0.3.0 and HeartPhrame Framework v0.0.25. See the [release notes](docs/release-0.3.6_en.md).
+> Simbioza 0.3.7 recognizes bundled language revisions on fresh installations and updates, supports translation-only GUI updates, and clarifies shared Apache vhost setup. API remains 0.3.1, other public modules 0.3.0 and HeartPhrame Framework v0.0.25. See the [release notes](docs/release-0.3.7_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -153,7 +153,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.6` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.7` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -253,13 +253,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.6 release notes](docs/release-0.3.6_en.md).
+the [0.3.7 release notes](docs/release-0.3.7_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Bundled language revisions in 0.3.7](docs/release-0.3.7_en.md)
 - [Verified secured-FPM installation in 0.3.6](docs/release-0.3.6_en.md)
 - [Private configuration directory protection in 0.3.5](docs/release-0.3.5_en.md)
 - [Docker security patch release 0.3.3](docs/release-0.3.3_en.md)

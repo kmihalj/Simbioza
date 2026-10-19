@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @var array<string,array{package:string,label_hr:string,label_en:string,optional:bool,recommended:bool,dependencies:list<string>,migrations:list<string>,tables:list<string>}> $definitions
  * @var array{immutable:bool,is_fpm:bool,helper_ready:bool,state_changes_allowed:bool,language_changes_allowed:bool,package_changes_allowed:bool,application_updates_allowed:bool,checks:list<array{id:string,label_hr:string,label_en:string,passed:bool,required:bool,checked:bool,detail:string}>} $diagnostics
  * @var list<array{locale:string,native_name:string,keys:int,reference_keys:int,coverage:float,active:bool}> $languages
- * @var list<array{locale:string,native_name:string,version:string,local_version:string,revision_known:bool,installed:bool,active:bool,update_available:bool}> $repositoryLanguages
+ * @var list<array{locale:string,native_name:string,version:string,local_version:string,source:string,revision_known:bool,installed:bool,active:bool,update_available:bool}> $repositoryLanguages
  * @var array{components:list<array{package:string,name:string,kind:string,installed_version:string,latest_version:?string,status:string}>,checked_at:?int,failures:int,updates:int} $componentUpdates
  * @var array{state:string,stage:string,progress:?int,started_at:?string,finished_at:?string,pid:?int,message:string,current_version:string} $applicationUpdate
  * @var string $applicationUpdateStatusPath
@@ -606,7 +606,7 @@ $applicationUpdateUi = json_encode(
                         <thead><tr>
                             <th><?= $this->escape(__('Jezik')) ?></th>
                             <th><?= $this->escape(__('Naziv')) ?></th>
-                            <th><?= $this->escape(__('Instalirana / dostupna revizija')) ?></th>
+                            <th><?= $this->escape(__('Lokalna verzija / dostupni paket')) ?></th>
                             <th><?= $this->escape(__('Pokrivenost')) ?></th>
                             <th><?= $this->escape(__('Stanje')) ?></th>
                             <th class="text-end"><?= $this->escape(__('Radnje')) ?></th>
@@ -615,18 +615,23 @@ $applicationUpdateUi = json_encode(
                         <?php foreach ($languages as $language) :
                             $remote = $repositoryLanguagesByLocale[$language['locale']] ?? null;
                             ?>
-                            <tr>
+                            <tr data-language-locale="<?= $this->escape($language['locale']) ?>" data-language-source="<?= $this->escape(is_array($remote) ? $remote['source'] : 'manual') ?>">
                                 <td><code><?= $this->escape($language['locale']) ?></code></td>
                                 <td><?= $this->escape($language['native_name']) ?></td>
                                 <td>
-                                    <code><?= $this->escape(is_array($remote) && $remote['local_version'] !== '' ? $remote['local_version'] : '—') ?></code>
+                                    <code><?= $this->escape(is_array($remote) && $remote['local_version'] !== '' ? ($remote['source'] === 'bundled' ? 'Simbioza ' : '') . $remote['local_version'] : '—') ?></code>
                                     / <code><?= $this->escape(is_array($remote) && $remote['version'] !== '' ? $remote['version'] : '—') ?></code>
                                 </td>
                                 <td><?= $this->escape(number_format($language['coverage'], 2)) ?>%</td>
                                 <td>
                             <?= $this->escape($language['active'] ? __('Uključen') : __('Isključen')) ?>
+                            <?php if (is_array($remote) && $remote['source'] === 'bundled') : ?>
+                                <span class="badge text-bg-secondary"><?= $this->escape(__('Ugrađeni prijevodi')) ?></span>
+                            <?php elseif (is_array($remote) && $remote['source'] === 'repository') : ?>
+                                <span class="badge text-bg-secondary"><?= $this->escape(__('Jezični paket')) ?></span>
+                            <?php endif; ?>
                             <?php if (is_array($remote) && !$remote['revision_known']) : ?>
-                                <span class="badge text-bg-secondary"><?= $this->escape(__('Lokalna revizija nije evidentirana')) ?></span>
+                                <span class="badge text-bg-secondary"><?= $this->escape(__('Ručni prijevod — revizija nije poznata')) ?></span>
                             <?php endif; ?>
                             <?php if (is_array($remote) && $remote['update_available']) :
                                 ?><span class="badge text-bg-warning"><?= $this->escape(__('Dostupna nadogradnja')) ?></span><?php
@@ -639,6 +644,13 @@ $applicationUpdateUi = json_encode(
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                                     <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>"><input type="hidden" name="replace" value="1">
                                                     <button class="btn btn-sm btn-outline-primary"><?= $this->escape(__('Ažuriraj')) ?></button>
+                                                </form>
+                            <?php endif; ?>
+                            <?php if (is_array($remote) && !$remote['revision_known'] && $remote['version'] !== '' && $diagnostics['language_changes_allowed']) : ?>
+                                                <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm(<?= $this->escape(json_encode(__('Zamijeniti ručni prijevod provjerenim jezičnim paketom?'), JSON_THROW_ON_ERROR)) ?>)">
+                                <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
+                                                    <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>"><input type="hidden" name="replace" value="1">
+                                                    <button class="btn btn-sm btn-outline-primary"><?= $this->escape(__('Preuzmi jezični paket')) ?></button>
                                                 </form>
                             <?php endif; ?>
                             <?php if ($diagnostics['language_changes_allowed']) : ?>
@@ -656,9 +668,9 @@ $applicationUpdateUi = json_encode(
                                                 </form>
                             <?php endif; ?>
                                     </div>
-                            <?php if (is_array($remote) && !$remote['revision_known']) : ?>
+                            <?php if (is_array($remote) && !$remote['revision_known'] && !$diagnostics['language_changes_allowed']) : ?>
                                     <div class="small text-body-secondary text-start mt-2">
-                                <?= $this->escape(__('Za ugrađeni ili ručno dodani jezik bez evidencije revizije preuzmite provjereni paket naredbom:')) ?>
+                                <?= $this->escape(__('Za ručni prijevod bez poznate revizije provjereni jezični paket preuzmite naredbom:')) ?>
                                         <code class="d-block user-select-all text-break">vendor/bin/hph languages install <?= $this->escape($language['locale']) ?> --replace</code>
                                     </div>
                             <?php endif; ?>

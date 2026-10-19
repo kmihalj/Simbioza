@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Bundled language revisions in 0.3.7](release-0.3.7_en.md)
 - [Verified secured-FPM installation in 0.3.6](release-0.3.6_en.md)
 - [Private configuration directory protection in 0.3.5](release-0.3.5_en.md)
 - [Docker security patch release 0.3.3](release-0.3.3_en.md)

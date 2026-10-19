@@ -92,16 +92,18 @@ final readonly class LanguageCommand
      */
     private function available(bool $refresh = false): int
     {
-        fwrite(STDOUT, "LOCALE  NAME                 VERSION        STATE\n");
+        fwrite(STDOUT, "LOCALE  NAME                 LOCAL REVISION  AVAILABLE REVISION  SOURCE / STATE\n");
         foreach ($this->repository->status($refresh) as $language) {
             $state = !$language['installed'] ? 'not installed'
             : (!$language['revision_known'] ? 'local revision unknown'
                 : ($language['update_available'] ? 'update available' : ($language['active'] ? 'active' : 'disabled')));
             fwrite(STDOUT, sprintf(
-                "%-7s %-20s %-14s %s\n",
+                "%-7s %-20s %-15s %-19s %s / %s\n",
                 $language['locale'],
                 mb_strimwidth($language['native_name'], 0, 20, '…'),
+                $language['local_version'] !== '' ? $language['local_version'] : 'unknown',
                 $language['version'],
+                $language['source'],
                 $state,
             ));
         }

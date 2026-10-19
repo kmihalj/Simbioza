@@ -206,9 +206,23 @@ Cyrillic locale such as `sr-cyrl` can be packaged in UTF-8 in the same way.
 ## Checking translation-only updates
 
 In Setup → Languages, **Check language updates** refreshes the public catalogue
-without installing code or language files. The table shows installed and
-available revisions and marks a known digest change as an update. A missing
-repository revision is shown as unknown, not as up-to-date. If the network
+without installing code or language files. The table distinguishes three sources:
+
+- **Bundled translations** show the installed application version, for example
+  `Simbioza 0.3.7`. They are recognized immediately on a fresh installation and
+  after an application update; no CLI language installation is needed.
+- **Language pack** shows the actual revision installed from the repository.
+- **Manual translation** has no verified repository revision. It is never
+  automatically replaced or reported as an unchanged published pack.
+
+The available pack revision uses its own numbering, independently of Simbioza.
+The read-only `resources/localization/bundled-languages.json` records the
+original repository baseline for bundled languages. It is release metadata,
+not a user setting or a receipt claiming that the repository pack was installed.
+Its baseline stays stable across application updates so a later translation-only
+publication remains detectable, including a digest change under the same revision.
+Installing the offered update through **Update** records the real pack revision.
+If the network
 check fails, the GUI does not report the stale cached catalogue as a successful
 check.
 
@@ -224,8 +238,8 @@ vendor/bin/hph languages available --refresh
 vendor/bin/hph languages update
 ```
 
-For a bundled/manually added locale with no revision record, explicitly install
-the published compatible pack once, for example:
+For a manual translation, **Download language pack** offers a verified
+replacement through the GUI and asks for confirmation. The CLI equivalent is:
 
 ```bash
 vendor/bin/hph languages install hr --replace

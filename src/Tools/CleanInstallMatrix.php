@@ -566,7 +566,7 @@ function verifyMatrixCase(
         // HR: Zadane biblioteke tema dio su aplikacije, a cache i logovi nisu.
         copyMatrixPath($sourceRoot . '/data/themes', $projectDirectory . '/data/themes');
 
-        foreach (['LICENSE', 'bootstrap.php'] as $file) {
+        foreach (['LICENSE', 'VERSION', 'bootstrap.php'] as $file) {
             copyMatrixPath($sourceRoot . '/' . $file, $projectDirectory . '/' . $file);
         }
 

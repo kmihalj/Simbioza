@@ -201,9 +201,22 @@ promjena jezika ne mijenja pohranjeni trenutak. Mogući su i UTF-8 jezici na
 ## Provjera nadogradnji samo prijevoda
 
 U Setup → Jezici gumb **Provjeri nadogradnje jezika** osvježava javni katalog,
-bez instaliranja koda ili jezičnih datoteka. Tablica pokazuje instaliranu i
-dostupnu reviziju, a poznatu promjenu digesta označava kao nadogradnju.
-Nedostajuća evidencija revizije jasno je nepoznata, ne proglašava se ažurnom.
+bez instaliranja koda ili jezičnih datoteka. Tablica razlikuje tri izvora:
+
+- **Ugrađeni prijevodi** prikazuju verziju instalirane aplikacije, primjerice
+  `Simbioza 0.3.7`. Prepoznaju se odmah nakon nove instalacije i nadogradnje
+  aplikacije; dodatna CLI instalacija jezika nije potrebna.
+- **Jezični paket** prikazuje stvarnu reviziju instaliranu iz repozitorija.
+- **Ručni prijevod** nema potvrđenu reviziju repozitorija. Nikada se ne zamjenjuje
+  automatski niti se prikazuje kao nepromijenjeni objavljeni paket.
+
+Dostupna revizija paketa ima vlastitu numeraciju, neovisnu o Simbiozi.
+Read-only datoteka `resources/localization/bundled-languages.json` bilježi
+izvorno polazište repozitorija za ugrađene jezike. To su metapodaci izdanja,
+ne korisnička postavka niti potvrda da je paket repozitorija instaliran.
+Polazište ostaje isto pri nadogradnjama aplikacije kako bi se otkrila kasnija
+zasebna objava prijevoda, uključujući promjenu digesta bez promjene broja revizije.
+Instalacija ponuđene nadogradnje gumbom **Ažuriraj** bilježi stvarnu reviziju paketa.
 Ako mrežna provjera zakaže, GUI ne prikazuje stari cache kao uspješnu provjeru.
 
 Instaliranje, zamjena, uključivanje i uklanjanje jezika ne mijenjaju kod i ne
@@ -218,8 +231,8 @@ vendor/bin/hph languages available --refresh
 vendor/bin/hph languages update
 ```
 
-Za ugrađeni/ručno dodani jezik bez evidencije revizije jednom izričito
-instalirajte objavljeni kompatibilni paket, npr.:
+Za ručni prijevod gumb **Preuzmi jezični paket** nudi provjerenu zamjenu kroz
+GUI i traži potvrdu. Ista radnja kroz CLI je:
 
 ```bash
 vendor/bin/hph languages install hr --replace
