@@ -176,6 +176,52 @@ final class BundledGuideArchivesTest extends TestCase
         }
     }
 
+    /**
+     * EN: The guide distinguishes generated FPM setup from subsequent manual service changes.
+     * Reconfiguration validates both configurations before restarting the dedicated pool.
+     *
+     * HR: Uputa razlikuje generirani FPM od naknadnih ručnih promjena servisa.
+     * Promjene provjeravaju obje konfiguracije prije restarta namjenskog poola.
+     */
+    public function testSecuredFpmExplainsGenerationAndValidatedRestarts(): void
+    {
+        $root = dirname(__DIR__, 3);
+        foreach (['en', 'hr'] as $locale) {
+            $text = (string)file_get_contents($root . '/docs/installation_fpm_secured_' . $locale . '.md');
+            foreach (
+                ['/etc/php/8.4/php-fpm-simbioza/php-fpm.conf', '[global]', '[simbioza]',
+                'systemctl show php-fpm-simbioza.service -p ExecStart',
+                '$(brew --prefix)/etc/simbioza/php-fpm.conf', 'pool.conf'] as $required
+            ) {
+                $this->assertStringContainsString($required, $text, $locale);
+            }
+
+            preg_match_all('/^```bash\R(.*?)^```/ms', $text, $examples);
+            $matched = false;
+            foreach ($examples[1] as $example) {
+                if (!str_contains($example, 'sudo systemctl restart php-fpm-simbioza.service')) {
+                    continue;
+                }
+
+                $matched = true;
+                $command = (string)preg_replace('/\s+/', ' ', str_replace("\\\n", '', $example));
+                $this->assertStringContainsString(
+                    'sudo systemctl daemon-reload && '
+                    . 'sudo "/usr/sbin/php-fpm$SIMBIOZA_PHP_VERSION" --test '
+                    . '--fpm-config="/etc/php/$SIMBIOZA_PHP_VERSION/php-fpm-simbioza/php-fpm.conf" && '
+                    . 'sudo apache2ctl configtest && '
+                    . 'sudo systemctl restart php-fpm-simbioza.service && '
+                    . 'sudo systemctl is-active php-fpm-simbioza.service && '
+                    . 'sudo systemctl reload apache2',
+                    $command,
+                    $locale,
+                );
+            }
+
+            $this->assertTrue($matched, $locale);
+        }
+    }
+
     public function testEveryGuideUsesTheCurrentPortableFormat(): void
     {
         $applicationRoot = dirname(__DIR__, 3);

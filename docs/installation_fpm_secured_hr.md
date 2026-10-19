@@ -155,6 +155,39 @@ Za drugu instalaciju ponovite obje naredbe s istim dodatnim opcijama, npr.
 `--instance=druga --listen=127.0.0.1:9076`. Iste opcije zatim navedite uz
 `--finalize` u 7. koraku. Njihovo izostavljanje odabire drugi, zadani servis.
 
+### Što 4. korak generira i pokreće
+
+**Nemojte ručno stvarati ni popunjavati `php-fpm.conf`.** Gornja naredba
+`--install` zapisuje cijelu namjensku FPM konfiguraciju, provjerava njezinu
+sintaksu, registrira servis i pokreće ga odnosno ponovno pokreće. Naredba
+`--check` nakon nje samo pregledava rezultat; nastavite tek kada sve provjere
+uspiju.
+
+Na Linuxu zadana instanca koristi
+`/etc/php/<major.minor>/php-fpm-simbioza/php-fpm.conf`, pri čemu verzija odgovara
+CLI PHP-u korištenom u 4. koraku. Uz PHP 8.4 to je točno
+`/etc/php/8.4/php-fpm-simbioza/php-fpm.conf`. Datoteka sadrži i `[global]` i
+namjenski pool `[simbioza]`: njegove račune, lokalni listener, putanje aplikacije
+i `HPH_CONFIG_PATH`, privatne direktorije sesija i privremenih datoteka te PHP
+ograničenja. To **nije** zajednički `/etc/php/8.4/fpm/php-fpm.conf` ni
+`pool.d/www.conf`. Generator zapisuje i `php-fpm-simbioza.service`, uključujući
+izolaciju datotečnog sustava i masku prava. Te systemd postavke nisu FPM INI
+zapisi. Bez izmjena možete provjeriti koju konfiguraciju namjenski servis koristi:
+
+```bash
+sudo systemctl show php-fpm-simbioza.service -p ExecStart &&
+sudo systemctl is-active php-fpm-simbioza.service
+```
+
+Za imenovanu instancu konfiguracijski direktorij i naziv servisa dobivaju isti
+nastavak, npr. `php-fpm-simbioza-druga`. Na macOS-u alat umjesto toga stvara
+`$(brew --prefix)/etc/simbioza/php-fpm.conf`, koji uključuje `pool.conf` iz istog
+direktorija, i registrira namjenski launchd servis. Ispravnu generiranu datoteku
+nemojte zamijeniti konfiguracijom drugog sitea. SimpleSAMLphp konfiguracija dodaje
+se samo ako provedete neobvezne SAML korake. Apache/Nginx zasebno podešavate u
+5. koraku; generiranje FPM-a ne podešava web-poslužitelj. Nakon uspješnog
+4. koraka bez naknadnih izmjena nije potreban još jedan ručni restart FPM-a.
+
 Generator iz 0.3.4 postavlja launchd `Umask` na cijeli broj **7** (oktalno
 `0007`), jednako Linux postavci `UMask=0007`. Masku koriste web-proces i
 ograničeni deploy worker; worker je postavlja **nakon** promjene računa.
@@ -420,7 +453,8 @@ drugi HTTPS vhost istog imena ni uklanjati aliase drugih aplikacija. Ako
 neobvezni SAML već ima dulji alias poput `/simbioza/simplesaml`, zadržite ga
 **prije** općeg aliasa `/simbioza`. SAML i dalje nije obvezan.
 
-Prije nastavka provjerite i kontrolirano učitajte Apache:
+Nakon promjene **samo Apache aliasa/direktorijske konfiguracije**, provjerite je
+i kontrolirano učitajte Apache. Namjenski FPM servis već je pokrenut u 4. koraku:
 
 ```bash
 sudo apache2ctl configtest && sudo systemctl reload apache2
@@ -449,12 +483,30 @@ alias uklonite **samo potvrđeno zastarjeli vlastiti dodatak** čija je jedina
 namjena bila vezanje uklonjene putanje poveznice. Nikada ne brišite cijeli
 `.service.d` direktorij niti uklanjajte generirana vezanja stvarne aplikacije.
 Zastarjelo vezanje na nepostojeću putanju može spriječiti sljedeće pokretanje
-FPM-a. Nakon tog konkretnog uklanjanja pokrenite
-`sudo systemctl daemon-reload`, zatim
-`sudo systemctl restart php-fpm-simbioza.service` i provjerite da je aktivan.
-To je jednokratno čišćenje poslužitelja, ne dodatni korak stvaranja računa,
-instalacije ni čarobnjaka. Ako FPM konfiguracija nije mijenjana, sama promjena
-Apache aliasa ne traži restart FPM-a.
+FPM-a. Nakon tog konkretnog uklanjanja koristite ovaj cjelovit Linux slijed
+umjesto gornjeg učitavanja samo Apachea. Vrijedi i nakon namjernog ručnog
+uređivanja namjenske FPM konfiguracije; `daemon-reload` potreban je kada se
+mijenja systemd servisna datoteka ili njezin dodatak, ne samo `php-fpm.conf`:
+
+```bash
+SIMBIOZA_PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;')" &&
+sudo systemctl daemon-reload &&
+sudo "/usr/sbin/php-fpm$SIMBIOZA_PHP_VERSION" --test \
+  --fpm-config="/etc/php/$SIMBIOZA_PHP_VERSION/php-fpm-simbioza/php-fpm.conf" &&
+sudo apache2ctl configtest &&
+sudo systemctl restart php-fpm-simbioza.service &&
+sudo systemctl is-active php-fpm-simbioza.service &&
+sudo systemctl reload apache2
+```
+
+Koristite odgovarajući FPM izvršni program, konfiguracijsku putanju i nastavak
+servisa svoje instalacije. Očekuju se uspješna provjera FPM konfiguracije,
+`Syntax OK` i `active`. Lanac `&&` zaustavlja se nakon neuspjele naredbe;
+nakon greške nemojte nastaviti na čarobnjak. Restart FPM-a prekida njegove
+trenutačne zahtjeve, pa ga ne pokrećite tijekom instalacije/nadogradnje.
+Ovo je jednokratno čišćenje poslužitelja ili primjena namjerne izmjene
+konfiguracije, **ne obvezan dodatni korak čiste instalacije**. Ako FPM
+konfiguracija ostaje ista, sama promjena Apache aliasa ne traži restart FPM-a.
 
 Installeru predajte `--base-url=https://vas-host.example/simbioza`, ne samo
 domenu bez prefiksa. Za demo na `/demo` promijenite **oba** primjera prefiksa

@@ -164,6 +164,39 @@ For a second site, repeat both commands with matching options, for example
 with `--finalize` in step 7. Do not accidentally omit them: the unsuffixed
 default instance is a different system service.
 
+### What step 4 generates and starts
+
+**Do not create or fill in `php-fpm.conf` manually.** The `--install` command
+above writes the complete dedicated FPM configuration, tests its syntax,
+registers the service and starts/restarts it. The following `--check` command
+only inspects the result; continue only when all checks succeed.
+
+On Linux, the default instance uses
+`/etc/php/<major.minor>/php-fpm-simbioza/php-fpm.conf`, where the version matches
+the CLI PHP used in step 4. With PHP 8.4, the exact file is
+`/etc/php/8.4/php-fpm-simbioza/php-fpm.conf`. It contains both `[global]` and
+the dedicated `[simbioza]` pool: its accounts, local listener, application and
+`HPH_CONFIG_PATH` paths, private session/temporary directories and PHP limits.
+This is **not** the shared `/etc/php/8.4/fpm/php-fpm.conf` or `pool.d/www.conf`.
+The generator also writes `php-fpm-simbioza.service`, including its filesystem
+isolation and permissions mask. Those systemd settings are not FPM INI entries.
+To inspect which configuration the dedicated service uses, without changing it:
+
+```bash
+sudo systemctl show php-fpm-simbioza.service -p ExecStart &&
+sudo systemctl is-active php-fpm-simbioza.service
+```
+
+For a named instance, the configuration directory and service name both receive
+the matching suffix, for example `php-fpm-simbioza-second`. On macOS, the tool
+instead creates `$(brew --prefix)/etc/simbioza/php-fpm.conf`, which includes
+`pool.conf` in the same directory, and registers the dedicated launchd service.
+Do not replace a correct generated file with another site's configuration.
+SimpleSAMLphp configuration is added only if you follow the optional SAML steps.
+Step 5 still configures Apache/Nginx separately; generating FPM does not configure
+the web server. No additional manual FPM restart is needed after a successful,
+unchanged step 4.
+
 The 0.3.4 generator sets launchd `Umask` to integer **7** (octal `0007`),
 matching Linux's `UMask=0007`. Both the web process and the restricted deployment
 worker use this mask; the worker sets it **after** switching accounts. Their
@@ -428,7 +461,8 @@ duplicate HTTPS vhost, or remove other applications' aliases. If optional SAML
 already has a longer alias such as `/simbioza/simplesaml`, keep that alias
 **before** the general `/simbioza` alias. SAML remains optional.
 
-Before continuing, validate and gracefully reload Apache:
+After changing **only Apache's alias/directory configuration**, validate it and
+gracefully reload Apache. Step 4 has already started the dedicated FPM service:
 
 ```bash
 sudo apache2ctl configtest && sudo systemctl reload apache2
@@ -457,11 +491,30 @@ direct alias, remove **only a confirmed obsolete custom drop-in** whose sole
 purpose was binding the removed symlink path. Never delete the whole
 `.service.d` directory or remove the generated application's actual bind mounts.
 An obsolete bind to a nonexistent path can prevent the next FPM startup.
-After that specific removal, run `sudo systemctl daemon-reload`, then
-`sudo systemctl restart php-fpm-simbioza.service` and verify it is active.
-This is one-time host cleanup, not an additional account-creation, installation
-or wizard step. If no FPM configuration changed, an Apache alias change alone
-does not require restarting FPM.
+After that specific removal, use this complete Linux sequence instead of the
+Apache-only reload above. It also applies after deliberately editing the
+dedicated FPM configuration; `daemon-reload` is needed when a systemd unit or
+drop-in changed, not merely because `php-fpm.conf` changed:
+
+```bash
+SIMBIOZA_PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;')" &&
+sudo systemctl daemon-reload &&
+sudo "/usr/sbin/php-fpm$SIMBIOZA_PHP_VERSION" --test \
+  --fpm-config="/etc/php/$SIMBIOZA_PHP_VERSION/php-fpm-simbioza/php-fpm.conf" &&
+sudo apache2ctl configtest &&
+sudo systemctl restart php-fpm-simbioza.service &&
+sudo systemctl is-active php-fpm-simbioza.service &&
+sudo systemctl reload apache2
+```
+
+Use the matching FPM binary, configuration path and service suffix for your
+installation. Expect a successful FPM configuration test, `Syntax OK` and
+`active`. The `&&` chain stops after a failed command; do not continue to the
+wizard after an error. A FPM restart interrupts its current requests, so do not
+run it during installation/update work. This is one-time host cleanup or
+application of an intentional configuration change, **not a required extra step
+on a clean installation**. An unchanged FPM configuration needs no restart for
+an Apache alias change alone.
 
 Use `--base-url=https://your-host.example/simbioza` for the installer, not
 the hostname without its prefix. For a demo at `/demo`, replace **both**
