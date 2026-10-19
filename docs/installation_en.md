@@ -2,8 +2,9 @@
 
 [Croatian version](installation_hr.md)
 
-These guides install Simbioza **0.3.9**, with API, Menu and Theme **0.3.1**, other public modules
-at **0.3.0** and the unchanged Framework. The 0.3.x baseline starts with a new application directory,
+These guides install Simbioza **0.3.10**. Auth, API, HTML Editor, Email and Theme
+use **0.3.1**, Menu **0.3.2**, and the other public modules **0.3.0**; Framework
+is unchanged. The 0.3.x baseline starts with a new application directory,
 configuration and database. An upgrade from 0.2.x or reuse of its Simbioza
 backups is not supported.
 

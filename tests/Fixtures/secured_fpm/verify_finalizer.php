@@ -41,10 +41,35 @@ unset($theme);
 file_put_contents($themePath, json_encode($themes, JSON_THROW_ON_ERROR));
 $menuPath = $root . '/config/menu/settings.json';
 $menu = json_decode((string)file_get_contents($menuPath), true, 512, JSON_THROW_ON_ERROR);
+if (!in_array('auth', array_column($menu, 'id'), true)) {
+    $menu[] = ['id' => 'auth', 'label' => ['en' => 'Users'], 'children' => [[
+        'id' => 'auth.setup.login', 'label' => ['en' => 'Login'], 'route' => 'auth.setup',
+        'query' => ['section' => 'overview'], 'enabled' => true, 'order' => 10,
+    ]], 'order' => 30, 'enabled' => true];
+}
+
+if (!in_array('editor-html', array_column($menu, 'id'), true)) {
+    $menu[] = ['id' => 'editor-html', 'label' => ['en' => 'HTML editor'], 'children' => [[
+        'id' => 'editor-html.settings', 'label' => ['en' => 'Editor settings'],
+        'route' => 'editor-html.settings', 'enabled' => true, 'order' => 10,
+    ]], 'order' => 90, 'enabled' => true];
+}
+
 foreach ($menu as &$item) {
-    if ($item['id'] === 'theme') {
-        $item['label'] = ['en' => 'Preserved administrator theme entry'];
+    if (in_array($item['id'], ['theme', 'email.settings.group', 'editor-html', 'auth'], true)) {
+        $item['label'] = ['en' => 'Preserved administrator ' . $item['id']];
         $item['enabled'] = false;
+    }
+
+    foreach ($item['children'] ?? [] as $index => $child) {
+        if (in_array($child['id'], ['email.settings', 'editor-html.settings', 'auth.setup.login'], true)) {
+            $child['label'] = ['en' => 'Preserved administrator ' . $child['id']];
+            $child['enabled'] = false;
+            $child['route'] = null;
+            $child['url'] = '/settings/setup';
+            $child['query'] = [];
+            $item['children'][$index] = $child;
+        }
     }
 }
 

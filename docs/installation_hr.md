@@ -2,8 +2,9 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.9**, uz API, Menu i Theme **0.3.1**, ostale javne module **0.3.0** i nepromijenjen
-Framework. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
+Ove upute instaliraju Simbiozu **0.3.10**. Auth, API, HTML Editor, Email i Theme
+koriste **0.3.1**, Menu **0.3.2**, a ostali javni moduli **0.3.0**; Framework je
+nepromijenjen. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 
 Odaberite **jednu cjelovitu uputu** ispod. Svaka kreće iz administratorskog

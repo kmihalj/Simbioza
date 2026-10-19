@@ -92,6 +92,12 @@ missing options may be read from module code; they must not reset saved options.
 Bundled user-guide pages are separately managed application content and can be
 updated while preserving their identity and access rights.
 
+Email, HTML Editor and static Auth navigation preserve administrator labels,
+destinations, disabled states and placement as well. SSO provider/profile
+navigation remains derived from Auth configuration and its current verification
+status; changing that source updates its status, not the saved login configuration.
+Equivalent empty-query/flat metadata does not trigger a repeated JSON rewrite.
+
 Regression checks cover Auth, Email, Editor and external-script settings,
 Workspace, Calendar, Backup, API, Workspace Search, Confluence Import, Menu,
 Theme, language/module selection and application settings. They verify the

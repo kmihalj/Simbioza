@@ -93,6 +93,12 @@ nedostajućih opcija mogu se čitati iz koda modula, ali ne smiju resetirati
 spremljene opcije. Ugrađene korisničke upute zaseban su aplikacijski sadržaj i
 smiju se nadograditi uz očuvanje identiteta stranica i njihovih ovlasti.
 
+Email, HTML Editor i statička Auth navigacija također čuvaju administratorske
+oznake, odredišta, isključenost i položaj. Navigacija SSO providera/profila ostaje
+izvedena iz Auth konfiguracije i trenutačnog statusa provjere; izmjena tog izvora
+osvježava status, a ne prepisuje spremljene postavke prijave. Ekvivalentni prazni
+query/ravni metapodaci ne uzrokuju ponavljano prepisivanje JSON-a.
+
 Regresijske provjere obuhvaćaju Auth, Email, Editor i vanjske skripte, Workspace,
 Calendar, Backup, API, Workspace Search, Confluence Import, Menu, Theme, odabir
 jezika/modula i aplikacijske postavke. Provjeravaju sadržaj konfiguracije te
