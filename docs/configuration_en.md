@@ -74,6 +74,12 @@ replace stored values, custom ordering, disabled options or intentionally empty 
 The same rule applies during rollback. Packaged `.dist` examples and application
 bootstrap/routes/service definitions remain release-managed code, not user settings.
 
+The central `framework.php` file is private as well, even though it lives in
+the application root. Neither source synchronization nor final permission
+normalization may change its contents, owner, group or mode. In secured FPM
+setups it may belong to the maintainer and be readable, but not writable, by
+the deploy and FPM accounts through their runtime group.
+
 The bundled Simbioza theme ZIP is used only by a new installation. An update
 does not reimport it, replace an edited `simbioza` theme, activate another theme,
 or replace `data/themes/` files. This remains true if the bundled ZIP changes

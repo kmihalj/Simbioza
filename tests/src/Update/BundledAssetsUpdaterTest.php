@@ -69,6 +69,15 @@ final class BundledAssetsUpdaterTest extends TestCase
         file_put_contents($directory . '/config/database.php', "<?php return [];\n");
         file_put_contents($directory . '/data/private/secret', "secret\n");
         file_put_contents($directory . '/config/theme/settings.json', "{}\n");
+        $privateRootFiles = ['framework.php', 'composer.local.json', 'composer.local.lock'];
+        $privateSnapshots = [];
+        foreach ($privateRootFiles as $privateFile) {
+            $path = $directory . '/' . $privateFile;
+            file_put_contents($path, "Private administrator configuration: " . $privateFile . "\n");
+            chmod($path, 0600);
+            $privateSnapshots[$privateFile] = [hash_file('sha256', $path), fileowner($path), filegroup($path)];
+        }
+
         chmod($directory . '/composer.json', 0660);
         chmod($directory . '/src/Localization/NewService.php', 0660);
         chmod($directory . '/config/database.php', 0600);
@@ -86,6 +95,18 @@ final class BundledAssetsUpdaterTest extends TestCase
                 0600,
                 fileperms($directory . '/config/theme/settings.json') & 07777,
             );
+            // EN: The central path configuration is private even though it lives outside config/.
+            //
+            // HR: Središnja konfiguracija putanja je privatna i kada je izvan direktorija config/.
+            foreach ($privateRootFiles as $privateFile) {
+                $path = $directory . '/' . $privateFile;
+                $this->assertSame(0600, fileperms($path) & 07777, $privateFile);
+                $this->assertSame(
+                    $privateSnapshots[$privateFile],
+                    [hash_file('sha256', $path), fileowner($path), filegroup($path)],
+                    $privateFile,
+                );
+            }
         } finally {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),

@@ -538,7 +538,7 @@ final readonly class BundledAssetsUpdater
             }
         }
 
-        return in_array($relativePath, ['composer.local.json', 'composer.local.lock'], true);
+        return in_array($relativePath, ['framework.php', 'composer.local.json', 'composer.local.lock'], true);
     }
 
     /**

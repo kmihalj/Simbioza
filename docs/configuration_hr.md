@@ -74,6 +74,12 @@ opcije niti namjerno prazne liste. Isto vrijedi pri povratu nakon greške.
 Paketni `.dist` primjeri i definicije pokretanja/ruta/servisa ostaju dio koda
 izdanja, a ne korisničke postavke.
 
+Središnji `framework.php` također je privatna datoteka, iako je u korijenu
+aplikacije. Sinkronizacija izvora niti završno podešavanje prava ne smiju
+mijenjati njezin sadržaj, vlasnika, grupu ni prava. U FPM Secured instalaciji
+može pripadati održavatelju, dok je deploy i FPM računi preko runtime grupe
+mogu čitati, ali ne i mijenjati.
+
 ZIP isporučene Simbiozine teme koristi samo nova instalacija. Nadogradnja ga
 ne uvozi ponovo, ne zamjenjuje uređenu temu `simbioza`, ne aktivira drugu temu
 i ne zamjenjuje datoteke u `data/themes/`. To vrijedi i ako se isporučeni ZIP
