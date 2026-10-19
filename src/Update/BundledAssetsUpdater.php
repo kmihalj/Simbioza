@@ -14,6 +14,7 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceBacklinkIndexer;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceConfig;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use HeartPhrame\Config\Config;
@@ -82,6 +83,7 @@ final readonly class BundledAssetsUpdater
         private WorkspaceRepository $workspaces,
         private AuthUserService $users,
         private EditorHtmlConfig $editorConfig,
+        private ?WorkspaceBacklinkIndexer $backlinks = null,
     ) {
     }
 
@@ -308,6 +310,7 @@ final readonly class BundledAssetsUpdater
         $targetPath = '/' . $configuration->rootPath() . '/' . $slug;
         $routes = [$sourcePath => $basePath . $targetPath, $targetPath => $basePath . $targetPath];
         $keys = [];
+        $nodeIds = [];
         $workspaceId = BackupValue::integer($workspace['id'], 'guide.workspace_id');
         foreach ($this->workspaces->nodesForWorkspace($workspaceId) as $node) {
             $nodeSlug = BackupValue::string($node['slug'] ?? null, 'guide.node_slug');
@@ -321,6 +324,7 @@ final readonly class BundledAssetsUpdater
             $routes[$sourcePath . $suffix] = $basePath . $targetPath . $suffix;
             $routes[$targetPath . $suffix] = $basePath . $targetPath . $suffix;
             $keys[] = $node['document_key'];
+            $nodeIds[$node['document_key']] = BackupValue::integer($node['id'], 'guide.node_id');
         }
 
         if ($keys === []) {
@@ -334,6 +338,8 @@ final readonly class BundledAssetsUpdater
         }
 
         $changed = 0;
+        $documentKeys = array_column($documents, 'document_key', 'id');
+        $changedNodes = [];
         $versions = $this->database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
             ->whereIn('document_id', $ids)->get();
         foreach ($versions as $version) {
@@ -360,6 +366,21 @@ final readonly class BundledAssetsUpdater
             }
 
             ++$changed;
+            $documentId = BackupValue::integer($version['document_id'], 'guide.document_id');
+            $documentKey = $documentKeys[$documentId] ?? null;
+            if (is_string($documentKey) && isset($nodeIds[$documentKey])) {
+                $language = BackupValue::string($version['language_code'], 'guide.language');
+                $changedNodes[$nodeIds[$documentKey]][$language] = true;
+            }
+        }
+
+        // EN: Refresh only changed guide nodes/locales so derived backlinks match the repaired HTML.
+        //
+        // HR: Osvježi samo izmijenjene upute/jezike kako bi izvedeni backlinkovi pratili popravljeni HTML.
+        foreach ($changedNodes as $nodeId => $languages) {
+            foreach (array_keys($languages) as $language) {
+                $this->backlinks?->synchronizeNode($workspaceId, $nodeId, $language);
+            }
         }
 
         return $changed;

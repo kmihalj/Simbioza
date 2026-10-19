@@ -18,6 +18,7 @@ and updater **1.0.8**. Existing tags and database migrations are unchanged.
   examples and unrelated external links are preserved.
 - Repair does not replace themes, private configuration, page identities,
   publication workflow or permissions. It is idempotent and does not add versions.
+  Derived backlinks are refreshed only for the changed guide pages and languages.
 - Same-site Editor restore adds the installation prefix removed for a portable
   archive. The fix applies to workspace/page and full/component backups, with
   database or filesystem HTML, including a change of storage driver.

@@ -1088,6 +1088,8 @@ PHP);
 
         $guideNodesBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get();
         $guideAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)->get();
+        $database->table(ModuleWorkspace::TABLE_WORKSPACE_BACKLINKS)->where('source_node_id', '=', $guideNode['id'])
+            ->where('source_language_code', '=', $guideVersion['language_code'])->delete();
         $themeSettingsHash = hash_file('sha256', $paths->themeConfigDirectory() . '/settings.json');
         $themesHash = hash_file('sha256', $paths->themeConfigDirectory() . '/themes.json');
         $output = [];
@@ -1119,6 +1121,10 @@ PHP);
         );
         $this->assertSame($guideNodesBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get());
         $this->assertSame($guideAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)->get());
+        $repairedBacklinks = $database->table(ModuleWorkspace::TABLE_WORKSPACE_BACKLINKS)
+            ->where('source_node_id', '=', $guideNode['id'])
+            ->where('source_language_code', '=', $guideVersion['language_code'])->get();
+        $this->assertCount(2, $repairedBacklinks);
         $this->assertSame($themeSettingsHash, hash_file('sha256', $paths->themeConfigDirectory() . '/settings.json'));
         $this->assertSame($themesHash, hash_file('sha256', $paths->themeConfigDirectory() . '/themes.json'));
 

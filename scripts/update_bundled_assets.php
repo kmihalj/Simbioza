@@ -6,6 +6,7 @@ use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupManager;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceBacklinkIndexer;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use App\Configuration\ConfigurationPaths;
 use App\Configuration\PhpConfigurationReader;
@@ -104,6 +105,7 @@ try {
         $repository,
         $container->get(AuthUserService::class),
         $container->get(EditorHtmlConfig::class),
+        $container->get(WorkspaceBacklinkIndexer::class),
     );
     foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
         echo $action . PHP_EOL;

@@ -18,6 +18,7 @@ updater **1.0.8**. Postojeći tagovi i migracije baze ostaju nepromijenjeni.
   primjeri koda i nepovezane vanjske poveznice ostaju sačuvani.
 - Popravak ne zamjenjuje teme, privatnu konfiguraciju, identitete stranica,
   tijek objave ili prava. Ponovljeno izvršavanje ne dodaje promjene ni verzije.
+  Izvedeni backlinkovi osvježavaju se samo za izmijenjene upute i jezike.
 - Povrat Editora na isti site vraća instalacijski prefiks uklonjen iz prenosive
   arhive. Popravak vrijedi za backup područja/stranice i potpuni/komponentni
   backup, uz bazu ili filesystem HTML, uključujući promjenu načina pohrane.
