@@ -98,6 +98,47 @@ final class BundledGuideArchivesTest extends TestCase
         }
     }
 
+    /**
+     * EN: Optional SAML has an independent, complete walkthrough and never enters base setup commands.
+     * Identity reuse and least-privilege ACL checks remain documented in both languages.
+     *
+     * HR: Opcionalni SAML ima odvojen, cjelovit postupak i ne ulazi u osnovne naredbe instalacije.
+     * Ponovna upotreba identiteta i provjere najmanjih ACL prava ostaju opisane na oba jezika.
+     */
+    public function testSecuredFpmExplainsOptionalSamlAndIdentityReuse(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $headings = [
+            'en' => '## Optional SimpleSAMLphp integration',
+            'hr' => '## Neobvezna integracija sa SimpleSAMLphp-om',
+        ];
+        foreach ($headings as $locale => $heading) {
+            $text = (string)file_get_contents($root . '/docs/installation_fpm_secured_' . $locale . '.md');
+            $parts = explode($heading, $text, 2);
+            $this->assertCount(2, $parts);
+            preg_match_all('/^```bash\R(.*?)^```/ms', $parts[0], $baseCommands);
+            foreach ($baseCommands[1] as $command) {
+                $this->assertStringNotContainsString('--simplesaml-config-dir=', $command);
+                $this->assertStringNotContainsString('simplesamlphp-2.5.3.1-full', $command);
+            }
+
+            $identities = ['UID/GID', 'app-simbioza', 'deploy-simbioza', 'run-simbioza', 'getfacl -p', 'www-data'];
+            foreach ($identities as $identity) {
+                $this->assertStringContainsString($identity, $parts[0]);
+            }
+            foreach (
+                ['### S1.', '### S2.', '### S3.', '### S4.', '### S5.', 'OIDC, CAS,',
+                'SIMPLESAMLPHP_CONFIG_DIR', 'clear_env = yes', 'auth_source = default-sp',
+                'session.phpsession.savepath', 'HPH_CONFIG_PATH/auth/auth.json', 'ACS', 'SLO',
+                'test ! -w', 'ProxyPassMatch', 'module.php/...'] as $required
+            ) {
+                $this->assertStringContainsString($required, $parts[1], $locale);
+            }
+            $this->assertSame(3, substr_count($parts[1], '--simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG"'));
+            $this->assertStringNotContainsString('apps-test.unizg.hr', $parts[1]);
+        }
+    }
+
     public function testEveryGuideUsesTheCurrentPortableFormat(): void
     {
         $applicationRoot = dirname(__DIR__, 3);

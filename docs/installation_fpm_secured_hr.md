@@ -10,6 +10,10 @@ deploy radnika. Ovo je preporučeni način. Pri reinstalaciji sistemac prvo
 provjerava postojeće identitete, oznake instanci i servise; drugi site ne smije
 koristiti identitet prve instalacije.
 
+**SimpleSAMLphp nije obvezan.** Ugrađena Simbiozina prijava, OIDC, CAS i OAuth2
+ne trebaju ga. Najprije prođite korake 1–7, a neobvezni SAML postupak samo ako
+upravo ta instalacija treba SAML autentikaciju.
+
 ## 1. Pripremite poslužitelj
 
 Krenite iz običnog administratorskog terminala na Linuxu ili macOS-u.
@@ -176,6 +180,39 @@ smiju biti dostupna samo lokalno. Alat daje FPM računu pravo pisanja po
 radnim podacima, ali ne i po cijelom izdanju, te postavlja strogo ograničeni
 pomoćni program za paketne radnje. Stvara i grupe za održavanje i rad.
 Prije nastavka pregledajte sve rezultate provjere. Ne koristite `chmod 777`.
+
+### Korisnici, grupe i prava koje postavlja alat
+
+Gornja naredba `--install` uključuje kreiranje korisnika i grupa; nemojte ih
+zasebno stvarati naredbama `useradd` i `groupadd`. Nepostojeći identiteti se
+stvaraju, a postojeći s tim imenima koriste se bez zamjene UID/GID vrijednosti.
+Alat usklađuje potrebne primarne grupe i dodatna članstva. Za imenovanu instancu
+sva imena ispod dobivaju isti nastavak `-instanca`.
+
+| Identitet | Svrha |
+| --- | --- |
+| `fpm-simbioza` / `app-simbioza` | Zaključani web-servisni račun i primarna grupa; ne mogu pisati po kodu aplikacije. |
+| `simbioza-deploy` / `deploy-simbioza` | Zaključani račun za isporuku i grupa za održavanje koda; i vaš održavateljski račun član je te grupe. |
+| `run-simbioza` | Zajednička privatna radna grupa za FPM, isporuku i održavatelja. |
+
+Na Linuxu nakon ponovne SSH prijave pregledajte rezultat:
+
+```bash
+getent passwd fpm-simbioza simbioza-deploy &&
+getent group app-simbioza deploy-simbioza run-simbioza &&
+id "$(id -un)" &&
+getfacl -p "$SIMBIOZA_APP_ROOT/config" "$SIMBIOZA_APP_ROOT/data"
+```
+
+Kod koristi vlasništvo deploy računa i FPM izolaciju samo za čitanje. Privatni
+radni direktoriji koriste grupu `run-simbioza` (`2770`), a konfiguracijski
+korijen sticky direktorij (`3770`) za kontrolirane atomske zamjene. Uobičajeno
+dijeljenje radnih podataka koristi ta grupna prava, ne široke ACL dozvole
+pisanja. Uz neobveznu privatnu SimpleSAMLphp konfiguraciju alat dodatno postavlja
+Linux pristupni i nasljedni ACL koji grupi `app-simbioza` daju **samo čitanje i
+prolaz** kroz konfiguraciju. SAML postupak ispod sadrži postavljanje i provjeru
+ACL-a. Na secured FPM nemojte primijeniti recept običnog/zajedničkog FPM-a koji
+računu `www-data` daje pravo pisanja.
 
 Uz zadani aplikacijski konfiguracijski direktorij, Auth, Email, HTML Editor,
 Workspace, Menu, Theme i Backup imaju runtime-zapisive modulne direktorije.
@@ -415,20 +452,212 @@ traže root. Naredbe za održavanje nalaze se na kraju ove upute.
 
 ## Neobvezna integracija sa SimpleSAMLphp-om
 
-Ako koristite SAML, njegov endpoint i Simbioza moraju prolaziti kroz **isti**
-namjenski FPM pool kada se sesije čuvaju s `store.type = phpsession`.
-Privatne SAML postavke i radne podatke držite pod `data/` te instalacije.
-Privatna konfiguracija mora imati zasebne saltove, administratorsku lozinku,
-nazive kolačića i putanju; nikad ne kopirajte tajne ni SP ključeve druge
-instalacije.
+**Preskočite cijelo poglavlje ako ne trebate SAML.** Ne odnosi se na OIDC, CAS,
+OAuth2 ni ugrađenu prijavu. Lokalnog administratora i break-glass prijavu
+zadržite dok SAML ne proradi. Javni demo ne treba SAML samo zato što njegove
+Korisničke upute sadrže ovo poglavlje.
 
-Prije stvaranja poola pripremite `data/saml/config/config.php`,
-`authsources.php` te privatne direktorije za certifikate i radne podatke.
-Dodajte `--simplesaml-config-dir=/srv/simbioza/data/saml/config` i pri
-`--install` i pri `--finalize`. Aplikacijski `/simplesaml` PHP endpoint
-usmjerite u isti pool, a odgovarajuće EntityID, ACS i SLO adrese registrirajte
-kod pružatelja identiteta. Stari endpoint ne gasite dok nova registracija nije
-propagirana i dok cijeli postupak prijave i odjave u pregledniku ne prođe.
+### S1. Odaberite biblioteku i javne adrese
+
+Najprije dovršite osnovnu instalaciju. U održavateljskoj ljusci postavite
+stvarne putanje i adrese. Primjer za zasebnu domenu:
+
+```bash
+SIMBIOZA_APP_ROOT=/srv/simbioza
+SIMBIOZA_SAML_ROOT=/opt/simplesamlphp
+SIMBIOZA_SAML_URL=https://simbioza.example.org/simplesaml/
+SIMBIOZA_SAML_CONFIG="$SIMBIOZA_APP_ROOT/data/saml/config"
+```
+
+Za site `https://vas-host.example/simbioza` umjesto toga koristite
+`SIMBIOZA_SAML_URL=https://vas-host.example/simbioza/simplesaml/`.
+Zadržite završnu kosu crtu. Korijen biblioteke **nije** direktorij Simbioze.
+Možete koristiti već instaliranu sistemsku biblioteku, npr.
+`/usr/share/simplesamlphp-aai`; ne mijenjajte njezinu zajedničku konfiguraciju,
+certifikate ni SP druge aplikacije.
+
+Ako već postoji kompatibilna biblioteka, preskočite blok preuzimanja. Inače
+primjer instalira upstream **2.5.3.1 full**, uz objavljenu kontrolnu sumu.
+Traži PHP **8.3 ili noviji** i proširenja navedena u
+[SimpleSAMLphp preduvjetima](https://simplesamlphp.org/docs/stable/simplesamlphp-install.html).
+Na [upstream stranici](https://simplesamlphp.org/download/) provjerite sigurnosne
+nadogradnje; za drugu verziju zajedno promijenite URL i kontrolnu sumu.
+Sljedeće izvršite samo za **novi**, još nepostojeći direktorij biblioteke:
+
+```bash
+test ! -e "$SIMBIOZA_SAML_ROOT" && test ! -L "$SIMBIOZA_SAML_ROOT" &&
+SIMBIOZA_SAML_FETCH="$(mktemp -d)" &&
+curl --fail --location --proto '=https' --tlsv1.2 \
+  --output "$SIMBIOZA_SAML_FETCH/simplesamlphp.tar.gz" \
+  https://github.com/simplesamlphp/simplesamlphp/releases/download/v2.5.3.1/simplesamlphp-2.5.3.1-full.tar.gz &&
+test "$(openssl dgst -sha256 "$SIMBIOZA_SAML_FETCH/simplesamlphp.tar.gz" | awk '{print $NF}')" = \
+  b199ebcba6e30220e7b5df2783ca42f8947dd9bdf046e9e6302fef3d3a438d01 &&
+sudo install -d -m 0755 "$SIMBIOZA_SAML_ROOT" &&
+sudo tar -xzf "$SIMBIOZA_SAML_FETCH/simplesamlphp.tar.gz" \
+  --strip-components=1 -C "$SIMBIOZA_SAML_ROOT"
+```
+
+Nakon bilo koje greške stanite. Provjerite odabranu biblioteku:
+
+```bash
+test -f "$SIMBIOZA_SAML_ROOT/vendor/autoload.php" &&
+test -f "$SIMBIOZA_SAML_ROOT/public/module.php" &&
+php -r 'require $argv[1]; exit(class_exists("SimpleSAML\\Auth\\Simple") ? 0 : 1);' \
+  "$SIMBIOZA_SAML_ROOT/vendor/autoload.php"
+```
+
+### S2. Pripremite privatnu konfiguraciju i pouzdane metapodatke
+
+Iz `$SIMBIOZA_APP_ROOT` stvorite privatne direktorije i kopirajte **predloške**.
+Blok odbija prepisati konfiguraciju. Ako vraćate sačuvane postavke **istog SP-a**,
+umjesto toga vratite njegov `config`, certifikate i potrebne metapodatke;
+ne kopirajte tajne drugog sitea i ne vraćajte sesije, cache ni staru
+aplikacijsku bazu.
+
+```bash
+mkdir -p "$SIMBIOZA_APP_ROOT/data/saml/config" \
+  "$SIMBIOZA_APP_ROOT/data/saml/metadata" "$SIMBIOZA_APP_ROOT/data/saml/cert" \
+  "$SIMBIOZA_APP_ROOT/data/saml/data" "$SIMBIOZA_APP_ROOT/data/saml/cache" \
+  "$SIMBIOZA_APP_ROOT/data/saml/logs" "$SIMBIOZA_APP_ROOT/data/saml/tmp" &&
+test ! -e "$SIMBIOZA_SAML_CONFIG/config.php" &&
+test ! -e "$SIMBIOZA_SAML_CONFIG/authsources.php" &&
+cp "$SIMBIOZA_SAML_ROOT/config/config.php.dist" "$SIMBIOZA_SAML_CONFIG/config.php" &&
+cp "$SIMBIOZA_SAML_ROOT/config/authsources.php.dist" "$SIMBIOZA_SAML_CONFIG/authsources.php"
+```
+
+Uredite `config.php` naredbom `sudoedit "$SIMBIOZA_SAML_CONFIG/config.php"`.
+U njegovu postojećem polju `$config` postavite ključeve ispod. Ogledne putanje
+zamijenite stvarnom putanjom aplikacije; PHP ne proširuje varijable terminala.
+
+| Ključ | Vrijednost ili radnja |
+| --- | --- |
+| `baseurlpath` | Puna HTTPS vrijednost `SIMBIOZA_SAML_URL`, sa završnom kosom crtom. |
+| `certdir`, `metadatadir` | `/srv/simbioza/data/saml/cert` i `/srv/simbioza/data/saml/metadata`. |
+| `datadir`, `cachedir`, `loggingdir`, `tempdir` | Odgovarajući privatni direktoriji `data`, `cache`, `logs`, `tmp` pod `/srv/simbioza/data/saml`. |
+| `metadata.sources` | Pouzdani izvor, npr. `[['type' => 'flatfile']]` uz privatni `metadatadir`; po potrebi koristite provjereni mehanizam svoje federacije. |
+| `secretsalt`, `assets['salt']` | Dvije različite slučajne vrijednosti, svaku generirajte s `openssl rand -hex 32`; `salt` uredite unutar postojećeg polja `assets`, ne novim glavnim ključem `assets.salt`. Ne koristite predloške i ne objavljujte ih. |
+| `auth.adminpassword` | Hash interaktivno generiran s `php "$SIMBIOZA_SAML_ROOT/bin/pwgen.php"`; odvojen od Simbiozine lozinke. |
+| `store.type` | `phpsession` za ovaj postupak. |
+| `session.phpsession.cookiename` | Naziv specifičan za site, npr. `SimbiozaSAML`, različit od Simbiozine sesije i sesija drugih siteova. |
+| `session.phpsession.savepath` | `null`, pa oba endpointa koriste privatni `data/sessions` ovog poola. |
+| `session.cookie.path` | `/` za zasebnu domenu ili `/simbioza/` za taj prefiks; mora obuhvatiti aplikaciju i SAML endpoint. |
+| `session.cookie.secure`, `session.phpsession.httponly` | `true`; koristite HTTPS. |
+| `showerrors` | `false` osim tijekom kontrolirane dijagnostike. |
+
+U `authsources.php` podesite `default-sp` kao `saml:SP`, s vlastitim stabilnim
+`entityID` i `idp` entity ID-em pouzdanog IdP-a. Uklonite nekorištene primjere.
+Metapodatke IdP-a preuzmite od administratora federacije/IdP-a; pouzdane PHP
+metapodatke spremite u `data/saml/metadata/saml20-idp-remote.php` ili podesite
+podržani mehanizam svoje federacije. Ne isključujte provjeru potpisa i ne
+vjerujte certifikatu iz neprovjerenog izvora.
+
+Ako IdP traži SP certifikat, za **novi** SP generirajte privatni ključ i
+certifikat u `data/saml/cert` ovog sitea te njihova imena povežite ključevima
+`privatekey` i `certificate` u `default-sp`, prema politici federacije.
+Za **isti registrirani SP** zadržite njegov EntityID, postojeće ključeve,
+certifikate i potrebne metapodatke; ne generirajte zamjenske.
+
+### S3. Podesite namjenski pool i provjerite ACL prava
+
+Iz `$SIMBIOZA_APP_ROOT` ponovno pokrenite generator za **istu aplikaciju i
+instancu**, s argumentom privatne konfiguracije. Time se ažurira i ponovno
+pokreće samo taj namjenski pool, uz korištenje postojećih korisnika i grupa:
+
+```bash
+cd "$SIMBIOZA_APP_ROOT" &&
+sudo php scripts/configure_fpm_setup.php --install \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" \
+  --simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG" &&
+sudo php scripts/configure_fpm_setup.php --finalize \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" \
+  --simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG" &&
+php scripts/configure_fpm_setup.php --check \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" \
+  --simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG"
+```
+
+Na macOS-u **svim trima** naredbama dodajte
+`--php-fpm="$(brew --prefix)/sbin/php-fpm"`. Za imenovanu instancu ponovite i
+izvorne opcije `--instance` i `--listen`. Ovo nije postupak popravka DEMO
+reset kopije. Generator postavlja `SIMPLESAMLPHP_CONFIG_DIR` unutar FPM radnika
+unatoč `clear_env = yes`; samo SSH `export` ili Apacheov `SetEnv` nisu dovoljni.
+
+Na Linuxu provjerite čitanje i ACL privatne konfiguracije:
+
+```bash
+getfacl -p "$SIMBIOZA_SAML_CONFIG" "$SIMBIOZA_SAML_CONFIG/config.php" &&
+sudo -u fpm-simbioza test -r "$SIMBIOZA_SAML_CONFIG/config.php" &&
+sudo -u fpm-simbioza test -r "$SIMBIOZA_SAML_CONFIG/authsources.php" &&
+sudo -u fpm-simbioza test ! -w "$SIMBIOZA_SAML_CONFIG/config.php"
+```
+
+Očekujte `group:app-simbioza:r-x` i odgovarajući nasljedni ACL na direktoriju;
+FPM datoteke smije čitati, ne mijenjati. Vlasnik konfiguracije ostaje deploy
+račun. Za imenovanu instancu koristite identitete s nastavkom. Na macOS-u
+generator koristi grupno vlasništvo umjesto Linux POSIX ACL naredbi.
+
+### S4. Usmjerite SAML endpoint u isti FPM pool
+
+Blok dodajte **postojećem HTTPS vhostu**, ne drugom vhostu ili zajedničkom
+globalnom SimpleSAMLphp aliasu. Zamijenite URL prefiks i putanje vrijednostima
+iz S1; Apache ne proširuje varijable ljuske. Dulji SAML alias mora biti
+**prije** općeg aplikacijskog aliasa `/simbioza`.
+
+```apache
+Alias /simplesaml "/opt/simplesamlphp/public"
+<Directory "/opt/simplesamlphp/public">
+    Options -Indexes +FollowSymLinks
+    AllowOverride None
+    Require all granted
+    AcceptPathInfo On
+</Directory>
+ProxyPassMatch "^/simplesaml/(.+\.php(?:/.*)?)$" "fcgi://127.0.0.1:9075/opt/simplesamlphp/public/$1"
+```
+
+Za `/simbioza` koristite `Alias /simbioza/simplesaml` i regex
+`^/simbioza/simplesaml/(.+\.php(?:/.*)?)$`. Za sistemski paket **obje** putanje
+`/opt/simplesamlphp/public` zamijenite njegovim stvarnim `public/` direktorijem.
+Koristite stvarni port svojeg poola. Izričiti proxy čuva PATH_INFO u
+`module.php/...` i koristi aplikacijski FPM identitet, okruženje i sesijski
+direktorij. Obični aplikacijski PHP handler ne pokriva taj zasebni alias.
+
+Na Debianu/Ubuntuu provjerite i tek zatim kontrolirano učitajte Apache:
+
+```bash
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+Za Homebrew Apache koristite `sudo /opt/homebrew/bin/httpd -t` i samo nakon
+uspjeha `sudo /opt/homebrew/bin/httpd -k graceful`. Uz Puppet/Ansible mijenjajte
+izvornu upravljanu vhost konfiguraciju, ne generiranu datoteku. Za Nginx koristite
+[službeni alias/PATH_INFO primjer](https://simplesamlphp.org/docs/stable/simplesamlphp-install.html#configuring-nginx)
+s ovim istim namjenskim poolom i URL prefiksom, ne zajedničkim zadanim poolom.
+Web alias nikada ne smije izložiti `config/`, `cert/` ni privatne metapodatke.
+
+### S5. Registrirajte SP, mapirajte atribute i provjerite prijavu
+
+Otvorite SAML osnovnu adresu i kroz SimpleSAMLphp administratorsko sučelje
+preuzmite metapodatke za `default-sp`. Predajte ih administratoru IdP-a ili
+federacije. Provjerite da registrirani **EntityID, ACS i SLO** koriste HTTPS
+SAML prefiks ovog sitea te pričekajte aktivaciju registracije.
+
+U Simbiozi pod **Postavke → Prijava** uključite SimpleSAMLphp protokol.
+Stvorite SAML profil s apsolutnom putanjom biblioteke `vendor/autoload.php`
+i `auth_source = default-sp`. Naredbom **Testiraj profil** dohvatite stvarne
+IdP atribute; odaberite stabilni subject/login atribut i mapirajte email/ime.
+Ne nagađajte nazive prema drugom provideru. Testirajte dok profil nije operativan,
+uključite ga i provjerite da mu namijenjeni korisnici smiju pristupiti.
+Automatsko kreiranje računa izričit je odabir profila.
+
+GUI Simbiozine postavke zapisuje u `HPH_CONFIG_PATH/auth/auth.json`; ne uređuje
+vanjske SimpleSAMLphp datoteke. Za ručni Auth config počnite od predloška
+`auth.json.dist` u Auth modulu, nikad prepisivanjem postojeće aktivne datoteke.
+
+U privatnom pregledniku provjerite: SAML prijava → povratak u Simbiozu →
+zaštićena stranica → odjava → nova prijava. Učitani metapodaci nisu dokaz
+ispravne autentikacije. Uz `phpsession` drugi pool/sesijski direktorij može
+izazvati petlju prijave: ispravite usmjeravanje/okruženje, ne širite prava.
+Lokalni administratorski pristup zadržite dok cijeli postupak ne prođe.
 
 ## Održavanje nakon instalacije
 

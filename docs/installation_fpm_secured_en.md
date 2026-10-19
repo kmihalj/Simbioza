@@ -10,6 +10,10 @@ operations from the separate deployment worker. This is the recommended mode.
 For reinstallation, an administrator must first inspect existing identities,
 instance names and services; never create a second site under the same identity.
 
+**SimpleSAMLphp is optional.** Local Simbioza login, OIDC, CAS and OAuth2 do not
+require it. Complete steps 1–7 first. Follow the optional SAML walkthrough only
+if this particular installation needs SAML authentication.
+
 ## 1. Prepare the host
 
 Start with a normal administrator shell on Linux or macOS. You need a domain
@@ -184,6 +188,38 @@ that port local to the server. The tool gives the FPM account write access to
 runtime data, not to the whole release, and installs a narrowly restricted
 helper for package changes. It also creates the deploy and runtime groups.
 Check every diagnostic result before continuing. Do not use `chmod 777`.
+
+### Accounts, groups and permissions created by the tool
+
+The `--install` command above includes account/group creation; do not separately
+run `useradd` or `groupadd`. Missing identities are created, while existing
+identities with these names are reused without replacing their UID/GID.
+The tool ensures the required primary groups and supplementary memberships.
+For a named instance, every name below receives the same `-instance` suffix.
+
+| Identity | Purpose |
+| --- | --- |
+| `fpm-simbioza` / `app-simbioza` | Locked web-service account and primary group; cannot write application code. |
+| `simbioza-deploy` / `deploy-simbioza` | Locked deployment account and code-maintenance group; your maintainer account also joins this group. |
+| `run-simbioza` | Shared private runtime group for FPM, deployment and the maintainer. |
+
+On Linux, inspect the result after reconnecting to SSH:
+
+```bash
+getent passwd fpm-simbioza simbioza-deploy &&
+getent group app-simbioza deploy-simbioza run-simbioza &&
+id "$(id -un)" &&
+getfacl -p "$SIMBIOZA_APP_ROOT/config" "$SIMBIOZA_APP_ROOT/data"
+```
+
+Code uses deployment ownership and a read-only FPM sandbox; private runtime
+directories use the `run-simbioza` group (`2770`), and the configuration root
+uses a sticky directory (`3770`) for controlled atomic updates. Normal runtime
+sharing uses these group permissions, not broad ACL write grants. With optional
+private SimpleSAMLphp configuration, the tool additionally sets Linux access and
+default ACLs giving `app-simbioza` **read/traverse only** on that configuration.
+The SAML walkthrough below includes setup and ACL verification.
+Do not apply the ordinary/shared-FPM `www-data` write-ACL recipe to secured FPM.
 
 With the default application configuration directory, Auth, Email, HTML Editor,
 Workspace, Menu, Theme and Backup have runtime-writable module directories.
@@ -423,19 +459,212 @@ The maintenance commands are included at the end of this guide.
 
 ## Optional SimpleSAMLphp integration
 
-When SAML is used, its endpoint and Simbioza must run through the **same**
-dedicated FPM pool if sessions use `store.type = phpsession`. Keep private SAML
-settings and runtime data under this installation's `data/` tree. The private
-config must have unique salts, admin password, cookie names, and cookie path;
-never copy another installation's secrets or SP keys.
+**Skip this entire section unless you need SAML.** It is unrelated to configuring
+OIDC, CAS, OAuth2 or local login. Keep the local administrator and break-glass
+login available until SAML works. A public demo does not need SAML merely
+because its User guides contain this section.
 
-Prepare `data/saml/config/config.php`, `authsources.php`, and private cert and
-runtime directories before pool setup. Add
-`--simplesaml-config-dir=/srv/simbioza/data/saml/config` to both `--install`
-and `--finalize`. Route the installation-specific `/simplesaml` PHP endpoint
-through this pool, then register its matching EntityID, ACS, and SLO URLs with
-the identity provider. Do not retire an existing endpoint until the new
-registration has propagated and browser sign-in and sign-out both succeed.
+### S1. Select the library and public addresses
+
+Finish the normal installation first. In your maintainer shell, set the actual
+paths and URLs. Example for a dedicated hostname:
+
+```bash
+SIMBIOZA_APP_ROOT=/srv/simbioza
+SIMBIOZA_SAML_ROOT=/opt/simplesamlphp
+SIMBIOZA_SAML_URL=https://simbioza.example.org/simplesaml/
+SIMBIOZA_SAML_CONFIG="$SIMBIOZA_APP_ROOT/data/saml/config"
+```
+
+For a site at `https://your-host.example/simbioza`, use
+`SIMBIOZA_SAML_URL=https://your-host.example/simbioza/simplesaml/` instead.
+Keep the final slash. The library root is **not** Simbioza's directory.
+An existing system-managed library may be reused, for example
+`/usr/share/simplesamlphp-aai`; do not modify its shared configuration,
+certificates or another application's SP.
+
+If a compatible library is already installed, skip the download block. Otherwise
+this example installs upstream **2.5.3.1 full**, with its published checksum.
+It requires PHP **8.3 or newer** and the extensions from the
+[SimpleSAMLphp requirements](https://simplesamlphp.org/docs/stable/simplesamlphp-install.html).
+Check [upstream releases](https://simplesamlphp.org/download/) for security updates;
+when choosing another version, change both URL and checksum together.
+Run the following only for a **new**, nonexistent library directory:
+
+```bash
+test ! -e "$SIMBIOZA_SAML_ROOT" && test ! -L "$SIMBIOZA_SAML_ROOT" &&
+SIMBIOZA_SAML_FETCH="$(mktemp -d)" &&
+curl --fail --location --proto '=https' --tlsv1.2 \
+  --output "$SIMBIOZA_SAML_FETCH/simplesamlphp.tar.gz" \
+  https://github.com/simplesamlphp/simplesamlphp/releases/download/v2.5.3.1/simplesamlphp-2.5.3.1-full.tar.gz &&
+test "$(openssl dgst -sha256 "$SIMBIOZA_SAML_FETCH/simplesamlphp.tar.gz" | awk '{print $NF}')" = \
+  b199ebcba6e30220e7b5df2783ca42f8947dd9bdf046e9e6302fef3d3a438d01 &&
+sudo install -d -m 0755 "$SIMBIOZA_SAML_ROOT" &&
+sudo tar -xzf "$SIMBIOZA_SAML_FETCH/simplesamlphp.tar.gz" \
+  --strip-components=1 -C "$SIMBIOZA_SAML_ROOT"
+```
+
+Stop if any command fails. Verify the selected library:
+
+```bash
+test -f "$SIMBIOZA_SAML_ROOT/vendor/autoload.php" &&
+test -f "$SIMBIOZA_SAML_ROOT/public/module.php" &&
+php -r 'require $argv[1]; exit(class_exists("SimpleSAML\\Auth\\Simple") ? 0 : 1);' \
+  "$SIMBIOZA_SAML_ROOT/vendor/autoload.php"
+```
+
+### S2. Prepare private configuration and trusted metadata
+
+From `$SIMBIOZA_APP_ROOT`, create private directories and copy **templates**.
+This block refuses to overwrite configuration. When restoring preserved settings
+for the **same SP**, restore its `config`, certificates and required metadata
+instead; do not copy another site's credentials or restore sessions/cache/the
+former application database.
+
+```bash
+mkdir -p "$SIMBIOZA_APP_ROOT/data/saml/config" \
+  "$SIMBIOZA_APP_ROOT/data/saml/metadata" "$SIMBIOZA_APP_ROOT/data/saml/cert" \
+  "$SIMBIOZA_APP_ROOT/data/saml/data" "$SIMBIOZA_APP_ROOT/data/saml/cache" \
+  "$SIMBIOZA_APP_ROOT/data/saml/logs" "$SIMBIOZA_APP_ROOT/data/saml/tmp" &&
+test ! -e "$SIMBIOZA_SAML_CONFIG/config.php" &&
+test ! -e "$SIMBIOZA_SAML_CONFIG/authsources.php" &&
+cp "$SIMBIOZA_SAML_ROOT/config/config.php.dist" "$SIMBIOZA_SAML_CONFIG/config.php" &&
+cp "$SIMBIOZA_SAML_ROOT/config/authsources.php.dist" "$SIMBIOZA_SAML_CONFIG/authsources.php"
+```
+
+Edit `config.php` with `sudoedit "$SIMBIOZA_SAML_CONFIG/config.php"`. Set these
+keys inside its existing `$config` array. Replace example filesystem paths with
+your application path; PHP files do not expand terminal variables.
+
+| Key | Value or action |
+| --- | --- |
+| `baseurlpath` | The full HTTPS `SIMBIOZA_SAML_URL` value, including the final slash. |
+| `certdir`, `metadatadir` | `/srv/simbioza/data/saml/cert` and `/srv/simbioza/data/saml/metadata`. |
+| `datadir`, `cachedir`, `loggingdir`, `tempdir` | The corresponding private `data`, `cache`, `logs`, `tmp` directories under `/srv/simbioza/data/saml`. |
+| `metadata.sources` | A trusted source, e.g. `[['type' => 'flatfile']]` using private `metadatadir`; use your federation's verified mechanism when applicable. |
+| `secretsalt`, `assets['salt']` | Two different random values, each generated with `openssl rand -hex 32`; edit `salt` inside the existing `assets` array, not a new top-level `assets.salt` key. Never use template values or publish them. |
+| `auth.adminpassword` | A hash generated interactively with `php "$SIMBIOZA_SAML_ROOT/bin/pwgen.php"`; separate from your Simbioza password. |
+| `store.type` | `phpsession` for this walkthrough. |
+| `session.phpsession.cookiename` | A site-specific name, e.g. `SimbiozaSAML`, different from Simbioza's and other sites' session cookies. |
+| `session.phpsession.savepath` | `null`, so both endpoints use this pool's private `data/sessions`. |
+| `session.cookie.path` | `/` for a dedicated hostname or `/simbioza/` for that prefix; must cover both application and SAML endpoint. |
+| `session.cookie.secure`, `session.phpsession.httponly` | `true`; use HTTPS. |
+| `showerrors` | `false` outside controlled troubleshooting. |
+
+In `authsources.php`, configure `default-sp` as `saml:SP` with your own stable
+`entityID` and the trusted IdP's `idp` entity ID. Remove unused example sources.
+Obtain IdP metadata from your federation/IdP administrator; save trusted PHP
+metadata as `data/saml/metadata/saml20-idp-remote.php`, or configure the
+federation's supported metadata mechanism. Do not disable signature checks or
+trust an unverified signing certificate.
+
+If the IdP requires an SP certificate, generate a private key/certificate for a
+**new** SP in this site's `data/saml/cert` and reference the filenames through
+`privatekey` and `certificate` in `default-sp`, following federation policy.
+For the **same registered SP**, retain its EntityID, existing keys/certificates
+and relevant metadata rather than generating replacements.
+
+### S3. Configure the dedicated pool and verify ACLs
+
+From `$SIMBIOZA_APP_ROOT`, rerun the generator for the **same application and
+instance**, adding the private configuration argument. This updates and restarts
+only that dedicated pool, reusing its existing accounts/groups:
+
+```bash
+cd "$SIMBIOZA_APP_ROOT" &&
+sudo php scripts/configure_fpm_setup.php --install \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" \
+  --simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG" &&
+sudo php scripts/configure_fpm_setup.php --finalize \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" \
+  --simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG" &&
+php scripts/configure_fpm_setup.php --check \
+  --app-root="$SIMBIOZA_APP_ROOT" --maintainer="$(id -un)" \
+  --simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG"
+```
+
+On macOS add `--php-fpm="$(brew --prefix)/sbin/php-fpm"` to **all three**
+commands. For a named instance repeat the original `--instance` and `--listen`
+options too. This is not a DEMO reset-baseline repair procedure.
+The generator exports `SIMPLESAMLPHP_CONFIG_DIR` inside the FPM worker despite
+`clear_env = yes`; an SSH `export` or Apache `SetEnv` alone is not sufficient.
+
+On Linux, verify read access and private configuration ACLs:
+
+```bash
+getfacl -p "$SIMBIOZA_SAML_CONFIG" "$SIMBIOZA_SAML_CONFIG/config.php" &&
+sudo -u fpm-simbioza test -r "$SIMBIOZA_SAML_CONFIG/config.php" &&
+sudo -u fpm-simbioza test -r "$SIMBIOZA_SAML_CONFIG/authsources.php" &&
+sudo -u fpm-simbioza test ! -w "$SIMBIOZA_SAML_CONFIG/config.php"
+```
+
+Expect `group:app-simbioza:r-x` and a matching default ACL on the directory;
+files are readable, not writable, by FPM. Deployment retains ownership.
+Use suffixed identities for a named instance. On macOS the generator uses group
+ownership instead of Linux POSIX ACL commands.
+
+### S4. Send the SAML endpoint to the same FPM pool
+
+Add this block to the **existing HTTPS vhost**, not a second vhost or a shared
+global SimpleSAMLphp alias. Replace URL prefix and filesystem paths with S1's
+values; Apache does not expand shell variables. A longer SAML alias must appear
+**before** a general `/simbioza` application alias.
+
+```apache
+Alias /simplesaml "/opt/simplesamlphp/public"
+<Directory "/opt/simplesamlphp/public">
+    Options -Indexes +FollowSymLinks
+    AllowOverride None
+    Require all granted
+    AcceptPathInfo On
+</Directory>
+ProxyPassMatch "^/simplesaml/(.+\.php(?:/.*)?)$" "fcgi://127.0.0.1:9075/opt/simplesamlphp/public/$1"
+```
+
+For `/simbioza`, use `Alias /simbioza/simplesaml` and regex
+`^/simbioza/simplesaml/(.+\.php(?:/.*)?)$`. For a system package, replace
+**both** `/opt/simplesamlphp/public` paths with its actual `public/` directory.
+Use your pool's actual port. The explicit proxy preserves `module.php/...`
+PATH_INFO and uses the application's FPM identity, environment and session
+directory. Its ordinary PHP handler does not cover this separate alias.
+
+On Debian/Ubuntu validate, then gracefully reload Apache:
+
+```bash
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+On Homebrew Apache use `sudo /opt/homebrew/bin/httpd -t` and, only on success,
+`sudo /opt/homebrew/bin/httpd -k graceful`. With Puppet/Ansible, change the
+authoritative managed vhost rather than a generated file. For Nginx, use the
+[official alias/PATH_INFO configuration](https://simplesamlphp.org/docs/stable/simplesamlphp-install.html#configuring-nginx)
+with this same dedicated pool and URL prefix, not a shared default pool.
+Never expose `config/`, `cert/` or private metadata through the web alias.
+
+### S5. Register the SP, map attributes and test authentication
+
+Open the SAML base URL and obtain `default-sp` metadata through the SimpleSAMLphp
+administrator interface. Send it to the IdP/federation administrator. Verify
+the registered **EntityID, ACS and SLO** use this site's HTTPS SAML prefix and
+wait until registration is active.
+
+In Simbioza **Settings → Authentication**, enable the SimpleSAMLphp protocol.
+Create a SAML profile with the library's absolute `vendor/autoload.php` path
+and `auth_source = default-sp`. Use **Test profile** to capture actual IdP
+attributes; choose a stable subject/login attribute and map email/name fields.
+Do not guess attribute names from a different provider. Test again until the
+profile is operational, enable it, and check that the intended users may use it.
+Account auto-creation is an explicit profile choice.
+
+The GUI writes Simbioza's settings to `HPH_CONFIG_PATH/auth/auth.json`; it
+does not edit external SimpleSAMLphp files. For manual Auth configuration,
+start with the Auth module's `auth.json.dist`, never by replacing a live file.
+
+Test in a private browser: SAML login → return to Simbioza → protected page →
+logout → another login. Metadata loading alone does not prove authentication.
+With `phpsession`, a different pool/session directory can cause login loops:
+correct routing/environment instead of granting wider permissions. Retain
+local administrator access until the complete browser flow succeeds.
 
 ## Maintenance after installation
 
