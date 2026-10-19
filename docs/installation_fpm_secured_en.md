@@ -383,6 +383,19 @@ For a shared hostname, place this block **inside its existing HTTPS virtual
 host**, instead of creating another virtual host with the same name.
 Replace the release path, URL prefix and (for FPM) the pool port:
 
+The three paths have different purposes:
+
+| Setting | Example |
+| --- | --- |
+| Application root used in steps 2 and 4 | `/srv/simbioza` |
+| Public directory used by both `Alias` and `<Directory>` | `/srv/simbioza/public` |
+| Public URL prefix | `/simbioza` |
+
+The application root does not have to be inside the shared hostname's
+`DocumentRoot`. Keep it outside that public tree. No application-directory
+symlink is required for this setup. The Nginx site-enabling symlink above is
+unrelated: it enables server configuration, not application files.
+
 ```apache
 Alias /simbioza "/srv/simbioza/public"
 <Directory "/srv/simbioza/public">
@@ -395,6 +408,60 @@ Alias /simbioza "/srv/simbioza/public"
     </FilesMatch>
 </Directory>
 ```
+
+Also set `ProxyTimeout 900` in this existing vhost. If an old configuration
+contains `<Directory "/var/www/html/simbioza">` for a former public-directory
+symlink, **replace that block** with the real public-directory block above;
+adding only `Alias` is not enough. The PHP handler must apply to the alias's
+actual filesystem target. Do not expose the application's parent directory,
+`config/`, `data/` or `vendor/` to make an obsolete path work.
+
+For an application root `/data/www/simbioza`, both paths in the block become
+`/data/www/simbioza/public`; the public URL remains `/simbioza`. Do not change
+`SIMBIOZA_APP_ROOT` or regenerate the pool merely to change the URL mapping.
+If the application root itself changes, its FPM/helper paths also need explicit
+reconfiguration; an Apache alias does not perform that relocation.
+
+With Puppet/Ansible, make the equivalent change in the authoritative managed
+vhost definition. Do not edit the generated vhost as a permanent fix, create a
+duplicate HTTPS vhost, or remove other applications' aliases. If optional SAML
+already has a longer alias such as `/simbioza/simplesaml`, keep that alias
+**before** the general `/simbioza` alias. SAML remains optional.
+
+Before continuing, validate and gracefully reload Apache:
+
+```bash
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+Use this Linux block instead of the new-site `a2ensite simbioza` commands when
+the shared HTTPS vhost already exists. The Homebrew validation/reload commands
+are listed in the Apache section above. A running FPM service and valid Apache
+syntax do not prove the request uses the correct application path: test the
+public `/simbioza/` URL as well. Stop on HTTP 500 or a missing `bootstrap.php`;
+inspect the alias, directory handler and FPM paths instead of continuing with
+the wizard or changing permissions broadly.
+
+#### Reinstallation only: an obsolete custom FPM bind mount
+
+A clean installation does not create a drop-in for an old public-directory
+symlink. If an existing installation had one, inspect it before restarting:
+
+```bash
+sudo systemctl cat php-fpm-simbioza.service
+sudo systemctl show php-fpm-simbioza.service -p DropInPaths
+```
+
+Use the suffixed service name for a named instance. After switching to the
+direct alias, remove **only a confirmed obsolete custom drop-in** whose sole
+purpose was binding the removed symlink path. Never delete the whole
+`.service.d` directory or remove the generated application's actual bind mounts.
+An obsolete bind to a nonexistent path can prevent the next FPM startup.
+After that specific removal, run `sudo systemctl daemon-reload`, then
+`sudo systemctl restart php-fpm-simbioza.service` and verify it is active.
+This is one-time host cleanup, not an additional account-creation, installation
+or wizard step. If no FPM configuration changed, an Apache alias change alone
+does not require restarting FPM.
 
 Use `--base-url=https://your-host.example/simbioza` for the installer, not
 the hostname without its prefix. For a demo at `/demo`, replace **both**

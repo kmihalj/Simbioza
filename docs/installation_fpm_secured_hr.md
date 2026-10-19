@@ -375,6 +375,19 @@ Za zajedničku domenu ovaj blok stavite **unutar njezina postojećeg HTTPS
 virtualnog hosta**, ne izrađujte još jedan virtualni host istog imena.
 Zamijenite putanju izdanja, URL prefiks i (za FPM) port poola:
 
+Tri putanje imaju različite namjene:
+
+| Postavka | Primjer |
+| --- | --- |
+| Korijen aplikacije korišten u 2. i 4. koraku | `/srv/simbioza` |
+| Javni direktorij koji koriste i `Alias` i `<Directory>` | `/srv/simbioza/public` |
+| Javni URL prefiks | `/simbioza` |
+
+Korijen aplikacije ne mora biti unutar `DocumentRoot` direktorija zajedničke
+domene. Držite ga izvan tog javnog stabla. Ovaj postupak ne traži simboličku
+poveznicu na direktorij aplikacije. Nginx poveznica iznad nije povezana s time:
+ona uključuje konfiguraciju poslužitelja, ne aplikacijske datoteke.
+
 ```apache
 Alias /simbioza "/srv/simbioza/public"
 <Directory "/srv/simbioza/public">
@@ -387,6 +400,61 @@ Alias /simbioza "/srv/simbioza/public"
     </FilesMatch>
 </Directory>
 ```
+
+U postojećem vhostu postavite i `ProxyTimeout 900`. Ako stara konfiguracija
+sadrži `<Directory "/var/www/html/simbioza">` za nekadašnju poveznicu na javni
+direktorij, **zamijenite taj blok** gornjim blokom stvarnog javnog direktorija;
+nije dovoljno dodati samo `Alias`. PHP handler mora vrijediti za stvarni
+datotečni cilj aliasa. Ne izlažite roditeljski aplikacijski direktorij,
+`config/`, `data/` ni `vendor/` kako biste osposobili zastarjelu putanju.
+
+Za korijen aplikacije `/data/www/simbioza` obje putanje u bloku postaju
+`/data/www/simbioza/public`; javni URL ostaje `/simbioza`. Ne mijenjajte
+`SIMBIOZA_APP_ROOT` i ne generirajte ponovno pool samo radi URL usmjeravanja.
+Ako se mijenja sam korijen aplikacije, zasebno treba uskladiti FPM/helper
+putanje; Apache alias ne premješta aplikaciju.
+
+Uz Puppet/Ansible odgovarajuću promjenu napravite u izvornoj upravljanoj
+vhost konfiguraciji. Nemojte trajno popravljati generiranu datoteku, stvarati
+drugi HTTPS vhost istog imena ni uklanjati aliase drugih aplikacija. Ako
+neobvezni SAML već ima dulji alias poput `/simbioza/simplesaml`, zadržite ga
+**prije** općeg aliasa `/simbioza`. SAML i dalje nije obvezan.
+
+Prije nastavka provjerite i kontrolirano učitajte Apache:
+
+```bash
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+Ovaj Linux blok koristite umjesto naredbi `a2ensite simbioza` za novi site
+ako zajednički HTTPS vhost već postoji. Homebrew naredbe provjere/učitavanja
+navedene su u prethodnom Apache poglavlju. Aktivan FPM servis i ispravna Apache
+sintaksa ne dokazuju da zahtjev koristi ispravnu aplikacijsku putanju:
+provjerite i javnu adresu `/simbioza/`. Stanite na HTTP 500 ili nedostajući
+`bootstrap.php`; provjerite alias, direktorijski handler i FPM putanje umjesto
+nastavka čarobnjaka ili općeg širenja prava.
+
+#### Samo pri reinstalaciji: zastarjeli vlastiti FPM bind mount
+
+Čista instalacija ne stvara dodatak za staru poveznicu na javni direktorij.
+Ako ga je postojeća instalacija imala, prije restarta pregledajte ga:
+
+```bash
+sudo systemctl cat php-fpm-simbioza.service
+sudo systemctl show php-fpm-simbioza.service -p DropInPaths
+```
+
+Za imenovanu instancu koristite servis s nastavkom. Nakon prelaska na izravni
+alias uklonite **samo potvrđeno zastarjeli vlastiti dodatak** čija je jedina
+namjena bila vezanje uklonjene putanje poveznice. Nikada ne brišite cijeli
+`.service.d` direktorij niti uklanjajte generirana vezanja stvarne aplikacije.
+Zastarjelo vezanje na nepostojeću putanju može spriječiti sljedeće pokretanje
+FPM-a. Nakon tog konkretnog uklanjanja pokrenite
+`sudo systemctl daemon-reload`, zatim
+`sudo systemctl restart php-fpm-simbioza.service` i provjerite da je aktivan.
+To je jednokratno čišćenje poslužitelja, ne dodatni korak stvaranja računa,
+instalacije ni čarobnjaka. Ako FPM konfiguracija nije mijenjana, sama promjena
+Apache aliasa ne traži restart FPM-a.
 
 Installeru predajte `--base-url=https://vas-host.example/simbioza`, ne samo
 domenu bez prefiksa. Za demo na `/demo` promijenite **oba** primjera prefiksa

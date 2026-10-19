@@ -126,6 +126,7 @@ final class BundledGuideArchivesTest extends TestCase
             foreach ($identities as $identity) {
                 $this->assertStringContainsString($identity, $parts[0]);
             }
+
             foreach (
                 ['### S1.', '### S2.', '### S3.', '### S4.', '### S5.', 'OIDC, CAS,',
                 'SIMPLESAMLPHP_CONFIG_DIR', 'clear_env = yes', 'auth_source = default-sp',
@@ -134,8 +135,44 @@ final class BundledGuideArchivesTest extends TestCase
             ) {
                 $this->assertStringContainsString($required, $parts[1], $locale);
             }
+
             $this->assertSame(3, substr_count($parts[1], '--simplesaml-config-dir="$SIMBIOZA_SAML_CONFIG"'));
             $this->assertStringNotContainsString('apps-test.unizg.hr', $parts[1]);
+        }
+    }
+
+    /**
+     * EN: Shared-host instructions bind the PHP handler to the alias's actual public directory.
+     * Managed-vhost changes and obsolete custom bind cleanup are explicit, not new-install prerequisites.
+     *
+     * HR: Upute zajedničke domene vežu PHP handler na stvarni javni direktorij aliasa.
+     * Promjene upravljanog vhosta i čišćenje starih vezanja izričiti su, ne preduvjeti nove instalacije.
+     */
+    public function testSharedApacheVhostUsesTheRealPublicDirectory(): void
+    {
+        $root = dirname(__DIR__, 3);
+        foreach (['en', 'hr'] as $locale) {
+            $text = (string)file_get_contents($root . '/docs/installation_fpm_secured_' . $locale . '.md');
+            preg_match_all('/^```apache\R(.*?)^```/ms', $text, $examples);
+            $matched = false;
+            foreach ($examples[1] as $example) {
+                if (!str_contains($example, 'Alias /simbioza "/srv/simbioza/public"')) {
+                    continue;
+                }
+
+                $matched = true;
+                $this->assertStringContainsString('<Directory "/srv/simbioza/public">', $example);
+                $this->assertStringContainsString('SetHandler "proxy:fcgi://127.0.0.1:9075"', $example);
+                $this->assertStringNotContainsString('/var/www/html/simbioza', $example);
+            }
+
+            $this->assertTrue($matched, $locale);
+            foreach (
+                ['Puppet/Ansible', '/data/www/simbioza/public', 'ProxyTimeout 900', 'DropInPaths',
+                'systemctl daemon-reload', '.service.d', 'bootstrap.php'] as $required
+            ) {
+                $this->assertStringContainsString($required, $text, $locale);
+            }
         }
     }
 
