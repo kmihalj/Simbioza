@@ -228,7 +228,7 @@ your shell variables.
 
     <Directory /srv/simbioza/public>
         Options -Indexes +FollowSymLinks
-        AllowOverride FileInfo Options
+        AllowOverride FileInfo Indexes Options
         Require all granted
         DirectoryIndex index.php
 
@@ -277,7 +277,7 @@ Replace the release path, URL prefix and (for FPM) the pool port:
 Alias /simbioza "/srv/simbioza/public"
 <Directory "/srv/simbioza/public">
     Options -Indexes +FollowSymLinks
-    AllowOverride FileInfo Options
+    AllowOverride FileInfo Indexes Options
     Require all granted
     DirectoryIndex index.php
     <FilesMatch "\.php$">

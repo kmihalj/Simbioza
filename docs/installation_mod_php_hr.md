@@ -220,7 +220,7 @@ varijable iz vašeg terminala.
 
     <Directory /srv/simbioza/public>
         Options -Indexes +FollowSymLinks
-        AllowOverride FileInfo Options
+        AllowOverride FileInfo Indexes Options
         Require all granted
         DirectoryIndex index.php
 
@@ -269,7 +269,7 @@ Zamijenite putanju izdanja, URL prefiks i (za FPM) port poola:
 Alias /simbioza "/srv/simbioza/public"
 <Directory "/srv/simbioza/public">
     Options -Indexes +FollowSymLinks
-    AllowOverride FileInfo Options
+    AllowOverride FileInfo Indexes Options
     Require all granted
     DirectoryIndex index.php
     <FilesMatch "\.php$">

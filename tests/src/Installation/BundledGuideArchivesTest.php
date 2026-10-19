@@ -99,6 +99,41 @@ final class BundledGuideArchivesTest extends TestCase
     }
 
     /**
+     * EN: Every Apache example permits the directives shipped in public/.htaccess.
+     * The Indexes override class permits DirectoryIndex, not directory listing.
+     *
+     * HR: Svaki Apache primjer dopušta direktive isporučene u public/.htaccess.
+     * Kategorija dopuštenja Indexes omogućuje DirectoryIndex, ne ispis direktorija.
+     */
+    public function testApacheGuidesAllowShippedHtaccessDirectives(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $htaccess = (string)file_get_contents($root . '/public/.htaccess');
+        $this->assertStringContainsString('DirectoryIndex index.php', $htaccess);
+        $this->assertStringContainsString('Options -Indexes', $htaccess);
+        $this->assertStringContainsString('RewriteEngine On', $htaccess);
+        foreach (['mod_php', 'fpm', 'fpm_secured'] as $mode) {
+            foreach (['en', 'hr'] as $locale) {
+                $name = 'installation_' . $mode . '_' . $locale . '.md';
+                $text = (string)file_get_contents($root . '/docs/' . $name);
+                preg_match_all('/^```apache\R(.*?)^```/ms', $text, $examples);
+                $publicExamples = 0;
+                foreach ($examples[1] as $example) {
+                    if (preg_match('~<Directory\s+"?/srv/simbioza/public"?>~', $example) !== 1) {
+                        continue;
+                    }
+
+                    ++$publicExamples;
+                    $this->assertStringContainsString('AllowOverride FileInfo Indexes Options', $example, $name);
+                    $this->assertStringContainsString('Options -Indexes', $example, $name);
+                }
+
+                $this->assertSame(2, $publicExamples, $name);
+            }
+        }
+    }
+
+    /**
      * EN: Optional SAML has an independent, complete walkthrough and never enters base setup commands.
      * Identity reuse and least-privilege ACL checks remain documented in both languages.
      *

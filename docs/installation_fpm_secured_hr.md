@@ -299,7 +299,7 @@ Apache ne proširuje `$SIMBIOZA_APP_ROOT` iz vašeg terminala.
 
     <Directory /srv/simbioza/public>
         Options -Indexes +FollowSymLinks
-        AllowOverride FileInfo Options
+        AllowOverride FileInfo Indexes Options
         Require all granted
         DirectoryIndex index.php
 
@@ -314,7 +314,16 @@ Apache ne proširuje `$SIMBIOZA_APP_ROOT` iz vašeg terminala.
 </VirtualHost>
 ```
 
-Provjerite Apache konfiguraciju prije kontroliranog ponovnog učitavanja.
+Isporučeni `public/.htaccess` koristi `DirectoryIndex index.php`, za što je
+potrebna kategorija dopuštenja `Indexes`; rewrite pravila trebaju `FileInfo`,
+a `Options -Indexes` treba `Options`. Zadržite sve tri kategorije u
+`AllowOverride`. Time se **ne uključuje** ispis direktorija: `Options -Indexes`
+i dalje ga isključuje. Izostala kategorija može izazvati HTTP 500
+(`DirectoryIndex not allowed here`) čak i kada `apache2ctl configtest` javlja
+`Syntax OK`, jer se `.htaccess` čita tek pri zahtjevu za taj direktorij.
+Nakon ponovnog učitavanja provjerite stvarni javni URL prije nastavka na
+čarobnjak. Vidi
+[Apacheovu uputu za DirectoryIndex](https://httpd.apache.org/docs/2.4/mod/mod_dir.html#directoryindex).
 Roditeljski direktorij izdanja nikada ne izlažite kao korijenski web direktorij.
 
 Nakon spremanja provjerite i pokrenite Apache. Na Debianu/Ubuntuu:
@@ -425,7 +434,7 @@ ona uključuje konfiguraciju poslužitelja, ne aplikacijske datoteke.
 Alias /simbioza "/srv/simbioza/public"
 <Directory "/srv/simbioza/public">
     Options -Indexes +FollowSymLinks
-    AllowOverride FileInfo Options
+    AllowOverride FileInfo Indexes Options
     Require all granted
     DirectoryIndex index.php
     <FilesMatch "\.php$">

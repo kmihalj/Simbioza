@@ -306,7 +306,7 @@ Apache does not expand `$SIMBIOZA_APP_ROOT` from your terminal.
 
     <Directory /srv/simbioza/public>
         Options -Indexes +FollowSymLinks
-        AllowOverride FileInfo Options
+        AllowOverride FileInfo Indexes Options
         Require all granted
         DirectoryIndex index.php
 
@@ -321,8 +321,16 @@ Apache does not expand `$SIMBIOZA_APP_ROOT` from your terminal.
 </VirtualHost>
 ```
 
-Test the Apache configuration before a graceful reload. Do not expose the
-parent release directory as a document root.
+The shipped `public/.htaccess` uses `DirectoryIndex index.php`, which requires
+the `Indexes` override class; rewrite rules need `FileInfo`, and `Options
+-Indexes` needs `Options`. Keep all three classes in `AllowOverride`.
+This does **not** enable directory listings: `Options -Indexes` still disables
+them. A missing class can produce HTTP 500 (`DirectoryIndex not allowed here`)
+even when `apache2ctl configtest` reports `Syntax OK`, because `.htaccess` is
+read when a request reaches that directory. After reloading, check the actual
+public URL before continuing to the wizard. See the
+[Apache DirectoryIndex reference](https://httpd.apache.org/docs/2.4/mod/mod_dir.html#directoryindex).
+Do not expose the parent release directory as a document root.
 
 After saving, test and start Apache. On Debian/Ubuntu:
 
@@ -433,7 +441,7 @@ unrelated: it enables server configuration, not application files.
 Alias /simbioza "/srv/simbioza/public"
 <Directory "/srv/simbioza/public">
     Options -Indexes +FollowSymLinks
-    AllowOverride FileInfo Options
+    AllowOverride FileInfo Indexes Options
     Require all granted
     DirectoryIndex index.php
     <FilesMatch "\.php$">
