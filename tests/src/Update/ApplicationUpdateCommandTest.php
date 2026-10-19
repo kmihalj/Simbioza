@@ -678,6 +678,7 @@ PHP);
         }
 
         $preservedFiles = [
+            'config/auth/auth.json',
             'config/api/api.php',
             'config/backup/backup.php',
             'config/backup/backup-providers.php',
@@ -689,12 +690,18 @@ PHP);
             'config/workspace/workspace.json',
             'config/modules.php',
             'config/editor-html/editor-html.json',
+            'config/editor-html/external-scripts.json',
+            'config/workspace-search/workspace-search.php',
+            'config/confluence-import/confluence-import.php',
+            'config/languages.php',
+            'config/setup.php',
             'config/site-only.php',
             'config/menu/top.json',
             'config/menu/settings.json',
             'config/menu/menu.php',
             'config/theme/settings.json',
             'config/theme/themes.json',
+            'config/theme/theme.php',
             'config/custom/site.json',
         ];
         foreach ($preservedFiles as $relativePath) {

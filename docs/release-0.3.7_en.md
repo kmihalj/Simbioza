@@ -1,5 +1,7 @@
 # Simbioza 0.3.7 — bundled language revisions
 
+> Historical release note. For current installation instructions, use the [installation guide](installation_en.md).
+
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/release-0.3.7_hr.md)
 
 This application patch recognizes built-in translations on new and upgraded

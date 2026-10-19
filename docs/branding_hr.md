@@ -40,6 +40,11 @@ cijelu temu` uključuje cijeli direktorij `data/themes/simbioza`, zajedno s
 nekorištenim varijantama i izvornim materijalom, pa kasniji uvoz vraća cijelu
 biblioteku dostupnu za uređivanje.
 
+Instalacijski paket teme služi samo novom siteu. Nadogradnja aplikacije ne uvozi
+ga ponovo niti zamjenjuje administratorski uređenu temu `simbioza`, njezine boje,
+raspored, odabrane vizuale ili cijelu biblioteku. Zamjena teme izričit je
+administratorski uvoz, nikada automatski korak nadogradnje.
+
 ## Ugrađene partnerske teme
 
 Uz teme Simbioza, Srce SUP i Standard, aplikacija sadrži i teme `dabar` i

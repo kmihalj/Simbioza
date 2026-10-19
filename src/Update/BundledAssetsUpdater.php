@@ -14,15 +14,13 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
-use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
-use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use RuntimeException;
 
 /**
- * EN: Updates the enabled Simbioza theme and individual bundled guide pages.
+ * EN: Updates individual bundled guide pages without importing installation themes.
  *
- * HR: Ažurira uključenu temu Simbioza i pojedinačne isporučene stranice uputa.
+ * HR: Ažurira pojedinačne isporučene stranice uputa bez uvoza instalacijskih tema.
  */
 final readonly class BundledAssetsUpdater
 {
@@ -78,8 +76,6 @@ final readonly class BundledAssetsUpdater
         private Database $database,
         private ?BackupManager $backups,
         private WorkspaceRepository $workspaces,
-        private ?ThemeConfigRepository $themes,
-        private ?ThemeArchiveService $themeArchives,
         private AuthUserService $users,
         private EditorHtmlConfig $editorConfig,
     ) {
@@ -111,39 +107,13 @@ final readonly class BundledAssetsUpdater
         }
 
         $actions = [];
-        $themePath = $root . '/resources/installation/theme/simbioza.zip';
-        if (
-            $this->themes instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository
-            && $this->themeArchives instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService
-            && !is_file($themePath)
-        ) {
-            throw new RuntimeException('A bundled asset package is missing: ' . basename($themePath));
-        }
-
-        $themeHash = is_file($themePath) ? hash_file('sha256', $themePath) : false;
-        if (
-            $this->themes instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository
-            && $this->themeArchives instanceof \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService
-            && is_string($themeHash)
-            && ($state['theme_sha256'] ?? null) !== $themeHash
-        ) {
-            $directory = $root . '/data/backups/bundled-assets';
-            if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
-                throw new RuntimeException('The bundled-asset recovery directory is unavailable.');
-            }
-
-            if (($this->themes->themeById('simbioza')['id'] ?? null) === 'simbioza') {
-                $snapshot = $directory . '/simbioza-' . bin2hex(random_bytes(8)) . '.zip';
-                $this->privateWrite($snapshot, $this->themeArchives->export('simbioza'));
-                $state['previous_theme_archive'] = $snapshot;
-                $this->saveState($statePath, $state);
-            }
-
-            $this->themeArchives->importFile($themePath, true, true);
-            $state['theme_sha256'] = $themeHash;
-            $this->saveState($statePath, $state);
-            $actions[] = 'Simbioza theme updated; other themes and active-theme settings preserved.';
-        }
+        // EN: The theme ZIP is a fresh-install seed, never an update payload.
+        //     Even the shipped theme is administrator-owned after installation.
+        //     Keep historical recovery references, but never reimport defaults.
+        //
+        // HR: ZIP teme služi samo početnoj instalaciji, nikada nadogradnji.
+        //     Nakon instalacije i isporučena tema pripada administratoru.
+        //     Čuvamo stare reference za oporavak, ali ne uvozimo zadane postavke.
 
         $pagePackages = [];
         foreach (self::GUIDE_PAGES as $stateKey => $definition) {

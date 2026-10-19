@@ -843,8 +843,20 @@ PHP);
         $customTheme['name'] = 'User custom theme';
         $customTheme['system'] = false;
         $customTheme['light']['colors']['primary'] = '#ABCDEF';
+        // EN: Administrators can edit the shipped theme itself, not only a clone.
+        //     A missing update receipt or changed bundled ZIP must not reset it.
+        //
+        // HR: Administrator smije urediti i isporučenu temu, ne samo njezinu kopiju.
+        //     Nedostajuća evidencija nadogradnje ili izmijenjeni ZIP ne smiju je resetirati.
+        $themes[0]['light']['colors']['muted_text'] = '#D6D6D6';
+        $themes[0]['dark']['colors']['muted_text'] = '#121212';
+        $themes[0]['components']['header']['height_px'] = 108;
+        $themes[0]['components']['hero']['visual_rotation_deg'] = 17;
         $themes[] = $customTheme;
-        file_put_contents($paths->themeConfigDirectory() . '/themes.json', json_encode($themes, JSON_THROW_ON_ERROR));
+        $themesBeforeUpdate = json_encode($themes, JSON_THROW_ON_ERROR);
+        file_put_contents($paths->themeConfigDirectory() . '/themes.json', $themesBeforeUpdate);
+        $customThemeAsset = $root . '/data/themes/simbioza/administrator-note.txt';
+        file_put_contents($customThemeAsset, 'Administrator-owned theme asset.');
         $settings['active_theme'] = 'custom-user-theme';
         $settings['mode_policy'] = 'dark';
         $settingsPath = $paths->themeConfigDirectory() . '/settings.json';
@@ -911,14 +923,40 @@ PHP);
         $otherTasks = $database->table(ModuleTask::TABLE_STATES)->where('document_id', '=', $otherDocumentKey)->get();
         $otherComments = $database->table(ModuleComment::TABLE_COMMENTS)
             ->where('document_id', '=', $otherDocumentKey)->get();
+        $configurationHashes = [];
+        foreach (
+            new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
+                $paths->configDirectory(),
+                \FilesystemIterator::SKIP_DOTS,
+            )) as $configurationFile
+        ) {
+            if ($configurationFile->isFile() && !$configurationFile->isLink()) {
+                $configurationHashes[$configurationFile->getPathname()] = hash_file(
+                    'sha256',
+                    $configurationFile->getPathname(),
+                );
+            }
+        }
+
         $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/bundled-assets-finalize.php')
         . ' 2>&1';
         $output = [];
         exec($command, $output, $exit);
         $this->assertSame(0, $exit, implode("\n", $output));
+        foreach ($configurationHashes as $configurationPath => $beforeHash) {
+            $this->assertFileExists($configurationPath);
+            $this->assertSame($beforeHash, hash_file('sha256', $configurationPath), $configurationPath);
+        }
+
         $updatedThemes = json_decode((string)file_get_contents($paths->themeConfigDirectory() . '/themes.json'), true);
         $updatedThemes = array_column($updatedThemes, null, 'id');
         $this->assertSame('#ABCDEF', $updatedThemes['custom-user-theme']['light']['colors']['primary']);
+        $this->assertSame('#D6D6D6', $updatedThemes['simbioza']['light']['colors']['muted_text']);
+        $this->assertSame('#121212', $updatedThemes['simbioza']['dark']['colors']['muted_text']);
+        $this->assertSame(108, $updatedThemes['simbioza']['components']['header']['height_px']);
+        $this->assertSame(17, $updatedThemes['simbioza']['components']['hero']['visual_rotation_deg']);
+        $this->assertSame($themesBeforeUpdate, file_get_contents($paths->themeConfigDirectory() . '/themes.json'));
+        $this->assertSame('Administrator-owned theme asset.', file_get_contents($customThemeAsset));
         $updatedSettings = json_decode((string)file_get_contents($settingsPath), true);
         $this->assertSame($settings, $updatedSettings);
         $this->assertSame($aclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)

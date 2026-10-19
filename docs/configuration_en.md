@@ -65,6 +65,34 @@ Git and the public web directory.
 Package `config/services.php`, API/backup descriptors, views, translations and
 default settings are code/resources, not private installation configuration.
 
+## Updates preserve administrator configuration
+
+GUI and CLI application updates preserve existing installation/module settings,
+including configuration outside the application and higher-priority layers under
+`HPH_CONFIG_PATH` and `HPH_CONFIG_OVERRIDE_PATHS`. Release defaults must not
+replace stored values, custom ordering, disabled options or intentionally empty lists.
+The same rule applies during rollback. Packaged `.dist` examples and application
+bootstrap/routes/service definitions remain release-managed code, not user settings.
+
+The bundled Simbioza theme ZIP is used only by a new installation. An update
+does not reimport it, replace an edited `simbioza` theme, activate another theme,
+or replace `data/themes/` files. This remains true if the bundled ZIP changes
+or no bundled-theme update receipt exists. A deliberate theme import remains
+an explicit administrator action. Existing private recovery archives are retained.
+
+New menu administration entries may be appended by ID without replacing the
+labels, order, enabled state or options of existing entries. Default values for
+missing options may be read from module code; they must not reset saved options.
+Bundled user-guide pages are separately managed application content and can be
+updated while preserving their identity and access rights.
+
+Regression checks cover Auth, Email, Editor and external-script settings,
+Workspace, Calendar, Backup, API, Workspace Search, Confluence Import, Menu,
+Theme, language/module selection and application settings. They verify the
+configuration contents and ownership/modes across source synchronization,
+CLI/GUI updater execution, external configuration and rollback; the real
+bundled-content finalizer also preserves an edited shipped theme and its files.
+
 ## Installation, module selection and languages
 
 The installer and startup use the same configuration layers. Module selection

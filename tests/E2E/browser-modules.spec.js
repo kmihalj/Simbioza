@@ -1214,10 +1214,25 @@ test.describe('module browser surfaces', () => {
     await clonedEditor.locator('[data-theme-hero-visual-top]').fill('-77');
     await clonedEditor.locator('[data-theme-hero-visual-right]').fill('-33');
     await clonedEditor.locator('[data-theme-hero-visual-allow-overflow]').check();
+    // EN: A valid explicit palette must survive Save and the subsequent server-rendered preview.
+    //
+    // HR: Valjana izričita paleta mora preživjeti Spremi i sljedeći serverski pregled.
+    await clonedEditor.locator('[data-theme-section-id="base"] > summary').click();
+    for (const [variant, color] of [['light', '#D6D6D6'], ['dark', '#121212']]) {
+      const picker = clonedEditor.locator(`input[name="theme[${variant}][colors][muted_text]"]`);
+      await picker.locator('xpath=ancestor::*[@data-theme-color-control]//*[@data-theme-color-text]').fill(color);
+    }
     await Promise.all([
       page.waitForLoadState('networkidle'),
       page.getByRole('button', { name: 'Save theme' }).click(),
     ]);
+
+    for (const [variant, color] of [['light', '#D6D6D6'], ['dark', '#121212']]) {
+      await expect(page.locator(`input[name="theme[${variant}][colors][muted_text]"]`)).toHaveValue(color.toLowerCase());
+      await expect.poll(() => page.locator(`[data-theme-preview="${variant}"]`).evaluate(
+        (preview) => preview.style.getPropertyValue('--hph-muted-text'),
+      )).toBe(color);
+    }
 
     const packageDownloadPromise = page.waitForEvent('download');
     await page.getByRole('link', { name: 'Export theme package' }).click();
@@ -1252,6 +1267,8 @@ test.describe('module browser surfaces', () => {
     await expect(importedEditor.locator('[data-theme-hero-visual-top]')).toHaveValue('-77');
     await expect(importedEditor.locator('[data-theme-hero-visual-right]')).toHaveValue('-33');
     await expect(importedEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
+    await expect(importedEditor.locator('input[name="theme[light][colors][muted_text]"]')).toHaveValue('#d6d6d6');
+    await expect(importedEditor.locator('input[name="theme[dark][colors][muted_text]"]')).toHaveValue('#121212');
 
     page.once('dialog', (dialog) => dialog.accept());
     await Promise.all([

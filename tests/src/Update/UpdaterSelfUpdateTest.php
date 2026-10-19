@@ -709,17 +709,36 @@ PHP;
         $external = $inside ? $root . '/private-config/layers/site' : $this->temporaryRoot . '/external';
         mkdir($external, 0700, true);
         rename($root . '/config/modules.php', $external . '/modules.php');
-        foreach (
-            ['auth/auth.json' => '{"providers":{}}', 'api/api.php' => '<?php return ["rate_limit_per_minute"=>37];',
-            'backup/backup.php' => '<?php return ["archive_dir"=>"data/site-archives"];'] as $path => $bytes
-        ) {
-            mkdir(dirname($external . '/' . $path), 0700, true);
+        $privateConfiguration = [
+            'auth/auth.json' => '{"providers":{}}',
+            'api/api.php' => '<?php return ["rate_limit_per_minute"=>37];',
+            'backup/backup.php' => '<?php return ["archive_dir"=>"data/site-archives"];',
+            'backup/backup-providers.php' => '<?php return ["site-provider"=>true];',
+            'calendar/calendar.php' => '<?php return ["timezone"=>"Europe/Zagreb"];',
+            'email/email.json' => '{"sender":{"name":"Site-specific sender"}}',
+            'editor-html/editor-html.json' => '{"storage":{"driver":"database"}}',
+            'editor-html/external-scripts.json' => '{"scripts":[]}',
+            'workspace/workspace.json' => '{"homepage":{"type":"summaries"}}',
+            'workspace-search/workspace-search.php' => '<?php return ["page_size"=>37];',
+            'confluence-import/confluence-import.php' => '<?php return ["batch_size"=>37];',
+            'menu/menu.php' => '<?php return ["site-specific"=>true];',
+            'menu/top.json' => '[{"id":"site-home","label":"Site home"}]',
+            'menu/settings.json' => '[{"id":"site-settings","label":"Site settings"}]',
+            'theme/theme.php' => '<?php return ["site-specific"=>true];',
+            'theme/themes.json' => '[{"id":"simbioza","light":{"colors":{"muted_text":"#D6D6D6"}}}]',
+            'theme/settings.json' => '{"active_theme":"simbioza","mode_policy":"dark"}',
+        ];
+        foreach ($privateConfiguration as $path => $bytes) {
+            if (!is_dir(dirname($external . '/' . $path))) {
+                mkdir(dirname($external . '/' . $path), 0700, true);
+            }
+
             file_put_contents($external . '/' . $path, $bytes);
             chmod($external . '/' . $path, 0640);
         }
 
         $before = [];
-        foreach (['modules.php', 'auth/auth.json', 'api/api.php', 'backup/backup.php'] as $path) {
+        foreach (['modules.php', ...array_keys($privateConfiguration)] as $path) {
             $before[$path] = [file_get_contents($external . '/' . $path), stat($external . '/' . $path)];
         }
 

@@ -206,4 +206,32 @@ $roleQuery = $pdo->query("SELECT rolsuper FROM pg_roles WHERE rolname = current_
 $counts['app_role_superuser'] = $roleQuery->fetchColumn();
 $counts['private_config_hash'] = hash_file('sha256', '/runtime/config/auth/auth.json');
 $counts['attachment_hash'] = hash_file('sha256', '/runtime/data/a4-persistent.txt');
+// EN: Compare every private module configuration and theme file across image recreation.
+//     Report hashes only; private values never enter the CI evidence.
+//
+// HR: Uspoređuje sve privatne modulske postavke i datoteke tema nakon zamjene containera.
+//     Ispisuje samo hash vrijednosti; privatni sadržaj ne ulazi u CI izvještaj.
+$persistentTrees = [
+    '/runtime/config' => 'configuration_hashes',
+    '/runtime/data/themes' => 'theme_file_hashes',
+];
+foreach ($persistentTrees as $directory => $key) {
+    $hashes = [];
+    if (is_dir($directory)) {
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
+            $directory,
+            FilesystemIterator::SKIP_DOTS,
+        ));
+        foreach ($iterator as $file) {
+            if ($file->isFile() && !$file->isLink()) {
+                $relativePath = substr($file->getPathname(), strlen($directory) + 1);
+                $hashes[$relativePath] = hash_file('sha256', $file->getPathname());
+            }
+        }
+    }
+
+    ksort($hashes, SORT_STRING);
+    $counts[$key] = $hashes;
+}
+
 echo json_encode($counts, JSON_THROW_ON_ERROR) . "\n";

@@ -64,6 +64,36 @@ a privatne postavke držite izvan Gita i javnog web direktorija.
 Paketne `config/services.php`, API/backup deklaracije, predlošci, prijevodi i zadane
 postavke dio su koda/resursa, ne privatne instalacijske konfiguracije.
 
+## Nadogradnja čuva administratorske postavke
+
+GUI i CLI nadogradnja aplikacije čuvaju postojeće instalacijske i modulske
+postavke, uključujući konfiguraciju izvan aplikacije i više slojeve određene
+parametrima `HPH_CONFIG_PATH` i `HPH_CONFIG_OVERRIDE_PATHS`. Zadane vrijednosti
+izdanja ne smiju zamijeniti spremljene vrijednosti, ručni redoslijed, isključene
+opcije niti namjerno prazne liste. Isto vrijedi pri povratu nakon greške.
+Paketni `.dist` primjeri i definicije pokretanja/ruta/servisa ostaju dio koda
+izdanja, a ne korisničke postavke.
+
+ZIP isporučene Simbiozine teme koristi samo nova instalacija. Nadogradnja ga
+ne uvozi ponovo, ne zamjenjuje uređenu temu `simbioza`, ne aktivira drugu temu
+i ne zamjenjuje datoteke u `data/themes/`. To vrijedi i ako se isporučeni ZIP
+promijeni ili ne postoji evidencija prethodne nadogradnje teme. Namjerni uvoz
+teme i dalje je izričita administratorska radnja. Stare privatne kopije za
+oporavak ostaju sačuvane.
+
+Nove administracijske stavke izbornika mogu se dodati po ID-u bez zamjene
+oznaka, redoslijeda, uključenosti i opcija postojećih stavki. Zadane vrijednosti
+nedostajućih opcija mogu se čitati iz koda modula, ali ne smiju resetirati
+spremljene opcije. Ugrađene korisničke upute zaseban su aplikacijski sadržaj i
+smiju se nadograditi uz očuvanje identiteta stranica i njihovih ovlasti.
+
+Regresijske provjere obuhvaćaju Auth, Email, Editor i vanjske skripte, Workspace,
+Calendar, Backup, API, Workspace Search, Confluence Import, Menu, Theme, odabir
+jezika/modula i aplikacijske postavke. Provjeravaju sadržaj konfiguracije te
+vlasništvo/prava pri sinkronizaciji izvora, CLI/GUI nadogradnji, vanjskoj
+konfiguraciji i povratu; stvarni završni korak za isporučeni sadržaj također
+čuva uređenu isporučenu temu i njezine datoteke.
+
 ## Instalacija, moduli i jezici
 
 Installer i pokretanje koriste iste slojeve. Odabir modula nalazi se u

@@ -41,6 +41,11 @@ it does not duplicate the theme library below `public` or `vendor`.
 including unused variants and source material, so a later import restores the
 whole editable library.
 
+The installation theme package seeds a new site only. Application updates do
+not reimport it or replace an administrator-edited `simbioza` theme, its colors,
+layout, selected artwork or complete library. Replacing a theme is an explicit
+administrator import, never an automatic update step.
+
 ## Bundled partner themes
 
 In addition to the Simbioza, Srce SUP, and Standard themes, the application

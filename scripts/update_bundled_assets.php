@@ -6,9 +6,6 @@ use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupManager;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
-use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
-use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
-use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use App\Configuration\ConfigurationPaths;
 use App\Configuration\PhpConfigurationReader;
@@ -87,9 +84,6 @@ try {
         throw new RuntimeException('Set installation.base_path or supply --base-path explicitly.');
     }
 
-    $themePackage = $catalog->definitionFor('theme')['package'];
-    $themeEnabled = InstalledVersions::isInstalled($themePackage)
-    && in_array($themePackage, $persistentlyEnabledModules, true);
     $guideProviders = [
         'calendar' => 'calendar-workspace',
         'comment' => 'comment-workspace',
@@ -104,15 +98,10 @@ try {
         }
     }
 
-    $themes = $themeEnabled ? $container->get(ThemeConfigRepository::class) : null;
     $updater = new BundledAssetsUpdater(
         $database,
         $backupInstalled ? $container->get(BackupManager::class) : null,
         $repository,
-        $themes,
-        $themes instanceof ThemeConfigRepository
-            ? new ThemeArchiveService($themes, new ThemeAssetLibrary($themes))
-            : null,
         $container->get(AuthUserService::class),
         $container->get(EditorHtmlConfig::class),
     );

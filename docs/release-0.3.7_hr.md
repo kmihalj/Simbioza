@@ -1,5 +1,7 @@
 # Simbioza 0.3.7 — revizije ugrađenih jezika
 
+> Povijesna bilješka izdanja. Za aktualne instalacijske upute koristite [instalacijsku uputu](installation_hr.md).
+
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/release-0.3.7_en.md)
 
 Ova aplikacijska zakrpa prepoznaje ugrađene prijevode na novim i nadograđenim
