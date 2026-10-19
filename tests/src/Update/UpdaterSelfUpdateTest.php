@@ -706,8 +706,8 @@ PHP;
     public function testCurrentConfigurationIsPreserved(string $entry, bool $fail, bool $inside): void
     {
         [$root, $repository, $tools] = $this->fixture();
-        $external = $inside ? $root . '/private-config' : $this->temporaryRoot . '/external';
-        mkdir($external, 0700);
+        $external = $inside ? $root . '/private-config/layers/site' : $this->temporaryRoot . '/external';
+        mkdir($external, 0700, true);
         rename($root . '/config/modules.php', $external . '/modules.php');
         foreach (
             ['auth/auth.json' => '{"providers":{}}', 'api/api.php' => '<?php return ["rate_limit_per_minute"=>37];',
@@ -735,6 +735,8 @@ PHP;
         $this->release($repository, '0.3.1', $this->candidate($repository));
         [$exit, $output] = $this->runUpdater($root, $tools, $entry);
         $this->assertSame($fail ? 1 : 0, $exit, $output);
+        $this->assertStringNotContainsString('cannot delete', $output);
+        $this->assertStringNotContainsString('not empty', $output);
         foreach ($before as $path => [$bytes, $metadata]) {
             clearstatcache(true, $external . '/' . $path);
             $this->assertSame($bytes, file_get_contents($external . '/' . $path));
@@ -750,7 +752,7 @@ PHP;
             $archives = glob($root . '/data/backups/application-updates/*.tar.gz');
             [$tarExit, $entries] = $this->process(['tar', '-tzf', $archives[0]]);
             $this->assertSame(0, $tarExit);
-            $this->assertStringNotContainsString('private-config', $entries);
+            $this->assertStringNotContainsString('private-config/layers/site', $entries);
         }
     }
 
@@ -762,6 +764,100 @@ PHP;
         yield 'inside CLI' => ['cli', false, true];
         yield 'external CLI rollback' => ['cli', true, false];
         yield 'inside GUI rollback' => ['gui', true, true];
+    }
+
+    /**
+     * EN: Private module directories absent from a release survive sync and
+     * rollback without deletion warnings; shared directories still receive examples.
+     *
+     * HR: Privatni modulski direktoriji kojih nema u izdanju prežive sinkronizaciju
+     * i povrat bez upozorenja o brisanju; zajednički direktoriji i dalje dobivaju primjere.
+     */
+    #[DataProvider('privateDirectoryModes')]
+    public function testPrivateConfigurationDirectoriesSurviveWithoutWarnings(
+        string $entry,
+        int $mode,
+        int $mask,
+        bool $fail,
+    ): void {
+        [$root, $repository, $tools] = $this->fixture();
+        $private = ['demo/demo.json', 'site-module/profiles/nested/profile.json', 'mixed/settings.json'];
+        $before = [];
+        foreach ($private as $path) {
+            $target = $root . '/config/' . $path;
+            $this->assertTrue(mkdir(dirname($target), 0700, true));
+            file_put_contents($target, '{"private":true}');
+            chmod($target, 0600);
+            $before[$path] = stat($target);
+        }
+
+        $this->assertTrue(mkdir($repository . '/config/mixed', 0700, true));
+        file_put_contents($root . '/config/mixed/settings.json.dist', 'old example');
+        file_put_contents($repository . '/config/mixed/settings.json.dist', 'new example');
+        file_put_contents($repository . '/config/mixed/new.php.dist', 'new release example');
+        file_put_contents($root . '/config/mixed/obsolete.php.dist', 'obsolete example');
+        file_put_contents($root . '/obsolete.php', 'obsolete code');
+        if ($fail) {
+            file_put_contents($root . '/data/fail-preflight', 'yes');
+        }
+
+        chmod($root . '/update.php', $mode);
+        $this->release($repository, '0.3.1', $this->candidate($repository));
+        [$exit, $output] = $this->runUpdater($root, $tools, $entry, [], $mask);
+        $this->assertSame($fail ? 1 : 0, $exit, $output);
+        $this->assertStringNotContainsString('cannot delete', $output);
+        $this->assertStringNotContainsString('not empty', $output);
+        foreach ($before as $path => $metadata) {
+            $target = $root . '/config/' . $path;
+            clearstatcache(true, $target);
+            $this->assertSame('{"private":true}', file_get_contents($target));
+            foreach (['ino', 'uid', 'gid', 'mode'] as $key) {
+                $this->assertSame($metadata[$key], stat($target)[$key], $path . ': ' . $key);
+            }
+        }
+
+        $this->assertSame(
+            $fail ? 'old example' : 'new example',
+            file_get_contents($root . '/config/mixed/settings.json.dist'),
+        );
+        if ($fail) {
+            $this->assertFileExists($root . '/config/mixed/obsolete.php.dist');
+            $this->assertFileExists($root . '/obsolete.php');
+            $this->assertFileDoesNotExist($root . '/config/mixed/new.php.dist');
+        } else {
+            $this->assertFileDoesNotExist($root . '/config/mixed/obsolete.php.dist');
+            $this->assertFileDoesNotExist($root . '/obsolete.php');
+            $this->assertSame('new release example', file_get_contents($root . '/config/mixed/new.php.dist'));
+        }
+
+        $this->assertFileDoesNotExist($root . '/data/update-maintenance.json');
+    }
+
+    /** @return iterable<string,array{string,int,int,bool}> */
+    public static function privateDirectoryModes(): iterable
+    {
+        foreach (self::installationModes() as $name => [$entry, $mode, $mask]) {
+            yield $name => [$entry, $mode, $mask, false];
+            yield $name . ' rollback' => [$entry, $mode, $mask, true];
+        }
+    }
+
+    /**
+     * EN: Directory protection never suppresses a real rsync failure or its diagnostic.
+     *
+     * HR: Zaštita direktorija nikada ne skriva stvarnu rsync pogrešku ni njezinu poruku.
+     */
+    public function testDirectoryProtectionDoesNotHideRsyncFailures(): void
+    {
+        [$root, $repository, $tools] = $this->fixture();
+        file_put_contents($tools . '/rsync', "#!/bin/sh\nprintf '%s\\n' 'fixture-rsync-failure' >&2\nexit 23\n");
+        chmod($tools . '/rsync', 0700);
+        $this->release($repository, '0.3.1', $this->candidate($repository));
+
+        [$exit, $output] = $this->runUpdater($root, $tools, 'cli');
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('fixture-rsync-failure', $output);
+        $this->assertStringContainsString('Command failed (23)', $output);
     }
 
     public function testConfigurationDirectorySymlinkSurvivesUpdate(): void

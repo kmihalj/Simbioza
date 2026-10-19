@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.4 fixes secured macOS FPM runtime permissions and aligns fresh installation instructions. API remains 0.3.1, other public modules 0.3.0 and HeartPhrame Framework v0.0.25. See the [release notes](docs/release-0.3.4_en.md).
+> Simbioza 0.3.5 protects private configuration directories during updates and rollback without misleading rsync deletion warnings. API remains 0.3.1, other public modules 0.3.0 and HeartPhrame Framework v0.0.25. See the [release notes](docs/release-0.3.5_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -153,7 +153,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.4` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.5` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -253,13 +253,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.4 release notes](docs/release-0.3.4_en.md).
+the [0.3.5 release notes](docs/release-0.3.5_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Private configuration directory protection in 0.3.5](docs/release-0.3.5_en.md)
 - [Docker security patch release 0.3.3](docs/release-0.3.3_en.md)
 - [Secured FPM runtime permissions in 0.3.4](docs/release-0.3.4_en.md)
 - [Secured-FPM fix release 0.3.2](docs/release-0.3.2_en.md)

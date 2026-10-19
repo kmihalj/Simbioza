@@ -208,5 +208,14 @@ FPM setup. Izvršni PHP u vlasništvu releasea općenito ne smije biti web-writa
 GUI datoteka `modules.php` izričita je iznimka. Updater čuva privatne datoteke i
 vanjske slojeve. Pokretanje ne seli stare konfiguracije i ne izvozi stare baze.
 
+Tijekom nadogradnje i povrata updater štiti i roditeljske direktorije sačuvanih
+privatnih putanja ako tih direktorija nema u izvoru sinkronizacije. To vrijedi i
+za ugniježđene konfiguracije te dodatne module, ne samo za ugrađene nazive modula.
+Primjerice, privatni `config/my-module/settings.json` zadržava svoj direktorij i
+kada javno izdanje ne sadrži `my-module`. Direktoriji prisutni u izvoru i dalje
+slijede pravila za pojedine datoteke: datoteke izdanja i `.dist` primjeri mogu se
+osvježiti ili ukloniti bez prepisivanja privatnih postavki. Updater ne skriva
+rsync poruke niti zanemaruje pogreške.
+
 [Kontrolni popis 0.3.0](initial-release-0.3.0_hr.md) prikazuje stanje provjera;
 stari P1–P10 rezultati nisu potvrda objave nove polazne verzije.

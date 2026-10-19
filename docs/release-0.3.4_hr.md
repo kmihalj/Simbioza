@@ -2,6 +2,8 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/release-0.3.4_en.md)
 
+> Povijesna bilješka izdanja — za novu instalaciju koristite [aktualni pregled instalacije](installation_hr.md). Izvorni tag i imagei 0.3.4 ostaju nepromijenjeni.
+
 Ova zakrpa ispravlja generator sigurnog macOS FPM-a i upute za novu instalaciju.
 Framework ostaje **v0.0.25**, API **0.3.1**, a ostali javni moduli **0.3.0**.
 Privatni DEMO modul je **0.3.6**. Postojeći tagovi ne pomiču se.

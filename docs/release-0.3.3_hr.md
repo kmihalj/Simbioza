@@ -2,7 +2,7 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.3/docs/release-0.3.3_en.md)
 
-> Povijesna bilješka izdanja — aktualne instalacijske upute nalaze se u [izdanju 0.3.4](release-0.3.4_hr.md). Izvorni tag i image 0.3.3 ostaju nepromijenjeni.
+> Povijesna bilješka izdanja — za novu instalaciju koristite [aktualni pregled instalacije](installation_hr.md). Izvorni tag i image 0.3.3 ostaju nepromijenjeni.
 
 Ova dopuna objavljuje nove Linux **AMD64 i ARM64** imagee s nadograđenim Debian
 paketima. Framework ostaje **v0.0.25**. API **0.3.1** uključuje ispravljene upute

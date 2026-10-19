@@ -31,7 +31,7 @@ final class ApplicationUpdateCommand
     // EN: Increment on every updater change; keep the handoff protocol compatible.
     //
     // HR: Povećati pri svakoj promjeni updatera; protokol predaje ostaje kompatibilan.
-    public const UPDATER_VERSION = '1.0.7';
+    public const UPDATER_VERSION = '1.0.8';
 
     public const HANDOFF_PROTOCOL = 1;
 
@@ -1042,8 +1042,8 @@ final class ApplicationUpdateCommand
             // HR: Grupno zapisivi FPM direktoriji ne dopuštaju deploy korisniku utimensat.
             '--omit-dir-times',
         ];
-        foreach ($this->sourceSyncExcludes() as $exclude) {
-            $command[] = '--exclude=' . $exclude;
+        foreach ($this->sourceSyncFilters($sourceDirectory) as $filter) {
+            $command[] = $filter;
         }
         $command[] = rtrim($sourceDirectory, '/') . '/';
         $command[] = rtrim($this->appRoot, '/') . '/';
@@ -1176,6 +1176,36 @@ final class ApplicationUpdateCommand
         // ugrađene lang/ datoteke su kod koji release smije osvježiti.
 
         return array_keys($excludes);
+    }
+
+    /**
+     * EN: Protects ancestors of private paths absent from the synchronization
+     * source from receiver-side deletion in both update and rollback. Directories
+     * present in the source remain subject to normal per-file rules, so examples
+     * can be updated or removed. Real rsync errors and warnings remain visible.
+     *
+     * HR: Štiti roditeljske direktorije privatnih putanja kojih nema u izvoru
+     * sinkronizacije od brisanja na odredištu tijekom nadogradnje i povrata.
+     * Direktoriji prisutni u izvoru i dalje slijede pojedinačna pravila za datoteke,
+     * pa se primjeri mogu ažurirati ili ukloniti. Stvarne pogreške ostaju vidljive.
+     *
+     * @return list<string>
+     */
+    private function sourceSyncFilters(string $sourceDirectory): array
+    {
+        $filters = [];
+        foreach ($this->sourceSyncExcludes() as $exclude) {
+            $filters['--exclude=' . $exclude] = true;
+            $directory = dirname(trim($exclude, '/'));
+            while ($directory !== '.') {
+                if (!is_dir($sourceDirectory . '/' . $directory)) {
+                    $filters['--filter=P /' . $directory . '/'] = true;
+                }
+                $directory = dirname($directory);
+            }
+        }
+
+        return array_keys($filters);
     }
 
     /**
@@ -2050,8 +2080,8 @@ final class ApplicationUpdateCommand
             // HR: I povratak mora poštovati vlasništvo trajnih FPM direktorija.
             '--omit-dir-times',
         ];
-        foreach ($this->sourceSyncExcludes() as $exclude) {
-            $command[] = '--exclude=' . $exclude;
+        foreach ($this->sourceSyncFilters($rollbackDirectory) as $filter) {
+            $command[] = $filter;
         }
         $command[] = rtrim($rollbackDirectory, '/') . '/';
         $command[] = rtrim($this->appRoot, '/') . '/';

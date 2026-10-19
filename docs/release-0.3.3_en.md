@@ -2,7 +2,7 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.3/docs/release-0.3.3_hr.md)
 
-> Historical release note — current installation instructions are in [release 0.3.4](release-0.3.4_en.md). The original 0.3.3 tag and image remain unchanged.
+> Historical release note — use the [current installation index](installation_en.md) for a new installation. The original 0.3.3 tag and image remain unchanged.
 
 This patch publishes newly built Linux **AMD64 and ARM64** images containing
 updated Debian packages. Framework remains **v0.0.25**. API **0.3.1** includes

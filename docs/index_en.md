@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Private configuration directory protection in 0.3.5](release-0.3.5_en.md)
 - [Docker security patch release 0.3.3](release-0.3.3_en.md)
 - [Secured FPM runtime permissions in 0.3.4](release-0.3.4_en.md)
 - [Secured-FPM fix release 0.3.2](release-0.3.2_en.md)

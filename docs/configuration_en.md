@@ -212,5 +212,14 @@ PHP must not generally be web-writable; GUI-managed `modules.php` is an explicit
 exception. The updater preserves private configuration and declared external
 layers. No old configuration relocation or database export runs at startup.
 
+During updates and rollback, the updater also protects parent directories of
+preserved private paths when those directories are absent from the synchronization
+source. This applies to nested configuration and additional modules, not just
+built-in module names. For example, a private `config/my-module/settings.json`
+keeps its directory even when the public release does not contain `my-module`.
+Directories present in the source still use per-file rules: release-owned files
+and `.dist` examples can be refreshed or removed without overwriting private
+settings. The updater does not suppress rsync diagnostics or ignore errors.
+
 See [the 0.3.0 checklist](initial-release-0.3.0_en.md) for current verification
 status; historical P1–P10 results are not a claim that the new baseline is released.

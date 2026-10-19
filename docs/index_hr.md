@@ -6,6 +6,7 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Zaštita privatnih konfiguracijskih direktorija u 0.3.5](release-0.3.5_hr.md)
 - [Sigurnosno Docker izdanje 0.3.3](release-0.3.3_hr.md)
 - [Runtime prava sigurnog FPM-a u 0.3.4](release-0.3.4_hr.md)
 - [Izdanje 0.3.2 s ispravkom secured-FPM setupa](release-0.3.2_hr.md)

@@ -2,6 +2,8 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/release-0.3.4_hr.md)
 
+> Historical release note — use the [current installation index](installation_en.md) for a new installation. The original 0.3.4 tag and images remain unchanged.
+
 This patch fixes the secured macOS FPM generator and updates fresh installation
 instructions. Framework stays **v0.0.25**, API **0.3.1**, and other public modules
 **0.3.0**. The private DEMO companion is **0.3.6**. Existing tags are not moved.

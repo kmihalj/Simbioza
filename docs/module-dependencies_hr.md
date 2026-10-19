@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.4 koristi API 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25. Razvojne instalacije nisu zamjena za ove objavljene pakete.
+> Simbioza 0.3.5 koristi API 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25. Razvojne instalacije nisu zamjena za ove objavljene pakete.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
