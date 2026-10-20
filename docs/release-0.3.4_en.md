@@ -6,7 +6,7 @@
 
 This patch fixes the secured macOS FPM generator and updates fresh installation
 instructions. Framework stays **v0.0.25**, API **0.3.1**, and other public modules
-**0.3.0**. The private DEMO companion is **0.3.6**. Existing tags are not moved.
+**0.3.0**. Existing tags are not moved.
 
 ## Changes
 
@@ -20,21 +20,16 @@ instructions. Framework stays **v0.0.25**, API **0.3.1**, and other public modul
   boundaries, and retain real FPM parser checks. No framework or Auth code changes.
 - Installation commands, Docker examples and bundled EN/HR guides use **0.3.4**.
   macOS installation verifies the service mask before opening the wizard.
-- DEMO 0.3.6 checks log/database access before any restore/pause, preserves private
-  sessions/control, and tests real application bootstrap as separate deploy/FPM
-  users. Its complete guide uses the correct mask for installation CLI commands.
 
 ## Installation and existing sites
 
 Use the [complete installation index](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/installation_en.md),
 [secured FPM guide](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/installation_fpm_secured_en.md)
 or [Docker guide](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/docker_en.md).
-The [private DEMO guide](https://github.com/kmihalj/simbioza-module-demo/blob/0.3.6/docs/demo_installation_en.md)
-starts from an empty directory and requires repository access.
 
 An application update does not rewrite an existing host's launchd/helper files
-or repair old logs. Those need a scoped, backed-up host correction. Do not rerun
-generic finalization over a DEMO reset snapshot, delete a lock, grant FPM code
+or repair old logs. Those need a scoped, backed-up host correction. Do not
+delete a lock, grant FPM code
 write access or run the application updater as root to bypass the failure.
 There are no new database migrations; single-space Confluence import is unchanged.
 

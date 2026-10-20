@@ -2,7 +2,7 @@
 
 [Croatian version](installation_hr.md)
 
-These guides install Simbioza **0.3.12**. HTML Editor uses **0.3.2**;
+These guides install Simbioza **0.3.13**. HTML Editor uses **0.3.2**;
 Backup, Auth, API, Email and Theme use **0.3.1**, Menu **0.3.2**, and the other public modules **0.3.0**; Framework
 is unchanged. The 0.3.x baseline starts with a new application directory,
 configuration and database. An upgrade from 0.2.x or reuse of its Simbioza
@@ -40,19 +40,6 @@ site merely because the download directory exists.
 
 Private module configuration uses `HPH_CONFIG_PATH` (default `config/`);
 persistent files use `data/`. Only `public/` is exposed by the web server.
-
-## Demo installations
-
-First complete and verify a **standard Simbioza installation** using one guide
-above. Only afterwards attach the demo module, create its public trial accounts
-and content, enable its restrictions and prepare its reset baseline.
-The demo module does not replace the normal application installer.
-
-The repository owner's [private demo module](https://github.com/kmihalj/simbioza-module-demo)
-has a separate deployment-specific guide. It requires repository access and is
-not needed for a normal Simbioza installation. Its local host templates assume
-specific users, labels and paths: do not mix them with the public secured setup
-without deliberately matching those identities.
 
 ## After installation
 

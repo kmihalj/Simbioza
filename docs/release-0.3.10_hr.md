@@ -4,12 +4,12 @@
 
 > Povijesna bilješka izdanja. Za aktualne naredbe instalacije i nadogradnje koristite
 > [uputu za instalaciju](installation_hr.md) i
-> [Simbiozu 0.3.12](release-0.3.12_hr.md).
+> [Simbiozu 0.3.13](release-0.3.13_hr.md).
 
 Ispravak čuva administratorske konfiguracije pri nadogradnji, uklanja automatsku
 zamjenu instalirane teme i usklađuje spremljenu boju prigušenog teksta s pregledom
 nakon osvježavanja. Auth, HTML Editor, Email, Theme i API su **0.3.1**, Menu je **0.3.2**, ostali javni moduli
-**0.3.0**, privatni DEMO modul **0.3.6**, Framework **v0.0.25** i updater **1.0.8**.
+**0.3.0**, Framework **v0.0.25** i updater **1.0.8**.
 Postojeći tagovi i migracije baze ostaju nepromijenjeni. Kandidati 0.3.8 i 0.3.9
 nisu objavljeni kao izdanja; koristite 0.3.10.
 
@@ -61,12 +61,6 @@ Na podešenoj FPM Secured instalaciji otvorite **Postavke → Setup i moduli**,
 provjerite novo izdanje i pokrenite nadogradnju na **0.3.10**. Najmanje objavljene
 verzije modula navedene su iznad. Nakon dovršetka osvježite editor teme. Aktualni
 instalacijski i Docker primjeri te ugrađene EN/HR upute koriste 0.3.10.
-
-Za postojeći pripremljeni lokalni DEMO iz njegova korijena pokrenite privatni
-omotač: `sh data/demo-local/updatedemo.sh --check`, a zatim
-`sh data/demo-local/updatedemo.sh 0.3.10`. Prije nadogradnje vraća čistu kopiju za
-reset, a nakon provjera snima novu. Objava izdanja ne nadograđuje DEMO niti
-apps-test automatski.
 
 Stare privatne kopije u `data/backups/bundled-assets/` ostaju sačuvane. Vraćajte
 samo namjerno odabrane postavke nakon usporedbe s novijim administratorskim

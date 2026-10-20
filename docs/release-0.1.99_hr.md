@@ -13,8 +13,7 @@ instalacija na istoj domeni; zadana vrijednost ostaje `HEARTPHRAME_SESSION`.
 Nadograđivač čuva `composer.local.json` i lokalnu PHP konfiguraciju, spaja samo
 nove zahtjeve za paketima iz postojećih Composerovih repozitorija s apsolutnom
 lokalnom putanjom te ne dopušta da lokalni zahtjev zamijeni ovisnost javnog
-izdanja. Privatnim paketima ne upravlja GUI popis modula. To je opći mehanizam;
-privatni demonstracijski modul i njegov sadržaj nisu dio ovog javnog izdanja.
+izdanja. Privatnim paketima ne upravlja GUI popis modula. To je opći mehanizam.
 
 Nema migracija baze. Instalacije bez lokalnih dodataka rade kao prije i mogu se
 nadograditi uobičajeno kroz GUI ili naredbeni redak. Instalacija koja već koristi

@@ -5,8 +5,7 @@
 > Historical release note — use the current [installation guides](installation_en.md) and [release 0.3.3](release-0.3.3_en.md). The original 0.3.1 tag remains unchanged.
 
 This is a documentation release on the 0.3.0 baseline. Only the application
-receives tag **0.3.1**. All public modules and the private demo module remain
-at **0.3.0**, and HeartPhrame Framework remains unchanged at **0.0.25**.
+receives tag **0.3.1**. All public modules remain at **0.3.0**, and HeartPhrame Framework remains unchanged at **0.0.25**.
 There are no new database migrations or authentication/configuration changes.
 Published 0.3.0 tags are not moved.
 
@@ -19,8 +18,6 @@ Published 0.3.0 tags are not moved.
   a mandatory prerequisite.
 - Fresh secured installations create their FPM/deployment identities. Existing
   identities are discussed only as a reinstallation concern.
-- Install standard Simbioza first; activate the optional private demo module
-  only after the standard installation works.
 - English/Croatian bundled installation pages and the starter workspace are
   generated from the same Markdown sources. The FPM page contains separate
   complete ordinary and secured walkthroughs.

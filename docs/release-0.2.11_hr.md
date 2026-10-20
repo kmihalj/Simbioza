@@ -27,8 +27,3 @@ Nema novih migracija baze niti novih verzija aplikacijskih modula. Izdanje ne
 instalira Confluence Import tamo gdje ga nema, ne ponavlja uvoz i ne mijenja
 uvezeni poslovni sadržaj. Kao i inače, prije nadogradnje izradite sigurnosnu
 kopiju instalacije.
-
-Zasebno održavani privatni demo modul također nosi video i lokalizirane opise
-za zaključani članak o prijelazu s Confluencea. Urednički sadržaj osvježava se
-kroz postupak upravljanja početnom kopijom dema, nikada automatskim
-prepisivanjem sadržaja tijekom Composer nadogradnje.

@@ -3,13 +3,13 @@
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/release-0.3.11_en.md)
 
 > Povijesna bilješka izdanja za neobjavljeni kandidat. Nepromjenjivi tag 0.3.11
-> ostaje sačuvan, ali koristite [Simbiozu 0.3.12](release-0.3.12_hr.md) i
+> ostaje sačuvan, ali koristite [Simbiozu 0.3.13](release-0.3.13_hr.md) i
 > [aktualne instalacijske upute](installation_hr.md).
 
 Ovo izdanje popravlja neispravne poveznice Korisničkih uputa nakon instalacije i
 prenosivi povrat HTML-a na izvorni site. HTML Editor je **0.3.2**, a Backup
 **0.3.1**. Auth, API, Email i Theme ostaju **0.3.1**, Menu **0.3.2**, ostali
-javni moduli **0.3.0**, privatni DEMO **0.3.6**, Framework **v0.0.25**, a
+javni moduli **0.3.0**, Framework **v0.0.25**, a
 updater **1.0.8**. Postojeći tagovi i migracije baze ostaju nepromijenjeni.
 
 ## Popravci
@@ -33,26 +33,13 @@ updater **1.0.8**. Postojeći tagovi i migracije baze ostaju nepromijenjeni.
 - Aktualne instalacijske naredbe, ugrađene EN/HR upute i Docker primjeri koriste
   0.3.11. Docker izdanje podržava Linux AMD64 i ARM64.
 
-Nisu potrebni reinstalacija, ručna zamjena URL-ova ni migracija baze. Privatni
-DEMO repozitorij ostaje privatan; njegov GitHub 404 bez prijave nije neispravna
-lokalna poveznica sadržaja ili privitka.
+Nisu potrebni reinstalacija, ručna zamjena URL-ova ni migracija baze.
 
 ## Nadogradnja
 
 Na podešenoj secured-FPM instalaciji u **Postavke → Setup i moduli** pokrenite
 nadogradnju aplikacije na **0.3.11**. Ona instalira kompatibilne verzije modula
 i popravlja upravljane upute. Nakon toga provjerite poveznice Korisničkih uputa.
-
-Za već pripremljeni lokalni DEMO pokrenite kao njegov održavatelj:
-
-```bash
-cd /Users/Shared/Simbioza/DemoSimbioza &&
-sh data/demo-local/updatedemo.sh --check &&
-sh data/demo-local/updatedemo.sh 0.3.11
-```
-
-Skripta prije nadogradnje vraća početnu kopiju reseta, a nakon nje sprema novu.
-Objava ovog izdanja ne nadograđuje DEMO ni apps-test.
 
 Vidi [instalaciju](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/installation_hr.md),
 [konfiguraciju i backup](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/configuration_hr.md#backup-i-prava)

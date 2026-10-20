@@ -6,7 +6,7 @@
 
 Ova aplikacijska zakrpa popravlja Linux Setup helper i dopunjuje postupak nove
 FPM-secured instalacije. Framework ostaje **v0.0.25**, API **0.3.1**, ostali
-javni moduli **0.3.0**, a privatni DEMO modul **0.3.6**. Updater **1.0.8** i
+javni moduli **0.3.0**. Updater **1.0.8** i
 migracije baze nisu mijenjani. Postojeći tagovi se ne pomiču.
 
 ## Promjene

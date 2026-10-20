@@ -40,8 +40,6 @@ Privatne kopije updatera nalaze se u `data/backups/updater/`. Privremeni rad
 ostaje unutar instalacijskog `data/` i čisti se po završetku. Čuvaju se vlasnik,
 grupa i prava datoteke; web-proces ne dobiva nova prava pisanja u kod. FPM
 koristi postojeći ograničeni deploy helper, a mod_php i dalje CLI vlasnika koda.
-Demo pod nadzorom hosta i za ovaj prijelaz mora zadržati kontrolirani postupak
-početne kopije i automatskog reseta.
 
 Izdanje ne premješta auth ni druge konfiguracije i ne dodaje migracije baze.
 Buduće promjene `update.php` moraju povećati njegov zasebni `UPDATER_VERSION`,

@@ -28,8 +28,3 @@ No new database migrations or application module versions are required. This
 release does not install Confluence Import on sites where it is absent, repeat
 an import, or change imported business content. Back up the installation before
 updating as usual.
-
-The separately maintained private demo module also carries the walkthrough
-and localized descriptions for its protected Confluence migration article.
-Its editorial content is refreshed through the host-controlled baseline
-procedure, never an automatic Composer content-overwrite hook.

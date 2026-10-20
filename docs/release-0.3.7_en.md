@@ -6,7 +6,7 @@
 
 This application patch recognizes built-in translations on new and upgraded
 installations. Framework remains **v0.0.25**, API **0.3.1**, other public modules
-**0.3.0**, and the private DEMO module **0.3.6**. Updater **1.0.8** and database
+**0.3.0**. Updater **1.0.8** and database
 migrations are unchanged. Existing tags are not moved.
 
 ## Changes
@@ -42,12 +42,5 @@ After completion, refresh Setup → Languages: built-in languages show
 See the [localization guide](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/localization_en.md),
 [complete secured-FPM guide](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/installation_fpm_secured_en.md)
 and [Docker guide](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/docker_en.md).
-
-For the already provisioned local DEMO installation, run its private
-`data/demo-local/updatedemo.sh --check` followed by `data/demo-local/updatedemo.sh 0.3.7`
-from the DEMO root. This explicit maintenance script restores the clean reset
-baseline before updating, verifies the result and captures a new baseline.
-Do not run the ordinary application update directly over visitor changes.
-Publishing this release does not update DEMO or apps-test automatically.
 
 [Release and downloads](https://github.com/kmihalj/Simbioza/releases/tag/0.3.7)

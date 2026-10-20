@@ -41,7 +41,7 @@ su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.12
+## 2. Preuzmite čisto izdanje Simbioze 0.3.13
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -67,7 +67,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.12 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.13 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -76,7 +76,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.12` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.13` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -279,8 +279,8 @@ Alias /simbioza "/srv/simbioza/public"
 ```
 
 Installeru predajte `--base-url=https://vas-host.example/simbioza`, ne samo
-domenu bez prefiksa. Za demo na `/demo` promijenite **oba** primjera prefiksa
-i koristite `--base-url=https://vas-host.example/demo`.
+domenu bez prefiksa. Za instalaciju na `/wiki` promijenite **oba** primjera prefiksa
+i koristite `--base-url=https://vas-host.example/wiki`.
 Direktorij je datotečna putanja, a prefiks URL putanja, ne naziv direktorija
 aplikacije. Privatni `config/` i `data/` ne izlažite aliasom.
 Prije kontroliranog ponovnog učitavanja provjerite Apache konfiguraciju.
@@ -358,7 +358,6 @@ composer check-platform-reqs
 Očekujte nula migracija na čekanju, ispravnu prijavu i početnu stranicu te
 zaključan `/install`. Prije javne objave sigurnosno kopirajte bazu, `config/`,
 korisničke datoteke i podatke teme.
-
 
 ## Održavanje nakon instalacije
 

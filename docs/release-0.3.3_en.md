@@ -7,7 +7,7 @@
 This patch publishes newly built Linux **AMD64 and ARM64** images containing
 updated Debian packages. Framework remains **v0.0.25**. API **0.3.1** includes
 the corrected quick-start documentation; the other public modules remain
-**0.3.0**. The optional private DEMO companion is **0.3.4**. Existing tags and
+**0.3.0**. Existing tags and
 previous release images are not replaced.
 
 ## Changes
@@ -41,10 +41,6 @@ For Docker, select `ghcr.io/kmihalj/simbioza:0.3.3`, preserve both named volumes
 take a consistent backup and follow the explicit image migration/restart steps
 in the Docker guide. Existing containers do not change until the operator
 pulls and deploys the new image. Do not use `docker compose down -v` for updates.
-
-The [private DEMO guide](https://github.com/kmihalj/simbioza-module-demo/blob/0.3.4/docs/demo_installation_en.md)
-uses application 0.3.3 and demo module 0.3.4; repository access is required.
-No running demo or apps-test instance is automatically updated by this release.
 
 ## Verification and downloads
 

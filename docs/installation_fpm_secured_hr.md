@@ -47,7 +47,7 @@ su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.12
+## 2. Preuzmite čisto izdanje Simbioze 0.3.13
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -73,7 +73,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.12 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.13 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.12` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.13` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -214,8 +214,7 @@ Na macOS-u provjerite generirani servis prije otvaranja čarobnjaka:
 Za imenovanu instancu odaberite odgovarajuću servisnu datoteku, npr.
 `hr.simbioza-druga.php-fpm.plist`. Izostala maska neuspješan je preduvjet,
 a ne razlog da kod postane zapisiv ili da se updater pokreće kao root.
-Ne ponavljajte opću finalizaciju nad postojećom DEMO reset kopijom radi
-popravka prava. Sesije ostaju privatne (`0600`); ne proširujte rekurzivno
+Sesije ostaju privatne (`0600`); ne proširujte rekurzivno
 prava cijelog direktorija podataka.
 
 Provjera ne mijenja postavke aplikacije. Zadani pool sluša na `127.0.0.1:9075`; ta vrata
@@ -546,8 +545,8 @@ konfiguracije, **ne obvezan dodatni korak čiste instalacije**. Ako FPM
 konfiguracija ostaje ista, sama promjena Apache aliasa ne traži restart FPM-a.
 
 Installeru predajte `--base-url=https://vas-host.example/simbioza`, ne samo
-domenu bez prefiksa. Za demo na `/demo` promijenite **oba** primjera prefiksa
-i koristite `--base-url=https://vas-host.example/demo`.
+domenu bez prefiksa. Za instalaciju na `/wiki` promijenite **oba** primjera prefiksa
+i koristite `--base-url=https://vas-host.example/wiki`.
 Direktorij je datotečna putanja, a prefiks URL putanja, ne naziv direktorija
 aplikacije. Privatni `config/` i `data/` ne izlažite aliasom.
 Prije kontroliranog ponovnog učitavanja provjerite Apache konfiguraciju.
@@ -615,8 +614,7 @@ traže root. Naredbe za održavanje nalaze se na kraju ove upute.
 
 **Preskočite cijelo poglavlje ako ne trebate SAML.** Ne odnosi se na OIDC, CAS,
 OAuth2 ni ugrađenu prijavu. Lokalnog administratora i break-glass prijavu
-zadržite dok SAML ne proradi. Javni demo ne treba SAML samo zato što njegove
-Korisničke upute sadrže ovo poglavlje.
+zadržite dok SAML ne proradi.
 
 ### S1. Odaberite biblioteku i javne adrese
 
@@ -742,8 +740,7 @@ php scripts/configure_fpm_setup.php --check \
 
 Na macOS-u **svim trima** naredbama dodajte
 `--php-fpm="$(brew --prefix)/sbin/php-fpm"`. Za imenovanu instancu ponovite i
-izvorne opcije `--instance` i `--listen`. Ovo nije postupak popravka DEMO
-reset kopije. Generator postavlja `SIMPLESAMLPHP_CONFIG_DIR` unutar FPM radnika
+izvorne opcije `--instance` i `--listen`. Generator postavlja `SIMPLESAMLPHP_CONFIG_DIR` unutar FPM radnika
 unatoč `clear_env = yes`; samo SSH `export` ili Apacheov `SetEnv` nisu dovoljni.
 
 Na Linuxu provjerite čitanje i ACL privatne konfiguracije:

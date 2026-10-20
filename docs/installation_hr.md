@@ -2,7 +2,7 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.12**. HTML Editor koristi **0.3.2**;
+Ove upute instaliraju Simbiozu **0.3.13**. HTML Editor koristi **0.3.2**;
 Backup, Auth, API, Email i Theme
 koriste **0.3.1**, Menu **0.3.2**, a ostali javni moduli **0.3.0**; Framework je
 nepromijenjen. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
@@ -40,20 +40,6 @@ Upute ne brišu drugu instalaciju niti ponovno stvaraju aktivni site samo zato
 
 Privatna modulna konfiguracija koristi `HPH_CONFIG_PATH` (zadano `config/`);
 trajni datotečni sadržaj koristi `data/`. Web-poslužitelj izlaže samo `public/`.
-
-## Demo instalacije
-
-Najprije dovršite i provjerite **standardnu instalaciju Simbioze** prema jednoj
-uputi iznad. Tek zatim dodajte demo modul, izradite javne probne račune i sadržaj,
-uključite ograničenja i pripremite početnu kopiju reseta.
-Demo modul ne zamjenjuje uobičajeni installer aplikacije.
-
-[Privatni demo modul](https://github.com/kmihalj/simbioza-module-demo) vlasnika
-repozitorija ima zaseban vodič za određenu sistemsku instalaciju.
-Traži pristup repozitoriju i nije potreban za običnu Simbiozu.
-Njegovi lokalni predlošci pretpostavljaju određene korisnike, oznake servisa i
-putanje: ne miješajte ih s javnim secured setupom bez svjesnog usklađivanja
-tih identiteta.
 
 ## Nakon instalacije
 

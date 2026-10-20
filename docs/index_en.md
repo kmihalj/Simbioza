@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Refreshed public installation guides in 0.3.13](release-0.3.13_en.md)
 - [Theme/configuration preservation and selected colors in 0.3.10](release-0.3.10_en.md)
 - [Portable guide links and same-site restore in 0.3.12](release-0.3.12_en.md)
 - [Bundled language revisions in 0.3.7](release-0.3.7_en.md)

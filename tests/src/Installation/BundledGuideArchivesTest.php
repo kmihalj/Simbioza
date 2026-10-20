@@ -8,11 +8,15 @@ use AaiEduHr\HeartPhrameModuleBackup\ModuleBackup;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupArchiveReader;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupFilesystem;
+use FilesystemIterator;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 
 /**
  * EN: Validates every shipped guide with the current reader, including encrypted payload hashes.
@@ -22,6 +26,35 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class BundledGuideArchivesTest extends TestCase
 {
+    /**
+     * EN: Keeps private deployment instructions out of public documentation while allowing public demo links.
+     *
+     * HR: Drži privatne upute za postavljanje izvan javne dokumentacije, uz dopuštene poveznice na javni demo.
+     */
+    public function testPublicDocumentationExcludesPrivateDemoOperations(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $paths = [$root . '/README.md', $root . '/README_hr.md'];
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
+            $root . '/docs',
+            FilesystemIterator::SKIP_DOTS,
+        ));
+        foreach ($files as $file) {
+            if ($file instanceof SplFileInfo && $file->isFile() && $file->getExtension() === 'md') {
+                $paths[] = $file->getPathname();
+            }
+        }
+
+        foreach ($paths as $path) {
+            $this->assertDoesNotMatchRegularExpression(
+                '~simbioza-module-demo|DemoSimbioza|demo-local/|demo_installation_'
+                . '|fpm-simbioza-demo|simbioza-deploy-demo|^## Demo install|^## Demo instalacije~mi',
+                (string)file_get_contents($path),
+                $path,
+            );
+        }
+    }
+
     /**
      * EN: Requires bundled installation pages to match their complete Markdown sources.
      * The check is offline, reads public packages only and does not require Pandoc.
@@ -326,6 +359,16 @@ final class BundledGuideArchivesTest extends TestCase
                     foreach ($manifest['providers'] as $provider) {
                         if ($provider['id'] === 'editor-html-workspace') {
                             $this->assertSame(2, $provider['schema_version']);
+                            foreach ($reader->records($provider['id'], 'versions') as $version) {
+                                $html = $version['content_html'] ?? '';
+                                $this->assertIsString($html);
+                                $this->assertDoesNotMatchRegularExpression(
+                                    '~simbioza-module-demo|DemoSimbioza|demo-local/|demo_installation_'
+                                    . '|Demo installations|Demo instalacije~i',
+                                    $html,
+                                    basename($archive),
+                                );
+                            }
                         }
 
                         if ($provider['id'] === 'editor-html-files') {

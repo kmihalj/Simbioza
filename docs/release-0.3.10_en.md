@@ -4,12 +4,12 @@
 
 > Historical release notes. For current installation and update commands, use
 > [the installation guide](installation_en.md) and
-> [Simbioza 0.3.12](release-0.3.12_en.md).
+> [Simbioza 0.3.13](release-0.3.13_en.md).
 
 This patch preserves administrator-owned configuration during updates, removes
 automatic replacement of the installed theme and makes the saved muted-text
 color match the preview after a reload. Auth, HTML Editor, Email, Theme and API
-are **0.3.1**, Menu is **0.3.2**, other public modules **0.3.0**, the private DEMO module **0.3.6**,
+are **0.3.1**, Menu is **0.3.2**, other public modules **0.3.0**,
 Framework **v0.0.25** and updater **1.0.8**. Existing tags and database migrations
 are unchanged. Candidates 0.3.8 and 0.3.9 were not published; use 0.3.10.
 
@@ -61,12 +61,6 @@ On a configured secured-FPM site, open **Settings → Setup and modules**, check
 for a new release and start the **0.3.10** update. Its minimum published module
 versions are listed above. Refresh the theme editor after completion. Current
 installation examples, Docker examples and bundled EN/HR guides use 0.3.10.
-
-For an existing provisioned local DEMO, run its private wrapper from the DEMO
-root: `sh data/demo-local/updatedemo.sh --check`, followed by
-`sh data/demo-local/updatedemo.sh 0.3.10`. It restores the clean reset baseline
-before updating and captures a new baseline afterwards. Publishing this release
-does not upgrade DEMO or apps-test automatically.
 
 Old private recovery archives in `data/backups/bundled-assets/` are retained.
 Restore only deliberately selected settings after comparing them with later

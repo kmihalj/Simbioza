@@ -14,7 +14,7 @@ Aktualni backup/restore ostaje prenosiv između siteova: sprema izvornu javnu ad
 - [x] R030-B: Auth konfiguracijske datoteke mjerodavan su izvor; uklonjeni stari izvori konfiguracije iz baze i upgrade alati. Korisnici, grupe, identiteti i nužne projekcije ostaju u bazi.
 - [x] R030-C: nova instalacija koristi 14 početnih migracija sheme; uklonjeni povijesni upgrade/move alati. Samonadogradnja updatera, predaja novom procesu i rollback ostaju za 0.3.x i novije.
 - [x] R030-D: uklonjene zastarjele konfiguracijske, identitetske, API i sadržajne grane modula. Sačuvane opcionalne integracije, valjane zadane vrijednosti i podrška za vanjske Confluence formate.
-- [x] R030-E: odvojene EN/HR upute, svih šest ugrađenih arhiva vodiča i demo seed/reset alati koriste aktualni format.
+- [x] R030-E: odvojene EN/HR upute i svih šest ugrađenih arhiva vodiča koriste aktualni format.
 - [x] R030-F: prošle nove instalacije, jedinične/statičke provjere i svih 80 GUI scenarija; HFC koristi aktualne izvore modula i nema pending migracija.
 - [x] R030-G: pripremljena verzija aplikacije 0.3.0, ovisnosti modula i završna lokalna testna matrica. Objava je zaseban, još nedovršen korak.
 
@@ -34,28 +34,25 @@ obuhvaćene ovom tablicom.
 | Potpuna izolirana provjera kroz preglednik/API | Prošlo svih 80 scenarija, uključujući backup/restore i Confluence uvoz |
 | Stvarni Linux FPM i sigurni FPM | Prošli HTTP početne/prijavne stranice i zapisi Auth/Menu/Theme konfiguracije uz kod samo za čitanje i zapisive runtime putanje |
 | Ugrađene upute | Provjereno svih šest šifriranih arhiva aktualnog formata i njihovi sažeci |
-| Privatni demo modul | Prošlo 12 testova / 231 provjera i svih šest izoliranih Linux scenarija reseta |
 | HFC | Početna/prijavna stranica vraćaju HTTP 200; 14 izvršenih migracija, nula pending |
 | Kod i dokumentacija | Prošle obvezne provjere stila/statičke analize, Composer validacija te provjere dokumentacije i prijevoda |
 
 Izvještaji ostaju u `build/r030/`, `build/clean-install-matrix-*.json` i `build/playwright-report/index.html`. Privremene testne instalacije, spremnici baza i gostujući računi za provjeru reseta uklanjaju se nakon provjera. Izvori frameworka i privatne SSO postavke nisu mijenjani.
 
-## Upute i demo sadržaj
+## Upute
 
 `resources/installation/workspace/` sadrži arhive aktualnog formata za opću instalaciju, Apache mod_php, PHP-FPM, korisničke upute, sastanke i Confluence uvoz. Manifesti koriste backup format 2 i verziju aplikacije 0.3.0. Interne reference stranica/privitaka koriste kanonske putanje i uvezene identitete, ne fiksnu adresu ciljnog sitea.
-
-Izvori privatnog demo modula u `DemoSeed/simbioza-module-demo/` koriste aktualne konfiguracijske putanje i vlasničku organizaciju područja/stranica. Početna kopija reseta u formatu 2 obuhvaća odabrane konfiguracijske slojeve, podatke aplikacije i dosljednu SQLite snimku. Za novi demo treba ponovno pripremiti sadržaj i snimiti novu početnu kopiju; uređivanje izvora ne nadograđuje niti resetira pokrenuti demo.
 
 ## Preostala objava
 
 - [ ] Objaviti usklađene tagove 0.3.0 za module/aplikaciju i provjeriti instalaciju iz objavljenih paketa; odobrenje primljeno 12. listopada 2026.
-- [ ] Korisnik ponovno instalira demo i apps-test, a zatim snima novu početnu kopiju demo reseta.
+- [ ] Održavatelj provjerava novu instalaciju na ciljnom poslužitelju.
 
 Do objave primjeri ovisnosti `^0.3.0` opisuju pripremljeno izdanje; razvojne provjere koriste lokalne izvore paketa. Ne zamjenjivati ih starim tagovima 0.2.x niti pokušavati nadogradnju s njih.
 
 ## Granice i nastavak
 
-HeartPhrame Framework ne mijenjati. Sačuvati nepovezane izmjene i privatne postavke. Korisnik reinstalira demo/apps-test; aktivne siteove i baze ne mijenjati. HFC je razvojni site i ne treba backup sadržaja. Aktualno stanje objave prati [popis za objavu izdanja](release-publication-0.3.0_hr.md).
+HeartPhrame Framework ne mijenjati. Sačuvati nepovezane izmjene i privatne postavke. Aktivne siteove i baze ne mijenjati bez odobrenja. HFC je razvojni site i ne treba backup sadržaja. Aktualno stanje objave prati [popis za objavu izdanja](release-publication-0.3.0_hr.md).
 
 2026-10-11: provjera čiste početne osnove dovršena. Prošireni audit je u tijeku;
 objava i ponovna instalacija aktivnih siteova ostaju zasebni koraci.

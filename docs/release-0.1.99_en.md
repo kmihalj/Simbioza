@@ -14,8 +14,7 @@ The updater preserves `composer.local.json` and the local PHP configuration,
 merges only new package requirements from existing absolute Composer path
 repositories, and refuses to let a local requirement replace a release
 dependency. Private packages remain outside GUI module management. This is a
-generic mechanism; the private Simbioza demo module and its content are not
-shipped by this public release.
+generic mechanism.
 
 There are no database migrations. Installations without local overrides behave
 as before and can use the ordinary GUI or CLI update. An installation that

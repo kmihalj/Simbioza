@@ -6,6 +6,7 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Osvježene javne instalacijske upute u 0.3.13](release-0.3.13_hr.md)
 - [Očuvanje tema/postavki i odabranih boja u 0.3.10](release-0.3.10_hr.md)
 - [Prenosive poveznice uputa i povrat na isti site u 0.3.12](release-0.3.12_hr.md)
 - [Revizije ugrađenih jezika u 0.3.7](release-0.3.7_hr.md)

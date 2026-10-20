@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.12 popravlja prenosive poveznice uputa i povrat HTML-a na isti site. HTML Editor je 0.3.2, Backup 0.3.1; Auth, Email, Theme i API ostaju 0.3.1, Menu 0.3.2, ostali javni moduli 0.3.0 i HeartPhrame Framework v0.0.25. Postojeće administratorske postavke ostaju sačuvane. Vidi [bilješke izdanja](docs/release-0.3.12_hr.md).
+> Simbioza 0.3.13 donosi osvježene javne instalacijske upute bez privatnih postupaka i nedostupnih privatnih poveznica. HTML Editor ostaje 0.3.2, Backup 0.3.1; Auth, Email, Theme i API ostaju 0.3.1, Menu 0.3.2, ostali javni moduli 0.3.0 i HeartPhrame Framework v0.0.25. Postojeće administratorske postavke ostaju sačuvane. Vidi [bilješke izdanja](docs/release-0.3.13_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -154,7 +154,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.12` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.13` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -188,8 +188,8 @@ Poslužiteljska release instalacija smije namjerno biti bez `.git` direktorija i
 
 **0.3.0 je čisto početno izdanje.** Koristite novu bazu i aktualni raspored
 konfiguracije/podataka. Nadogradnje s 0.2.x i stare Simbiozine backup arhive
-nisu podržane. Demo i testni site treba ponovno instalirati; vanjski Confluence
-izvozi ostaju podržani.
+nisu podržane. Za postojeće 0.2.x siteove potrebna je nova instalacija; vanjski
+Confluence izvozi ostaju podržani.
 
 Od 0.3.0 nadalje GUI i CLI prvo provjeravaju updater najnovijeg stabilnog izdanja.
 Ako je potrebno, atomski ga zamjenjuju i nastavljaju u **novom PHP procesu**,
@@ -257,7 +257,7 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.12](docs/release-0.3.12_hr.md).
+[bilješkama izdanja 0.3.13](docs/release-0.3.13_hr.md).
 
 ## Dokumentacija
 
@@ -275,6 +275,7 @@ bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
 - Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
 - [Instalacija](docs/installation_hr.md)
+- [Osvježene javne instalacijske upute u 0.3.13](docs/release-0.3.13_hr.md)
 - [Instalacija s običnim PHP-FPM-om](docs/installation_fpm_hr.md)
 - [Instalacija sa secured PHP-FPM-om](docs/installation_fpm_secured_hr.md)
 - [Instalacija s Apache mod_php modulom](docs/installation_mod_php_hr.md)

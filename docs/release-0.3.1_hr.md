@@ -5,7 +5,7 @@
 > Povijesna bilješka izdanja — koristite aktualne [instalacijske upute](installation_hr.md) i [izdanje 0.3.3](release-0.3.3_hr.md). Izvorni tag 0.3.1 ostaje nepromijenjen.
 
 Ovo je dokumentacijsko izdanje na osnovi 0.3.0. Samo aplikacija dobiva tag
-**0.3.1**. Svi javni moduli i privatni demo modul ostaju na **0.3.0**, a
+**0.3.1**. Svi javni moduli ostaju na **0.3.0**, a
 HeartPhrame Framework ostaje nepromijenjen na **0.0.25**. Nema novih migracija
 baze niti promjena autentikacije/konfiguracije. Objavljeni tagovi 0.3.0 ne pomiču se.
 
@@ -18,8 +18,6 @@ baze niti promjena autentikacije/konfiguracije. Objavljeni tagovi 0.3.0 ne pomi�
   preduvjet.
 - Nova sigurna instalacija stvara FPM/deploy identitete. Postojeći identiteti
   razmatraju se samo za reinstalaciju.
-- Najprije se instalira standardna Simbioza; opcionalni privatni demo modul
-  aktivira se tek nakon provjere obične instalacije.
 - Engleske/hrvatske ugrađene instalacijske stranice i početno područje generiraju
   se iz istih Markdown izvora. FPM stranica sadrži odvojene cjelovite postupke
   za običnu i sigurnu instalaciju.

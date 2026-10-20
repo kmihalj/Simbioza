@@ -47,7 +47,7 @@ PHP must be **8.2 or newer**, Composer must be version 2, and PHP needs
 Use `pdo_sqlite`, `pdo_mysql` or `pdo_pgsql` for your chosen database.
 CLI PHP and the web PHP handler must have matching versions and extensions.
 
-## 2. Download a clean Simbioza 0.3.12 release
+## 2. Download a clean Simbioza 0.3.13 release
 
 Choose **one** application directory. On Linux:
 
@@ -73,7 +73,7 @@ Run the complete download block as your normal maintainer account:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.12 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.13 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Expect `0.3.12` and `success` for every platform requirement.
+Expect `0.3.13` and `success` for every platform requirement.
 Git's **detached HEAD** notice is normal when checking out a release tag.
 Do not run Composer with `sudo`, copy another site's configuration or database,
 include `.git/` in the deployed application, or use `--no-dev` here.
@@ -223,8 +223,7 @@ On macOS, verify the generated service before opening the wizard:
 
 For a named instance, use its matching service file, for example
 `hr.simbioza-second.php-fpm.plist`. A missing mask is a failed prerequisite,
-not a reason to make code writable or run the updater as root. Do not rerun
-generic finalization on an existing DEMO reset snapshot to repair permissions.
+not a reason to make code writable or run the updater as root.
 Session files remain private (`0600`); do not recursively make all data writable.
 
 The check changes no application settings. The default pool listens on `127.0.0.1:9075`; keep
@@ -553,8 +552,8 @@ on a clean installation**. An unchanged FPM configuration needs no restart for
 an Apache alias change alone.
 
 Use `--base-url=https://your-host.example/simbioza` for the installer, not
-the hostname without its prefix. For a demo at `/demo`, replace **both**
-occurrences of the prefix and use `--base-url=https://your-host.example/demo`.
+the hostname without its prefix. For an installation at `/wiki`, replace **both**
+occurrences of the prefix and use `--base-url=https://your-host.example/wiki`.
 The directory path is a filesystem path; the prefix is a URL path, not the
 application directory's name. Keep private `config/` and `data/` outside
 the exposed alias. Validate Apache before its graceful reload.
@@ -621,8 +620,7 @@ The maintenance commands are included at the end of this guide.
 
 **Skip this entire section unless you need SAML.** It is unrelated to configuring
 OIDC, CAS, OAuth2 or local login. Keep the local administrator and break-glass
-login available until SAML works. A public demo does not need SAML merely
-because its User guides contain this section.
+login available until SAML works.
 
 ### S1. Select the library and public addresses
 
@@ -748,7 +746,7 @@ php scripts/configure_fpm_setup.php --check \
 
 On macOS add `--php-fpm="$(brew --prefix)/sbin/php-fpm"` to **all three**
 commands. For a named instance repeat the original `--instance` and `--listen`
-options too. This is not a DEMO reset-baseline repair procedure.
+options too.
 The generator exports `SIMPLESAMLPHP_CONFIG_DIR` inside the FPM worker despite
 `clear_env = yes`; an SSH `export` or Apache `SetEnv` alone is not sufficient.
 

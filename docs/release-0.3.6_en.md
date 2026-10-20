@@ -6,7 +6,7 @@
 
 This application patch fixes the Linux Setup helper and completes the fresh
 secured-FPM walkthrough. Framework remains **v0.0.25**, API **0.3.1**, the other
-public modules **0.3.0**, and the private DEMO module **0.3.6**. Updater **1.0.8**
+public modules **0.3.0**. Updater **1.0.8**
 and database migrations are unchanged. Existing tags are not moved.
 
 ## Changes

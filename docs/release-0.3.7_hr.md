@@ -6,7 +6,7 @@
 
 Ova aplikacijska zakrpa prepoznaje ugrađene prijevode na novim i nadograđenim
 instalacijama. Framework ostaje **v0.0.25**, API **0.3.1**, ostali javni moduli
-**0.3.0**, a privatni DEMO modul **0.3.6**. Updater **1.0.8** i migracije baze
+**0.3.0**. Updater **1.0.8** i migracije baze
 ostaju nepromijenjeni. Postojeći tagovi ne pomiču se.
 
 ## Promjene
@@ -42,12 +42,5 @@ Nakon dovršetka osvježite Setup → Jezici: ugrađeni jezici pokazuju
 Pogledajte [upute lokalizacije](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/localization_hr.md),
 [cjelovitu uputu sigurnog FPM-a](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/installation_fpm_secured_hr.md)
 i [Docker uputu](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/docker_hr.md).
-
-Za već pripremljenu lokalnu DEMO instalaciju iz njezina korijena pokrenite
-privatnu skriptu `data/demo-local/updatedemo.sh --check`, zatim
-`data/demo-local/updatedemo.sh 0.3.7`. Ta izričita radnja održavanja prvo vraća
-čistu reset kopiju, nadograđuje, provjerava rezultat i snima novu polaznu kopiju.
-Ne pokrećite običnu nadogradnju aplikacije izravno preko izmjena posjetitelja.
-Objava izdanja ne nadograđuje DEMO ni apps-test automatski.
 
 [Izdanje i preuzimanja](https://github.com/kmihalj/Simbioza/releases/tag/0.3.7)

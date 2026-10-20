@@ -6,8 +6,7 @@
 
 Ova dopuna objavljuje nove Linux **AMD64 i ARM64** imagee s nadograđenim Debian
 paketima. Framework ostaje **v0.0.25**. API **0.3.1** uključuje ispravljene upute
-brzog početka, a ostali javni moduli ostaju **0.3.0**. Opcionalni privatni DEMO
-modul je **0.3.4**. Postojeći tagovi i imagei prethodnih izdanja ne zamjenjuju se.
+brzog početka, a ostali javni moduli ostaju **0.3.0**. Postojeći tagovi i imagei prethodnih izdanja ne zamjenjuju se.
 
 ## Promjene
 
@@ -41,10 +40,6 @@ volumena, napraviti konzistentan backup i slijediti izričite korake migracije
 imagea i ponovnog pokretanja iz Docker upute. Postojeći containeri ne mijenjaju
 se dok održavatelj ne preuzme i postavi novi image. Za nadogradnju ne koristiti
 `docker compose down -v`.
-
-[Privatna DEMO uputa](https://github.com/kmihalj/simbioza-module-demo/blob/0.3.4/docs/demo_installation_hr.md)
-koristi aplikaciju 0.3.3 i demo modul 0.3.4; potreban je pristup repozitoriju.
-Ovo izdanje ne nadograđuje automatski aktivni demo ni apps-test.
 
 ## Provjere i preuzimanja
 

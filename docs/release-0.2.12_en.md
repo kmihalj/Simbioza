@@ -39,8 +39,7 @@ Private updater backups live in `data/backups/updater/`. Temporary work stays
 inside the installation's `data/` and is cleaned after completion. File owner,
 group, and access mode are preserved; the web process gains no new code-write
 privileges. FPM uses the existing restricted deployment helper, while mod_php
-continues to use the code owner's CLI. Host-managed demos must retain their
-controlled baseline/reset procedure when updating to this bridge.
+continues to use the code owner's CLI.
 
 No authentication/configuration relocation or new database migration is part
 of this release. Future changes to `update.php` must increment its independent
