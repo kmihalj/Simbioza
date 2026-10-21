@@ -291,6 +291,10 @@ $applicationUpdateUi = json_encode(
             padding-bottom: 0;
         }
 
+        .setup-module-status [data-component-update-badge] {
+            grid-column: 2;
+        }
+
         .setup-module-actions::before {
             display: block;
             margin-bottom: 0.5rem;
