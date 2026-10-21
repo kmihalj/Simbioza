@@ -15,8 +15,10 @@ use App\Localization\LanguageRepository;
 use App\Localization\RepositoryLanguageManager;
 use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
+use App\Update\ThemeConfigurationUpgrade;
 use Composer\InstalledVersions;
 use HeartPhrame\App;
+use HeartPhrame\Config\ConfigInterface;
 
 // EN: CLI-only updater step after migrations, never a web endpoint.
 //
@@ -99,6 +101,17 @@ try {
         }
     }
 
+    // EN: An installed Theme is upgraded even when its optional GUI/runtime is disabled.
+    // An absent Theme remains absent; no install-time theme archive is imported.
+    //
+    // HR: Instalirani Theme nadopunjuje se i kada su opcionalni GUI/prikaz isključeni.
+    // Neinstalirani Theme ostaje neinstaliran; ne uvozi se instalacijska arhiva teme.
+    $themeConfig = $container->get(ConfigInterface::class);
+    if (!$themeConfig instanceof ConfigInterface) {
+        throw new RuntimeException('Theme configuration upgrade dependencies are unavailable.');
+    }
+    $themeRepository = ThemeConfigurationUpgrade::repository($themeConfig);
+
     $updater = new BundledAssetsUpdater(
         $database,
         $backupInstalled ? $container->get(BackupManager::class) : null,
@@ -106,6 +119,7 @@ try {
         $container->get(AuthUserService::class),
         $container->get(EditorHtmlConfig::class),
         $container->get(WorkspaceBacklinkIndexer::class),
+        $themeRepository,
     );
     foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
         echo $action . PHP_EOL;

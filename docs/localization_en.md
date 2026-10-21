@@ -209,7 +209,7 @@ In Setup → Languages, **Check language updates** refreshes the public catalogu
 without installing code or language files. The table distinguishes three sources:
 
 - **Bundled translations** show the installed application version, for example
-  `Simbioza 0.3.14`. They are recognized immediately on a fresh installation and
+  `Simbioza 0.3.15`. They are recognized immediately on a fresh installation and
   after an application update; no CLI language installation is needed.
 - **Language pack** shows the actual revision installed from the repository.
 - **Manual translation** has no verified repository revision. It is never

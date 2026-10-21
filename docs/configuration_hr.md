@@ -266,5 +266,15 @@ slijede pravila za pojedine datoteke: datoteke izdanja i `.dist` primjeri mogu s
 osvježiti ili ukloniti bez prepisivanja privatnih postavki. Updater ne skriva
 rsync poruke niti zanemaruje pogreške.
 
+Theme 0.3.2 dodaje dvanaest neobveznih postavki teksta gumba: `primary_text`,
+`secondary_text`, `success_text`, `warning_text`, `danger_text` i `info_text`
+u `light.colors` i `dark.colors` svake teme. Svaka prihvaća `auto` ili `#RRGGBB`.
+Nadogradnja aplikacije i izričiti Docker `migrate` dodaju samo odsutne ključeve
+u `HPH_CONFIG_PATH/theme/themes.json`; postojeća polja i odabrana tema ostaju
+sačuvani. Dopunjeni instalacijski ZIP teme koristi se samo na novoj instalaciji.
+Privatne teme područja koriste iste zadane vrijednosti, bez zamjene svojih
+pohranjenih podataka. [Uputa Theme modula](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-theme/-/blob/0.3.2/docs/configuration_hr.md)
+opisuje primjere rada iz datoteka i pripadajuće GUI kontrole.
+
 [Kontrolni popis 0.3.0](initial-release-0.3.0_hr.md) prikazuje stanje provjera;
 stari P1–P10 rezultati nisu potvrda objave nove polazne verzije.

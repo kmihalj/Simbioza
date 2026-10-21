@@ -268,5 +268,15 @@ Directories present in the source still use per-file rules: release-owned files
 and `.dist` examples can be refreshed or removed without overwriting private
 settings. The updater does not suppress rsync diagnostics or ignore errors.
 
+Theme 0.3.2 adds twelve optional button text settings: `primary_text`,
+`secondary_text`, `success_text`, `warning_text`, `danger_text` and `info_text`
+under each theme's `light.colors` and `dark.colors`. Each accepts `auto` or
+`#RRGGBB`. Application updates and Docker's explicit `migrate` add only absent
+keys to `HPH_CONFIG_PATH/theme/themes.json`; existing fields and theme selection
+are preserved. The updated installation theme ZIP is used only on a fresh site.
+Workspace-private themes use the same defaults without replacing their stored
+data. See the [Theme reference](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-theme/-/blob/0.3.2/docs/configuration_en.md)
+for file-only examples and the corresponding GUI controls.
+
 See [the 0.3.0 checklist](initial-release-0.3.0_en.md) for current verification
 status; historical P1–P10 results are not a claim that the new baseline is released.

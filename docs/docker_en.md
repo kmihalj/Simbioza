@@ -1,13 +1,13 @@
-# Docker deployment — 0.3.14
+# Docker deployment — 0.3.15
 
 [Croatian version](docker_hr.md)
 
 The classical installer remains supported. Docker is an additional deployment
 method, not a conversion of an existing site. The versioned image is
-`ghcr.io/kmihalj/simbioza:0.3.14` for Linux AMD64 and ARM64, including Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.15` for Linux AMD64 and ARM64, including Apple Silicon
 through Colima. Get the Compose bundle and checksums from the
-[0.3.14 release](https://github.com/kmihalj/Simbioza/releases/tag/0.3.14).
-HTML Editor, Menu and Email are 0.3.2; Backup, Auth, API and Theme are 0.3.1; the other public modules remain 0.3.0; Framework v0.0.25
+[0.3.15 release](https://github.com/kmihalj/Simbioza/releases/tag/0.3.15).
+HTML Editor, Menu, Email and Theme are 0.3.2; Backup, Auth and API are 0.3.1; the other public modules remain 0.3.0; Framework v0.0.25
 and the deployment layout are unchanged.
 
 ## What persists
@@ -52,7 +52,7 @@ From an installed development/release checkout with its Composer autoloader:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.14-candidate \
+docker build -t simbioza:0.3.15-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -174,7 +174,10 @@ docker compose -p simbioza up -d app
 
 Migration runs under a nonblocking shared-runtime lock, loads the same config
 layers without booting services requiring new tables, applies baked migration
-files in order, clears regenerable cache, and records the new image ID **last**.
+files in order, adds missing Theme button-text options, clears regenerable cache,
+and records the new image ID **last**. Existing theme values and unknown fields
+remain unchanged. This does not reimport the fresh-install theme ZIP; new options
+default to `auto`. Repeating the migration leaves the completed theme JSON intact.
 Serving/worker startup rejects an installed site whose recorded ID does not
 match the image. A failed migration keeps the previous ID and must be repaired
 or restored explicitly. There is no automatic rollback of partially applied DDL.
@@ -253,4 +256,4 @@ Only disposable fictional sites are used for container tests. HFC remains the
 classical development installation. Image
 publication and scanning are part of release CI. Real HTTPS/proxy and SAML SP/IdP
 registration/login remain operator-specific deployment checks. See the
-[0.3.14 release notes](release-0.3.14_en.md) and the release's CI/security evidence.
+[0.3.15 release notes](release-0.3.15_en.md) and the release's CI/security evidence.

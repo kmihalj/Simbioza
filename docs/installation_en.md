@@ -2,7 +2,7 @@
 
 [Croatian version](installation_hr.md)
 
-These guides install Simbioza **0.3.14**. HTML Editor, Menu and Email use **0.3.2**;
+These guides install Simbioza **0.3.15**. HTML Editor, Menu and Email use **0.3.2**;
 Backup, Auth, API and Theme use **0.3.1**, and the other public modules **0.3.0**; Framework
 is unchanged. The 0.3.x baseline starts with a new application directory,
 configuration and database. An upgrade from 0.2.x or reuse of its Simbioza

@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.14 jasno ističe dostupne nadogradnje u Setupu i uključuje Email 0.3.2 s ograničenim pokretanjima workera. HTML Editor i Menu ostaju 0.3.2; Backup, Auth, API i Theme ostaju 0.3.1, ostali javni moduli 0.3.0 i HeartPhrame Framework v0.0.25. Postojeće administratorske postavke ostaju sačuvane. Vidi [bilješke izdanja](docs/release-0.3.14_hr.md).
+> Simbioza 0.3.15 uključuje Theme 0.3.2 s automatskom ili ručno odabranom bojom teksta za svaku vrstu gumba, zasebno za svijetli i tamni prikaz. Nadogradnja dodaje samo nedostajuće opcije i čuva sve postojeće postavke; nove instalacije dobivaju dopunjeni paket teme. HTML Editor, Menu i Email ostaju 0.3.2, Backup/Auth/API 0.3.1, ostali javni moduli 0.3.0 i HeartPhrame Framework v0.0.25. Vidi [bilješke izdanja](docs/release-0.3.15_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -136,8 +136,8 @@ ovisnosti.
 
 ## Politika ovisnosti
 
-Framework je ograničen na `^0.0.25`. HTML Editor, Menu i Email traže najmanje
-`0.3.2`, Backup/Auth/API/Theme najmanje `0.3.1`, a ostali moduli kompatibilnu
+Framework je ograničen na `^0.0.25`. HTML Editor, Menu, Email i Theme traže najmanje
+`0.3.2`, Backup/Auth/API najmanje `0.3.1`, a ostali moduli kompatibilnu
 liniju izdanja `^0.3.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
 najnovija kompatibilna označena izdanja i pokreće cijeli skup provjera kvalitete.
 Produkcijski deployment može izvan izvornog repozitorija čuvati vlastiti
@@ -155,7 +155,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.14` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.15` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -258,7 +258,7 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.14](docs/release-0.3.14_hr.md).
+[bilješkama izdanja 0.3.15](docs/release-0.3.15_hr.md).
 
 ## Dokumentacija
 
@@ -276,6 +276,7 @@ bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
 - Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
 - [Instalacija](docs/installation_hr.md)
+- [Automatska i ručna boja teksta gumba u 0.3.15](docs/release-0.3.15_hr.md)
 - [Jasan pregled nadogradnji u Setupu i Email limit workera u 0.3.14](docs/release-0.3.14_hr.md)
 - [Osvježene javne instalacijske upute u 0.3.13](docs/release-0.3.13_hr.md)
 - [Instalacija s običnim PHP-FPM-om](docs/installation_fpm_hr.md)

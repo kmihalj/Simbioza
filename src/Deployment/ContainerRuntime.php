@@ -7,6 +7,7 @@ namespace App\Deployment;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\MigrationInterface;
 use App\Module\ModuleCatalog;
+use App\Update\ThemeConfigurationUpgrade;
 use Composer\InstalledVersions;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Config\ConfigPathResolver;
@@ -301,6 +302,10 @@ final readonly class ContainerRuntime
             }
 
             $applied = $database->migrator()->migrate($migrations);
+            // EN: Image upgrades add the same missing keys as the classic updater, without importing defaults.
+            //
+            // HR: Nadogradnje imagea dodaju iste nedostajuće ključeve kao klasični updater, bez uvoza defaulta.
+            ThemeConfigurationUpgrade::apply($config);
             $this->clearCache();
             $this->publish('data/.image-state.json', json_encode([
                 'code_id' => $this->image()['code_id'], 'migrated_at' => gmdate(DATE_ATOM),

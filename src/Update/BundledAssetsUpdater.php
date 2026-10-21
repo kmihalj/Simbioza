@@ -14,6 +14,7 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceBacklinkIndexer;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceConfig;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
@@ -84,6 +85,7 @@ final readonly class BundledAssetsUpdater
         private AuthUserService $users,
         private EditorHtmlConfig $editorConfig,
         private ?WorkspaceBacklinkIndexer $backlinks = null,
+        private ?ThemeConfigRepository $themes = null,
     ) {
     }
 
@@ -98,11 +100,27 @@ final readonly class BundledAssetsUpdater
     public function run(string $root, string $basePath, array $skippedGuideProviders = []): array
     {
         $basePath = self::validatedBasePath($basePath);
+        // EN: Configuration additions are independent of the optional Backup package.
+        // Never import the installation theme or normalize existing user values here.
+        //
+        // HR: Dopuna konfiguracije ne ovisi o opcionalnom Backup paketu.
+        // Ovdje nikada ne uvozimo instalacijsku temu niti normaliziramo korisničke vrijednosti.
+        $actions = [];
+        if (
+            $this->themes instanceof ThemeConfigRepository
+            && $this->themes->persistMissingButtonTextColors() > 0
+        ) {
+            $actions[] = 'Missing theme button text settings added; existing theme settings preserved.';
+        }
+
         // EN: Skip before touching archives or optional Backup value classes, including unchanged receipts.
         //
         // HR: Preskoči arhive i klase opcionalnog Backupa čak i kada se evidencija paketa nije promijenila.
         if (!$this->backups instanceof BackupManager) {
-            return ['Bundled user-guide update skipped because the optional Backup module is not installed.'];
+            return [
+                ...$actions,
+                'Bundled user-guide update skipped because the optional Backup module is not installed.',
+            ];
         }
 
         $statePath = $root . '/data/bundled-assets.json';
@@ -119,7 +137,6 @@ final readonly class BundledAssetsUpdater
             $state[$key] = $value;
         }
 
-        $actions = [];
         // EN: The theme ZIP is a fresh-install seed, never an update payload.
         //     Even the shipped theme is administrator-owned after installation.
         //     Keep historical recovery references, but never reimport defaults.

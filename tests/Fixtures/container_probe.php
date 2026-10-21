@@ -11,6 +11,65 @@ $root = getenv('HPH_APP_PATH') ?: '/opt/simbioza';
 require $root . '/vendor/autoload.php';
 $paths = new \App\Installation\InstallationPaths($root);
 $mode = $argv[1] ?? 'state';
+// EN: Emulate a previous image's theme JSON, then verify only missing keys were added.
+// The receipt stays in this disposable volume and includes no deployment credentials.
+//
+// HR: Oponaša JSON teme prethodnog imagea te provjerava dopunu samo nedostajućih ključeva.
+// Potvrda ostaje u ovom privremenom volumenu i ne sadrži vjerodajnice instalacije.
+if (in_array($mode, ['theme-upgrade-prepare', 'theme-upgrade-verify'], true)) {
+    $themeFile = '/runtime/config/theme/themes.json';
+    $settingsFile = '/runtime/config/theme/settings.json';
+    $receiptFile = '/runtime/data/a4-theme-upgrade.json';
+    $keys = \AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository::BUTTON_COLOR_KEYS;
+    if ($mode === 'theme-upgrade-prepare') {
+        $themes = json_decode((string)file_get_contents($themeFile), true, 512, JSON_THROW_ON_ERROR);
+        foreach ($themes as &$theme) {
+            foreach (['light', 'dark'] as $variant) {
+                foreach ($keys as $key) {
+                    unset($theme[$variant]['colors'][$key . '_text']);
+                }
+            }
+
+            $theme['light']['colors']['secondary_text'] = '#FeDcBa';
+            $theme['dark']['colors']['muted_text'] = '#ABCDEF';
+            $theme['a4_extension'] = ['preserve' => true];
+        }
+
+        unset($theme);
+        file_put_contents($themeFile, json_encode($themes, JSON_THROW_ON_ERROR));
+        foreach ($themes as &$theme) {
+            foreach (['light', 'dark'] as $variant) {
+                foreach ($keys as $key) {
+                    $theme[$variant]['colors'][$key . '_text'] ??= 'auto';
+                }
+            }
+        }
+
+        unset($theme);
+        file_put_contents($receiptFile, json_encode([
+            'expected' => $themes,
+            'settings_hash' => hash_file('sha256', $settingsFile),
+        ], JSON_THROW_ON_ERROR));
+    } else {
+        $receipt = json_decode((string)file_get_contents($receiptFile), true, 512, JSON_THROW_ON_ERROR);
+        $themes = json_decode((string)file_get_contents($themeFile), true, 512, JSON_THROW_ON_ERROR);
+        $hash = hash_file('sha256', $themeFile);
+        if (
+            $themes !== $receipt['expected']
+            || hash_file('sha256', $settingsFile) !== $receipt['settings_hash']
+            || (isset($receipt['theme_hash']) && $hash !== $receipt['theme_hash'])
+        ) {
+            throw new RuntimeException('Theme upgrade changed existing settings or was not idempotent.');
+        }
+
+        $receipt['theme_hash'] = $hash;
+        file_put_contents($receiptFile, json_encode($receipt, JSON_THROW_ON_ERROR));
+    }
+
+    echo "Theme additive upgrade probe passed: $mode.\n";
+    exit;
+}
+
 if ($mode === 'saml') {
     foreach (
         ['/runtime/saml/config', '/runtime/saml/metadata', '/runtime/saml/cert',

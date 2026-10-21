@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Automatic and custom button text colors in 0.3.15](release-0.3.15_en.md)
 - [Clear Setup update summaries and Email worker limits in 0.3.14](release-0.3.14_en.md)
 - [Refreshed public installation guides in 0.3.13](release-0.3.13_en.md)
 - [Theme/configuration preservation and selected colors in 0.3.10](release-0.3.10_en.md)

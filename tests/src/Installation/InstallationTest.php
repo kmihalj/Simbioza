@@ -12,6 +12,7 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
+use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace;
 use AaiEduHr\SimbiozaModuleWorkspace\Service\WorkspaceRepository;
 use App\Configuration\ConfigurationPaths;
@@ -98,6 +99,12 @@ final class InstallationTest extends TestCase
 
         $theme = json_decode($packagedTheme, true, 512, JSON_THROW_ON_ERROR);
         $this->assertIsArray($theme);
+        foreach (['light', 'dark'] as $variant) {
+            foreach (ThemeConfigRepository::BUTTON_COLOR_KEYS as $kind) {
+                $this->assertSame('auto', $theme[$variant]['colors'][$kind . '_text'] ?? null);
+            }
+        }
+
         $hero = $theme['components']['hero'] ?? null;
         $this->assertIsArray($hero);
         $this->assertSame(72, $theme['components']['header']['height_px'] ?? null);
@@ -1145,19 +1152,61 @@ PHP);
         // EN: An uninstalled optional Backup package skips all archive-dependent guide work in either receipt state.
         //
         // HR: Uklonjen opcionalni Backup paket preskače rad s arhivama uputa, neovisno o stanju evidencije paketa.
+        $themePath = $paths->themeConfigDirectory() . '/themes.json';
+        $customThemes = json_decode((string)file_get_contents($themePath), true, 512, JSON_THROW_ON_ERROR);
+        foreach ($customThemes as &$theme) {
+            foreach (['light', 'dark'] as $variant) {
+                foreach (ThemeConfigRepository::BUTTON_COLOR_KEYS as $kind) {
+                    unset($theme[$variant]['colors'][$kind . '_text']);
+                }
+            }
+
+            $theme['light']['colors']['secondary_text'] = '#FFFFFF';
+            $theme['dark']['colors']['muted_text'] = '#ABCDEF';
+            $theme['private_extension'] = ['keep' => true];
+        }
+
+        unset($theme);
+        file_put_contents($themePath, json_encode($customThemes, JSON_THROW_ON_ERROR));
+        $themeClass = (new \ReflectionClass(ThemeConfigRepository::class))->getFileName();
+        $this->assertIsString($themeClass);
+        $themeRepository = new ThemeConfigRepository(
+            new Config(new Helper(), [], $root),
+            dirname($themeClass, 3),
+        );
         $withoutBackup = new BundledAssetsUpdater(
             $database,
             null,
             new WorkspaceRepository($database),
             new AuthUserService($database),
             $payloadConfig,
+            themes: $themeRepository,
         );
         $guideArchive = $root . '/resources/installation/workspace/korisnicke-upute.zip';
         $this->assertTrue(rename($guideArchive, $guideArchive . '.unavailable'));
         $skipped = ['Bundled user-guide update skipped because the optional Backup module is not installed.'];
-        $this->assertSame($skipped, $withoutBackup->run($root, '/test-simbioza'));
+        $this->assertSame([
+            'Missing theme button text settings added; existing theme settings preserved.', ...$skipped,
+        ], $withoutBackup->run($root, '/test-simbioza'));
+        $expectedThemes = $customThemes;
+        foreach ($expectedThemes as &$theme) {
+            foreach (['light', 'dark'] as $variant) {
+                foreach (ThemeConfigRepository::BUTTON_COLOR_KEYS as $kind) {
+                    $theme[$variant]['colors'][$kind . '_text'] ??= 'auto';
+                }
+            }
+        }
+
+        unset($theme);
+        $this->assertSame(
+            $expectedThemes,
+            json_decode((string)file_get_contents($themePath), true, 512, JSON_THROW_ON_ERROR),
+        );
+        $this->assertSame($themeSettingsHash, hash_file('sha256', $paths->themeConfigDirectory() . '/settings.json'));
+        $upgradedHash = hash_file('sha256', $themePath);
         $this->assertNotFalse(file_put_contents($root . '/data/bundled-assets.json', "{}\n"));
         $this->assertSame($skipped, $withoutBackup->run($root, '/test-simbioza'));
+        $this->assertSame($upgradedHash, hash_file('sha256', $themePath));
     }
 
     /**

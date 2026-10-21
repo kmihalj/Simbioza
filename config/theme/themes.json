@@ -262,7 +262,13 @@
                 "navbar_text": "#7AD4FD",
                 "navbar_link": "#7AD4FD",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#003567"
+                "navbar_active_bg": "#003567",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         },
         "dark": {
@@ -389,7 +395,13 @@
                 "navbar_text": "#92DAF7",
                 "navbar_link": "#92DAF7",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D3A5F"
+                "navbar_active_bg": "#0D3A5F",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         }
     },
@@ -656,7 +668,13 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#A01F23"
+                "navbar_active_bg": "#A01F23",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         },
         "dark": {
@@ -783,7 +801,13 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#90101F"
+                "navbar_active_bg": "#90101F",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         }
     },
@@ -1050,7 +1074,13 @@
                 "navbar_text": "#FFF8EE",
                 "navbar_link": "#FFF8EE",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D424B"
+                "navbar_active_bg": "#0D424B",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         },
         "dark": {
@@ -1177,7 +1207,13 @@
                 "navbar_text": "#FFF8EE",
                 "navbar_link": "#FFF8EE",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#0D424B"
+                "navbar_active_bg": "#0D424B",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         }
     },
@@ -1444,7 +1480,13 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#80CBD7"
+                "navbar_active_bg": "#80CBD7",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         },
         "dark": {
@@ -1571,7 +1613,13 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#245E69"
+                "navbar_active_bg": "#245E69",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         }
     },
@@ -1838,7 +1886,13 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#212529"
+                "navbar_active_bg": "#212529",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         },
         "dark": {
@@ -1965,7 +2019,13 @@
                 "navbar_text": "#FFFFFF",
                 "navbar_link": "#FFFFFF",
                 "navbar_active": "#FFFFFF",
-                "navbar_active_bg": "#232323"
+                "navbar_active_bg": "#232323",
+                "primary_text": "auto",
+                "secondary_text": "auto",
+                "success_text": "auto",
+                "warning_text": "auto",
+                "danger_text": "auto",
+                "info_text": "auto"
             }
         }
     }

@@ -2,6 +2,9 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.14/docs/release-0.3.14_en.md)
 
+> Povijesna bilješka izdanja. Koristite [aktualnu uputu za instalaciju](installation_hr.md)
+> i [Simbiozu 0.3.15](release-0.3.15_hr.md) za aktualne upute.
+
 Ovo izdanje poboljšava ekran nadogradnje i uključuje objavljeni **Email 0.3.2**
 worker. HTML Editor i Menu ostaju **0.3.2**; Backup, Auth, API i Theme ostaju
 **0.3.1**, ostali javni moduli **0.3.0**, Framework **v0.0.25** i updater

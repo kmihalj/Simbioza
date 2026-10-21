@@ -1,13 +1,13 @@
-# Docker instalacija — 0.3.14
+# Docker instalacija — 0.3.15
 
 [Engleska verzija](docker_en.md)
 
 Klasična instalacija ostaje podržana. Docker je dodatni način instalacije, ne
 pretvorba postojećeg sitea. Verzionirani image je
-`ghcr.io/kmihalj/simbioza:0.3.14` za Linux AMD64 i ARM64, uključujući Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.15` za Linux AMD64 i ARM64, uključujući Apple Silicon
 kroz Colimu. Compose paket i kontrolne sume preuzimaju se iz
-[izdanja 0.3.14](https://github.com/kmihalj/Simbioza/releases/tag/0.3.14).
-HTML Editor, Menu i Email su 0.3.2; Backup, Auth, API i Theme su 0.3.1, a ostali javni moduli ostaju 0.3.0; Framework v0.0.25
+[izdanja 0.3.15](https://github.com/kmihalj/Simbioza/releases/tag/0.3.15).
+HTML Editor, Menu, Email i Theme su 0.3.2; Backup, Auth i API su 0.3.1, a ostali javni moduli ostaju 0.3.0; Framework v0.0.25
 i raspored instalacije nisu promijenjeni.
 
 ## Što se trajno čuva
@@ -52,7 +52,7 @@ Iz razvojnog/release checkouta s instaliranim Composer autoloaderom:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.14-candidate \
+docker build -t simbioza:0.3.15-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -175,8 +175,11 @@ docker compose -p simbioza up -d app
 
 Migracija uzima neblokirajući lock zajedničkog runtimea, učitava iste config
 slojeve bez boota servisa koji možda trebaju novu shemu, izvršava ugrađene
-migracije po redoslijedu, čisti obnovljivi cache i zapisuje novi ID imagea
-**tek na kraju**. Web/worker startup odbija instalaciju čiji zabilježeni ID ne
+migracije po redoslijedu, dodaje nedostajuće Theme opcije teksta gumba, čisti
+obnovljivi cache i zapisuje novi ID imagea **tek na kraju**. Postojeće vrijednosti
+teme i nepoznata polja ostaju nepromijenjeni. Paket teme za novu instalaciju ne
+uvozi se ponovno; nove opcije dobivaju `auto`. Ponovljena migracija ne zapisuje
+već dopunjeni JSON teme. Web/worker startup odbija instalaciju čiji zabilježeni ID ne
 odgovara imageu. Neuspjela migracija ostavlja prethodni ID; potrebno je izričito
 popraviti stanje ili vratiti kopiju. Nema automatskog rollbacka djelomično
 primijenjenog DDL-a. Image bez prethodno primijenjenih migracija odbija se:
@@ -252,4 +255,4 @@ Docker testovi koriste samo privremene izmišljene siteove. HFC ostaje klasična
 razvojna instalacija.
 Objava i skeniranje imagea dio su CI-ja izdanja. Stvarna HTTPS/proxy provjera i
 registracija/prijava SAML SP-a/IdP-a ostaju održavateljeve provjere deploymenta.
-Vidi [bilješke izdanja 0.3.14](release-0.3.14_hr.md) i priložene CI/sigurnosne dokaze.
+Vidi [bilješke izdanja 0.3.15](release-0.3.15_hr.md) i priložene CI/sigurnosne dokaze.

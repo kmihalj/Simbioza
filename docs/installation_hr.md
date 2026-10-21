@@ -2,7 +2,7 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.14**. HTML Editor, Menu i Email koriste **0.3.2**;
+Ove upute instaliraju Simbiozu **0.3.15**. HTML Editor, Menu i Email koriste **0.3.2**;
 Backup, Auth, API i Theme koriste **0.3.1**, a ostali javni moduli **0.3.0**; Framework je
 nepromijenjen. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
