@@ -1,5 +1,21 @@
 # Modules
 
+## Updates in Simbioza Setup
+
+Open **Settings → Setup and modules** to check available releases. The application
+update card shows a prominent list of components requiring updates, with their
+installed and available versions. The same modules have an update badge and an
+accent border in the module list; their enabled/disabled state remains separate.
+The list is shown from the last check and refreshed automatically when the page
+loads. An empty list is hidden; a failed check does not mean everything is current.
+
+Use **Run update** to update the application and compatible installed modules,
+even if only a module has a newer release. Do not uninstall/reinstall a module
+to update it. Immutable Docker installations instead replace their image,
+preserving configuration/data and database volumes. This display does not start
+an update automatically or change any saved theme settings. Essential status
+text uses the card's normal text color so decorative muted colors cannot hide it.
+
 ## Overview
 
 HeartPhrame features a powerful module system that allows you to organize your

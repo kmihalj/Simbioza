@@ -1,5 +1,22 @@
 # Moduli
 
+## Nadogradnje u Simbiozinu Setupu
+
+Otvorite **Postavke → Setup i moduli** za provjeru dostupnih izdanja. Kartica
+nadogradnje aplikacije ističe popis komponenti za nadogradnju s instaliranim i
+dostupnim verzijama. Isti moduli imaju oznaku nadogradnje i istaknuti rub u popisu
+modula; stanje uključenosti/isključenosti ostaje zasebno. Popis dolazi iz zadnje
+provjere i automatski se osvježava pri otvaranju stranice. Prazan popis je skriven;
+neuspjela provjera ne znači da je sve ažurno.
+
+Gumb **Pokreni nadogradnju** nadograđuje aplikaciju i kompatibilne instalirane
+module, čak i kada novije izdanje ima samo modul. Radi nadogradnje modul ne treba
+deinstalirati i ponovno instalirati. Nepromjenjive Docker instalacije umjesto
+toga zamjenjuju image, uz očuvanje konfiguracijskih/podatkovnih volumena i baze.
+Ovaj prikaz ne pokreće nadogradnju sam niti mijenja spremljene postavke teme.
+Bitni statusni tekst koristi običnu boju teksta kartice, pa ga dekorativna
+prigušena boja ne može sakriti.
+
 ## Pregled
 
 HeartPhrame sadrži sustav modula za organiziranje aplikacije u samostalne i

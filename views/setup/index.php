@@ -38,6 +38,7 @@ $updateStatusLabels = [
 $updateRunning = in_array($applicationUpdate['state'], ['queued', 'running'], true);
 $componentsByPackage = [];
 $applicationComponent = null;
+$pendingComponents = [];
 foreach ($componentUpdates['components'] as $component) {
     $package = $component['package'] ?? '';
     if (is_string($package) && $package !== '') {
@@ -45,6 +46,9 @@ foreach ($componentUpdates['components'] as $component) {
     }
     if (($component['kind'] ?? null) === 'application') {
         $applicationComponent = $component;
+    }
+    if (($component['status'] ?? null) === 'update_available' && !empty($component['latest_version'])) {
+        $pendingComponents[] = $component;
     }
 }
 $applicationLatestVersion = is_array($applicationComponent)
@@ -97,6 +101,8 @@ $componentUpdateUi = json_encode(
         'checkingLabel' => __('Provjeravam dostupna izdanja...'),
         'lastCheckedLabel' => __('Zadnja provjera:'),
         'availableUpdatesLabel' => __('Dostupna ažuriranja: %d'),
+        'installedLabel' => __('Instalirano:'),
+        'availableLabel' => __('Dostupno:'),
         'noUpdatesLabel' => __('Nema novih kompatibilnih izdanja.'),
         'partialFailureLabel' => __('Neke komponente nije bilo moguće provjeriti.'),
         'failedLabel' => __('Provjera izdanja nije uspjela.'),
@@ -137,6 +143,26 @@ $applicationUpdateUi = json_encode(
 );
 ?>
 <style>
+    /* EN: Essential update details use the card's normal text, never a theme's decorative muted color.
+       HR: Bitni podaci nadogradnje koriste obični tekst kartice, ne dekorativnu prigušenu boju teme. */
+    .setup-supporting-copy { color: inherit; }
+
+    .setup-update-notice {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-warning, #ffc107);
+        border-inline-start-width: 0.35rem;
+        border-radius: var(--bs-border-radius, 0.375rem);
+        color: inherit;
+        margin-top: 1rem;
+        padding: 1rem;
+    }
+
+    .setup-update-notice ul { margin-bottom: 0; padding-inline-start: 1.25rem; }
+    .setup-update-notice li { overflow-wrap: anywhere; }
+    .setup-update-notice li + li { margin-top: 0.5rem; }
+    .setup-update-notice code { white-space: normal; overflow-wrap: anywhere; }
+    .setup-module-row.has-update { border-inline-start: 0.3rem solid var(--bs-warning, #ffc107); }
+
     .setup-modules-header,
     .setup-module-row {
         align-items: center;
@@ -254,7 +280,7 @@ $applicationUpdateUi = json_encode(
         }
 
         .setup-module-cell:not(.setup-module-main)::before {
-            color: var(--bs-secondary-color);
+            color: inherit;
             content: attr(data-label);
             font-size: 0.875rem;
             font-weight: 600;
@@ -289,7 +315,7 @@ $applicationUpdateUi = json_encode(
         <section class="card shadow-sm mb-4">
             <div class="card-body">
                 <h1 class="h3 mb-2"><?= $this->escape($title) ?></h1>
-                <p class="text-body-secondary mb-4">
+                <p class="setup-supporting-copy mb-4">
                     <?= $this->escape(__('Ovdje upravljate opcionalnim modulima i odmah vidite jesu li prava datoteka ispravna.')) ?>
                 </p>
 
@@ -354,7 +380,7 @@ $applicationUpdateUi = json_encode(
                 <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-start">
                     <div>
                         <h2 class="h4 mb-1"><?= $this->escape(__('Nadogradnja aplikacije')) ?></h2>
-                        <p class="text-body-secondary mb-2">
+                        <p class="setup-supporting-copy mb-2">
                             <?= $this->escape($diagnostics['immutable']
                                 ? __('Zaustavite aplikaciju i workere, sačuvajte bazu i runtime, odaberite novi image, pokrenite migrate i ponovno pokrenite aplikaciju.')
                                 : __('Updater izrađuje sigurnosnu kopiju, uključuje održavanje, nadograđuje kod i module te primjenjuje migracije.')) ?>
@@ -375,7 +401,7 @@ $applicationUpdateUi = json_encode(
                                 <span data-setup-application-latest><?= $this->escape($applicationLatestVersion ?? '') ?></span>
                             </span>
                         </div>
-                        <div class="small text-body-secondary mt-2" data-setup-update-summary aria-live="polite">
+                        <div class="setup-supporting-copy mt-2" data-setup-update-summary aria-live="polite">
                             <?php if ($componentUpdates['checked_at'] !== null) : ?>
                                 <?= $this->escape(__('Zadnja provjera:')) ?>
                                 <?= $this->escape($formatTimestamp(date(DATE_ATOM, $componentUpdates['checked_at']))) ?>
@@ -387,7 +413,7 @@ $applicationUpdateUi = json_encode(
                             <?= $this->escape(__('Napredak nadogradnje')) ?>
                         </button>
                         <?php if ($applicationUpdate['started_at'] !== null) : ?>
-                            <div class="small text-body-secondary mt-2">
+                            <div class="small setup-supporting-copy mt-2">
                             <?= $this->escape(__('Pokrenuto:')) ?> <?= $this->escape($formatTimestamp($applicationUpdate['started_at'])) ?>
                             <?php if ($applicationUpdate['finished_at'] !== null) : ?>
                                     · <?= $this->escape(__('Završeno:')) ?> <?= $this->escape($formatTimestamp($applicationUpdate['finished_at'])) ?>
@@ -432,6 +458,18 @@ $applicationUpdateUi = json_encode(
                         </div>
                     <?php endif; ?>
                 </div>
+                <div class="setup-update-notice" data-setup-pending-updates role="status" aria-live="polite" <?= $pendingComponents === [] ? 'hidden' : '' ?>>
+                    <h3 class="h5 mb-3" data-setup-pending-heading><?= $this->escape(sprintf(__('Dostupna ažuriranja: %d'), count($pendingComponents))) ?></h3>
+                    <ul data-setup-pending-list>
+                        <?php foreach ($pendingComponents as $pendingComponent) : ?>
+                        <li>
+                            <strong><?= $this->escape($pendingComponent['name']) ?></strong>
+                            · <?= $this->escape(__('Instalirano:')) ?> <code><?= $this->escape($pendingComponent['installed_version']) ?></code>
+                            → <?= $this->escape(__('Dostupno:')) ?> <code class="fw-bold"><?= $this->escape($pendingComponent['latest_version'] ?? '') ?></code>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </div>
         </section>
 
@@ -439,7 +477,7 @@ $applicationUpdateUi = json_encode(
             <div class="card-body">
                 <header class="mb-4">
                     <h2 class="h4 mb-1"><?= $this->escape(__('Moduli')) ?></h2>
-                    <p class="text-body-secondary mb-0">
+                    <p class="setup-supporting-copy mb-0">
                         <?= $this->escape(__('Obvezni moduli čine minimalnu instalaciju. Opcionalne dodajte samo kada su potrebni.')) ?>
                     </p>
                 </header>
@@ -471,13 +509,13 @@ $applicationUpdateUi = json_encode(
                             : null;
                             ?>
                         <div
-                            class="setup-module-row"
+                            class="setup-module-row <?= $latestVersion === null ? '' : 'has-update' ?>"
                             role="row"
                             data-component-package="<?= $this->escape($module['package']) ?>"
                         >
                                 <div class="setup-module-cell setup-module-main" role="rowheader">
-                                    <div class="fw-semibold"><?= $this->escape($label) ?></div>
-                                    <div class="small fw-normal text-body-secondary text-break">
+                                    <div class="fw-semibold" data-setup-module-name><?= $this->escape($label) ?></div>
+                                    <div class="small fw-normal setup-supporting-copy text-break">
                             <?= $this->escape($module['package']) ?>
                                     </div>
                                 </div>
@@ -497,9 +535,10 @@ $applicationUpdateUi = json_encode(
                             : $this->escape(implode(', ', $definition['dependencies'])) ?>
                                 </div>
                                 <div class="setup-module-cell" role="cell" data-label="<?= $this->escape(__('Verzija')) ?>">
+                                    <span class="small"><?= $this->escape(__('Instalirano:')) ?></span>
                                     <code data-component-installed-version><?= $this->escape($installedVersion ?? '—') ?></code>
                                     <div
-                                        class="small text-warning-emphasis <?= $latestVersion === null ? 'd-none' : '' ?>"
+                                        class="fw-semibold <?= $latestVersion === null ? 'd-none' : '' ?>"
                                         data-component-update-version
                                     >
                             <?= $this->escape(__('Dostupno:')) ?>
@@ -510,6 +549,7 @@ $applicationUpdateUi = json_encode(
                                     <span class="badge <?= $module['enabled'] ? 'text-bg-success' : 'text-bg-light' ?>">
                             <?= $this->escape($statusLabels[$module['state']] ?? $module['state']) ?>
                                     </span>
+                                    <span class="badge text-bg-warning mt-1 <?= $latestVersion === null ? 'd-none' : '' ?>" data-component-update-badge><?= $this->escape(__('Dostupna nadogradnja')) ?></span>
                                 </div>
                                 <div class="setup-module-cell setup-module-actions" role="cell" data-label="<?= $this->escape(__('Radnje')) ?>">
                                     <div class="d-flex flex-wrap gap-1 justify-content-end setup-module-action-buttons">
@@ -944,6 +984,9 @@ $applicationUpdateUi = json_encode(
 
     const checkPath = panel.dataset.updateCheckPath || '';
     const summary = panel.querySelector('[data-setup-update-summary]');
+    const pendingNotice = panel.querySelector('[data-setup-pending-updates]');
+    const pendingHeading = panel.querySelector('[data-setup-pending-heading]');
+    const pendingList = panel.querySelector('[data-setup-pending-list]');
     const applicationUpdate = panel.querySelector('[data-setup-application-update]');
     const applicationLatest = panel.querySelector('[data-setup-application-latest]');
     const moduleRows = new Map();
@@ -1168,7 +1211,7 @@ $applicationUpdateUi = json_encode(
 
         summary.replaceChildren();
         summary.classList.remove('text-danger');
-        summary.classList.add('text-body-secondary');
+        summary.classList.add('setup-supporting-copy');
         const checkedAt = Number(payload.checked_at || 0);
         if (checkedAt <= 0) {
             summary.textContent = String(payload.message || ui.failedLabel);
@@ -1183,7 +1226,7 @@ $applicationUpdateUi = json_encode(
 
         const updates = Number(payload.updates || 0);
         const result = document.createElement('span');
-        result.className = updates > 0 ? 'text-warning-emphasis' : 'text-success';
+        result.className = updates > 0 ? 'badge text-bg-warning' : 'text-success';
         result.textContent = updates > 0
             ? ui.availableUpdatesLabel.replace('%d', String(updates))
             : ui.noUpdatesLabel;
@@ -1199,10 +1242,20 @@ $applicationUpdateUi = json_encode(
 
     const updateVersions = function (components) {
         let latestApplication = '';
+        const pending = [];
+        moduleRows.forEach(function (row) {
+            row.classList.remove('has-update');
+            row.querySelectorAll('[data-component-update-version], [data-component-update-badge]').forEach(function (element) {
+                element.classList.add('d-none');
+            });
+        });
         components.forEach(function (component) {
             const updateAvailable = component.status === 'update_available'
                 && typeof component.latest_version === 'string'
                 && component.latest_version !== '';
+            if (updateAvailable) {
+                pending.push(component);
+            }
             if (component.kind === 'application' && updateAvailable) {
                 latestApplication = component.latest_version;
             }
@@ -1210,6 +1263,11 @@ $applicationUpdateUi = json_encode(
             const row = moduleRows.get(String(component.package || ''));
             if (!(row instanceof HTMLElement)) {
                 return;
+            }
+            row.classList.toggle('has-update', updateAvailable);
+            const badge = row.querySelector('[data-component-update-badge]');
+            if (badge instanceof HTMLElement) {
+                badge.classList.toggle('d-none', !updateAvailable);
             }
 
             const installed = row.querySelector('[data-component-installed-version]');
@@ -1233,6 +1291,29 @@ $applicationUpdateUi = json_encode(
         if (applicationUpdate instanceof HTMLElement) {
             applicationUpdate.classList.toggle('d-none', latestApplication === '');
         }
+        // EN: Build server-provided labels as text; never interpret release metadata as HTML.
+        //
+        // HR: Oznake poslužitelja stvaramo kao tekst; metapodaci izdanja nikad nisu HTML.
+        if (pendingNotice instanceof HTMLElement && pendingHeading instanceof HTMLElement && pendingList instanceof HTMLElement) {
+            pendingHeading.textContent = ui.availableUpdatesLabel.replace('%d', String(pending.length));
+            pendingList.replaceChildren();
+            pending.forEach(function (component) {
+                const item = document.createElement('li');
+                const name = document.createElement('strong');
+                const row = moduleRows.get(String(component.package || ''));
+                const label = row instanceof HTMLElement ? row.querySelector('[data-setup-module-name]') : null;
+                name.textContent = label instanceof HTMLElement ? label.textContent : String(component.name || component.package || '');
+                const installed = document.createElement('code');
+                installed.textContent = String(component.installed_version || '—');
+                const latest = document.createElement('code');
+                latest.className = 'fw-bold';
+                latest.textContent = component.latest_version;
+                item.append(name, document.createTextNode(' · ' + ui.installedLabel + ' '), installed,
+                    document.createTextNode(' → ' + ui.availableLabel + ' '), latest);
+                pendingList.append(item);
+            });
+            pendingNotice.hidden = pending.length === 0;
+        }
     };
 
     const checkForUpdates = async function () {
@@ -1244,7 +1325,7 @@ $applicationUpdateUi = json_encode(
         if (summary instanceof HTMLElement) {
             summary.textContent = ui.checkingLabel;
             summary.classList.remove('text-danger');
-            summary.classList.add('text-body-secondary');
+            summary.classList.add('setup-supporting-copy');
         }
 
         try {
@@ -1268,7 +1349,7 @@ $applicationUpdateUi = json_encode(
         } catch (error) {
             if (summary instanceof HTMLElement) {
                 summary.textContent = error instanceof Error ? error.message : ui.failedLabel;
-                summary.classList.remove('text-body-secondary');
+                summary.classList.remove('setup-supporting-copy');
                 summary.classList.add('text-danger');
             }
         } finally {

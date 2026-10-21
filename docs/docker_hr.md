@@ -1,13 +1,13 @@
-# Docker instalacija — 0.3.13
+# Docker instalacija — 0.3.14
 
 [Engleska verzija](docker_en.md)
 
 Klasična instalacija ostaje podržana. Docker je dodatni način instalacije, ne
 pretvorba postojećeg sitea. Verzionirani image je
-`ghcr.io/kmihalj/simbioza:0.3.13` za Linux AMD64 i ARM64, uključujući Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.14` za Linux AMD64 i ARM64, uključujući Apple Silicon
 kroz Colimu. Compose paket i kontrolne sume preuzimaju se iz
-[izdanja 0.3.13](https://github.com/kmihalj/Simbioza/releases/tag/0.3.13).
-Auth, API, HTML Editor, Email i Theme su 0.3.1; Menu je 0.3.2, a ostali javni moduli ostaju 0.3.0; Framework v0.0.25
+[izdanja 0.3.14](https://github.com/kmihalj/Simbioza/releases/tag/0.3.14).
+HTML Editor, Menu i Email su 0.3.2; Backup, Auth, API i Theme su 0.3.1, a ostali javni moduli ostaju 0.3.0; Framework v0.0.25
 i raspored instalacije nisu promijenjeni.
 
 ## Što se trajno čuva
@@ -52,7 +52,7 @@ Iz razvojnog/release checkouta s instaliranim Composer autoloaderom:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.13-candidate \
+docker build -t simbioza:0.3.14-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -194,13 +194,16 @@ release-specifične upute za migraciju podataka i konfiguracije.
 docker compose -p simbioza run --rm --no-deps app cli orm-migrate:status
 docker compose -p simbioza run --rm --no-deps app cli modules list
 docker compose -p simbioza run --rm --no-deps app cli languages install de
-docker compose -p simbioza run --rm --no-deps app cli email worker --batch-size=20
+docker compose -p simbioza run --rm --no-deps app cli email outbox:worker --max-messages=20
 ```
 
 Email worker zahtijeva podešen i uključen SMTP; zadano je slanje isključeno.
+Jednokratna naredba pokušava obraditi najviše 20 poruka; `--batch-size` određuje
+samo veličinu internog kruga. Cjeloviti primjeri zasebnog stalnog workera nalaze
+se u [uputama za Email 0.3.2 worker](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/0.3.2/docs/workers_hr.md).
 Za trajni worker dodati održavateljev servis s istim imageom, runtime mountovima,
 korisnikom, okruženjem i sigurnosnim ograničenjima, uz naredbu
-`["cli", "email", "worker", "--watch", "--sleep=2"]`. Zaustavljati ga pri nadogradnji.
+`["cli", "email", "outbox:worker", "--watch", "--sleep=2"]`, bez ukupnog limita. Zaustavljati ga pri nadogradnji.
 CLI koristi isti privatni config i organizaciju sesija/podataka kao HTTP.
 
 ## Opcionalni SimpleSAMLphp
@@ -249,4 +252,4 @@ Docker testovi koriste samo privremene izmišljene siteove. HFC ostaje klasična
 razvojna instalacija.
 Objava i skeniranje imagea dio su CI-ja izdanja. Stvarna HTTPS/proxy provjera i
 registracija/prijava SAML SP-a/IdP-a ostaju održavateljeve provjere deploymenta.
-Vidi [bilješke izdanja 0.3.13](release-0.3.13_hr.md) i priložene CI/sigurnosne dokaze.
+Vidi [bilješke izdanja 0.3.14](release-0.3.14_hr.md) i priložene CI/sigurnosne dokaze.

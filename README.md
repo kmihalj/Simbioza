@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.13 ships refreshed public installation guides without private deployment instructions or inaccessible private links. HTML Editor remains 0.3.2, Backup 0.3.1; Auth, Email, Theme and API remain 0.3.1, Menu 0.3.2, other public modules 0.3.0 and HeartPhrame Framework v0.0.25. Existing administrator settings remain preserved. See the [release notes](docs/release-0.3.13_en.md).
+> Simbioza 0.3.14 makes available updates prominent in Setup and includes Email 0.3.2 with bounded worker runs. HTML Editor and Menu remain 0.3.2; Backup, Auth, API and Theme remain 0.3.1, other public modules 0.3.0 and HeartPhrame Framework v0.0.25. Existing administrator settings remain preserved. See the [release notes](docs/release-0.3.14_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -135,8 +135,9 @@ dependencies automatically.
 
 ## Dependency policy
 
-The Framework is constrained to `^0.0.25`, API, Menu and Theme to `^0.3.1`, while the remaining
-Simbioza modules use the compatible `^0.3.0` release line. This application does not commit
+The Framework is constrained to `^0.0.25`. HTML Editor, Menu and Email require at least
+`0.3.2`, Backup/Auth/API/Theme at least `0.3.1`, and other modules use the compatible
+`^0.3.0` release line. This application does not commit
 `composer.lock`; each CI run resolves the latest compatible tagged releases and
 executes the complete quality suite. Production deployments may retain their
 own verified lock file outside the source repository.
@@ -153,7 +154,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.13` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.14` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -253,13 +254,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.13 release notes](docs/release-0.3.13_en.md).
+the [0.3.14 release notes](docs/release-0.3.14_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Clear Setup update summaries and Email worker limits in 0.3.14](docs/release-0.3.14_en.md)
 - [Refreshed public installation guides in 0.3.13](docs/release-0.3.13_en.md)
 - [Portable guide links and same-site restore in 0.3.12](docs/release-0.3.12_en.md)
 - [Theme/configuration preservation and selected colors in 0.3.10](docs/release-0.3.10_en.md)

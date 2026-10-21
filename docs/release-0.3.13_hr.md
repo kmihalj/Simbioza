@@ -2,6 +2,9 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.13/docs/release-0.3.13_en.md)
 
+> Povijesna bilješka izdanja. Koristite [aktualnu uputu za instalaciju](installation_hr.md)
+> i [Simbiozu 0.3.14](release-0.3.14_hr.md) za aktualne upute.
+
 Ovo dokumentacijsko izdanje odvaja javne upute Simbioze od privatnih postupaka
 postavljanja. Ponašanje aplikacije, shema baze i verzije modula ostaju isti kao
 u 0.3.12. HTML Editor ostaje **0.3.2**, Backup, Auth, API, Email i Theme **0.3.1**,

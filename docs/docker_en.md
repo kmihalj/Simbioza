@@ -1,13 +1,13 @@
-# Docker deployment — 0.3.13
+# Docker deployment — 0.3.14
 
 [Croatian version](docker_hr.md)
 
 The classical installer remains supported. Docker is an additional deployment
 method, not a conversion of an existing site. The versioned image is
-`ghcr.io/kmihalj/simbioza:0.3.13` for Linux AMD64 and ARM64, including Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.14` for Linux AMD64 and ARM64, including Apple Silicon
 through Colima. Get the Compose bundle and checksums from the
-[0.3.13 release](https://github.com/kmihalj/Simbioza/releases/tag/0.3.13).
-Auth, API, HTML Editor, Email and Theme are 0.3.1; Menu is 0.3.2 and the other public modules remain 0.3.0; Framework v0.0.25
+[0.3.14 release](https://github.com/kmihalj/Simbioza/releases/tag/0.3.14).
+HTML Editor, Menu and Email are 0.3.2; Backup, Auth, API and Theme are 0.3.1; the other public modules remain 0.3.0; Framework v0.0.25
 and the deployment layout are unchanged.
 
 ## What persists
@@ -52,7 +52,7 @@ From an installed development/release checkout with its Composer autoloader:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.13-candidate \
+docker build -t simbioza:0.3.14-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -193,13 +193,16 @@ Do not skip future release-specific data/config migration instructions.
 docker compose -p simbioza run --rm --no-deps app cli orm-migrate:status
 docker compose -p simbioza run --rm --no-deps app cli modules list
 docker compose -p simbioza run --rm --no-deps app cli languages install de
-docker compose -p simbioza run --rm --no-deps app cli email worker --batch-size=20
+docker compose -p simbioza run --rm --no-deps app cli email outbox:worker --max-messages=20
 ```
 
 The email worker requires configured/enabled SMTP; the default disables delivery.
+The one-shot command attempts at most 20 messages; `--batch-size` controls only
+the internal cycle size. Complete examples for a separate persistent worker are
+in the [Email 0.3.2 worker guide](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/0.3.2/docs/workers_en.md).
 For a persistent worker, add an operator-managed service using the same image,
 runtime mounts, user, environment and security restrictions, with command
-`["cli", "email", "worker", "--watch", "--sleep=2"]`. Stop it during updates.
+`["cli", "email", "outbox:worker", "--watch", "--sleep=2"]`, without a total cap. Stop it during updates.
 All CLI invocations use the same private config and sessions/data layout as HTTP.
 
 ## Optional SimpleSAMLphp
@@ -250,4 +253,4 @@ Only disposable fictional sites are used for container tests. HFC remains the
 classical development installation. Image
 publication and scanning are part of release CI. Real HTTPS/proxy and SAML SP/IdP
 registration/login remain operator-specific deployment checks. See the
-[0.3.13 release notes](release-0.3.13_en.md) and the release's CI/security evidence.
+[0.3.14 release notes](release-0.3.14_en.md) and the release's CI/security evidence.

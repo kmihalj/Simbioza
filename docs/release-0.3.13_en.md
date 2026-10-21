@@ -2,6 +2,9 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.13/docs/release-0.3.13_hr.md)
 
+> Historical release note. Use the [current installation guide](installation_en.md)
+> and [Simbioza 0.3.14](release-0.3.14_en.md) for current instructions.
+
 This documentation release separates public Simbioza instructions from private
 deployment procedures. Application behavior, database schema and module versions
 are unchanged from 0.3.12. HTML Editor remains **0.3.2**, Backup, Auth, API, Email

@@ -57,6 +57,7 @@ return [
   'Instaliraj' => 'Instaliraj',
   'Instaliraj odabrane jezike' => 'Instaliraj odabrane jezike',
   'Instalirana / dostupna revizija' => 'Instalirana / dostupna revizija',
+  'Instalirano:' => 'Instalirano:',
   'Instalirani jezici' => 'Instalirani jezici',
   'Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.' => 'Instaliranje i uklanjanje jezika zahtijeva namjenski FPM ili CLI.',
   'Instalirano je %d jezičnih paketa.' => 'Instalirano je %d jezičnih paketa.',

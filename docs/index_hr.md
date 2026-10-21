@@ -6,6 +6,7 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Jasan pregled nadogradnji u Setupu i Email limit workera u 0.3.14](release-0.3.14_hr.md)
 - [Osvježene javne instalacijske upute u 0.3.13](release-0.3.13_hr.md)
 - [Očuvanje tema/postavki i odabranih boja u 0.3.10](release-0.3.10_hr.md)
 - [Prenosive poveznice uputa i povrat na isti site u 0.3.12](release-0.3.12_hr.md)
