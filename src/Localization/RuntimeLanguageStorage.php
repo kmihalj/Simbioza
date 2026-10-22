@@ -291,9 +291,7 @@ final readonly class RuntimeLanguageStorage
         $this->assertWritable($relative);
         $path = $this->path($relative);
         $directory = dirname($path);
-        if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
-            throw new RuntimeException('Unable to create the runtime language directory.');
-        }
+        self::ensureDirectory($directory);
 
         $temporary = tempnam($directory, '.language-');
         if (!is_string($temporary)) {
@@ -311,6 +309,29 @@ final readonly class RuntimeLanguageStorage
             if (is_file($temporary)) {
                 unlink($temporary);
             }
+        }
+    }
+
+    /**
+     * EN: New private runtime directories retain group write even under a restrictive
+     * CLI umask. Existing directories, inherited groups and setgid bits are untouched.
+     *
+     * HR: Novi privatni runtime direktoriji zadržavaju grupno pisanje i uz restriktivan
+     * CLI umask. Postojeći direktoriji, naslijeđene grupe i setgid bitovi ne mijenjaju se.
+     */
+    public static function ensureDirectory(string $directory): void
+    {
+        if (is_dir($directory)) {
+            return;
+        }
+
+        $previousUmask = umask(0007);
+        try {
+            if (!mkdir($directory, 0770, true) && !is_dir($directory)) {
+                throw new RuntimeException('Unable to create the runtime language directory.');
+            }
+        } finally {
+            umask($previousUmask);
         }
     }
 
@@ -339,16 +360,24 @@ final readonly class RuntimeLanguageStorage
     {
         $this->assertWritable('.packs.lock');
         $path = $this->path('.packs.lock');
-        if (!is_dir(dirname($path)) && !mkdir(dirname($path), 0770, true) && !is_dir(dirname($path))) {
-            throw new RuntimeException('Unable to create the runtime language directory.');
+        self::ensureDirectory(dirname($path));
+
+        $handle = @fopen($path, is_file($path) ? 'r+b' : 'x+b');
+        if ($handle === false && is_file($path) && !is_link($path)) {
+            $handle = @fopen($path, 'r+b');
         }
 
-        $handle = fopen($path, 'c+b');
         if ($handle === false) {
             throw new RuntimeException('Unable to open the runtime language lock.');
         }
 
-        if (!chmod($path, 0660) || !flock($handle, LOCK_EX | LOCK_NB)) {
+        // EN: A correctly secured shared lock may belong to the other runtime identity.
+        // Do not require privileged chmod on an already-correct FPM/deploy-owned file.
+        //
+        // HR: Ispravno zaštićeni dijeljeni lock može pripadati drugom runtime identitetu.
+        // Ne tražiti privilegirani chmod već ispravne datoteke FPM/deploy korisnika.
+        clearstatcache(true, $path);
+        if (((fileperms($path) & 0777) !== 0660 && !@chmod($path, 0660)) || !flock($handle, LOCK_EX | LOCK_NB)) {
             fclose($handle);
             throw new RuntimeException('Runtime languages are being edited or are not writable.');
         }

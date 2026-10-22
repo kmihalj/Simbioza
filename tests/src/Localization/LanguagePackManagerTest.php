@@ -68,6 +68,7 @@ return [
 ];
 PHP);
         file_put_contents($this->root . '/config/installation.php', "<?php return ['supported_locales' => ['en']];\n");
+        chmod($this->root . '/config/installation.php', 0660);
     }
 
     /**
@@ -160,6 +161,49 @@ PHP);
     }
 
     /**
+     * EN: Language updates preserve existing config inodes and Unix metadata,
+     * including shorter writes and unchanged administrator settings.
+     *
+     * HR: Nadogradnje jezika čuvaju postojeće konfiguracijske inodeove i Unix prava,
+     * uključujući kraće zapise i nepromijenjene administratorske postavke.
+     */
+    public function testConfigurationWritesPreserveExistingInodesAndMetadata(): void
+    {
+        $manager = new LanguagePackManager($this->root, new ModuleCatalog());
+        $write = new \ReflectionMethod($manager, 'atomicWrite');
+        foreach (['installation.php', 'languages.php'] as $file) {
+            $path = $this->root . '/config/' . $file;
+            chmod($path, 0660);
+            clearstatcache(true, $path);
+            $before = stat($path);
+            $contents = "<?php return ['custom' => 'preserved'];\n";
+            $write->invoke($manager, $path, $contents, 0660);
+            clearstatcache(true, $path);
+            $after = stat($path);
+            foreach (['ino', 'uid', 'gid', 'mode'] as $key) {
+                $this->assertSame($before[$key], $after[$key], $file . ': ' . $key);
+            }
+
+            $this->assertSame($contents, file_get_contents($path));
+        }
+    }
+
+    /**
+     * EN: Refreshing an already-active locale must not rewrite installation settings.
+     *
+     * HR: Osvježavanje već aktivnog jezika ne smije ponovno zapisivati instalacijske postavke.
+     */
+    public function testAlreadyActiveLocaleLeavesInstallationBytesUnchanged(): void
+    {
+        $path = $this->root . '/config/installation.php';
+        $contents = "<?php /* Administrator formatting. */ return [\n"
+        . "'supported_locales' => ['en'], 'primary_locale' => 'en', 'custom' => 'keep'];\n";
+        file_put_contents($path, $contents);
+        (new LanguagePackManager($this->root, new ModuleCatalog()))->setActive('en', true);
+        $this->assertSame($contents, file_get_contents($path));
+    }
+
+    /**
      * EN: Languages use the final config layer while resources stay with the application.
      *
      * HR: Jezici koriste zadnji config sloj, a resursi ostaju uz aplikaciju.
@@ -176,6 +220,7 @@ PHP);
             "timezone"=>"Europe/Zagreb", "custom"=>["base"=>true,"change"=>"before"]
         ];');
         file_put_contents($this->root . '/override/installation.php', '<?php return ["custom"=>["change"=>"after"]];');
+        chmod($this->root . '/override/installation.php', 0660);
         putenv('HPH_CONFIG_PATH=' . $this->root . '/external');
         putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $this->root . '/override');
         $manager = new LanguagePackManager($this->root, new ModuleCatalog());

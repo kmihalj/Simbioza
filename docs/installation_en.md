@@ -2,7 +2,7 @@
 
 [Croatian version](installation_hr.md)
 
-These guides install Simbioza **0.3.16**. Email uses **0.3.3**, HTML Editor/Menu/Theme **0.3.2**;
+These guides install Simbioza **0.3.17**. Email uses **0.3.3**, HTML Editor/Menu/Theme **0.3.2**;
 Audit/Backup/Auth/API use **0.3.1**, and the other public modules **0.3.0**; Framework
 is unchanged. The 0.3.x baseline starts with a new application directory,
 configuration and database. An upgrade from 0.2.x or reuse of its Simbioza

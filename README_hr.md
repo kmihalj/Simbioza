@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.16 uključuje Audit 0.3.1 s brojčanom paginacijom logova i opcionalnim izvorima iz modula, Email 0.3.3 s integracijom loga workera te ograničeni Docker izlaz. Sistemsko postavljanje rotacije logova opisano je zasebno. Postojeće konfiguracije i sadržaj čuvaju se. HTML Editor/Menu/Theme ostaju 0.3.2, Backup/Auth/API 0.3.1, ostali javni moduli 0.3.0 i Framework v0.0.25. Vidi [bilješke izdanja](docs/release-0.3.16_hr.md).
+> Simbioza 0.3.17 ispravlja nadogradnju aplikacije i jezika u secured-FPM instalaciji: postojeća konfiguracija čuva vlasništvo, prava i ACL, a dijeljeni jezični lockovi rade pod FPM i deploy korisnikom. Verzije modula i Framework v0.0.25 ostaju nepromijenjeni. Vidi [bilješke izdanja](docs/release-0.3.17_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -155,7 +155,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.16` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.17` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -258,7 +258,7 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.16](docs/release-0.3.16_hr.md).
+[bilješkama izdanja 0.3.17](docs/release-0.3.17_hr.md).
 
 ## Dokumentacija
 
@@ -276,6 +276,7 @@ bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su
 - Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
 - Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
 - [Instalacija](docs/installation_hr.md)
+- [Ispravak vlasništva pri FPM nadogradnji jezika i aplikacije u 0.3.17](docs/release-0.3.17_hr.md)
 - [Paginacija, log workera i rotacija u 0.3.16](docs/release-0.3.16_hr.md)
 - [Vlasništvo, rotacija i čuvanje logova](docs/logging_hr.md)
 - [Automatska i ručna boja teksta gumba u 0.3.15](docs/release-0.3.15_hr.md)

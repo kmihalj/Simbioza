@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.16 includes Audit 0.3.1 with numbered log pagination and optional module log sources, Email 0.3.3 with worker-log integration, and bounded Docker output. Host log-rotation setup is documented separately. Existing configuration and content are preserved. HTML Editor/Menu/Theme remain 0.3.2, Backup/Auth/API 0.3.1, other public modules 0.3.0 and Framework v0.0.25. See the [release notes](docs/release-0.3.16_en.md).
+> Simbioza 0.3.17 fixes secured-FPM application/language updates: existing configuration keeps its ownership, permissions and ACL, and shared language locks work across FPM and deploy users. Module versions and Framework v0.0.25 are unchanged. See the [release notes](docs/release-0.3.17_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -154,7 +154,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.16` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.17` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -254,13 +254,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.16 release notes](docs/release-0.3.16_en.md).
+the [0.3.17 release notes](docs/release-0.3.17_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Secured-FPM language/update ownership fixes in 0.3.17](docs/release-0.3.17_en.md)
 - [Log pagination, worker logs and rotation in 0.3.16](docs/release-0.3.16_en.md)
 - [Log ownership, rotation and retention](docs/logging_en.md)
 - [Automatic and custom button text colors in 0.3.15](docs/release-0.3.15_en.md)

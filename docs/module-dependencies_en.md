@@ -1,6 +1,6 @@
 # Module dependencies
 
-> Simbioza 0.3.16 uses Email 0.3.3, HTML Editor/Menu/Theme 0.3.2, Audit/Backup/Auth/API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
+> Simbioza 0.3.17 uses Email 0.3.3, HTML Editor/Menu/Theme 0.3.2, Audit/Backup/Auth/API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
 
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the

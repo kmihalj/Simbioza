@@ -2,6 +2,9 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.16/docs/release-0.3.16_hr.md)
 
+> Historical release note. See the [current installation guides](installation_en.md)
+> and [Simbioza 0.3.17](release-0.3.17_en.md) for current instructions.
+
 This release includes **Audit 0.3.1** and **Email 0.3.3**. HTML Editor/Menu/Theme
 remain **0.3.2**, Backup/Auth/API **0.3.1**, the other public modules **0.3.0**,
 Framework **v0.0.25** and updater **1.0.8**. Existing tags are not moved.

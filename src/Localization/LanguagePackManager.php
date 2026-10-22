@@ -292,6 +292,7 @@ final readonly class LanguagePackManager
 
         $path = $this->configuration->writableFile('installation.php');
         $configuration = $this->reader->read('installation.php');
+        $previousConfiguration = $configuration;
 
         $locales = $this->activeLocales();
         if ($enabled && !in_array($locale, $locales, true)) {
@@ -308,6 +309,10 @@ final readonly class LanguagePackManager
         $configuration['supported_locales'] = $locales;
         if (!in_array($configuration['primary_locale'] ?? null, $locales, true)) {
             $configuration['primary_locale'] = $locales[0];
+        }
+
+        if ($configuration === $previousConfiguration) {
+            return;
         }
 
         $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn "
@@ -767,13 +772,20 @@ final readonly class LanguagePackManager
     }
 
     /**
-     * EN: Atomically writes a file with the requested permissions.
+     * EN: Publishes new files atomically; existing shared configuration keeps
+     * its inode, owner, group, mode and ACL under the language-operation lock.
      *
-     * HR: Atomski zapisuje datoteku sa zadanim pravima.
+     * HR: Nove datoteke objavljuje atomski; postojeća dijeljena konfiguracija
+     * pod lockom jezične radnje zadržava inode, vlasnika, grupu, prava i ACL.
      */
     private function atomicWrite(string $path, string $contents, int $mode): void
     {
         $this->ensureParentDirectory($path);
+        if (is_file($path)) {
+            $this->writeExistingConfiguration($path, $contents);
+            return;
+        }
+
         $temporary = tempnam(dirname($path), '.simbioza-language-');
         if (!is_string($temporary)) {
             throw new RuntimeException('Unable to create a temporary language file.');
@@ -799,16 +811,68 @@ final readonly class LanguagePackManager
     }
 
     /**
+     * EN: Writes a validated existing regular file without replacing an FPM-owned
+     * inode with a deploy-owned one. Both identities need only existing group write
+     * access, never chown or write access to application code.
+     *
+     * HR: Zapisuje provjerenu postojeću običnu datoteku bez zamjene FPM-ova inodea
+     * deploy-ovim. Oba identiteta trebaju samo postojeće grupno pravo pisanja,
+     * nikada chown ili pravo pisanja aplikacijskog koda.
+     */
+    private function writeExistingConfiguration(string $path, string $contents): void
+    {
+        if (is_link($path) || !is_writable($path)) {
+            throw new RuntimeException('Unable to write the language configuration.');
+        }
+
+        $handle = @fopen($path, 'r+b');
+        if ($handle === false) {
+            throw new RuntimeException('Unable to open the language configuration.');
+        }
+
+        try {
+            $opened = fstat($handle);
+            clearstatcache(true, $path);
+            $current = lstat($path);
+            if (
+                !is_array($opened) || !is_array($current)
+                || ($opened['mode'] & 0170000) !== 0100000
+                || $opened['dev'] !== $current['dev'] || $opened['ino'] !== $current['ino']
+                || !flock($handle, LOCK_EX)
+            ) {
+                throw new RuntimeException('Unable to lock the language configuration.');
+            }
+
+            $offset = 0;
+            while ($offset < strlen($contents)) {
+                $written = fwrite($handle, substr($contents, $offset));
+                if ($written === false || $written === 0) {
+                    throw new RuntimeException('Unable to write the language configuration.');
+                }
+
+                $offset += $written;
+            }
+
+            if (!ftruncate($handle, strlen($contents)) || !fflush($handle)) {
+                throw new RuntimeException('Unable to flush the language configuration.');
+            }
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($path, true);
+            }
+        }
+    }
+
+    /**
      * EN: Creates the parent directory when missing.
      *
      * HR: Izrađuje roditeljski direktorij kada nedostaje.
      */
     private function ensureParentDirectory(string $path): void
     {
-        $directory = dirname($path);
-        if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
-            throw new RuntimeException('Unable to create the language-pack directory.');
-        }
+        RuntimeLanguageStorage::ensureDirectory(dirname($path));
     }
 
     /**
@@ -858,7 +922,16 @@ final readonly class LanguagePackManager
     private function withConfigurationLock(callable $operation): mixed
     {
         $path = $this->configuration->writableFile('.languages.lock');
-        $handle = fopen($path, 'c+b');
+        // EN: O_CREAT on another user's existing file is blocked by Linux protected_regular
+        // in sticky directories. Open existing locks without creation, new locks exclusively.
+        //
+        // HR: Linux protected_regular u sticky direktoriju blokira O_CREAT nad tuđom postojećom
+        // datotekom. Postojeći lock otvaramo bez stvaranja, a novi stvaramo isključivo.
+        $handle = @fopen($path, is_file($path) ? 'r+b' : 'x+b');
+        if ($handle === false && is_file($path) && !is_link($path)) {
+            $handle = @fopen($path, 'r+b');
+        }
+
         if ($handle === false) {
             throw new RuntimeException('Unable to open the language configuration lock.');
         }

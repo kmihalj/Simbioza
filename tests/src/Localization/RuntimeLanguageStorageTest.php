@@ -60,6 +60,31 @@ final class RuntimeLanguageStorageTest extends TestCase
     }
 
     /**
+     * EN: A deploy CLI's restrictive umask must not prevent later FPM language writes.
+     *
+     * HR: Restriktivni umask deploy CLI-ja ne smije blokirati kasnije jezične zapise FPM-a.
+     */
+    public function testNewDirectoriesKeepGroupWriteAndRestoreCallerUmask(): void
+    {
+        $previous = umask(0027);
+        try {
+            $storage = new RuntimeLanguageStorage($this->root);
+            $handle = $storage->lock();
+            flock($handle, LOCK_UN);
+            fclose($handle);
+            $storage->write('catalogs/en.json', '{}');
+            $storage->write('flags/en.svg', '<svg/>');
+            foreach (['languages', 'languages/catalogs', 'languages/flags'] as $directory) {
+                $this->assertSame(0770, fileperms($this->root . '/data/' . $directory) & 0777);
+            }
+
+            $this->assertSame(0027, umask());
+        } finally {
+            umask($previous);
+        }
+    }
+
+    /**
      * EN: Uses the unchanged framework's module loader and fallback catalogue semantics.
      *
      * HR: Koristi nepromijenjeni frameworkov module loader i semantiku fallback kataloga.

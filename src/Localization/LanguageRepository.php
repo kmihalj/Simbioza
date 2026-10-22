@@ -48,7 +48,8 @@ final readonly class LanguageRepository
             try {
                 $raw = $this->fetch($this->manifestUrl, 262144);
                 $directory = dirname($cache);
-                if (is_dir($directory) || mkdir($directory, 0770, true)) {
+                RuntimeLanguageStorage::ensureDirectory($directory);
+                if (is_dir($directory)) {
                     // EN: FPM and deploy users may replace the cache without
                     //     taking ownership of each other's existing file.
                     //
@@ -159,9 +160,7 @@ final readonly class LanguageRepository
         }
 
         $directory = $this->appRoot . '/data/language-packs';
-        if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
-            throw new RuntimeException('Unable to create the private language-pack directory.');
-        }
+        RuntimeLanguageStorage::ensureDirectory($directory);
 
         $path = tempnam($directory, '.simbioza-repository-');
         if (!is_string($path) || file_put_contents($path, $contents, LOCK_EX) === false) {

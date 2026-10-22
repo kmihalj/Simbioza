@@ -108,6 +108,21 @@ $publish = static function () use ($packPath, $repository, &$pack): string {
 };
 
 try {
+    // EN: The finalizer may have refreshed real published packs. Start this synthetic
+    // HTTP scenario from bundled English; all previous runtime bytes are restored below.
+    //
+    // HR: Finalizacija je možda osvježila stvarne objavljene pakete. Ovaj izmišljeni HTTP
+    // scenarij započinje ugrađenim engleskim; prethodni runtime bajtovi vraćaju se ispod.
+    foreach ([$paths[4], $paths[5]] as $runtimePath) {
+        if (is_file($runtimePath)) {
+            unlink($runtimePath);
+        }
+    }
+
+    $versions = is_file($paths[6])
+    ? json_decode((string)file_get_contents($paths[6]), true, 64, JSON_THROW_ON_ERROR) : [];
+    unset($versions['en']);
+    file_put_contents($paths[6], json_encode($versions === [] ? new stdClass() : $versions, JSON_THROW_ON_ERROR));
     $baseline = json_decode((string)$original[$paths[1]]['bytes'], true, 64, JSON_THROW_ON_ERROR);
     $baseline['repository_baseline']['en']['sha256'] = $publish();
     file_put_contents($paths[1], json_encode($baseline, JSON_THROW_ON_ERROR));
@@ -162,7 +177,16 @@ try {
         !str_contains($page, 'data-language-source="repository"')
         || !str_contains($page, $pack['translations'][$key])
     ) {
-        throw new RuntimeException('The real FPM GUI did not apply the verified language update.');
+        $document = new DOMDocument();
+        @$document->loadHTML('<?xml encoding="UTF-8">' . $page);
+        $alerts = (new DOMXPath($document))->query('//*[@role="alert"]');
+        $messages = [];
+        foreach ($alerts === false ? [] : $alerts as $alert) {
+            $messages[] = trim($alert->textContent);
+        }
+
+        throw new RuntimeException('The real FPM GUI did not apply the verified language update: '
+        . implode('; ', $messages));
     }
 
     echo "PASS real FPM GUI login, bundled revision, digest-only check and language update.\n";
@@ -188,4 +212,9 @@ try {
             throw new RuntimeException('Unable to restore the isolated language fixture.');
         }
     }
+
+    unlink($packPath);
+    unlink($repository . '/manifest.json');
+    rmdir($repository . '/packs');
+    rmdir($repository);
 }

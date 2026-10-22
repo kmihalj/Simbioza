@@ -6,6 +6,7 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Ispravak vlasništva pri FPM nadogradnji jezika i aplikacije u 0.3.17](release-0.3.17_hr.md)
 - [Paginacija, log workera i rotacija u 0.3.16](release-0.3.16_hr.md)
 - [Vlasništvo, rotacija i čuvanje logova](logging_hr.md)
 - [Automatska i ručna boja teksta gumba u 0.3.15](release-0.3.15_hr.md)

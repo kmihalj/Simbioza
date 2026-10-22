@@ -6,6 +6,7 @@ is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
 
+- [Secured-FPM language/update ownership fixes in 0.3.17](release-0.3.17_en.md)
 - [Log pagination, worker logs and rotation in 0.3.16](release-0.3.16_en.md)
 - [Log ownership, rotation and retention](logging_en.md)
 - [Automatic and custom button text colors in 0.3.15](release-0.3.15_en.md)
