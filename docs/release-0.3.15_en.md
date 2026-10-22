@@ -2,6 +2,9 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.15/docs/release-0.3.15_hr.md)
 
+> Historical release note. Use the [current installation guide](installation_en.md)
+> and [Simbioza 0.3.16](release-0.3.16_en.md) for current instructions.
+
 This release includes **Theme 0.3.2**. HTML Editor, Menu and Email remain
 **0.3.2**, Backup/Auth/API **0.3.1**, other public modules **0.3.0**, Framework
 **v0.0.25** and updater **1.0.8**. Existing tags are not moved.

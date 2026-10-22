@@ -99,7 +99,7 @@ jobs:
           # EN: Verify this release's published package inventory, including the unchanged Framework.
           #
           # HR: Provjeriti objavljene pakete ovog izdanja, uključujući nepromijenjeni Framework.
-          docker compose -p simbioza-release-ci exec -T app php -r '$s=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $expected=["aaieduhr/heartphrame-framework"=>"0.0.25","aaieduhr/heartphrame-module-api"=>"0.3.1","aaieduhr/heartphrame-module-auth"=>"0.3.1","aaieduhr/heartphrame-module-email"=>"0.3.2","aaieduhr/heartphrame-module-editor-html"=>"0.3.2","aaieduhr/heartphrame-module-backup"=>"0.3.1","aaieduhr/heartphrame-module-menu"=>"0.3.2","aaieduhr/heartphrame-module-theme"=>"0.3.2"]; foreach($s["packages"] as $p){if(str_starts_with($p["name"],"aaieduhr/") && ltrim($p["version"],"v")!==($expected[$p["name"]]??"0.3.0")){throw new RuntimeException("Unexpected package version: ".$p["name"]);}}'
+          docker compose -p simbioza-release-ci exec -T app php -r '$s=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $expected=["aaieduhr/heartphrame-framework"=>"0.0.25","aaieduhr/heartphrame-module-audit"=>"0.3.1","aaieduhr/heartphrame-module-api"=>"0.3.1","aaieduhr/heartphrame-module-auth"=>"0.3.1","aaieduhr/heartphrame-module-email"=>"0.3.3","aaieduhr/heartphrame-module-editor-html"=>"0.3.2","aaieduhr/heartphrame-module-backup"=>"0.3.1","aaieduhr/heartphrame-module-menu"=>"0.3.2","aaieduhr/heartphrame-module-theme"=>"0.3.2"]; foreach($s["packages"] as $p){if(str_starts_with($p["name"],"aaieduhr/") && ltrim($p["version"],"v")!==($expected[$p["name"]]??"0.3.0")){throw new RuntimeException("Unexpected package version: ".$p["name"]);}}'
           docker compose -p simbioza-release-ci cp app:/opt/simbioza/composer.lock ../build/docker/composer.lock
       - name: Record all vulnerability findings
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
@@ -279,6 +279,16 @@ jobs:
       - name: Run quality and test suite / Pokreni provjere i testove
         run: |
           COMPOSER=composer.ci.json composer on-commit
+
+      # EN: Exercise the documented rule only on disposable Linux log files.
+      #
+      # HR: Dokumentirano pravilo provjeriti samo na privremenim Linux logovima.
+      - name: Verify log rotation and file ownership / Provjeri rotaciju i vlasništvo logova
+        if: matrix.php == '8.5'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y logrotate
+          sudo -n "$(command -v php)" tests/Fixtures/logrotate/verify.php
 
       # EN: Root runs only the test against temporary files on this isolated runner.
       #

@@ -28,13 +28,31 @@ Ako je Backup instaliran, **Dnevnik aktivnosti** je izborna cjelina za backup
 sitea ili komponente. Stabilni identiteti zamjenjuju lokalne numeričke veze, a
 UUID pravilo konflikta omogućuje sigurno ponovljeno `merge` vraćanje.
 
+Rezultati iznad i ispod tablice prikazuju broj pronađenih zapisa, veličinu
+stranice i brojčanu paginaciju. Velik broj stranica sažima se trotočkama, a
+navigacija čuva odabrane filtre i ne izlazi iz okvira na mobilnom zaslonu.
+
 ## Tehnički log
 
-Administrator otvara **Postavke → Dnevnici → Tehnički log**. Prikaz čita samo
-konfiguriranu aktivnu PSR-3 datoteku i filtrira po razini, modulu/kanalu i
-tekstu. Izvoz preuzima aktivnu `.log` datoteku. Rotirajući handler koristi
-`app.logs.filename`, `app.logs.max_bytes` i `app.logs.max_files` iz
-`config/app.php` te `env.log_level` iz konfiguracije okruženja.
+Administrator otvara **Postavke → Dnevnici → Tehnički log**. Odabire
+aplikacijski log ili postojeći log uključenog modula. Email 0.3.3 nudi
+`email-worker.log` nakon što ga podešeni worker kreira u `app.logs.dir`;
+Audit 0.3.1 otkriva njegov neutralni paketni opis bez obavezne ovisnosti
+Emaila o Auditu. Time se ne pregledava niti postavlja cron.
+
+Filtri razine, modula/kanala i teksta pretražuju cijelu odabranu aktivnu
+datoteku. Broj pronađenih zapisa i ograničena brojčana paginacija obuhvaćaju
+neprazne retke, ne rotirane arhive. Veliki retci imaju ograničen prikazni dio;
+izvoz preuzima cijelu odabranu aktivnu datoteku. Oba pregleda ostaju samo za
+administratore. Rotirajući aplikacijski handler koristi `app.logs.filename`,
+`app.logs.max_bytes` i `app.logs.max_files` iz konfiguracije učitane kroz
+`HPH_CONFIG_PATH` te `env.log_level` iz konfiguracije okruženja. Zadana
+rotacija čuva deset datoteka uključujući aktivnu, približno 10 MiB svaku,
+i zajedničkom bravom obuhvaća rotaciju i upis među PHP procesima.
+
+Taj handler ne rotira preusmjereni izlaz crona, updatera, installera ni
+FPM-a. Slijedite zasebnu [uputu za sistemsku i Docker rotaciju](logging_hr.md).
+Nadogradnja aplikacije ne postavlja privilegirani posao operacijskog sustava.
 
 Moduli u tehnički log pišu neočekivane iznimke, kvar opcionalnih listenera,
 ponovne i konačno neuspjele pokušaje workera, kvar održavanja i serverske 5xx

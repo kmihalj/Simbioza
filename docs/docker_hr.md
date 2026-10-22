@@ -1,16 +1,20 @@
-# Docker instalacija — 0.3.15
+# Docker instalacija — 0.3.16
 
 [Engleska verzija](docker_en.md)
 
 Klasična instalacija ostaje podržana. Docker je dodatni način instalacije, ne
 pretvorba postojećeg sitea. Verzionirani image je
-`ghcr.io/kmihalj/simbioza:0.3.15` za Linux AMD64 i ARM64, uključujući Apple Silicon
+`ghcr.io/kmihalj/simbioza:0.3.16` za Linux AMD64 i ARM64, uključujući Apple Silicon
 kroz Colimu. Compose paket i kontrolne sume preuzimaju se iz
-[izdanja 0.3.15](https://github.com/kmihalj/Simbioza/releases/tag/0.3.15).
-HTML Editor, Menu, Email i Theme su 0.3.2; Backup, Auth i API su 0.3.1, a ostali javni moduli ostaju 0.3.0; Framework v0.0.25
+[izdanja 0.3.16](https://github.com/kmihalj/Simbioza/releases/tag/0.3.16).
+Email je 0.3.3; HTML Editor/Menu/Theme su 0.3.2; Audit/Backup/Auth/API su 0.3.1, a ostali javni moduli ostaju 0.3.0; Framework v0.0.25
 i raspored instalacije nisu promijenjeni.
 
 ## Što se trajno čuva
+
+Svaki Compose servis koristi ograničeni Docker `local` logging (10 MiB, pet
+datoteka) za standardni izlaz i greške. To ne rotira datoteke u runtime
+volumenu; [uputa za rotaciju](logging_hr.md) opisuje zasebne logove aplikacije i workera.
 
 | Mjesto | Namjena |
 | --- | --- |
@@ -52,7 +56,7 @@ Iz razvojnog/release checkouta s instaliranim Composer autoloaderom:
 ```sh
 mkdir -p build/docker
 php scripts/build_container_context.php --output=build/docker/context --local
-docker build -t simbioza:0.3.15-candidate \
+docker build -t simbioza:0.3.16-candidate \
   -f build/docker/context/docker/Dockerfile build/docker/context
 ```
 
@@ -203,7 +207,7 @@ docker compose -p simbioza run --rm --no-deps app cli email outbox:worker --max-
 Email worker zahtijeva podešen i uključen SMTP; zadano je slanje isključeno.
 Jednokratna naredba pokušava obraditi najviše 20 poruka; `--batch-size` određuje
 samo veličinu internog kruga. Cjeloviti primjeri zasebnog stalnog workera nalaze
-se u [uputama za Email 0.3.2 worker](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/0.3.2/docs/workers_hr.md).
+se u [uputama za Email 0.3.3 worker](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/0.3.3/docs/workers_hr.md).
 Za trajni worker dodati održavateljev servis s istim imageom, runtime mountovima,
 korisnikom, okruženjem i sigurnosnim ograničenjima, uz naredbu
 `["cli", "email", "outbox:worker", "--watch", "--sleep=2"]`, bez ukupnog limita. Zaustavljati ga pri nadogradnji.
@@ -255,4 +259,4 @@ Docker testovi koriste samo privremene izmišljene siteove. HFC ostaje klasična
 razvojna instalacija.
 Objava i skeniranje imagea dio su CI-ja izdanja. Stvarna HTTPS/proxy provjera i
 registracija/prijava SAML SP-a/IdP-a ostaju održavateljeve provjere deploymenta.
-Vidi [bilješke izdanja 0.3.15](release-0.3.15_hr.md) i priložene CI/sigurnosne dokaze.
+Vidi [bilješke izdanja 0.3.16](release-0.3.16_hr.md) i priložene CI/sigurnosne dokaze.

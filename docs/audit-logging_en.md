@@ -28,13 +28,31 @@ When Backup is installed, **Activity audit** is an optional component for site
 or component archives. Stable identities replace local numeric references and
 UUID conflict handling makes repeated merge restores safe.
 
+The results show the matching-record total, page size and numbered pagination
+above and below the table. Large page counts use ellipses, and navigation
+preserves the selected filters without overflowing a mobile screen.
+
 ## Technical log
 
-Open **Settings → Logs → Technical log** as an administrator. This view reads
-only the configured active PSR-3 file and supports level, module/channel, and
-text filters. Export downloads that active `.log` file. The rotating handler
-uses `app.logs.filename`, `app.logs.max_bytes`, and `app.logs.max_files` from
-`config/app.php`, plus `env.log_level` from the environment configuration.
+Open **Settings → Logs → Technical log** as an administrator. Select the
+application log or an existing log offered by an enabled module. Email 0.3.3
+offers `email-worker.log` after the configured worker creates it in
+`app.logs.dir`; Audit 0.3.1 discovers its neutral package descriptor without
+making Email depend on Audit. This does not inspect or install cron.
+
+Level, module/channel and text filters search the whole selected active file.
+The matching-record total and bounded numbered pagination cover nonempty
+lines, not rotated archives. Large lines have a bounded display portion;
+export downloads the complete selected active file. Both views remain
+administrator-only. The rotating application handler uses `app.logs.filename`,
+`app.logs.max_bytes` and `app.logs.max_files` from configuration loaded through
+`HPH_CONFIG_PATH`, plus `env.log_level` from the environment configuration.
+Default rotation retains ten files including the active file, approximately
+10 MiB each, and serializes rotation with append across PHP processes.
+
+That handler does not rotate cron redirection, updater, installer or FPM
+output. Follow the separate [host and Docker rotation guide](logging_en.md).
+An application update does not install a privileged operating-system job.
 
 Modules use the technical log for unexpected exceptions, failed optional
 listeners, worker retries and terminal failures, maintenance failures, and

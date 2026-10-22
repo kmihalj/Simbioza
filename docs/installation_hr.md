@@ -2,8 +2,8 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.15**. HTML Editor, Menu i Email koriste **0.3.2**;
-Backup, Auth, API i Theme koriste **0.3.1**, a ostali javni moduli **0.3.0**; Framework je
+Ove upute instaliraju Simbiozu **0.3.16**. Email koristi **0.3.3**, HTML Editor/Menu/Theme **0.3.2**;
+Audit/Backup/Auth/API koriste **0.3.1**, a ostali javni moduli **0.3.0**; Framework je
 nepromijenjen. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 
@@ -41,6 +41,9 @@ Privatna modulna konfiguracija koristi `HPH_CONFIG_PATH` (zadano `config/`);
 trajni datotečni sadržaj koristi `data/`. Web-poslužitelj izlaže samo `public/`.
 
 ## Nakon instalacije
+
+Postavite [rotaciju logova](logging_hr.md) za izlaz crona, updatera i FPM-a.
+Rotirajući aplikacijski handler za `app.log` ne rotira te zasebne datoteke.
 
 Svaka cjelovita uputa sadrži vlastite naredbe modula, jezika i nadogradnje,
 granice sigurnosnog kopiranja i završne provjere. Redovne paketne/kodne radnje

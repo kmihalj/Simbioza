@@ -5,6 +5,11 @@
 # Runtime kod nije volumen; trajni su samo /runtime i PostgreSQL podaci.
 services:
   init:
+    logging: &bounded-logging
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "5"
     image: ${SIMBIOZA_IMAGE:?Select a versioned Simbioza image}
     user: "0:0"
     read_only: true
@@ -24,6 +29,7 @@ services:
       - runtime:/runtime
     tmpfs: [/tmp]
   database:
+    logging: *bounded-logging
     image: ${POSTGRES_IMAGE:-postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873}
     environment:
       POSTGRES_DB: simbioza
@@ -39,6 +45,7 @@ services:
       timeout: 3s
       retries: 30
   app:
+    logging: *bounded-logging
     image: ${SIMBIOZA_IMAGE:?Select a versioned Simbioza image}
     user: "33:33"
     read_only: true

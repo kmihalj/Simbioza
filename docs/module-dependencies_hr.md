@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.15 koristi HTML Editor/Menu/Email/Theme 0.3.2, Backup/Auth/API 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25. Razvojne instalacije nisu zamjena za ove objavljene pakete.
+> Simbioza 0.3.16 koristi Email 0.3.3, HTML Editor/Menu/Theme 0.3.2, Audit/Backup/Auth/API 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25. Razvojne instalacije nisu zamjena za ove objavljene pakete.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
@@ -53,7 +53,7 @@ provjeriti prije svakog izdanja.
 | `module-theme` | Framework, `ext-zip` | Menu |
 | `module-calendar` | Framework, Auth (0.3.0+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
 | `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.3.1+ ako je instaliran), Menu, Theme, Calendar, Workspace, Task, Comment |
-| `module-email` | Framework, Auth, ORM | — |
+| `module-email` | Framework, Auth, ORM | Audit 0.3.1+ za postojeću datoteku loga workera |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
 | `module-workspace` | Framework, Auth, ORM | Backup (0.3.0+ ako je instaliran), HTML Editor, Menu, Notification; Email samo posredno kroz Notification |
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.3.0+ ako je instaliran) |

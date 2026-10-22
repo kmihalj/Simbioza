@@ -2,8 +2,8 @@
 
 [Croatian version](installation_hr.md)
 
-These guides install Simbioza **0.3.15**. HTML Editor, Menu and Email use **0.3.2**;
-Backup, Auth, API and Theme use **0.3.1**, and the other public modules **0.3.0**; Framework
+These guides install Simbioza **0.3.16**. Email uses **0.3.3**, HTML Editor/Menu/Theme **0.3.2**;
+Audit/Backup/Auth/API use **0.3.1**, and the other public modules **0.3.0**; Framework
 is unchanged. The 0.3.x baseline starts with a new application directory,
 configuration and database. An upgrade from 0.2.x or reuse of its Simbioza
 backups is not supported.
@@ -42,6 +42,9 @@ Private module configuration uses `HPH_CONFIG_PATH` (default `config/`);
 persistent files use `data/`. Only `public/` is exposed by the web server.
 
 ## After installation
+
+Set up [log rotation](logging_en.md) for cron, updater and FPM output. The
+application's rotating `app.log` handler does not rotate those separate files.
 
 Each complete guide includes its own module, language and update commands,
 backup boundaries and final checks. Routine package/code work belongs to the

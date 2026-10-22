@@ -1,6 +1,6 @@
 # Module dependencies
 
-> Simbioza 0.3.15 uses HTML Editor/Menu/Email/Theme 0.3.2, Backup/Auth/API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
+> Simbioza 0.3.16 uses Email 0.3.3, HTML Editor/Menu/Theme 0.3.2, Audit/Backup/Auth/API 0.3.1 and the other public modules at 0.3.0. Framework remains v0.0.25. Development fixtures do not replace these published packages.
 
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the
@@ -52,7 +52,7 @@ not a claim that no newer major releases exist. Recheck them before each release
 | `module-theme` | Framework, `ext-zip` | Menu |
 | `module-calendar` | Framework, Auth (0.3.0+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
 | `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.3.1+ when installed), Menu, Theme, Calendar, Workspace, Task, Comment |
-| `module-email` | Framework, Auth, ORM | — |
+| `module-email` | Framework, Auth, ORM | Audit 0.3.1+ for the existing worker-log file |
 | `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
 | `module-workspace` | Framework, Auth, ORM | Backup (0.3.0+ when installed), HTML Editor, Menu, Notification; Email only indirectly through Notification |
 | `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.3.0+ when installed) |

@@ -6,6 +6,8 @@ repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
 
+- [Paginacija, log workera i rotacija u 0.3.16](release-0.3.16_hr.md)
+- [Vlasništvo, rotacija i čuvanje logova](logging_hr.md)
 - [Automatska i ručna boja teksta gumba u 0.3.15](release-0.3.15_hr.md)
 - [Jasan pregled nadogradnji u Setupu i Email limit workera u 0.3.14](release-0.3.14_hr.md)
 - [Osvježene javne instalacijske upute u 0.3.13](release-0.3.13_hr.md)
