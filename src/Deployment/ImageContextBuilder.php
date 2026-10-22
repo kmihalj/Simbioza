@@ -180,7 +180,7 @@ final readonly class ImageContextBuilder
                 //
                 // HR: Izričite candidate verzije zadovoljavaju neizmijenjene međumodulske ovisnosti.
                 // Mijenja se samo izvoz, nikada manifest susjednog repozitorija.
-                $version = $package === 'aaieduhr/heartphrame-framework' ? '0.0.25' : '0.3.0';
+                $version = $this->candidateVersion($package, $manifest['require'][$package] ?? null);
                 $repositories[] = ['type' => 'path', 'url' => '/opt/simbioza-build/packages/' . $directory,
                     'options' => ['symlink' => false, 'versions' => [$package => $version]]];
                 $manifest['require'][$package] = $version;
@@ -206,6 +206,24 @@ final readonly class ImageContextBuilder
             'source' => $local ? 'unpublished-local-candidate' : 'release-source',
         ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
         return $id;
+    }
+
+    /**
+     * EN: Local metadata uses each requested stable minimum, not a blanket 0.3.0
+     *     that can violate another module's newer dependency requirement.
+     *     Published builds retain the original Composer constraints unchanged.
+     *
+     * HR: Lokalni metapodaci koriste traženu stabilnu donju granicu paketa, ne
+     *     opću 0.3.0 koja može prekršiti noviju ovisnost drugog modula.
+     *     Objavljene gradnje zadržavaju izvorne Composer uvjete nepromijenjenima.
+     */
+    private function candidateVersion(string $package, mixed $constraint): string
+    {
+        if (!is_string($constraint) || preg_match('/\A\^?(\d+\.\d+\.\d+)\z/D', $constraint, $matches) !== 1) {
+            throw new RuntimeException('Local image candidates require an explicit stable minimum: ' . $package);
+        }
+
+        return $matches[1];
     }
 
     /**

@@ -28,6 +28,9 @@ Izdanje uključuje **Audit 0.3.1** i **Email 0.3.3**. HTML Editor/Menu/Theme ost
 - Odvojene EN/HR upute za rotaciju pokrivaju cron, updater, installer, FPM,
   opcionalni SimpleSAMLphp, macOS i Docker. Aktualni instalacijski primjeri i
   ugrađene upute koriste **0.3.16**.
+- Lokalni razvojni Docker konteksti koriste traženu donju granicu svakog
+  paketa umjesto jedne opće verzije kandidata, pa novije međumodulske ovisnosti
+  ostaju zadovoljene. Objavljene gradnje i dalje koriste stvarno izdane pakete.
 
 ## Nadogradnja i sistemska rotacija
 

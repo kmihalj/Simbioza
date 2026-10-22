@@ -306,4 +306,64 @@ final class DeploymentTest extends TestCase
         $this->expectException(RuntimeException::class);
         $builder->build($context, false, []);
     }
+
+    /**
+     * EN: Local candidates satisfy newer inter-module minimums without changing source manifests.
+     *
+     * HR: Lokalni kandidati zadovoljavaju novije međumodulske donje granice bez promjene izvora.
+     */
+    public function testLocalBuildContextUsesRequestedPackageMinimums(): void
+    {
+        $source = $this->root . '/source';
+        mkdir($source . '/docker', 0700, true);
+        foreach (['Dockerfile', 'apache.conf', 'php.ini'] as $file) {
+            file_put_contents($source . '/docker/' . $file, 'public fixture');
+        }
+
+        $catalog = new ModuleCatalog();
+        $packages = $catalog->packagesForSelection([...$catalog->requiredSlugs(), 'backup', 'audit', 'email']);
+        $requirements = ['php' => '^8.2', 'aaieduhr/heartphrame-framework' => '^0.0.25'];
+        foreach ($packages as $package) {
+            $requirements[$package] = match (basename($package)) {
+                'heartphrame-module-auth', 'heartphrame-module-backup', 'heartphrame-module-audit' => '^0.3.1',
+                'heartphrame-module-email' => '^0.3.3',
+                default => '^0.3.0',
+            };
+        }
+
+        file_put_contents($source . '/composer.json', json_encode(['require' => $requirements], JSON_THROW_ON_ERROR));
+        $processes = new \App\Module\NativeProcessRunner();
+        $this->assertSame(0, $processes->run(['git', 'init', '--quiet'], $source)->exitCode);
+        foreach (['aaieduhr/heartphrame-framework', ...$packages] as $package) {
+            $directory = $this->root . '/' . basename($package);
+            mkdir($directory, 0700);
+            $dependencies = ['php' => '^8.2'];
+            if (in_array($package, ['aaieduhr/heartphrame-module-audit', 'aaieduhr/heartphrame-module-email'], true)) {
+                $dependencies['aaieduhr/heartphrame-module-auth'] = '^0.3.1';
+            }
+
+            file_put_contents($directory . '/composer.json', json_encode([
+                'name' => $package,
+                'require' => $dependencies,
+            ], JSON_THROW_ON_ERROR));
+            $this->assertSame(0, $processes->run(['git', 'init', '--quiet'], $directory)->exitCode);
+        }
+
+        $context = $this->root . '/local-context';
+        (new ImageContextBuilder($source, $this->root))->build($context, true, ['audit', 'email']);
+        $manifest = json_decode(
+            (string)file_get_contents($context . '/app/composer.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        foreach (['aaieduhr/heartphrame-framework', ...$packages] as $package) {
+            $this->assertSame(ltrim($requirements[$package], '^'), $manifest['require'][$package]);
+        }
+
+        $emailSource = (string)file_get_contents($this->root . '/heartphrame-module-email/composer.json');
+        $emailExport = (string)file_get_contents($context . '/packages/heartphrame-module-email/composer.json');
+        $this->assertSame($emailSource, $emailExport);
+        $this->assertSame('^0.3.1', json_decode($emailExport, true)['require']['aaieduhr/heartphrame-module-auth']);
+    }
 }

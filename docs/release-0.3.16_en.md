@@ -28,6 +28,9 @@ Framework **v0.0.25** and updater **1.0.8**. Existing tags are not moved.
 - EN/HR rotation instructions cover cron, updater, installer, FPM, optional
   SimpleSAMLphp logs, macOS and Docker. Current installation examples and
   bundled guides use **0.3.16**.
+- Local development Docker contexts use each requested package minimum instead
+  of a blanket candidate version, so newer inter-module requirements remain
+  satisfiable. Published builds continue to use the actual released packages.
 
 ## Updating and host rotation
 

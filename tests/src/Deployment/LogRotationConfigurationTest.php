@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\App\Deployment;
+namespace Tests\Deployment;
 
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
