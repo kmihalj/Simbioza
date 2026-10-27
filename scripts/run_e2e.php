@@ -219,6 +219,10 @@ function configureE2eApplication(string $projectDirectory): void
     //
     // HR: Ograničenja lokalnog sitea vrijede, ali izdvojeni test izričito učitava ogledne TXT datoteke.
     $editorPath = $projectDirectory . '/config/editor-html/editor-html.json';
+    $editorDirectory = dirname($editorPath);
+    if (!is_dir($editorDirectory) && !mkdir($editorDirectory, 0770, true) && !is_dir($editorDirectory)) {
+        throw new RuntimeException('E2E Editor configuration directory could not be created.');
+    }
     $editor = is_file($editorPath)
         ? json_decode((string)file_get_contents($editorPath), true, 512, JSON_THROW_ON_ERROR) : [];
     if (!is_array($editor)) {
