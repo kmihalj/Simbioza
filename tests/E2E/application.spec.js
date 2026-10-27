@@ -1283,7 +1283,7 @@ test.describe('browser flows', () => {
       '[data-workspace-restriction-permission="can_edit"]',
     )).not.toBeChecked();
     await expect(nodeDialog.getByRole('heading', {
-      name: /Direct user permissions|Izravna dopuštenja korisnicima/i,
+      name: /Direct permissions for users and groups|Izravna dopuštenja korisnicima i grupama/i,
     })).toBeVisible();
 
     const titleInput = nodeDialog.locator('input[name^="title_translations["]:visible');

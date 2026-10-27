@@ -38,10 +38,10 @@ test.describe('complete Backup workflow', () => {
      *     onemogućene.
      */
     const componentCheckboxes = page.locator('#backup-create-form input[name="components[]"]');
-    await expect(componentCheckboxes).toHaveCount(6);
+    await expect(componentCheckboxes).toHaveCount(7);
     expect(await componentCheckboxes.evaluateAll((checkboxes) => (
       checkboxes.map((checkbox) => checkbox.value)
-    ))).toEqual(['users', 'workspaces', 'themes', 'settings', 'calendars', 'audit']);
+    ))).toEqual(['users', 'workspaces', 'themes', 'settings', 'calendars', 'audit', 'surveys']);
     await expect(componentCheckboxes.first()).toBeDisabled();
 
     /*

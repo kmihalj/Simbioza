@@ -235,6 +235,29 @@ final class ModuleLifecycleManagerTest extends TestCase
     }
 
     /**
+     * EN: Sensitive Survey data cannot be partially removed through a generic table-only archive.
+     *
+     * HR: Osjetljivi podaci anketa ne smiju se djelomično ukloniti generičkim arhivom tablica.
+     */
+    public function testSurveyRemovalWithDataStopsBeforeMutation(): void
+    {
+        $this->database->schema()->create('survey_surveys', static function (Blueprint $table): void {
+            $table->string('uuid')->primary();
+        });
+        $this->database->table('survey_surveys')->insert(['uuid' => 'synthetic-survey']);
+        try {
+            $this->manager->remove('survey');
+            $this->fail('Survey removal with operational data must be refused.');
+        } catch (RuntimeException $runtimeException) {
+            $this->assertStringContainsString('Survey removal requires empty tables', $runtimeException->getMessage());
+        }
+
+        $this->assertSame('synthetic-survey', $this->database->table('survey_surveys')->first()['uuid']);
+        $this->assertSame([], $this->manager->backups('survey'));
+        $this->assertSame([], $this->state->removedSlugs());
+    }
+
+    /**
      * EN: A failed Composer operation must not disable the module or drop its
      *     schema prematurely, and its private cache must be cleaned up.
      *
@@ -309,6 +332,13 @@ final class ModuleLifecycleManagerTest extends TestCase
             $filteredRoot . '/database/migrations/20260608000212_install_calendar_module_schema.php',
             "<?php\nthrow new RuntimeException('Absent Calendar migration was loaded.');\n",
         );
+        foreach ((new ModuleCatalog())->definitionFor('survey')['migrations'] as $migration) {
+            file_put_contents(
+                $filteredRoot . '/database/migrations/' . $migration . '.php',
+                "<?php\nthrow new RuntimeException('Absent Survey migration was loaded.');\n",
+            );
+        }
+
         file_put_contents(
             $filteredRoot . '/database/migrations/20990101000000_unowned_application_migration.php',
             <<<'PHP'
@@ -350,6 +380,9 @@ PHP,
         );
         $state = new ModuleStateStore($filteredRoot, $catalog);
         $state->initialize([]);
+        $this->assertFalse($state->isEnabled('survey'));
+        $this->assertContains('survey', $catalog->optionalSlugs());
+        $this->assertSame('workspace', $catalog->slugForMigration('20261026000200_workspace_subject_permissions'));
 
         $packages = new ComposerPackageManager(
             $catalog,
@@ -374,6 +407,13 @@ PHP,
             $manager->migrateInstalled(),
         );
         $this->assertTrue($database->schema()->hasTable('module_migration_probe'));
+        $survey = array_values(array_filter(
+            $manager->status(),
+            static fn(array $module): bool => $module['slug'] === 'survey',
+        ))[0];
+        $this->assertSame('not-installed', $survey['state']);
+        $this->assertFalse($survey['enabled']);
+        $this->assertFalse($database->schema()->hasTable('survey_surveys'));
     }
 
     /**

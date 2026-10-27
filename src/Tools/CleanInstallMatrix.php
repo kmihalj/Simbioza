@@ -44,6 +44,7 @@ const MATRIX_MODULE_ORDER = [
     'aaieduhr/simbioza-module-user',
     'aaieduhr/simbioza-module-confluence-import',
     'aaieduhr/heartphrame-module-backup',
+    'aaieduhr/heartphrame-module-survey',
 ];
 
 const MATRIX_CASES = [
@@ -70,6 +71,7 @@ const MATRIX_CASES = [
     'simbioza-user' => ['aaieduhr/simbioza-module-user'],
     'simbioza-confluence-import' => ['aaieduhr/simbioza-module-confluence-import'],
     'backup' => ['aaieduhr/heartphrame-module-backup'],
+    'survey' => ['aaieduhr/heartphrame-module-survey'],
     'all' => MATRIX_MODULE_ORDER,
 ];
 
@@ -88,6 +90,7 @@ const MATRIX_MIGRATION_COMMANDS = [
     'aaieduhr/simbioza-module-user' => 'simbioza-user:install-migration',
     'aaieduhr/simbioza-module-confluence-import' => 'simbioza-confluence-import:install-migration',
     'aaieduhr/heartphrame-module-backup' => 'backup:install-migration',
+    'aaieduhr/heartphrame-module-survey' => 'survey install-migration',
 ];
 
 const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
@@ -102,6 +105,7 @@ const MATRIX_LOCAL_PACKAGE_DIRECTORIES = [
     'aaieduhr/heartphrame-module-menu' => 'heartphrame-module-menu',
     'aaieduhr/heartphrame-module-notification' => 'heartphrame-module-notification',
     'aaieduhr/heartphrame-module-orm' => 'heartphrame-module-orm',
+    'aaieduhr/heartphrame-module-survey' => 'heartphrame-module-survey',
     'aaieduhr/heartphrame-module-task' => 'heartphrame-module-task',
     'aaieduhr/heartphrame-module-theme' => 'heartphrame-module-theme',
     'aaieduhr/simbioza-module-workspace' => 'simbioza-module-workspace',
@@ -686,7 +690,7 @@ function verifyMatrixCase(
                 continue;
             }
 
-            $migrationResult = runMatrixCommand(['vendor/bin/hph', $commandName], $projectDirectory);
+            $migrationResult = runMatrixCommand(['vendor/bin/hph', ...explode(' ', $commandName)], $projectDirectory);
             $migrationCommands[$commandName] = [
                 'exit_code' => $migrationResult->exitCode,
                 'duration_seconds' => round($migrationResult->durationSeconds, 3),

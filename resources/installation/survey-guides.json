@@ -1,0 +1,149 @@
+{
+    "ankete_sha256": {
+        "file": "surveys/ankete.zip",
+        "slug": "ankete",
+        "parent": null,
+        "recovery": "previous_survey_guide_ankete",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-autori_sha256": {
+        "file": "surveys/ankete-autori.zip",
+        "slug": "ankete-autori",
+        "parent": "ankete",
+        "recovery": "previous_survey_guide_ankete-autori",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-izrada-objava_sha256": {
+        "file": "surveys/ankete-izrada-objava.zip",
+        "slug": "ankete-izrada-objava",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-izrada-objava",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-pitanja_sha256": {
+        "file": "surveys/ankete-pitanja.zip",
+        "slug": "ankete-pitanja",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-pitanja",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-grananje-prijevodi_sha256": {
+        "file": "surveys/ankete-grananje-prijevodi.zip",
+        "slug": "ankete-grananje-prijevodi",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-grananje-prijevodi",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-pristup-privatnost_sha256": {
+        "file": "surveys/ankete-pristup-privatnost.zip",
+        "slug": "ankete-pristup-privatnost",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-pristup-privatnost",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-objava_sha256": {
+        "file": "surveys/ankete-objava.zip",
+        "slug": "ankete-objava",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-objava",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-rezultati_sha256": {
+        "file": "surveys/ankete-rezultati.zip",
+        "slug": "ankete-rezultati",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-rezultati",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-kopiranje-backup_sha256": {
+        "file": "surveys/ankete-kopiranje-backup.zip",
+        "slug": "ankete-kopiranje-backup",
+        "parent": "ankete-autori",
+        "recovery": "previous_survey_guide_ankete-kopiranje-backup",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-ispunjavanje_sha256": {
+        "file": "surveys/ankete-ispunjavanje.zip",
+        "slug": "ankete-ispunjavanje",
+        "parent": "ankete",
+        "recovery": "previous_survey_guide_ankete-ispunjavanje",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-administratori_sha256": {
+        "file": "surveys/ankete-administratori.zip",
+        "slug": "ankete-administratori",
+        "parent": "ankete",
+        "recovery": "previous_survey_guide_ankete-administratori",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-pocetak_sha256": {
+        "file": "surveys/ankete-pocetak.zip",
+        "slug": "ankete-pocetak",
+        "parent": "ankete-administratori",
+        "recovery": "previous_survey_guide_ankete-pocetak",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-autentikacija_sha256": {
+        "file": "surveys/ankete-autentikacija.zip",
+        "slug": "ankete-autentikacija",
+        "parent": "ankete-administratori",
+        "recovery": "previous_survey_guide_ankete-autentikacija",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-backup-detalji_sha256": {
+        "file": "surveys/ankete-backup-detalji.zip",
+        "slug": "ankete-backup-detalji",
+        "parent": "ankete-administratori",
+        "recovery": "previous_survey_guide_ankete-backup-detalji",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-poslovi-izvjestaja_sha256": {
+        "file": "surveys/ankete-poslovi-izvjestaja.zip",
+        "slug": "ankete-poslovi-izvjestaja",
+        "parent": "ankete-administratori",
+        "recovery": "previous_survey_guide_ankete-poslovi-izvjestaja",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-developeri_sha256": {
+        "file": "surveys/ankete-developeri.zip",
+        "slug": "ankete-developeri",
+        "parent": "ankete",
+        "recovery": "previous_survey_guide_ankete-developeri",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-api-php_sha256": {
+        "file": "surveys/ankete-api-php.zip",
+        "slug": "ankete-api-php",
+        "parent": "ankete-developeri",
+        "recovery": "previous_survey_guide_ankete-api-php",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-api_sha256": {
+        "file": "surveys/ankete-api.zip",
+        "slug": "ankete-api",
+        "parent": "ankete-developeri",
+        "recovery": "previous_survey_guide_ankete-api",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-api-referenca_sha256": {
+        "file": "surveys/ankete-api-referenca.zip",
+        "slug": "ankete-api-referenca",
+        "parent": "ankete-developeri",
+        "recovery": "previous_survey_guide_ankete-api-referenca",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-api-primjeri_sha256": {
+        "file": "surveys/ankete-api-primjeri.zip",
+        "slug": "ankete-api-primjeri",
+        "parent": "ankete-developeri",
+        "recovery": "previous_survey_guide_ankete-api-primjeri",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    },
+    "ankete-html-sadrzaj_sha256": {
+        "file": "surveys/ankete-html-sadrzaj.zip",
+        "slug": "ankete-html-sadrzaj",
+        "parent": "ankete-developeri",
+        "recovery": "previous_survey_guide_ankete-html-sadrzaj",
+        "message": "Bilingual survey guide updated; existing page permissions preserved."
+    }
+}

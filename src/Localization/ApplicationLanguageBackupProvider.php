@@ -122,7 +122,10 @@ final class ApplicationLanguageBackupProvider implements BackupProviderInterface
     {
         $this->rows($reader);
         $path = $this->paths->writableFile('.languages.lock');
-        $handle = fopen($path, 'c+b');
+        // EN: Existing shared locks must avoid O_CREAT under Linux protected_regular in sticky config directories.
+        //
+        // HR: Postojeće brave izbjegavaju O_CREAT zbog Linux protected_regular u sticky config direktorijima.
+        $handle = fopen($path, is_file($path) ? 'r+b' : 'c+b');
         if ($handle === false) {
             throw new RuntimeException('Unable to open the language configuration lock.');
         }

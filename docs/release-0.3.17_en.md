@@ -2,6 +2,9 @@
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.17/docs/release-0.3.17_hr.md)
 
+> Historical release note. See the [current installation guides](installation_en.md)
+> and [Simbioza 0.3.18](release-0.3.18_en.md) for current instructions.
+
 This application patch fixes two cross-user failures in secured-FPM installations.
 All module versions remain unchanged: Audit/Backup/Auth/API **0.3.1**, Email
 **0.3.3**, HTML Editor/Menu/Theme **0.3.2**, other public modules **0.3.0**.

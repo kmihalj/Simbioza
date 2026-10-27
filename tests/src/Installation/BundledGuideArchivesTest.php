@@ -348,7 +348,11 @@ final class BundledGuideArchivesTest extends TestCase
                     $this->assertSame(ModuleBackup::ARCHIVE_VERSION, $manifest['format_version'], basename($archive));
                     $this->assertSame('0.3.0', $manifest['source']['root_version']);
                     $this->assertTrue($manifest['source']['canonical_link_paths']);
-                    $this->assertSame('https://piko.webhop.me/hfc', $manifest['source']['site_base_url']);
+                    $this->assertSame(
+                        basename($archive) === 'korisnicke-upute.zip'
+                            ? 'https://bundled-guides.invalid' : 'https://piko.webhop.me/hfc',
+                        $manifest['source']['site_base_url'],
+                    );
                     $this->assertSame('/editor-html', $manifest['source']['link_route_roots']['editor']);
                     $this->assertSame('/workspace', $manifest['source']['link_route_roots']['workspace']);
                     $this->assertSame(

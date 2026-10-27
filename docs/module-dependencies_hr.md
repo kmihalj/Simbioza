@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.17 koristi Email 0.3.3, HTML Editor/Menu/Theme 0.3.2, Audit/Backup/Auth/API 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25. Razvojne instalacije nisu zamjena za ove objavljene pakete.
+> Simbioza 0.3.18 koristi Email 0.3.5, HTML Editor/Backup 0.3.3, Menu/Theme/Notification/Task/Comment 0.3.2, Audit/Auth/API/Workspace/Confluence Import 0.3.1 i ostale javne module (uključujući opcionalni Survey) 0.3.0. Framework ostaje v0.0.25.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
@@ -45,6 +45,7 @@ provjeriti prije svakog izdanja.
 
 | Modul | Obavezno | Opcionalne integracije |
 |---|---|---|
+| `module-survey` | Framework, ORM, Auth, HTML Editor | Workspace, Theme, Menu, API, Backup, Notification, Email, Audit |
 | `module-orm` | Framework, `ext-pdo` | — |
 | `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth i Menu za administratorski GUI; poslovni moduli prijavljuju vlastite providere |
 | `module-auth` | Framework, ORM | API, Menu, Notification |

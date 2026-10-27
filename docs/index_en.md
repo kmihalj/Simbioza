@@ -1,5 +1,7 @@
 # Simbioza documentation (EN)
 
+- [Surveys and the shared HTML Editor in 0.3.18](release-0.3.18_en.md)
+
 This is the documentation for the Simbioza collaborative knowledge application and its
 enabled HeartPhrame modules. The Framework is consumed from a tagged upstream release; it
 is not developed in this repository.

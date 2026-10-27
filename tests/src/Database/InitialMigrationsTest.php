@@ -14,11 +14,13 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\SchemaBuilder;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\SimbiozaModuleConfluenceImport\ModuleSimbiozaConfluenceImport;
 use AaiEduHr\SimbiozaModuleUser\ModuleSimbiozaUser;
 use AaiEduHr\SimbiozaModuleWorkspace\ModuleWorkspace;
 use AaiEduHr\SimbiozaModuleWorkspaceSearch\ModuleWorkspaceSearch;
+use App\Module\ModuleCatalog;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -98,12 +100,12 @@ final class InitialMigrationsTest extends TestCase
     }
 
     /**
-     * EN: Verifies fourteen initial application migrations and the current Auth,
+     * EN: Verifies all current application migrations, including Survey, and the current Auth,
      * Calendar, Editor, Workspace, Workspace Search, E-mail, Notification, Task,
      * Comment, API, Backup, Audit, Simbioza User, and Confluence Import schemas, the derived backlink
      * index, the absence of pre-created users, and no content data.
      *
-     * HR: Provjerava četrnaest početnih aplikacijskih migracija i aktualne
+     * HR: Provjerava sve aktualne aplikacijske migracije, uključujući Survey, i aktualne
      * Auth, Calendar, Editor, Workspace, Workspace Search, E-mail, Notification,
      * Task, Comment, API, Backup, Audit, Simbioza User i Confluence Import sheme, izvedeni backlink
      * indeks, izostanak unaprijed izrađenih korisnika i izostanak sadržaja.
@@ -113,7 +115,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(14, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(25, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             // EN: Fresh installs stamp application-only data relocation without executing it.
@@ -122,6 +124,12 @@ final class InitialMigrationsTest extends TestCase
             $migration = require $migrationFile;
             $this->assertTrue(method_exists($migration, 'up'));
             $migration->up($this->database);
+        }
+
+        $surveySchema = new SchemaBuilder($this->database);
+        foreach ((new ModuleCatalog())->definitions()['survey']['tables'] as $table) {
+            $this->assertTrue($surveySchema->hasTable($table), 'Missing Survey table: ' . $table);
+            $this->assertSame([], $this->database->table($table)->get(), 'Survey fixtures must not be seeded.');
         }
 
         $this->assertColumns(ModuleAuth::TABLE_AUTH_USERS, [

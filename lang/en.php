@@ -6,6 +6,9 @@ declare(strict_types=1);
 //
 // HR: Paketni prijevodi aplikacije; instalirani paketi žive u data/languages/catalogs/.
 return [
+  'Ankete' => 'Surveys',
+  'Autentikacija' => 'Authentication',
+  'Ovlasti' => 'Permissions',
   'CLI provjera nije provedena jer Setup helper nije dostupan.' => 'The CLI check was not performed because the Setup helper is unavailable.',
   'Helper nije provjeren u ovom okruženju.' => 'The helper was not checked in this environment.',
   'Nije provjereno' => 'Not checked',

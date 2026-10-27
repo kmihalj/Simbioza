@@ -25,6 +25,7 @@ const DOCUMENTED_MODULES = [
     'heartphrame-module-menu',
     'heartphrame-module-notification',
     'heartphrame-module-orm',
+    'heartphrame-module-survey',
     'heartphrame-module-task',
     'heartphrame-module-theme',
     'simbioza-module-workspace',

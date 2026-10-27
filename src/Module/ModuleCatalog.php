@@ -128,7 +128,8 @@ final readonly class ModuleCatalog
                 dependencies: ['auth', 'editor-html'],
                 migrations: [
                     '20260717120804_install_workspace_module_schema',
-                        ],
+                    '20261026000200_workspace_subject_permissions',
+                ],
             ),
             'workspace-search' => $this->definition(
                 'aaieduhr/simbioza-module-workspace-search',
@@ -137,6 +138,38 @@ final readonly class ModuleCatalog
                 dependencies: ['workspace'],
                 migrations: [
                     '20260812130000_install_workspace_search_schema',
+                ],
+            ),
+            'survey' => $this->definition(
+                'aaieduhr/heartphrame-module-survey',
+                'Ankete',
+                'Surveys',
+                true,
+                ['orm', 'auth', 'editor-html'],
+                [
+                    '20261023000000_install_survey_module_schema',
+                    '20261023000100_install_survey_authoring_schema',
+                    '20261024000000_install_survey_admission_schema',
+                    '20261024000100_install_survey_invitee_schema',
+                    '20261024000200_install_survey_provider_schema',
+                    '20261025000000_install_survey_provider_group_schema',
+                    '20261025000100_install_survey_collection_schema',
+                    '20261026000000_install_survey_reporting_schema',
+                    '20261026000100_install_survey_result_audience_schema',
+                    '20261026000300_install_survey_backup_schema',
+                ],
+                [
+                    'survey_surveys', 'survey_revisions', 'survey_pages', 'survey_blocks',
+                    'survey_questions', 'survey_choices', 'survey_translations', 'survey_rules',
+                    'survey_assets', 'survey_placements', 'survey_grants', 'survey_admission_profiles',
+                    'survey_admission_rules', 'survey_participant_sessions', 'survey_completions',
+                    'survey_public_attempts', 'survey_responses', 'survey_response_answers',
+                    'survey_response_choices', 'survey_response_identities', 'survey_report_schedules',
+                    'survey_report_runs', 'survey_revision_settings', 'survey_result_grants',
+                    'survey_admin_settings', 'survey_invitees', 'survey_provider_connections',
+                    'survey_provider_groups', 'survey_collection_state', 'survey_result_audiences',
+                    'survey_restore_contexts', 'survey_application_principals',
+                    'survey_application_pending_principals',
                 ],
             ),
             'calendar' => $this->definition(

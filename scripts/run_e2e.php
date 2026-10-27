@@ -215,6 +215,22 @@ function configureE2eApplication(string $projectDirectory): void
     $installation['session_name'] = 'HEARTPHRAME_E2E_SESSION';
     writeMatrixPhpConfig($installationPath, $installation);
 
+    // EN: Local host upload restrictions are valid, but the disposable suite explicitly uploads TXT fixtures.
+    //
+    // HR: Ograničenja lokalnog sitea vrijede, ali izdvojeni test izričito učitava ogledne TXT datoteke.
+    $editorPath = $projectDirectory . '/config/editor-html/editor-html.json';
+    $editor = is_file($editorPath)
+        ? json_decode((string)file_get_contents($editorPath), true, 512, JSON_THROW_ON_ERROR) : [];
+    if (!is_array($editor)) {
+        throw new RuntimeException('E2E Editor configuration is invalid.');
+    }
+    $editor['uploads']['allowed_mime_types'] = array_values(array_unique([
+        ...($editor['uploads']['allowed_mime_types'] ?? []), 'text/plain',
+    ]));
+    if (file_put_contents($editorPath, json_encode($editor, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)) === false) {
+        throw new RuntimeException('E2E attachment fixtures could not be configured.');
+    }
+
     $apiConfigPath = $projectDirectory . '/config/api/api.php';
     $apiConfigValue = require $apiConfigPath;
     if (!is_array($apiConfigValue)) {

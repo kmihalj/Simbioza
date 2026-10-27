@@ -944,8 +944,8 @@ test.describe('module browser surfaces', () => {
       .evaluateAll((inputs) => inputs.map((input) => input.value))).toEqual(labelsBefore);
 
     await page.goto('/settings/auth?section=overview');
-    await expect(page.getByRole('link', { name: 'OIDC', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'OAuth2', exact: true })).toHaveCount(0);
+    await expect(page.locator('a[href="/settings/auth?section=provider-oidc"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/settings/auth?section=provider-oauth2"]')).toHaveCount(0);
     await page.locator('#oidc_enabled').check();
     await page.locator('#oauth2_enabled').check();
     await Promise.all([
@@ -953,8 +953,8 @@ test.describe('module browser surfaces', () => {
         && url.searchParams.get('setup_status') === 'success'),
       page.getByRole('button', { name: 'Save provider settings' }).click(),
     ]);
-    await expect(page.getByRole('link', { name: 'OIDC', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'OAuth2', exact: true })).toBeVisible();
+    await expect(page.locator('a[href="/settings/auth?section=provider-oidc"]')).toBeVisible();
+    await expect(page.locator('a[href="/settings/auth?section=provider-oauth2"]')).toBeVisible();
 
     await page.goto('/locale/hr');
     await expect(page.locator('html')).toHaveAttribute('lang', 'hr');

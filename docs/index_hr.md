@@ -1,5 +1,7 @@
 # Dokumentacija Simbioze (HR)
 
+- [Ankete i zajednički HTML Editor u 0.3.18](release-0.3.18_hr.md)
+
 Ovo je dokumentacija aplikacije Simbioza za zajedničko znanje i njezinih uključenih
 HeartPhrame modula. Framework se koristi iz označenog uzvodnog izdanja; ne razvija se u ovom
 repozitoriju.

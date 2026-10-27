@@ -379,8 +379,13 @@ test('page creation, publication, and public rendering stay inside measured SQL 
    *
    * HR: Dva dodatna ograničena upita pronalaze stranice koje dinamički uključuju
    *     prikazanu stranicu, bez skeniranja dokumenata ili cijelog područja.
+   *
+   * EN: Page-only group/public exceptions add one batched subject-permission
+   *     read and one bounded exception-root lookup, independent of tree size.
+   * HR: Grupne/javne iznimke stranice dodaju jedan skupni dohvat dopuštenja
+   *     i jedan ograničeni dohvat korijena iznimki, neovisno o veličini stabla.
    */
-  expectRecordedBudget('page-public', publicMarker, 37);
+  expectRecordedBudget('page-public', publicMarker, 39);
   expectRequestBudget('page-public', publicMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,

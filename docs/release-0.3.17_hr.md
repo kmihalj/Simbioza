@@ -2,6 +2,9 @@
 
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.17/docs/release-0.3.17_en.md)
 
+> Povijesna bilješka izdanja. Za aktualne upute pogledajte
+> [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.18](release-0.3.18_hr.md).
+
 Ova zakrpa aplikacije ispravlja dva problema s različitim korisnicima u
 secured-FPM instalaciji. Verzije svih modula ostaju nepromijenjene:
 Audit/Backup/Auth/API **0.3.1**, Email **0.3.3**, HTML Editor/Menu/Theme **0.3.2**,

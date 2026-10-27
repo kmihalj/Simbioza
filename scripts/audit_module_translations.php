@@ -270,7 +270,11 @@ foreach ($componentRoots as $componentRoot) {
     $keys = array_values(array_unique($keys));
     sort($keys);
     foreach (['en', 'hr'] as $locale) {
-        $catalogue = translationCatalogue($componentRoot . '/lang/' . $locale . '.php');
+        $cataloguePath = $componentRoot . '/lang/' . $locale . '.php';
+        if (!is_file($cataloguePath)) {
+            $cataloguePath = $componentRoot . '/resources/lang/' . $locale . '.php';
+        }
+        $catalogue = translationCatalogue($cataloguePath);
         $aggregate[$locale] += $catalogue;
         $missing = array_values(array_diff($keys, array_keys($catalogue)));
         if ($missing === []) {

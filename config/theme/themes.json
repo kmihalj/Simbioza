@@ -1076,7 +1076,7 @@
                 "navbar_active": "#FFFFFF",
                 "navbar_active_bg": "#0D424B",
                 "primary_text": "auto",
-                "secondary_text": "auto",
+                "secondary_text": "#FFFFFF",
                 "success_text": "auto",
                 "warning_text": "auto",
                 "danger_text": "auto",

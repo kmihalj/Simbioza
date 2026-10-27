@@ -186,6 +186,20 @@ final readonly class ModuleLifecycleManager
             $this->assertConfluenceRuntimeReferencesResolved();
         }
 
+        if ($slug === 'survey') {
+            // EN: Generic NDJSON removal cannot replace Survey's encrypted graph/key restore contract.
+            //
+            // HR: Generičko NDJSON uklanjanje ne zamjenjuje šifrirani ugovor vraćanja anketa i ključeva.
+            foreach ($definition['tables'] as $table) {
+                if ($this->database->schema()->hasTable($table) && $this->database->table($table)->first() !== null) {
+                    throw new RuntimeException(
+                        'Survey removal requires empty tables. Disable it to retain data; '
+                        . 'use encrypted Survey backup and restore for operational data.',
+                    );
+                }
+            }
+        }
+
         $archive = $this->archives->create($slug, $definition['tables']);
         $ran = array_fill_keys($this->ranMigrations(), true);
         $ownedMigrations = [];

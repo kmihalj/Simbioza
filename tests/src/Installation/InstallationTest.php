@@ -101,7 +101,8 @@ final class InstallationTest extends TestCase
         $this->assertIsArray($theme);
         foreach (['light', 'dark'] as $variant) {
             foreach (ThemeConfigRepository::BUTTON_COLOR_KEYS as $kind) {
-                $this->assertSame('auto', $theme[$variant]['colors'][$kind . '_text'] ?? null);
+                $expected = $variant === 'light' && $kind === 'secondary' ? '#FFFFFF' : 'auto';
+                $this->assertSame($expected, $theme[$variant]['colors'][$kind . '_text'] ?? null);
             }
         }
 
@@ -508,7 +509,7 @@ final class InstallationTest extends TestCase
             'first_name' => 'Fixture', 'last_name' => 'Admin', 'password' => 'Unique#Strong987',
             'password_confirmation' => 'Unique#Strong987',
         ]);
-        $this->assertSame(6, $result['migration_count']);
+        $this->assertSame(7, $result['migration_count']);
         $this->assertFileExists($root . '/external/modules.php');
         $this->assertFileDoesNotExist($root . '/config/modules.php');
         $this->assertFileExists($root . '/data/installation.lock');
@@ -631,7 +632,8 @@ final class InstallationTest extends TestCase
             '/test-simbioza',
         );
 
-        $this->assertSame(14, $result['migration_count']);
+        $expectedMigrations = count(glob($root . '/database/migrations/*.php') ?: []);
+        $this->assertSame($expectedMigrations, $result['migration_count']);
         $this->assertSame('simbioza', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $this->assertFileExists($paths->lockFile());
@@ -657,7 +659,7 @@ final class InstallationTest extends TestCase
         $this->assertSame(1, (int)$administrator['is_admin']);
         $this->assertSame(0, (int)$administrator['must_change_password']);
         $this->assertCount(1, $database->table(ModuleAuth::TABLE_AUTH_USERS)->get());
-        $this->assertCount(14, $database->table('_hph_migrations')->get());
+        $this->assertCount($expectedMigrations, $database->table('_hph_migrations')->get());
         $this->assertFalse($database->schema()->hasTable('auth_provider_settings'));
         $this->assertFalse($database->schema()->hasColumn(ModuleAuth::TABLE_AUTH_PROVIDER_PROFILES, 'config_json'));
         $calendarManagerGroup = $database->table(ModuleAuth::TABLE_AUTH_GROUPS)
@@ -677,7 +679,13 @@ final class InstallationTest extends TestCase
         $this->assertSame('Korisničke upute', $workspaceNames['hr']);
         $this->assertSame('User guides', $workspaceNames['en']);
         $this->assertSame($workspaceNames['en'], $workspaces[0]['name']);
-        $this->assertCount(10, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $surveyGuides = json_decode(
+            (string)file_get_contents($root . '/resources/installation/survey-guides.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertCount(10 + count($surveyGuides), $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
         $meetingPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('slug', '=', 'sastanci')->first();
         $this->assertIsArray($meetingPage);
@@ -763,6 +771,7 @@ final class InstallationTest extends TestCase
             'kalendari',
             'podrucja',
             'uredivanje-stranica',
+            'ankete',
         ], array_column($rootNodes, 'slug'));
         $translatedTitles = [];
         foreach ($rootNodes as $node) {
@@ -778,6 +787,7 @@ final class InstallationTest extends TestCase
         $this->assertSame('Calendars', $translatedTitles['kalendari']['en']);
         $this->assertSame('Workspaces', $translatedTitles['podrucja']['en']);
         $this->assertSame('Editing pages', $translatedTitles['uredivanje-stranica']['en']);
+        $this->assertSame('Surveys', $translatedTitles['ankete']['en']);
 
         $workspaceAcl = $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)
             ->where('workspace_id', '=', $workspaceId)
@@ -915,6 +925,18 @@ PHP);
             ->where('document_id', '=', $confluenceDocument['id'])
             ->update(['content_html' => '<p>Previous Confluence import guide without a video.</p>']);
 
+        // EN: Survey chapters are now managed update targets too, not unrelated pages.
+        //
+        // HR: Poglavlja anketa sada su također ciljevi nadogradnje, a ne nepovezane stranice.
+        $surveyNodesBefore = [];
+        foreach ($surveyGuides as $guide) {
+            $node = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+                ->where('slug', '=', $guide['slug'])->first();
+            $this->assertIsArray($node);
+            $managedPageIds[] = (int)$node['id'];
+            $surveyNodesBefore[(int)$node['id']] = $node;
+        }
+
         $otherNodesBefore = array_values(array_filter(
             $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
@@ -987,6 +1009,20 @@ PHP);
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
         ));
         $this->assertSame($otherNodesBefore, $otherNodesAfter);
+        foreach ($surveyNodesBefore as $id => $before) {
+            $after = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->where('id', '=', $id)->first();
+            $this->assertIsArray($after);
+            // EN: A package refresh may choose its translated source title and update its timestamp.
+            //
+            // HR: Osvježenje paketa može odabrati prevedeni izvorni naslov i promijeniti vrijeme izmjene.
+            $this->assertSame(
+                array_diff_key($before, ['title' => true, 'updated_at' => true]),
+                array_diff_key($after, ['title' => true, 'updated_at' => true]),
+            );
+            $titles = json_decode((string)$after['title_translations'], true, 512, JSON_THROW_ON_ERROR);
+            $this->assertContains($after['title'], array_values($titles));
+        }
+
         $this->assertSame($otherTasks, $database->table(ModuleTask::TABLE_STATES)
             ->where('document_id', '=', $otherDocumentKey)->get());
         $this->assertSame($otherComments, $database->table(ModuleComment::TABLE_COMMENTS)
@@ -1084,7 +1120,7 @@ PHP);
         $this->assertIsArray($guideVersion);
         $damaged = '<p>Čuvaj tekst /test-simbioza/test-simbioza/workspace/korisnicke-upute/instalacija</p>'
         . '<a href="/test-simbioza/test-simbioza/workspace/korisnicke-upute/instalacija?lang=hr#part">Install</a>'
-        . '<a href="https://piko.webhop.me/hfc/workspace/korisnicke-upute/php-fpm-instalacija?lang=en">FPM</a>'
+        . '<a href="https://bundled-guides.invalid/workspace/korisnicke-upute/php-fpm-instalacija?lang=en">FPM</a>'
         . '<a href="https://unrelated.example/workspace/korisnicke-upute/instalacija">External</a>';
         $guideFile = ($guideVersion['storage_driver'] ?? '') === 'filesystem'
         ? $payloadConfig->documentPayloadPath((string)$guideVersion['content_path']) : null;
@@ -1258,7 +1294,7 @@ PHP);
             '/minimal',
         );
 
-        $this->assertSame(6, $result['migration_count']);
+        $this->assertSame(7, $result['migration_count']);
         $this->assertSame('', $result['theme_id']);
         $this->assertSame('korisnicke-upute', $result['workspace_slug']);
         $moduleState = require $paths->moduleStateConfig();
@@ -1613,6 +1649,27 @@ PHP);
             $projectRoot . '/resources/installation/workspace/sastanci.zip',
             $root . '/resources/installation/workspace/sastanci.zip',
         );
+
+        // EN: Exercise the same ordered survey-page update packages as a real installation.
+        //
+        // HR: Provjeri iste poredane pakete anketa za nadogradnju kao u stvarnoj instalaciji.
+        copy(
+            $projectRoot . '/resources/installation/survey-guides.json',
+            $root . '/resources/installation/survey-guides.json',
+        );
+        mkdir($root . '/resources/installation/workspace/surveys', 0770);
+        $surveyGuides = json_decode(
+            (string)file_get_contents($root . '/resources/installation/survey-guides.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        foreach ($surveyGuides as $guide) {
+            copy(
+                $projectRoot . '/resources/installation/workspace/' . $guide['file'],
+                $root . '/resources/installation/workspace/' . $guide['file'],
+            );
+        }
 
         return $root;
     }

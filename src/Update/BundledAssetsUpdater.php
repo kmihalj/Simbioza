@@ -146,7 +146,7 @@ final readonly class BundledAssetsUpdater
         //     Čuvamo stare reference za oporavak, ali ne uvozimo zadane postavke.
 
         $pagePackages = [];
-        foreach (self::GUIDE_PAGES as $stateKey => $definition) {
+        foreach (self::guidePages($root) as $stateKey => $definition) {
             $path = $root . '/resources/installation/workspace/' . $definition['file'];
             if (!is_file($path)) {
                 throw new RuntimeException('A bundled asset package is missing: ' . basename($path));
@@ -262,6 +262,60 @@ final readonly class BundledAssetsUpdater
         }
 
         return $actions;
+    }
+
+    /**
+     * EN: Adds ordered, public survey-guide packages; their pages contain no survey fixtures.
+     *
+     * HR: Dodaje poredane javne pakete uputa za ankete; stranice ne sadrže ogledne ankete.
+     *
+     * @return array<string,array{file:string,slug:string,parent:?string,recovery:string,message:string}>
+     */
+    public static function guidePages(string $root): array
+    {
+        $pages = self::GUIDE_PAGES;
+        $path = $root . '/resources/installation/survey-guides.json';
+        if (!is_file($path)) {
+            return $pages;
+        }
+
+        $extra = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($extra) || count($extra) > 100) {
+            throw new RuntimeException('Invalid bundled survey-guide index.');
+        }
+
+        $parents = array_fill_keys(array_column($pages, 'slug'), true);
+        foreach ($extra as $key => $page) {
+            if (!is_array($page)) {
+                throw new RuntimeException('Invalid bundled survey-guide page.');
+            }
+
+            $slug = $page['slug'] ?? null;
+            $parent = $page['parent'] ?? null;
+            $recovery = $page['recovery'] ?? null;
+            $message = $page['message'] ?? null;
+            if (
+                !is_string($key) || isset($pages[$key]) || !is_string($slug)
+                || preg_match('/\Aankete(?:-[a-z]+)*\z/D', $slug) !== 1
+                || ($page['file'] ?? null) !== 'surveys/' . $slug . '.zip'
+                || !array_key_exists('parent', $page)
+                || ($parent !== null && (!is_string($parent) || !isset($parents[$parent])))
+                || !is_string($recovery) || !is_string($message)
+            ) {
+                throw new RuntimeException('Invalid or unordered bundled survey-guide page.');
+            }
+
+            $pages[$key] = [
+                'file' => 'surveys/' . $slug . '.zip',
+                'slug' => $slug,
+                'parent' => $parent,
+                'recovery' => $recovery,
+                'message' => $message,
+            ];
+            $parents[$slug] = true;
+        }
+
+        return $pages;
     }
 
     /**
