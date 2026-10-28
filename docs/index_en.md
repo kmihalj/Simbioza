@@ -1,5 +1,6 @@
 # Simbioza documentation (EN)
 
+- [Full application navigation in 0.3.21](release-0.3.21_en.md)
 - [Modular installations in 0.3.20](release-0.3.20_en.md)
 - [Survey settings and application URLs in 0.3.19](release-0.3.19_en.md)
 

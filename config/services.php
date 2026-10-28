@@ -19,6 +19,7 @@ use App\Module\ModuleLifecycleManager;
 use App\Module\ModuleStateStore;
 use App\Module\NativeProcessRunner;
 use App\Module\ProcessRunnerInterface;
+use App\Navigation\StandaloneContentPresence;
 use App\Performance\QueryLogWriter;
 use App\Setup\ApplicationUpdateStatusStore;
 use App\Setup\SetupDiagnostics;
@@ -57,6 +58,14 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    StandaloneContentPresence::class => static function (ContainerInterface $container): StandaloneContentPresence {
+        $database = $container->get(Database::class);
+        if (!$database instanceof Database) {
+            throw new RuntimeException('Standalone content database is unavailable.');
+        }
+
+        return new StandaloneContentPresence($database);
+    },
     TranslatorInterface::class => static function (ContainerInterface $container): RuntimeTranslator {
         $translator = $container->get(RuntimeTranslator::class);
         if (!$translator instanceof RuntimeTranslator) {

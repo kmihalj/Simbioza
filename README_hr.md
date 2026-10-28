@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.20 nadopunjuje cjelovitu aplikaciju i dodaje mogućnost užih instalacija zahvaljujući modularnosti HeartPhramea, uz ugrađene upute i ovlasti samostalnih HTML stranica. Vidi [bilješke izdanja](docs/release-0.3.20_hr.md).
+> Simbioza 0.3.21 zadržava dosadašnju navigaciju pune aplikacije: poveznice na kataloge HTML stranica i anketa uz Područja prikazuju se automatski samo kada postoji samostalni sadržaj. Vidi [bilješke izdanja](docs/release-0.3.21_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -173,7 +173,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.20` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.21` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -276,9 +276,12 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.20](docs/release-0.3.20_hr.md).
+[bilješkama izdanja 0.3.21](docs/release-0.3.21_hr.md).
 
 ## Dokumentacija
+
+- [Navigacija pune aplikacije u 0.3.21](docs/release-0.3.21_hr.md)
+- [Modularne instalacije i premještanje HTML stranica u 0.3.20](docs/release-0.3.20_hr.md)
 
 - [Očuvanje tema/postavki i odabranih boja u 0.3.10](docs/release-0.3.10_hr.md)
 - [Prenosive poveznice uputa i povrat na isti site u 0.3.12](docs/release-0.3.12_hr.md)

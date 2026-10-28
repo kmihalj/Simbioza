@@ -82,33 +82,5 @@
         "order": 60,
         "enabled": false,
         "children": []
-    },
-    {
-        "id": "simbioza.pages",
-        "label": {
-            "hr": "HTML stranice",
-            "en": "HTML pages"
-        },
-        "translation_key": null,
-        "route": "content.pages",
-        "url": null,
-        "query": [],
-        "order": 55,
-        "enabled": true,
-        "children": []
-    },
-    {
-        "id": "simbioza.surveys",
-        "label": {
-            "hr": "Ankete",
-            "en": "Surveys"
-        },
-        "translation_key": null,
-        "route": "content.surveys",
-        "url": null,
-        "query": [],
-        "order": 60,
-        "enabled": true,
-        "children": []
     }
 ]

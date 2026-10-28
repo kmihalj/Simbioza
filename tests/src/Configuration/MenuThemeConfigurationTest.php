@@ -14,14 +14,21 @@ use AaiEduHr\HeartPhrameModuleBackup\Value\BackupImportContext;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope;
 use AaiEduHr\HeartPhrameModuleMenu\Backup\MenuBackupProvider;
 use AaiEduHr\HeartPhrameModuleMenu\Service\MenuConfigRepository;
+use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTheme\Backup\ThemeBackupProvider;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
+use App\Navigation\StandaloneContentPresence;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\Config;
+use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Helper\Helper;
+use HeartPhrame\View\View;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use RuntimeException;
 
 /**
@@ -77,6 +84,111 @@ final class MenuThemeConfigurationTest extends TestCase
     {
         yield 'Menu' => ['menu', 'top'];
         yield 'Theme' => ['theme', 'themes'];
+    }
+
+    /**
+     * EN: Covers upgrades of full installations and administrator choices in focused products.
+     *
+     * HR: Pokriva nadogradnje punih instalacija i administratorske odluke u samostalnim alatima.
+     *
+     * @return iterable<string,array{bool,bool,bool,bool}>
+     */
+    public static function workspaceModes(): iterable
+    {
+        yield 'Full Simbioza without standalone content' => [true, false, false, true];
+        yield 'Workspace with standalone HTML' => [true, true, false, true];
+        yield 'Workspace with standalone Survey' => [true, false, true, true];
+        yield 'Workspace with both catalogues' => [true, true, true, true];
+        yield 'Optional schemas not installed yet' => [true, false, false, false];
+        yield 'Empty focused product' => [false, false, false, true];
+        yield 'Focused product with content' => [false, true, true, true];
+    }
+
+    /**
+     * EN: Keeps only useful automatic catalogues with Workspace, preserving custom links and focused menus.
+     *
+     * HR: Uz Područja čuva samo korisne automatske kataloge, vlastite poveznice i izbornike samostalnih alata.
+     */
+    #[DataProvider('workspaceModes')]
+    public function testContentNavigationAfterUpgrade(
+        bool $workspaceEnabled,
+        bool $pages,
+        bool $surveys,
+        bool $tables,
+    ): void {
+        $site = $this->site('navigation');
+        $enabled = ['aaieduhr/heartphrame-module-menu', 'aaieduhr/heartphrame-module-editor-html',
+            'aaieduhr/heartphrame-module-survey'];
+        if ($workspaceEnabled) {
+            $enabled[] = 'aaieduhr/simbioza-module-workspace';
+        }
+
+        $config = new Config(new Helper(), ['app' => ['modules' => ['enabled' => $enabled]],
+            'database' => ['connections' => ['default' => ['driver' => 'sqlite', 'database' => ':memory:']]],
+            'env' => ['environment' => 'development']], $site);
+        $database = new Database($config, new Helper());
+        if ($tables) {
+            $database->execute('CREATE TABLE editor_html_documents '
+                . '(id INTEGER,document_key TEXT,is_enabled INTEGER,is_deleted INTEGER)');
+            $database->execute('CREATE TABLE workspace_nodes (document_key TEXT)');
+            $database->execute('CREATE TABLE survey_surveys (uuid TEXT,state TEXT)');
+            $database->execute('CREATE TABLE survey_placements (survey_uuid TEXT)');
+            $database->execute("INSERT INTO editor_html_documents VALUES (1,'owned',1,0),(2,'deleted',1,1),"
+                . "(3,'disabled',0,0)");
+            $database->execute("INSERT INTO workspace_nodes VALUES ('owned')");
+            $database->execute("INSERT INTO survey_surveys VALUES ('owned','draft'),('old','archived')");
+            $database->execute("INSERT INTO survey_placements VALUES ('owned')");
+            if ($pages) {
+                $database->execute("INSERT INTO editor_html_documents VALUES (4,'standalone',1,0)");
+            }
+
+            if ($surveys) {
+                $database->execute("INSERT INTO survey_surveys VALUES ('standalone','draft')");
+            }
+        }
+
+        $menu = $this->repository('menu', $site, $config);
+        $this->assertInstanceOf(MenuConfigRepository::class, $menu);
+        $menu->writeJsonContentsToSection('top', json_encode([
+            ['id' => 'custom-pages', 'label' => ['en' => 'Our pages'], 'route' => 'content.pages', 'order' => 17],
+            ['id' => 'custom-surveys', 'label' => ['en' => 'Our surveys'], 'route' => 'content.surveys', 'order' => 18],
+            ['id' => 'simbioza.pages', 'label' => ['en' => 'Saved pages'], 'route' => 'content.pages',
+                'enabled' => false, 'order' => 81],
+            ['id' => 'group', 'label' => ['en' => 'Group'], 'children' => [
+                ['id' => 'simbioza.surveys', 'label' => ['en' => 'Saved surveys'], 'route' => 'content.surveys',
+                    'enabled' => false, 'order' => 82],
+            ]],
+            ['id' => 'simbioza.guides', 'route' => 'guides.index'],
+        ], JSON_THROW_ON_ERROR));
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects($this->atLeast(4))->method('get')->willReturnMap([
+            [ConfigInterface::class, $config], [MenuConfigRepository::class, $menu],
+            [View::class, $this->createStub(View::class)], [LoggerInterface::class, new NullLogger()],
+            [StandaloneContentPresence::class, new StandaloneContentPresence($database)],
+        ]);
+        $bootstraps = require dirname(__DIR__, 3) . '/config/bootstrap.php';
+        $bootstraps[0]($container);
+        $rows = array_column($menu->rowsForSection('top'), null, 'id');
+        $this->assertSame('Our pages', $rows['custom-pages']['label']['en']);
+        $this->assertSame('Our surveys', $rows['custom-surveys']['label']['en']);
+        $this->assertSame(17, $rows['custom-pages']['order']);
+        $this->assertSame(!$workspaceEnabled || $pages, isset($rows['simbioza.pages']));
+        $this->assertSame(!$workspaceEnabled || $surveys, isset($rows['simbioza.surveys']));
+        $this->assertSame(!$workspaceEnabled, isset($rows['simbioza.guides']));
+
+        if (!$workspaceEnabled || $pages) {
+            $this->assertFalse($rows['simbioza.pages']['enabled']);
+            $this->assertSame('Saved pages', $rows['simbioza.pages']['label']['en']);
+        }
+
+        if (!$workspaceEnabled || $surveys) {
+            $this->assertFalse($rows['simbioza.surveys']['enabled']);
+            $this->assertSame('group', $rows['simbioza.surveys']['parent_id']);
+        }
+
+        $before = file_get_contents($menu->jsonPathForSection('top'));
+        $bootstraps[0]($container);
+        $this->assertSame($before, file_get_contents($menu->jsonPathForSection('top')));
     }
 
     /**

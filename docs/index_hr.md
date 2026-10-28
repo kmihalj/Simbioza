@@ -1,5 +1,6 @@
 # Dokumentacija Simbioze (HR)
 
+- [Navigacija pune aplikacije u 0.3.21](release-0.3.21_hr.md)
 - [Modularne instalacije u 0.3.20](release-0.3.20_hr.md)
 - [Postavke anketa i adrese aplikacije u 0.3.19](release-0.3.19_hr.md)
 

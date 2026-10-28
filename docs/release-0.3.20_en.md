@@ -2,6 +2,9 @@
 
 [Croatian version](release-0.3.20_hr.md)
 
+> Historical release note. See the [current installation guides](installation_en.md)
+> and [Simbioza 0.3.21](release-0.3.21_en.md) for current instructions.
+
 Simbioza combines pages, a Wiki, calendars, surveys and collaboration in one complete application. The modular HeartPhrame framework also allows focused HTML website, Calendar, Wiki and Survey installations for those who do not need every feature. Auth, ORM, Menu, Theme, Backup and Audit form the mandatory foundation.
 
 ## Changes
