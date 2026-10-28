@@ -76,6 +76,19 @@ final class SurveyGuideArchivesTest extends TestCase
                     $languages = array_column($versions, 'language_code');
                     sort($languages);
                     $this->assertSame(['en', 'hr'], $languages);
+                    $publishedNumbers = [];
+                    foreach ($reader->records('page-transfer', 'workflows') as $workflow) {
+                        $publishedNumbers[$workflow['language_code']] = $workflow['published_version_number'];
+                    }
+
+                    foreach ($versions as $version) {
+                        $this->assertSame(
+                            $publishedNumbers[$version['language_code']],
+                            $version['version_number'],
+                            $slug,
+                        );
+                    }
+
                     $assets = [];
                     foreach ($reader->records('editor-html-workspace', 'assets') as $asset) {
                         $assets[$asset['uuid']] = true;
