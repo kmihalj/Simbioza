@@ -477,7 +477,10 @@ function installFilesystem(
     //
     // HR: Modulne privatne konfiguracije trebaju atomski zapis bez prava nad kodom.
     // Backup također objavljuje zapise providera u vlastitom konfiguracijskom direktoriju.
-    foreach (['auth', 'email', 'editor-html', 'workspace', 'menu', 'theme', 'backup'] as $module) {
+    foreach (
+        ['auth', 'email', 'editor-html', 'workspace', 'menu', 'theme', 'backup', 'survey', 'api', 'workspace-search']
+        as $module
+    ) {
         $directory = $root . '/config/' . $module;
         if (is_dir($directory) && !is_link($root . '/config') && !is_link($directory)) {
             applyTree($directory, FPM_USER, FPM_RUNTIME_GROUP, 02770, 0660, [], $privateDirectories);

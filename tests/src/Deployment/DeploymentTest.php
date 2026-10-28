@@ -30,6 +30,18 @@ final class DeploymentTest extends TestCase
     private string|false $mode;
 
     /**
+     * EN: Docker does not load .htaccess, so its vhost must forward API and CalDAV authorization.
+     *
+     * HR: Docker ne učitava .htaccess pa njegov vhost mora proslijediti API i CalDAV autorizaciju.
+     */
+    public function testDockerForwardsAuthorizationWithoutHtaccess(): void
+    {
+        $vhost = (string)file_get_contents(dirname(__DIR__, 3) . '/docker/apache.conf');
+        $this->assertStringContainsString('AllowOverride None', $vhost);
+        $this->assertStringContainsString('SetEnvIfNoCase Authorization "(.+)" HTTP_AUTHORIZATION=$1', $vhost);
+    }
+
+    /**
      * EN: Published installation examples and download links follow the application's current version.
      *
      * HR: Objavljeni instalacijski primjeri i poveznice preuzimanja prate aktualnu verziju aplikacije.

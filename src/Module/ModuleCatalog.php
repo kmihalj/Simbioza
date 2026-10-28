@@ -41,7 +41,7 @@ final readonly class ModuleCatalog
                 'aaieduhr/heartphrame-module-theme',
                 'Tema',
                 'Theme',
-                true,
+                false,
                 ['menu'],
                 recommended: true,
             ),
@@ -56,7 +56,7 @@ final readonly class ModuleCatalog
                 'aaieduhr/heartphrame-module-audit',
                 'Dnevnici aktivnosti',
                 'Audit log',
-                true,
+                false,
                 ['auth'],
                 ['20260814110000_install_audit_module_schema'],
                 ['audit_events'],
@@ -87,6 +87,7 @@ final readonly class ModuleCatalog
                 'aaieduhr/heartphrame-module-notification',
                 'Obavijesti',
                 'Notifications',
+                optional: true,
                 dependencies: ['auth'],
                 migrations: ['20260718090100_install_notification_module_schema'],
             ),
@@ -94,6 +95,7 @@ final readonly class ModuleCatalog
                 'aaieduhr/heartphrame-module-editor-html',
                 'HTML editor',
                 'HTML editor',
+                optional: true,
                 dependencies: ['auth'],
                 migrations: [
                     '20260625174127_install_editor_html_module_schema',
@@ -104,7 +106,7 @@ final readonly class ModuleCatalog
                 'Zadaci',
                 'Tasks',
                 optional: true,
-                dependencies: ['auth', 'notification', 'editor-html'],
+                dependencies: ['auth', 'editor-html'],
                 migrations: ['20260728093000_install_task_module_schema'],
             ),
             'comment' => $this->definition(
@@ -125,6 +127,7 @@ final readonly class ModuleCatalog
                 'aaieduhr/simbioza-module-workspace',
                 'Područja',
                 'Workspaces',
+                optional: true,
                 dependencies: ['auth', 'editor-html'],
                 migrations: [
                     '20260717120804_install_workspace_module_schema',
@@ -135,6 +138,7 @@ final readonly class ModuleCatalog
                 'aaieduhr/simbioza-module-workspace-search',
                 'Pretraživanje područja',
                 'Workspace search',
+                optional: true,
                 dependencies: ['workspace'],
                 migrations: [
                     '20260812130000_install_workspace_search_schema',
@@ -177,7 +181,7 @@ final readonly class ModuleCatalog
                 'Kalendari i sastanci',
                 'Calendars and meetings',
                 true,
-                ['auth', 'notification'],
+                ['auth'],
                 [
                     '20260608000212_install_calendar_module_schema',
                 ],
@@ -199,7 +203,8 @@ final readonly class ModuleCatalog
                 'aaieduhr/simbioza-module-user',
                 'Simbioza korisnik',
                 'Simbioza user',
-                dependencies: ['auth', 'workspace'],
+                optional: true,
+                dependencies: ['auth', 'workspace', 'notification'],
                 migrations: [
                     '20260818120000_install_simbioza_user_schema',
                 ],
@@ -227,8 +232,8 @@ final readonly class ModuleCatalog
                 'aaieduhr/heartphrame-module-backup',
                 'Sigurnosne kopije',
                 'Backup',
-                true,
-                ['auth', 'workspace'],
+                false,
+                ['auth'],
                 ['20260813100000_install_backup_schema'],
                 ['backup_jobs', 'backup_uploads'],
             ),
@@ -348,6 +353,48 @@ final readonly class ModuleCatalog
     }
 
     /**
+     * EN: Installer presets share the same selections with CLI preparation and acceptance tests.
+     *
+     * HR: Instalacijski predlošci dijele iste odabire s CLI pripremom i prihvatnim provjerama.
+     *
+     * @return array<string,array{label_hr:string,label_en:string,modules:list<string>}>
+     */
+    public function installationProfiles(): array
+    {
+        return [
+            'full' => [
+                'label_hr' => 'Cijela Simbioza', 'label_en' => 'Full Simbioza', 'modules' => $this->optionalSlugs(),
+            ],
+            'web' => ['label_hr' => 'HTML stranice', 'label_en' => 'HTML website', 'modules' => ['editor-html']],
+            'calendar' => ['label_hr' => 'Kalendar', 'label_en' => 'Calendar', 'modules' => ['calendar']],
+            'wiki' => [
+                'label_hr' => 'Wiki', 'label_en' => 'Wiki',
+                'modules' => ['workspace', 'workspace-search', 'simbioza-user'],
+            ],
+            'surveys' => ['label_hr' => 'Ankete', 'label_en' => 'Surveys', 'modules' => ['survey']],
+            'core' => ['label_hr' => 'Samo zajednička jezgra', 'label_en' => 'Shared core only', 'modules' => []],
+        ];
+    }
+
+    /**
+     * EN: Includes necessary optional dependencies in the canonical module order.
+     *
+     * HR: Uključuje nužne opcionalne ovisnosti prema kanonskom redoslijedu modula.
+     *
+     * @param list<string> $selection
+     * @return list<string>
+     */
+    public function optionalSlugsForSelection(array $selection): array
+    {
+        $packages = $this->packagesForSelection($selection);
+
+        return array_values(array_filter(
+            $this->optionalSlugs(),
+            fn(string $slug): bool => in_array($this->definitionFor($slug)['package'], $packages, true),
+        ));
+    }
+
+    /**
      * EN: Converts installer selection into a complete, correctly ordered package list.
      *
      * HR: Pretvara instalacijski odabir u potpun, pravilno poredan popis paketa.
@@ -357,7 +404,7 @@ final readonly class ModuleCatalog
      */
     public function packagesForSelection(array $optionalSlugs): array
     {
-        $selected = [];
+        $selected = array_fill_keys($this->requiredSlugs(), true);
         foreach ($optionalSlugs as $slug) {
             if (is_string($slug)) {
                 $normalized = $this->normalizeSlug($slug);
@@ -367,9 +414,23 @@ final readonly class ModuleCatalog
             }
         }
 
+        // EN: Selecting a feature also selects its hard dependencies, never unrelated modules.
+        //
+        // HR: Odabir funkcije uključuje i njezine tvrde ovisnosti, nikada nepovezane module.
+        $pending = array_keys($selected);
+        while ($pending !== []) {
+            $slug = array_pop($pending);
+            foreach ($this->definitionFor($slug)['dependencies'] as $dependency) {
+                if (!isset($selected[$dependency])) {
+                    $selected[$dependency] = true;
+                    $pending[] = $dependency;
+                }
+            }
+        }
+
         $packages = [];
         foreach ($this->definitions() as $slug => $definition) {
-            if (!$definition['optional'] || isset($selected[$slug])) {
+            if (isset($selected[$slug])) {
                 $packages[] = $definition['package'];
             }
         }

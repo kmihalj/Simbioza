@@ -441,6 +441,31 @@ final class InstallationTest extends TestCase
     }
 
     /**
+     * EN: Sites on one host use distinct cookies; installation retries preserve the same site's identity.
+     *
+     * HR: Instalacije na istom hostu imaju zasebne kolačiće; ponavljanje čuva identitet iste instalacije.
+     */
+    public function testFreshInstallationsReceiveDistinctPersistentSessionNames(): void
+    {
+        $names = [];
+        foreach ([1, 2] as $unused) {
+            $root = $this->minimalRoot();
+            $writer = new InstallationConfigWriter(new InstallationPaths($root));
+            $application = ['name' => 'Independent site', 'primary_locale' => 'en',
+                'supported_locales' => ['en'], 'timezone' => 'UTC'];
+            $writer->write(['driver' => 'sqlite'], $application);
+            $first = require $root . '/config/installation.php';
+            $this->assertMatchesRegularExpression('/\ASIMBIOZA_[a-f0-9]{24}\z/', $first['session_name']);
+            $writer->write(['driver' => 'sqlite'], $application);
+            $again = require $root . '/config/installation.php';
+            $this->assertSame($first['session_name'], $again['session_name']);
+            $names[] = $first['session_name'];
+        }
+
+        $this->assertNotSame($names[0], $names[1]);
+    }
+
+    /**
      * EN: An unwritable target is detected before the first write of another config.
      *
      * HR: Nezapisivi cilj se otkriva prije prvog zapisivanja drugog configa.
@@ -509,7 +534,7 @@ final class InstallationTest extends TestCase
             'first_name' => 'Fixture', 'last_name' => 'Admin', 'password' => 'Unique#Strong987',
             'password_confirmation' => 'Unique#Strong987',
         ]);
-        $this->assertSame(7, $result['migration_count']);
+        $this->assertSame(3, $result['migration_count']);
         $this->assertFileExists($root . '/external/modules.php');
         $this->assertFileDoesNotExist($root . '/config/modules.php');
         $this->assertFileExists($root . '/data/installation.lock');
@@ -835,7 +860,8 @@ final class InstallationTest extends TestCase
             $root . '/resources/installation/workspace/instalacija.zip',
         );
         foreach (
-            ['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip', 'confluence-import.zip'] as $guideArchive
+            ['simbioza.zip', 'apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip',
+                'confluence-import.zip'] as $guideArchive
         ) {
             copy(
                 dirname(__DIR__, 3) . '/resources/installation/workspace/' . $guideArchive,
@@ -897,6 +923,12 @@ PHP);
         $installationAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $installationPage['id'])->get();
         $managedPageIds = [(int)$meetingPage['id'], (int)$installationPage['id']];
+        $overviewPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('slug', '=', 'simbioza')->first();
+        $this->assertIsArray($overviewPage);
+        $managedPageIds[] = (int)$overviewPage['id'];
+        $overviewAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $overviewPage['id'])->get();
         foreach (['apache-mod-php-instalacija', 'php-fpm-instalacija'] as $guideSlug) {
             $guideNode = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
                 ->where('slug', '=', $guideSlug)->first();
@@ -995,6 +1027,8 @@ PHP);
             ->where('node_id', '=', $meetingPage['id'])->get());
         $this->assertSame($installationAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $installationPage['id'])->get());
+        $this->assertSame($overviewAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $overviewPage['id'])->get());
         $this->assertSame($confluenceAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $confluencePage['id'])->get());
         $updatedConfluencePage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
@@ -1246,11 +1280,9 @@ PHP);
     }
 
     /**
-     * EN: A clean installation without optional modules skips their migrations
-     *     while still importing the starter user guides.
+     * EN: The six-module core installs no optional schemas or Wiki guides.
      *
-     * HR: Čista instalacija bez opcionalnih modula preskače njihove migracije,
-     *     ali ipak uvozi početne korisničke upute.
+     * HR: Jezgra od šest modula ne instalira opcionalne sheme ni Wiki upute.
      */
     public function testRunnerInstallsRequiredModulesWithoutOptionalSchemas(): void
     {
@@ -1294,9 +1326,9 @@ PHP);
             '/minimal',
         );
 
-        $this->assertSame(7, $result['migration_count']);
-        $this->assertSame('', $result['theme_id']);
-        $this->assertSame('korisnicke-upute', $result['workspace_slug']);
+        $this->assertSame(3, $result['migration_count']);
+        $this->assertSame('simbioza', $result['theme_id']);
+        $this->assertSame('', $result['workspace_slug']);
         $moduleState = require $paths->moduleStateConfig();
         $this->assertIsArray($moduleState);
         // EN: The web installer writes privately first; the one-time FPM
@@ -1306,7 +1338,7 @@ PHP);
         //     zatim postavlja zajedničku runtime grupu i 0660.
         $this->assertSame(0600, fileperms($paths->moduleStateConfig()) & 0777);
         $this->assertNotContains('aaieduhr/heartphrame-module-calendar', $moduleState['enabled']);
-        $this->assertNotContains('aaieduhr/heartphrame-module-theme', $moduleState['enabled']);
+        $this->assertSame((new ModuleCatalog())->packagesForSelection([]), $moduleState['enabled']);
 
         $databaseConfig = require $paths->databaseConfig();
         $helper = new Helper();
@@ -1315,13 +1347,12 @@ PHP);
         $this->assertFalse($database->schema()->hasTable('calendar_calendars'));
         $this->assertFalse($database->schema()->hasTable('document_comments'));
         $this->assertFalse($database->schema()->hasTable('simbioza_confluence_import_jobs'));
-        $this->assertTrue($database->schema()->hasTable(ModuleWorkspace::TABLE_WORKSPACES));
+        $this->assertFalse($database->schema()->hasTable(ModuleWorkspace::TABLE_WORKSPACES));
+        $this->assertFalse($database->schema()->hasTable(ModuleEditorHtml::TABLE_DOCUMENTS));
 
-        // EN: The updater must be able to refresh bundled guides without the
-        //     optional Backup and Theme modules being persistently enabled.
+        // EN: A focused product can upgrade without enabling Wiki or creating its tables.
         //
-        // HR: Updater mora moći osvježiti ugrađene upute i bez trajno
-        //     uključenih opcionalnih modula Backup i Theme.
+        // HR: Samostalni alat može se nadograditi bez uključivanja Wikija ili stvaranja njegovih tablica.
         copy(
             dirname(__DIR__, 3) . '/scripts/update_bundled_assets.php',
             $root . '/scripts/update_bundled_assets.php',
@@ -1335,7 +1366,8 @@ PHP);
             $root . '/resources/installation/workspace/instalacija.zip',
         );
         foreach (
-            ['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip', 'confluence-import.zip'] as $guideArchive
+            ['simbioza.zip', 'apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip',
+                'confluence-import.zip'] as $guideArchive
         ) {
             copy(
                 dirname(__DIR__, 3) . '/resources/installation/workspace/' . $guideArchive,
@@ -1353,8 +1385,9 @@ PHP);
         $this->assertSame(0, $exit, implode("\n", $output));
         $this->assertStringNotContainsString('Simbioza theme updated', implode("\n", $output));
         $unchangedModuleState = require $paths->moduleStateConfig();
-        $this->assertNotContains('aaieduhr/heartphrame-module-backup', $unchangedModuleState['enabled']);
-        $this->assertNotContains('aaieduhr/heartphrame-module-theme', $unchangedModuleState['enabled']);
+        $this->assertSame($moduleState, $unchangedModuleState);
+        $this->assertStringContainsString('Wiki is not enabled', implode("\n", $output));
+        $this->assertFalse($database->schema()->hasTable(ModuleWorkspace::TABLE_WORKSPACES));
     }
 
     /**
@@ -1487,7 +1520,7 @@ PHP);
                     'primary_locale' => $locale,
                     'supported_locales' => [$locale],
                     'timezone' => 'Europe/Zagreb',
-                    'optional_modules' => [],
+                    'optional_modules' => ['workspace'],
                     'module_selection_present' => '1',
                 ],
                 [
@@ -1637,7 +1670,8 @@ PHP);
             $root . '/resources/installation/workspace/instalacija.zip',
         );
         foreach (
-            ['apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip', 'confluence-import.zip'] as $guideArchive
+            ['simbioza.zip', 'apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip',
+                'confluence-import.zip'] as $guideArchive
         ) {
             copy(
                 $projectRoot . '/resources/installation/workspace/' . $guideArchive,

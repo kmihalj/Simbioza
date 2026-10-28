@@ -66,11 +66,19 @@ final readonly class InstallationConfigWriter
         // HR: Sve ciljeve i sadržaje provjeri prije prvog zapisa. Čarobnjak ne
         //     stvara prazni vanjski config niti se vraća na aplikacijski config.
         $reader = new PhpConfigurationReader($this->paths->configuration());
+        $existingInstallation = $reader->read('installation.php');
+        // EN: New sites get independent cookies; retries preserve an existing local identity.
+        //
+        // HR: Nove instalacije dobivaju zasebne kolačiće; ponavljanje čuva postojeći lokalni identitet.
+        $existingSession = $existingInstallation['session_name'] ?? null;
+        $installationConfig['session_name'] = is_string($existingSession)
+        && preg_match('/\A[A-Za-z][A-Za-z0-9_]{0,63}\z/D', $existingSession) === 1
+        ? $existingSession : 'SIMBIOZA_' . bin2hex(random_bytes(12));
         $files = [
             $this->paths->databaseConfig() => ConfigArrayMerger::merge($reader->read('database.php'), $databaseConfig),
             $this->paths->environmentConfig() => ConfigArrayMerger::merge($reader->read('env.php'), $environmentConfig),
             $this->paths->installationConfig() => ConfigArrayMerger::merge(
-                $reader->read('installation.php'),
+                $existingInstallation,
                 $installationConfig,
             ),
             $this->paths->moduleStateConfig() => [

@@ -89,28 +89,18 @@
     ],
     "require": {
         "aaieduhr/heartphrame-framework": "^0.0.25",
-        "aaieduhr/heartphrame-module-accessibility": "^0.3.0",
-        "aaieduhr/heartphrame-module-api": "^0.3.1",
         "aaieduhr/heartphrame-module-audit": "^0.3.1",
         "aaieduhr/heartphrame-module-auth": "^0.3.1",
         "aaieduhr/heartphrame-module-backup": "^0.3.3",
-        "aaieduhr/heartphrame-module-calendar": "^0.3.0",
-        "aaieduhr/heartphrame-module-comment": "^0.3.2",
-        "aaieduhr/heartphrame-module-editor-html": "^0.3.3",
-        "aaieduhr/heartphrame-module-email": "^0.3.5",
         "aaieduhr/heartphrame-module-menu": "^0.3.2",
-        "aaieduhr/heartphrame-module-notification": "^0.3.2",
         "aaieduhr/heartphrame-module-orm": "^0.3.0",
-        "aaieduhr/heartphrame-module-task": "^0.3.2",
         "aaieduhr/heartphrame-module-theme": "^0.3.2",
-        "aaieduhr/simbioza-module-confluence-import": "^0.3.1",
-        "aaieduhr/simbioza-module-user": "^0.3.0",
-        "aaieduhr/simbioza-module-workspace": "^0.3.1",
-        "aaieduhr/simbioza-module-workspace-search": "^0.3.0",
         "php": ">=8.2"
     },
     "autoload": {
-        "files": ["bootstrap.php"],
+        "files": [
+            "bootstrap.php"
+        ],
         "psr-4": {
             "App\\": "src"
         }
@@ -122,7 +112,7 @@
     },
     "authors": [
         {
-            "name": "Kre\u0161imir Mihalj",
+            "name": "Krešimir Mihalj",
             "email": "kmihalj@srce.hr"
         }
     ],
@@ -144,30 +134,34 @@
     "suggest": {
         "aaieduhr/heartphrame-module-accessibility": "Adds optional personal accessibility preferences and a reusable widget.",
         "aaieduhr/heartphrame-module-api": "Adds the authenticated Simbioza API.",
-        "aaieduhr/heartphrame-module-audit": "Adds activity audit logs.",
-        "aaieduhr/heartphrame-module-backup": "Adds site, workspace, and page backup and restore.",
-        "aaieduhr/heartphrame-module-calendar": "Adds calendars, resources, and meeting planning.",
+        "aaieduhr/heartphrame-module-calendar": "Adds calendars, resources, CalDAV and meeting planning.",
         "aaieduhr/heartphrame-module-comment": "Adds page comments and reactions.",
+        "aaieduhr/heartphrame-module-editor-html": "Adds standalone HTML pages and the reusable full HTML editor.",
         "aaieduhr/heartphrame-module-email": "Adds queued e-mail delivery.",
-        "aaieduhr/heartphrame-module-survey": "Adds surveys, conditional questions, private response collection and results.",
+        "aaieduhr/heartphrame-module-notification": "Adds application notifications.",
+        "aaieduhr/heartphrame-module-survey": "Adds standalone surveys, conditional questions, private collection and results.",
         "aaieduhr/heartphrame-module-task": "Adds document tasks.",
-        "aaieduhr/heartphrame-module-theme": "Recommended: installs themes and the bundled Simbioza theme.",
-        "aaieduhr/simbioza-module-confluence-import": "Adds Confluence archive import."
+        "aaieduhr/simbioza-module-confluence-import": "Adds Confluence archive import.",
+        "aaieduhr/simbioza-module-user": "Adds Wiki user profiles, follows and personal workspaces.",
+        "aaieduhr/simbioza-module-workspace": "Adds hierarchical Wiki workspaces, pages and permissions.",
+        "aaieduhr/simbioza-module-workspace-search": "Adds permission-aware Wiki search."
     },
     "extra": {
         "simbioza": {
             "optional-modules": {
                 "aaieduhr/heartphrame-module-accessibility": "^0.3.0",
                 "aaieduhr/heartphrame-module-api": "^0.3.1",
-                "aaieduhr/heartphrame-module-audit": "^0.3.1",
-                "aaieduhr/heartphrame-module-backup": "^0.3.3",
-                "aaieduhr/heartphrame-module-calendar": "^0.3.0",
-                "aaieduhr/heartphrame-module-comment": "^0.3.2",
+                "aaieduhr/heartphrame-module-calendar": "^0.3.1",
+                "aaieduhr/heartphrame-module-comment": "^0.3.3",
+                "aaieduhr/heartphrame-module-editor-html": "^0.3.9",
                 "aaieduhr/heartphrame-module-email": "^0.3.5",
+                "aaieduhr/heartphrame-module-notification": "^0.3.2",
                 "aaieduhr/heartphrame-module-survey": "^0.3.1",
-                "aaieduhr/heartphrame-module-task": "^0.3.2",
-                "aaieduhr/heartphrame-module-theme": "^0.3.2",
-                "aaieduhr/simbioza-module-confluence-import": "^0.3.1"
+                "aaieduhr/heartphrame-module-task": "^0.3.3",
+                "aaieduhr/simbioza-module-confluence-import": "^0.3.1",
+                "aaieduhr/simbioza-module-user": "^0.3.0",
+                "aaieduhr/simbioza-module-workspace": "^0.3.1",
+                "aaieduhr/simbioza-module-workspace-search": "^0.3.0"
             },
             "development-tools": {
                 "phpstan/phpstan": "^2.1",

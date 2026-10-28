@@ -271,6 +271,13 @@ final readonly class InstallationRunner
     private function assertThemeStorageWritable(Config $config): void
     {
         $directory = $this->paths->themeConfigDirectory();
+        // EN: An explicitly prepared writable override may not yet have Theme's JSON subdirectory.
+        //
+        // HR: Izričito pripremljeni zapisivi vanjski sloj možda još nema JSON poddirektorij teme.
+        if (!is_dir($directory) && is_writable(dirname($directory)) && !mkdir($directory, 0770)) {
+            throw new RuntimeException('The theme configuration directory cannot be created.');
+        }
+
         if (!is_dir($directory) || !is_writable($directory)) {
             throw new RuntimeException('The theme configuration directory is not writable.');
         }
@@ -356,6 +363,14 @@ final readonly class InstallationRunner
         array $enabledPackages,
         array $selectedLocales,
     ): string {
+        // EN: Native Wiki guides must not install Wiki into a standalone product.
+        //
+        // HR: Ugrađene Wiki upute ne smiju instalirati Wiki u samostalan proizvod.
+        $workspacePackage = (new ModuleCatalog())->definitionFor('workspace')['package'];
+        if (!in_array($workspacePackage, $enabledPackages, true)) {
+            return '';
+        }
+
         try {
             $runtimeConfig = $this->prepareImportConfig($enabledPackages);
             $application = new App(
@@ -558,6 +573,8 @@ final readonly class InstallationRunner
             'comment' => 'comment-workspace',
             'confluence-import' => 'simbioza-confluence-import-workspace',
             'task' => 'task-workspace',
+            'simbioza-user' => 'simbioza-user-workspace',
+            'workspace-search' => 'workspace-search-workspace',
         ];
         $skipped = [];
         foreach ($providers as $module => $provider) {

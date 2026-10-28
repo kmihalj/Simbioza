@@ -282,6 +282,17 @@ final readonly class ModuleLifecycleManager
     private function addInternal(string $slug, bool $restore, bool $installPackage): ?string
     {
         $definition = $this->optionalDefinition($slug);
+        // EN: Expanding a focused product installs and enables only its missing hard dependencies first.
+        // Existing disabled data is retained; removed dependencies start fresh without consuming their backups.
+        //
+        // HR: Proširenje samostalnog alata prvo instalira i uključuje samo nedostajuće nužne ovisnosti.
+        // Isključeni podaci ostaju sačuvani; uklonjene ovisnosti počinju prazne bez trošenja njihovih kopija.
+        foreach ($definition['dependencies'] as $dependency) {
+            if (!$this->state->isEnabled($dependency) && $this->catalog->definitionFor($dependency)['optional']) {
+                $this->addInternal($dependency, false, $installPackage);
+            }
+        }
+
         $this->assertDependenciesEnabled($definition);
         if ($installPackage && $this->packages instanceof ComposerPackageManager) {
             $this->packages->install($slug);

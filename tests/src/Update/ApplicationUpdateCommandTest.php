@@ -616,6 +616,12 @@ PHP);
         file_put_contents($source . '/config/workspace.php', "<?php return [];\n");
         file_put_contents($root . '/config/workspace.php', "<?php return ['private' => true];\n");
         chmod($root . '/config/workspace.php', 0600);
+        foreach ([$root, $source] as $directory) {
+            $this->assertTrue(mkdir($directory . '/config/workspace-search', 0770));
+            chmod($directory . '/config/workspace-search', 0770);
+            file_put_contents($directory . '/config/workspace-search/workspace-search.php', "<?php return [];\n");
+            chmod($directory . '/config/workspace-search/workspace-search.php', 0600);
+        }
 
         $rsync = '/usr/bin/rsync';
         if (!is_executable($rsync)) {
@@ -647,6 +653,10 @@ PHP);
         );
         $this->assertSame(0600, fileperms($root . '/config/workspace.php') & 07777);
         $this->assertSame("<?php return ['private' => true];\n", file_get_contents($root . '/config/workspace.php'));
+        clearstatcache(true, $root . '/config/workspace-search');
+        clearstatcache(true, $root . '/config/workspace-search/workspace-search.php');
+        $this->assertSame(0770, fileperms($root . '/config/workspace-search') & 07777);
+        $this->assertSame(0600, fileperms($root . '/config/workspace-search/workspace-search.php') & 07777);
     }
 
     /**

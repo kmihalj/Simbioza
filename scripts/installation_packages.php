@@ -30,7 +30,7 @@ $statePath = $root . '/data/installation-packages.json';
 try {
     match ($action) {
         'prepare' => preparePackages($root, $catalog, $packages, $statePath, $options),
-        'cleanup' => cleanupPackages($root, $packages, $statePath),
+        'cleanup' => cleanupPackages($root, $statePath),
         'status' => printStatus($catalog, $packages, $statePath),
         'help', '--help', '-h', '' => printHelp(),
         default => throw new RuntimeException('Unknown action: ' . $action),
@@ -41,9 +41,9 @@ try {
 }
 
 /**
- * EN: Reads only the `--modules=a,b` option without shell interpretation.
+ * EN: Reads a product preset or explicit module selection without shell interpretation.
  *
- * HR: Čita samo `--modules=a,b` opciju bez shell interpretacije.
+ * HR: Čita predložak proizvoda ili izričiti odabir modula bez shell interpretacije.
  *
  * @param list<string> $arguments
  * @return array{modules:list<string>,specified:bool}
@@ -53,8 +53,23 @@ function parseOptions(array $arguments): array
     $modules = [];
     $specified = false;
     foreach ($arguments as $argument) {
+        if (str_starts_with($argument, '--profile=')) {
+            if ($specified) {
+                throw new RuntimeException('Use either --profile or --modules once.');
+            }
+            $profile = (new ModuleCatalog())->installationProfiles()[substr($argument, strlen('--profile='))] ?? null;
+            if ($profile === null) {
+                throw new RuntimeException('Unknown installation profile. Use full, web, calendar, wiki, surveys or core.');
+            }
+            $modules = $profile['modules'];
+            $specified = true;
+            continue;
+        }
         if (!str_starts_with($argument, '--modules=')) {
-            throw new RuntimeException('Supported option: --modules=theme,calendar');
+            throw new RuntimeException('Supported options: --profile=web or --modules=calendar,api');
+        }
+        if ($specified) {
+            throw new RuntimeException('Use either --profile or --modules once.');
         }
         $specified = true;
         foreach (explode(',', substr($argument, strlen('--modules='))) as $slug) {
@@ -69,9 +84,9 @@ function parseOptions(array $arguments): array
 }
 
 /**
- * EN: Installs selected packages and the temporary Backup needed by starter guides.
+ * EN: Installs selected feature packages and their necessary dependencies.
  *
- * HR: Instalira odabrane pakete i privremeni Backup potreban početnim uputama.
+ * HR: Instalira odabrane funkcijske pakete i njihove nužne ovisnosti.
  *
  * @param array{modules:list<string>,specified:bool} $options
  */
@@ -91,7 +106,11 @@ function preparePackages(
             throw new RuntimeException('Unknown optional module: ' . $slug);
         }
     }
-    $install = array_values(array_unique([...$requested, 'backup']));
+    $selectedPackages = $catalog->packagesForSelection($requested);
+    $install = array_values(array_filter(
+        $catalog->optionalSlugs(),
+        static fn(string $slug): bool => in_array($catalog->definitionFor($slug)['package'], $selectedPackages, true),
+    ));
     $new = [];
     foreach ($install as $slug) {
         if (!$packages->isInstalled($slug)) {
@@ -101,33 +120,23 @@ function preparePackages(
     }
     writeState($root, $statePath, ['requested' => $requested, 'new' => $new]);
     fwrite(STDOUT, 'Prepared optional modules: ' . implode(', ', $requested) . PHP_EOL);
-    fwrite(STDOUT, "Backup is temporarily available for the starter-guide import.\n");
+    fwrite(STDOUT, "Required core modules, including Backup, remain installed.\n");
 }
 
 /**
- * EN: After installation removes only the truly transient Backup package.
+ * EN: Removes only the completed preparation record, never a required package.
  *
- * HR: Nakon instalacije uklanja samo stvarno privremeni Backup.
+ * HR: Uklanja samo dovršeni zapis pripreme, nikada obvezni paket.
  */
-function cleanupPackages(string $root, ComposerPackageManager $packages, string $statePath): void
+function cleanupPackages(string $root, string $statePath): void
 {
     if (!is_file($root . '/data/installation.lock')) {
         throw new RuntimeException('Complete the web installer before cleanup.');
     }
-    $state = readState($statePath);
-    $lock = json_decode((string)file_get_contents($root . '/data/installation.lock'), true);
-    $selected = is_array($lock) && is_array($lock['optional_modules'] ?? null)
-        ? array_values(array_filter($lock['optional_modules'], 'is_string'))
-        : ($state['requested'] ?? []);
-    if (in_array('backup', $state['new'] ?? [], true) && !in_array('backup', $selected, true)) {
-        $packages->uninstall('backup');
-        fwrite(STDOUT, "Removed transient Backup package.\n");
-    } else {
-        fwrite(STDOUT, "No transient package needs removal.\n");
-    }
     if (is_file($statePath)) {
         unlink($statePath);
     }
+    fwrite(STDOUT, "Preparation record cleared; installed packages preserved.\n");
 }
 
 /**
@@ -211,15 +220,17 @@ function printHelp(): void
 Simbioza installation package preparation / Priprema instalacijskih paketa
 
   php scripts/installation_packages.php prepare
-  php scripts/installation_packages.php prepare --modules=theme,calendar
+  php scripts/installation_packages.php prepare --profile=web
+  php scripts/installation_packages.php prepare --modules=calendar
   php scripts/installation_packages.php prepare --modules=
   php scripts/installation_packages.php status
   php scripts/installation_packages.php cleanup
 
 Run `prepare` before opening the web installer when no dedicated FPM Setup
-helper is configured. Without --modules it prepares all optional modules;
-use --modules only when you intend to deselect the others in the wizard. An
-empty --modules= value prepares no optional module (temporary Backup only).
-Run `cleanup` once after success; it removes only a newly added, unselected Backup.
+helper is configured. Without a selection it prepares all optional modules.
+Use --profile=web|calendar|wiki|surveys|core|full or --modules=a,b for a focused
+installation, then choose the same preset or modules in the wizard. An
+empty --modules= value keeps only the six required core modules.
+Run `cleanup` after success to clear the preparation record; it removes no module.
 HELP . PHP_EOL);
 }

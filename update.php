@@ -31,7 +31,7 @@ final class ApplicationUpdateCommand
     // EN: Increment on every updater change; keep the handoff protocol compatible.
     //
     // HR: Povećati pri svakoj promjeni updatera; protokol predaje ostaje kompatibilan.
-    public const UPDATER_VERSION = '1.0.8';
+    public const UPDATER_VERSION = '1.0.9';
 
     public const HANDOFF_PROTOCOL = 1;
 
@@ -57,6 +57,7 @@ final class ApplicationUpdateCommand
         '/config/languages.php',
         '/config/email/',
         '/config/workspace/',
+        '/config/workspace-search/',
         '/config/editor-html/',
         '/config/auth/',
         '/config/calendar/',
@@ -82,6 +83,8 @@ final class ApplicationUpdateCommand
         'config/workspace',
         'config/workspace/workspace.json',
         'config/workspace/workspace.json.lock',
+        'config/workspace-search',
+        'config/workspace-search/workspace-search.php',
         'config/editor-html',
         'config/editor-html/editor-html.json',
         'config/editor-html/editor-html.json.lock',

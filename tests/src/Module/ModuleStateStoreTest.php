@@ -75,12 +75,12 @@ final class ModuleStateStoreTest extends TestCase
     public function testFreshStorePreservesConstraintsAndRemovedSelection(): void
     {
         $store = $this->store();
-        $store->initialize(['api', 'audit']);
+        $store->initialize(['api', 'email']);
         $store->rememberRequirementConstraint('api', 'dev-main');
-        $store->disable('audit');
+        $store->disable('email');
         $store->markRemoved('api');
         $this->assertSame(['api'], $store->removedSlugs());
-        $this->assertFalse($store->isEnabled('audit'));
+        $this->assertFalse($store->isEnabled('email'));
         $store->enable('api');
         $this->assertTrue($store->isEnabled('api'));
         $this->assertSame([], $store->removedSlugs());
@@ -101,16 +101,16 @@ final class ModuleStateStoreTest extends TestCase
         putenv('HPH_CONFIG_OVERRIDE_PATHS=' . $this->root . '/last');
         $store = $this->store();
         $store->rememberRequirementConstraint('api', '^0.2');
-        $store->enable('audit');
+        $store->enable('email');
         $this->assertTrue($store->isEnabled('api'));
-        $this->assertTrue($store->isEnabled('audit'));
+        $this->assertTrue($store->isEnabled('email'));
         $this->assertSame($lowerHash, hash_file('sha256', $this->root . '/config/modules.php'));
         $this->assertFileExists($this->root . '/last/modules.php');
         $this->assertSame('^0.2', $store->requirementConstraint('api'));
         $state = require $this->root . '/last/modules.php';
         $state['custom_option'] = ['keep' => true];
         file_put_contents($this->root . '/last/modules.php', '<?php return ' . var_export($state, true) . ';');
-        $store->disable('audit');
+        $store->disable('email');
         $saved = require $this->root . '/last/modules.php';
         $this->assertSame(['keep' => true], $saved['custom_option']);
     }
@@ -129,7 +129,7 @@ final class ModuleStateStoreTest extends TestCase
         $this->assertTrue($this->store()->isEnabled('api'));
         $this->expectException(RuntimeException::class);
         try {
-            $this->store()->enable('audit');
+            $this->store()->enable('email');
         } finally {
             $this->assertSame($before, hash_file('sha256', $this->root . '/config/modules.php'));
             $this->assertFileDoesNotExist($this->root . '/last/modules.php');
@@ -145,7 +145,7 @@ final class ModuleStateStoreTest extends TestCase
     {
         file_put_contents($this->root . '/config/modules.php', '<?php return false;');
         $this->expectException(RuntimeException::class);
-        $this->store()->enable('audit');
+        $this->store()->enable('email');
     }
 
     /**
@@ -164,7 +164,7 @@ $store = new App\Module\ModuleStateStore($argv[2], new App\Module\ModuleCatalog(
 for ($attempt = 0; $attempt < 30; ++$attempt) { $store->enable($argv[3]); }
 PHP;
         $processes = [];
-        foreach (['api', 'audit'] as $slug) {
+        foreach (['api', 'email'] as $slug) {
             $process = proc_open(
                 [PHP_BINARY, '-r', $script, dirname(__DIR__, 3) . '/vendor/autoload.php', $this->root, $slug],
                 [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
@@ -183,7 +183,7 @@ PHP;
         }
 
         $this->assertTrue($this->store()->isEnabled('api'));
-        $this->assertTrue($this->store()->isEnabled('audit'));
+        $this->assertTrue($this->store()->isEnabled('email'));
     }
 
     /**
@@ -216,6 +216,32 @@ PHP;
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('require modules.php');
         $this->store()->enabledPackages();
+    }
+
+    /**
+     * EN: Legacy selections cannot leave any of the six newly mandatory modules disabled.
+     * Optional modules are not silently enabled, and reading never overwrites private configuration.
+     *
+     * HR: Stari odabiri ne mogu ostaviti isključenim nijedan od šest sada obveznih modula.
+     * Opcionalni moduli se ne uključuju potajno, a čitanje ne prepisuje privatnu konfiguraciju.
+     */
+    public function testMandatoryCoreIsEffectiveWithoutRewritingLegacySelection(): void
+    {
+        $path = $this->root . '/config/modules.php';
+        file_put_contents($path, '<?php return ["enabled" => ["aaieduhr/heartphrame-module-auth"]];');
+        $before = hash_file('sha256', $path);
+        $store = $this->store();
+        $catalog = new ModuleCatalog();
+        $this->assertSame($catalog->packagesForSelection([]), $store->enabledPackages());
+        foreach ($catalog->requiredSlugs() as $slug) {
+            $this->assertTrue($store->isEnabled($slug), $slug);
+        }
+
+        foreach ($catalog->optionalSlugs() as $slug) {
+            $this->assertFalse($store->isEnabled($slug), $slug);
+        }
+
+        $this->assertSame($before, hash_file('sha256', $path));
     }
 
     private function store(): ModuleStateStore

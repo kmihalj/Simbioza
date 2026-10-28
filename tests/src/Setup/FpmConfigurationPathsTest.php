@@ -41,6 +41,7 @@ final class FpmConfigurationPathsTest extends TestCase
     {
         $source = (string)file_get_contents(dirname(__DIR__, 3) . '/scripts/configure_fpm_setup.php');
         $this->assertStringContainsString("'theme', 'backup'", $source);
+        $this->assertStringContainsString("'survey', 'api', 'workspace-search'", $source);
         foreach (['data/config', 'config/editor-html.php', 'config/email.php', 'config/workspace.php'] as $path) {
             $this->assertStringNotContainsString("'" . $path . "'", $source);
         }

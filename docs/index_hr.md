@@ -1,5 +1,6 @@
 # Dokumentacija Simbioze (HR)
 
+- [Modularne instalacije u 0.3.20](release-0.3.20_hr.md)
 - [Postavke anketa i adrese aplikacije u 0.3.19](release-0.3.19_hr.md)
 
 - [Ankete i zajednički HTML Editor u 0.3.18](release-0.3.18_hr.md)
@@ -9,6 +10,9 @@ HeartPhrame modula. Framework se koristi iz označenog uzvodnog izdanja; ne razv
 repozitoriju.
 
 Slogan brenda: **Znanje koje živi zajedno.**
+
+- [Odaberite web, kalendar, Wiki, ankete ili cjelovitu Simbiozu](modularity_hr.md)
+- [Korisničke upute s Wikijem i bez njega](bundled-manual_hr.md)
 
 - [Ispravak vlasništva pri FPM nadogradnji jezika i aplikacije u 0.3.17](release-0.3.17_hr.md)
 - [Paginacija, log workera i rotacija u 0.3.16](release-0.3.16_hr.md)

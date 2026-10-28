@@ -49,9 +49,9 @@ try {
     ];
     mkdir($runtime . '/backup', 0700);
     file_put_contents($runtime . '/backup/backup.php', "<?php return " . var_export($backup, true) . ";\n");
-    // EN: Backup is enabled temporarily only for managed guide packages; the persistent module selection stays intact.
+    // EN: Use the persistent module selection; focused products do not enable Wiki for bundled guides.
     //
-    // HR: Backup se privremeno uključuje samo za upravljane pakete uputa; trajni odabir modula ostaje netaknut.
+    // HR: Koristi trajni odabir modula; samostalni alati ne uključuju Wiki radi ugrađenih uputa.
     $runtimeApp = $reader->read('app.php');
     $catalog = new ModuleCatalog();
     $backupPackage = $catalog->definitionFor('backup')['package'];
@@ -70,7 +70,7 @@ try {
     $app->loadCommands();
     $container = $app->getContainer();
     $database = $container->get(Database::class);
-    $repository = $container->get(WorkspaceRepository::class);
+    $workspaceEnabled = in_array($catalog->definitionFor('workspace')['package'], $enabledModules, true);
     $basePath = null;
     foreach (array_slice($argv, 1) as $argument) {
         if (str_starts_with($argument, '--base-path=')) {
@@ -92,6 +92,8 @@ try {
         'comment' => 'comment-workspace',
         'confluence-import' => 'simbioza-confluence-import-workspace',
         'task' => 'task-workspace',
+        'simbioza-user' => 'simbioza-user-workspace',
+        'workspace-search' => 'workspace-search-workspace',
     ];
     $skippedGuideProviders = [];
     foreach ($guideProviders as $module => $provider) {
@@ -112,17 +114,27 @@ try {
     }
     $themeRepository = ThemeConfigurationUpgrade::repository($themeConfig);
 
-    $updater = new BundledAssetsUpdater(
-        $database,
-        $backupInstalled ? $container->get(BackupManager::class) : null,
-        $repository,
-        $container->get(AuthUserService::class),
-        $container->get(EditorHtmlConfig::class),
-        $container->get(WorkspaceBacklinkIndexer::class),
-        $themeRepository,
-    );
-    foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
-        echo $action . PHP_EOL;
+    if ($workspaceEnabled) {
+        $updater = new BundledAssetsUpdater(
+            $database,
+            $backupInstalled ? $container->get(BackupManager::class) : null,
+            $container->get(WorkspaceRepository::class),
+            $container->get(AuthUserService::class),
+            $container->get(EditorHtmlConfig::class),
+            $container->get(WorkspaceBacklinkIndexer::class),
+            $themeRepository,
+        );
+        foreach ($updater->run($root, $basePath, $skippedGuideProviders) as $action) {
+            echo $action . PHP_EOL;
+        }
+    } else {
+        // EN: Focused products upgrade Theme without installing Wiki or importing its guides.
+        //
+        // HR: Samostalni alati nadograđuju temu bez instaliranja Wikija ili uvoza njegovih uputa.
+        if ($themeRepository?->persistMissingButtonTextColors() > 0) {
+            echo 'Missing theme button text settings added; existing theme settings preserved.' . PHP_EOL;
+        }
+        echo 'Bundled user-guide update skipped because Wiki is not enabled.' . PHP_EOL;
     }
     // EN: A language-repository outage must not block a successfully migrated application.
     //

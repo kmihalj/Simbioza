@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.19 reuses the configured application URL for Survey authentication and clarifies administrator settings and proxy rules. Existing surveys, mappings and responses are preserved. Framework and Auth are unchanged. See the [release notes](docs/release-0.3.19_en.md).
+> Simbioza 0.3.20 strengthens the complete application and adds focused installation options through HeartPhrame modularity, with built-in guides and standalone HTML permissions. See the [release notes](docs/release-0.3.20_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -12,6 +12,24 @@ to create and connect information; a CMS brings structure, presentation, and
 control over what is published. Simbioza brings both into one application for
 internal documentation, procedures, user guides, project knowledge, and public
 information sites. Your content and installation remain under your control.
+
+## A complete application, with modular flexibility
+
+Simbioza brings pages and a searchable team Wiki, calendars and meetings,
+surveys, tasks, comments, notifications and integrations together in one
+environment. **Simbioza** is Croatian for **symbiosis**: distinct modules
+complement one another within a shared application.
+
+For those who need fewer features, the modular HeartPhrame framework also
+allows a focused HTML website, Calendar, Wiki or Survey installation. The
+installer includes the selected modules and their required dependencies.
+Every installation shares Auth, ORM, Menu, Theme, Backup and Audit; API and
+accessibility can be included as needed. Focused installations can be combined
+or extended later while retaining their existing content.
+
+See [modular installation options](docs/modularity_en.md). With Wiki, the manual
+remains in its User guides Workspace; without Wiki, the same chapter-based
+HTML manual is available through **Guides**.
 
 **Try Simbioza:** Visit the [public demo](https://piko.webhop.me/demo/) to explore
 the application and try it with the published demo accounts. Demo changes are
@@ -154,7 +172,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.19` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.20` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -254,14 +272,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.19 release notes](docs/release-0.3.19_en.md).
+the [0.3.20 release notes](docs/release-0.3.20_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
-- [Survey settings and application URLs in 0.3.19](docs/release-0.3.19_en.md)
+- [Survey settings and application URLs in 0.3.20](docs/release-0.3.20_en.md)
 - [Surveys and the shared HTML Editor in 0.3.18](docs/release-0.3.18_en.md)
 - [Secured-FPM language/update ownership fixes in 0.3.17](docs/release-0.3.17_en.md)
 - [Log pagination, worker logs and rotation in 0.3.16](docs/release-0.3.16_en.md)

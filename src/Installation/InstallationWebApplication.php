@@ -145,9 +145,32 @@ final readonly class InstallationWebApplication
             'continue_requirements' => $this->continueFromRequirements($session, $installerPath),
             'save_database' => $this->saveDatabase($post, $session, $installerPath),
             'save_application' => $this->saveApplication($post, $session, $installerPath),
+            'apply_profile' => $this->applyProfile($post, $session, $installerPath),
             'install' => $this->install($session, $installerPath),
             default => $this->response(400, $this->simplePage($locale, $this->text('invalid_action', $locale))),
         };
+    }
+
+    /**
+     * EN: Applies a preset without validating or retaining an administrator password.
+     *
+     * HR: Primjenjuje predložak bez provjere ili zadržavanja administratorske lozinke.
+     *
+     * @param array<array-key,mixed> $post
+     * @param array<array-key,mixed> $session
+     */
+    private function applyProfile(array $post, array &$session, string $installerPath): InstallationResponse
+    {
+        $catalog = new ModuleCatalog();
+        $profile = $catalog->installationProfiles()[$this->scalarString($post['installation_profile'] ?? '')] ?? null;
+        if (($session[self::SESSION_STAGE] ?? null) !== 'application' || $profile === null) {
+            return $this->response(400, $this->simplePage('en', 'Invalid installation profile.'));
+        }
+
+        $post['optional_modules'] = $catalog->optionalSlugsForSelection($profile['modules']);
+        unset($post['password'], $post['password_confirmation'], $session[self::SESSION_ADMINISTRATOR]);
+
+        return $this->renderStage($session, $installerPath, [], $post);
     }
 
     /**
@@ -266,16 +289,6 @@ final readonly class InstallationWebApplication
             $session['regenerate_id'] = true;
             $basePath = substr($installerPath, 0, -strlen('/install'));
             $result = $this->runner->run($database, $application, $administrator, $basePath);
-            try {
-                $this->removeTransientInstallerPackages($application);
-            } catch (Throwable $cleanupFailure) {
-                // EN: Installation is already validly locked. An inactive
-                //     leftover package can safely be removed later via Setup or CLI.
-                //
-                // HR: Instalacija je već valjano zaključana. Ostatak neaktivnog
-                //     paketa može se sigurno ukloniti kasnije kroz Setup ili CLI.
-                $this->logger->error('Transient installer package cleanup failed.', $cleanupFailure);
-            }
 
             $body = $this->successPage(
                 $locale,
@@ -295,11 +308,9 @@ final readonly class InstallationWebApplication
     }
 
     /**
-     * EN: Before the final step, ensures selected optional packages and the
-     *     temporary Backup package needed only to import starter guides.
+     * EN: Before the final step, ensures selected optional packages and their hard dependencies.
      *
-     * HR: Prije završnog koraka osigurava odabrane opcionalne pakete i
-     *     privremeni Backup potreban samo za uvoz početnih uputa.
+     * HR: Prije završnog koraka osigurava odabrane opcionalne pakete i njihove nužne ovisnosti.
      *
      * @param array{
      *     name:string,
@@ -313,11 +324,11 @@ final readonly class InstallationWebApplication
     private function prepareInstallerPackages(array $application): array
     {
         $catalog = new ModuleCatalog();
-        $requested = array_values(array_unique([...$application['optional_modules'], 'backup']));
+        $selectedPackages = $catalog->packagesForSelection($application['optional_modules']);
         $missing = [];
-        foreach ($requested as $slug) {
+        foreach ($catalog->optionalSlugs() as $slug) {
             $package = $catalog->definitionFor($slug)['package'];
-            if (!InstalledVersions::isInstalled($package)) {
+            if (in_array($package, $selectedPackages, true) && !InstalledVersions::isInstalled($package)) {
                 $missing[] = $slug;
             }
         }
@@ -383,47 +394,6 @@ final readonly class InstallationWebApplication
         && $this->setup instanceof SetupGateway
         && $this->setup->isAvailable()
         && $this->setup->probe();
-    }
-
-    /**
-     * EN: After success, removes the temporary Backup package when it was not
-     *     selected by the user. The check does not depend on the current
-     *     session because a previous interrupted HTTP request may have
-     *     completed the package operation in the background.
-     *
-     * HR: Nakon uspjeha uklanja privremeni Backup paket koji nije korisnički
-     *     odabran. Provjera ne ovisi o trenutačnoj sesiji jer paket može biti
-     *     dovršen nakon prekinutog prethodnog HTTP zahtjeva.
-     *
-     * @param array<array-key,mixed> $application
-     */
-    private function removeTransientInstallerPackages(array $application): void
-    {
-        // EN: Image package composition is fixed; an unselected baked Backup package stays inactive.
-        //
-        // HR: Sastav paketa imagea je fiksan; neodabrani ugrađeni Backup paket ostaje neaktivan.
-        if ((new \App\Deployment\DeploymentPolicy($this->paths->appRoot()))->isImmutable()) {
-            return;
-        }
-
-        $configuredModules = is_array($application['optional_modules'] ?? null)
-        ? $application['optional_modules']
-        : [];
-        $optionalModules = array_values(array_filter($configuredModules, is_string(...)));
-        if (in_array('backup', $optionalModules, true)) {
-            return;
-        }
-
-        $backupPackage = (new ModuleCatalog())->definitionFor('backup')['package'];
-        if (!InstalledVersions::isInstalled($backupPackage)) {
-            return;
-        }
-
-        if (!$this->setup instanceof SetupGateway || !$this->setup->isAvailable()) {
-            throw new RuntimeException('The transient Backup package could not be removed.');
-        }
-
-        $this->setup->execute('packages-cleanup', ['modules' => ['backup']]);
     }
 
     /**
@@ -601,7 +571,7 @@ final readonly class InstallationWebApplication
             . '<label>%s<select name="primary_locale">%s</select></label><fieldset><legend>%s</legend>%s</fieldset>'
             . '<label class="grid__wide">%s<select name="timezone">%s</select></label></div></fieldset>'
             . '<fieldset><legend>%s</legend><p>%s</p>%s<input type="hidden" name="module_selection_present" '
-            . 'value="1"><div class="grid">%s</div></fieldset>'
+            . 'value="1">%s<div class="grid">%s</div></fieldset>'
             . '<fieldset><legend>%s</legend><div class="grid">%s</div></fieldset><p class="hint">%s</p>'
             . '<div class="actions"><button class="button" type="submit" name="action" '
             . 'value="back_database">%s</button><button class="button button--primary" type="submit" '
@@ -625,12 +595,44 @@ final readonly class InstallationWebApplication
                 '<p class="hint">%s <code>php scripts/installation_packages.php prepare</code></p>',
                 $this->escape($this->text('modules_cli_hint', $locale)),
             ),
+            $this->profileSelector($this->stringList($optionalModules), $locale),
             $this->moduleCheckboxes($optionalModules, $locale, $packageChangesAvailable),
             $this->escape($this->text('administrator_title', $locale)),
             $this->administratorFields($locale, $values),
             $this->escape($this->text('password_hint', $locale)),
             $this->escape($this->text('back', $locale)),
             $this->escape($this->text('continue', $locale)),
+        );
+    }
+
+    /**
+     * EN: Presets are optional shortcuts; the checkboxes remain editable for mixed products.
+     *
+     * HR: Predlošci su neobvezni prečaci; kvačice ostaju promjenjive za kombiniranje funkcija.
+     *
+     * @param list<string> $selected
+     */
+    private function profileSelector(array $selected, string $locale): string
+    {
+        $catalog = new ModuleCatalog();
+        $selection = $catalog->optionalSlugsForSelection($selected);
+        $options = '<option value="">' . $this->escape($this->text('profile_custom', $locale)) . '</option>';
+        foreach ($catalog->installationProfiles() as $key => $profile) {
+            $options .= sprintf(
+                '<option value="%s"%s>%s</option>',
+                $this->escape($key),
+                $selection === $catalog->optionalSlugsForSelection($profile['modules']) ? ' selected' : '',
+                $this->escape($profile[$locale === 'en' ? 'label_en' : 'label_hr']),
+            );
+        }
+
+        return sprintf(
+            '<div class="profile-selector"><label>%s<select name="installation_profile">%s</select></label>'
+            . '<button class="button" type="submit" name="action" value="apply_profile" '
+            . 'formnovalidate>%s</button></div>',
+            $this->escape($this->text('profile_label', $locale)),
+            $options,
+            $this->escape($this->text('profile_apply', $locale)),
         );
     }
 
@@ -1199,15 +1201,19 @@ final readonly class InstallationWebApplication
             'application_name_label' => ['hr' => 'Naziv aplikacije', 'en' => 'Application name'],
             'primary_locale_label' => ['hr' => 'Primarni jezik', 'en' => 'Primary language'],
             'supported_locales_label' => ['hr' => 'Dostupni jezici', 'en' => 'Available languages'],
-            'modules_title' => ['hr' => 'Opcionalni moduli', 'en' => 'Optional modules'],
+            'modules_title' => ['hr' => 'Funkcionalnosti i moduli', 'en' => 'Features and modules'],
             'modules_intro' => [
-                'hr' => 'Svi opcionalni moduli unaprijed su odabrani; odznačite one koje ne trebate. Obvezni moduli '
-                . 'za područja, pretraživanje, korisnike, HTML editor, autentikaciju, izbornik, obavijesti i bazu '
-                . 'uvijek se instaliraju.',
-                'en' => 'All optional modules are selected by default; deselect those you do not need. Required '
-                . 'workspace, search, user, HTML editor, authentication, menu, notification, and database modules '
-                . 'are always installed.',
+                'hr' => 'Odaberite predložak ili sami označite potrebne funkcije. Autentikacija, ORM, izbornik, '
+                . 'tema, sigurnosne kopije i dnevnici aktivnosti uvijek se instaliraju. Nužne ovisnosti '
+                . 'odabranih funkcija uključuju se automatski i prikazuju u završnom pregledu. '
+                . 'Module možete dodati i kasnije.',
+                'en' => 'Choose a preset or select the features you need. Authentication, ORM, menu, theme, '
+                . 'backup and audit are always installed. Necessary dependencies are included automatically '
+                . 'and shown in the final review. You can add modules later.',
             ],
+            'profile_label' => ['hr' => 'Predložak instalacije', 'en' => 'Installation preset'],
+            'profile_custom' => ['hr' => 'Prilagođeni odabir', 'en' => 'Custom selection'],
+            'profile_apply' => ['hr' => 'Primijeni predložak', 'en' => 'Apply preset'],
             'modules_cli_hint' => [
                 'hr' => 'Ova instalacija nema privilegirani FPM helper. Nedostupne pakete prvo pripremite '
                 . 'u CLI-ju, zatim osvježite ovu stranicu:',

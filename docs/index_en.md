@@ -1,5 +1,6 @@
 # Simbioza documentation (EN)
 
+- [Modular installations in 0.3.20](release-0.3.20_en.md)
 - [Survey settings and application URLs in 0.3.19](release-0.3.19_en.md)
 
 - [Surveys and the shared HTML Editor in 0.3.18](release-0.3.18_en.md)
@@ -9,6 +10,9 @@ enabled HeartPhrame modules. The Framework is consumed from a tagged upstream re
 is not developed in this repository.
 
 Brand slogan: **Knowledge that lives together.**
+
+- [Choose a website, Calendar, Wiki, Survey system or full Simbioza](modularity_en.md)
+- [User guides with and without a Wiki](bundled-manual_en.md)
 
 - [Secured-FPM language/update ownership fixes in 0.3.17](release-0.3.17_en.md)
 - [Log pagination, worker logs and rotation in 0.3.16](release-0.3.16_en.md)

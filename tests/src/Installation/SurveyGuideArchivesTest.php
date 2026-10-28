@@ -32,7 +32,7 @@ final class SurveyGuideArchivesTest extends TestCase
             JSON_THROW_ON_ERROR,
         );
         $this->assertCount(21, $definitions);
-        $this->assertCount(26, BundledAssetsUpdater::guidePages($root));
+        $this->assertCount(27, BundledAssetsUpdater::guidePages($root));
         $directory = sys_get_temp_dir() . '/survey-guide-test-' . bin2hex(random_bytes(8));
         $filesystem = new BackupFilesystem();
         $composer = $this->createStub(ComposerBridge::class);

@@ -68,6 +68,7 @@ return [
         ],
         [
             'key' => 'api-policy',
+            'required_package' => 'aaieduhr/heartphrame-module-api',
             'file' => 'api/api.php',
             'include_keys' => [
                 'rate_limit_per_minute', 'max_json_body_bytes', 'idempotency_ttl_seconds',
@@ -76,6 +77,7 @@ return [
         ],
         [
             'key' => 'workspace-search-policy',
+            'required_package' => 'aaieduhr/simbioza-module-workspace-search',
             'file' => 'workspace-search/workspace-search.php',
             'include_keys' => [
                 'results_per_page', 'maximum_results_per_page', 'minimum_query_length',

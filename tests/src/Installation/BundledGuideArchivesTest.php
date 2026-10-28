@@ -76,7 +76,7 @@ final class BundledGuideArchivesTest extends TestCase
         fclose($pipes[1]);
         fclose($pipes[2]);
         $this->assertSame(0, proc_close($process), $output);
-        $this->assertSame(4, substr_count($output, 'EN/HR sources verified.'));
+        $this->assertSame(5, substr_count($output, 'EN/HR sources verified.'));
     }
 
     /**
@@ -330,7 +330,7 @@ final class BundledGuideArchivesTest extends TestCase
         $applicationRoot = dirname(__DIR__, 3);
         $archives = glob($applicationRoot . '/resources/installation/workspace/*.zip');
         $this->assertIsArray($archives);
-        $this->assertCount(6, $archives);
+        $this->assertCount(7, $archives);
         $temporary = sys_get_temp_dir() . '/simbioza-bundled-guide-test-' . bin2hex(random_bytes(8));
         $filesystem = new BackupFilesystem();
         $filesystem->ensureDirectory($temporary);

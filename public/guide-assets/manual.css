@@ -1,0 +1,22 @@
+.simbioza-manual-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.simbioza-manual-content img,
+.simbioza-manual-content video {
+    height: auto;
+    max-width: 100%;
+}
+
+.simbioza-manual-content pre {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-wrap: normal;
+}
+
+.simbioza-manual-flag {
+    display: inline-block;
+    height: 1em;
+    width: auto;
+}

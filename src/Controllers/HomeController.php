@@ -36,6 +36,26 @@ class HomeController
      */
     public function index(): ResponseInterface
     {
+        $config = $this->container->get(\HeartPhrame\Config\ConfigInterface::class);
+        if (!$config instanceof \HeartPhrame\Config\ConfigInterface) {
+            throw new \LogicException('The application configuration service is unavailable.');
+        }
+
+        $featureRoute = ContentHubController::homeRoute(
+            array_values($config->getAsArrayWithValuesAsNonEmptyStrings('app.modules.enabled') ?? []),
+        );
+        if ($featureRoute !== null) {
+            $urls = $this->container->get(\HeartPhrame\Routing\UrlGenerator::class);
+            if (!$urls instanceof \HeartPhrame\Routing\UrlGenerator) {
+                throw new \LogicException('The application URL service is unavailable.');
+            }
+
+            return $this->responseFactory->redirect($urls->getPathFor($featureRoute), 302, [
+                'Cache-Control' => 'private, no-store, max-age=0',
+                'Vary' => 'Cookie, Accept-Language',
+            ]);
+        }
+
         $workspaceHomepage = $this->workspaceHomepagePath();
         if ($workspaceHomepage !== null) {
             return $this->responseFactory->redirect($workspaceHomepage, 302, [

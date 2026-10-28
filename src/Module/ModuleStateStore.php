@@ -69,10 +69,16 @@ final readonly class ModuleStateStore
             $this->catalog->definitions(),
         );
 
-        return array_values(array_filter(
-            is_array($state['enabled'] ?? null) ? $state['enabled'] : [],
-            static fn(mixed $package): bool => is_string($package) && in_array($package, $allowed, true),
-        ));
+        // EN: A formerly optional core module cannot remain disabled after the core policy changes.
+        //
+        // HR: Nekada opcionalni modul jezgre ne može ostati isključen nakon promjene pravila jezgre.
+        return array_values(array_unique([
+            ...$this->catalog->packagesForSelection([]),
+            ...array_filter(
+                is_array($state['enabled'] ?? null) ? $state['enabled'] : [],
+                static fn(mixed $package): bool => is_string($package) && in_array($package, $allowed, true),
+            ),
+        ]));
     }
 
     /**

@@ -29,6 +29,26 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class ApplicationBackupConfigurationTest extends TestCase
 {
+    /**
+     * EN: Minimal installations export policy only for their enabled optional modules.
+     *
+     * HR: Minimalne instalacije izvoze pravila samo svojih uključenih opcionalnih modula.
+     */
+    public function testAbsentModulePoliciesDoNotEnterTheRestorePlan(): void
+    {
+        $definitions = (require dirname(__DIR__, 3) . '/config/backup/backup.php')['application_configuration'];
+        $resolver = new ApplicationBackupConfiguration(ConfigurationPaths::fromEnvironment($this->root));
+        $this->assertSame(['application'], array_column($resolver->resolve($definitions, []), 'key'));
+        $this->assertSame(['application', 'api-policy'], array_column($resolver->resolve(
+            $definitions,
+            ['aaieduhr/heartphrame-module-api'],
+        ), 'key'));
+        $this->assertSame(['application', 'workspace-search-policy'], array_column($resolver->resolve(
+            $definitions,
+            ['aaieduhr/simbioza-module-workspace-search'],
+        ), 'key'));
+    }
+
     private string $root;
 
     /** @var array<string,string|false> */
@@ -91,7 +111,8 @@ final class ApplicationBackupConfigurationTest extends TestCase
         );
         file_put_contents(
             $this->root . '/base/installation.php',
-            '<?php return ["local_only" => "retained", "session_options" => ["local" => true]];',
+            '<?php return ["local_only" => "retained", "session_name" => "TARGET_SESSION", '
+                . '"session_options" => ["local" => true]];',
         );
         file_put_contents(
             $this->root . '/base/modules.php',
@@ -124,6 +145,7 @@ final class ApplicationBackupConfigurationTest extends TestCase
             $module = require $this->root . '/override/modules.php';
             $this->assertSame('Saved', $installation['name']);
             $this->assertSame('retained', $installation['local_only']);
+            $this->assertSame('TARGET_SESSION', $installation['session_name']);
             $this->assertSame(['saved'], $module['enabled']);
             $this->assertSame(['calendar'], $module['removed']);
             $this->assertSame(0640, fileperms($this->root . '/override/modules.php') & 0777);

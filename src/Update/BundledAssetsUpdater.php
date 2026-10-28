@@ -36,6 +36,13 @@ final readonly class BundledAssetsUpdater
      * @var array<string,array{file:string,slug:string,parent:?string,recovery:string,message:string}>
      */
     private const GUIDE_PAGES = [
+        'overview_sha256' => [
+            'file' => 'simbioza.zip',
+            'slug' => 'simbioza',
+            'parent' => null,
+            'recovery' => 'previous_simbioza_overview_guide',
+            'message' => 'Bilingual Simbioza overview updated; existing page permissions preserved.',
+        ],
         'meetings_sha256' => [
             'file' => 'sastanci.zip',
             'slug' => 'sastanci',

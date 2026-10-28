@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Controllers\ContentHubController;
+use App\Controllers\GuidesController;
 use App\Controllers\HomeController;
 use App\Controllers\SetupController;
 use App\Module\OptionalModuleRoutes;
@@ -12,6 +14,11 @@ use HeartPhrame\Routing\Route;
 $routes = [
     // Array format: [method, path, handler, name, [middleware]]
     ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
+    ['GET', '/guides', GuidesController::class . '@index', 'guides.index', []],
+    ['GET', '/guides/assets/{uuid}', GuidesController::class . '@asset', 'guides.asset', []],
+    ['GET', '/guides/{slug}', GuidesController::class . '@page', 'guides.page', []],
+    ['GET', '/pages', ContentHubController::class . '@pages', 'content.pages', []],
+    ['GET', '/questionnaires', ContentHubController::class . '@surveys', 'content.surveys', []],
 
     // Or use Route / RouteGroup instances
     new Route(

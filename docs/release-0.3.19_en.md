@@ -2,6 +2,9 @@
 
 [Croatian version](release-0.3.19_hr.md)
 
+> Historical release note. See the [current installation guides](installation_en.md)
+> and [Simbioza 0.3.20](release-0.3.20_en.md) for current instructions.
+
 This maintenance release includes **Survey 0.3.1**. Framework, Auth and all
 other public module versions are unchanged.
 

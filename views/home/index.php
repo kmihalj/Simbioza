@@ -15,35 +15,27 @@ $themeShowsHomeHero = isset($themeLayoutRenderer)
 && $themeLayoutRenderer->heroEnabled(true);
 ?>
 
-<div class="jumbotron">
+<section class="card hph-content-card" data-simbioza-home>
+<div class="card-body">
     <?php if (!$themeShowsHomeHero) : ?>
     <h1 class="display-4"><?= $this->escape(__($title)) ?></h1>
     <p class="lead"><?= $this->escape(__($content)) ?></p>
     <?php endif; ?>
-    <hr class="my-4">
-    <p class="lead mb-4"><?= $this->escape(__($content)) ?></p>
+    <h2><?= $this->escape(__('Simbioza — znanje, sadržaj i suradnja na jednom mjestu.')) ?></h2>
+    <p class="lead mb-4"><?= $this->escape(__(
+        'Simbioza povezuje stranice i Wiki, kalendare i sastanke, ankete, zadatke, komentare i obavijesti. '
+        . 'Sve što vašoj zajednici treba za zajednički rad dostupno je u jednoj aplikaciji.',
+    )) ?></p>
+    <?= $this->forPartial('home/profiles') ?>
+    <h2 class="mt-4"><?= $this->escape(__('Trebate samo dio mogućnosti?')) ?></h2>
+    <p><?= $this->escape(__(
+        'Modularnost HeartPhrame frameworka omogućuje i užu instalaciju Simbioze: samo HTML web, '
+        . 'kalendar, Wiki ili ankete. To je dodatna mogućnost za one kojima nije potrebna cijela Simbioza.',
+    )) ?></p>
     <p class="lead">
         <a class="btn btn-primary btn-lg"
            href="<?= $this->urlGenerator->getPathFor('about') ?>"
            role="button"><?= $this->escape(__('Upoznaj Simbiozu')) ?></a>
     </p>
 </div>
-
-<div class="row mt-5">
-    <div class="col-md-4">
-        <h2><?= $this->escape(__('Znanje na jednom mjestu')) ?></h2>
-        <p><?= $this->escape(__('Povežite stranice, područja i zajednički kontekst u jasnu strukturu.')) ?></p>
-    </div>
-    <div class="col-md-4">
-        <h2><?= $this->escape(__('Suradnja bez prepreka')) ?></h2>
-        <p><?= $this->escape(
-            __('Zajedno stvarajte, pregledavajte i objavljujte uz ovlasti prilagođene vašem timu.'),
-        ) ?></p>
-    </div>
-    <div class="col-md-4">
-        <h2><?= $this->escape(__('Prostor koji raste')) ?></h2>
-        <p><?= $this->escape(
-            __('Dodajte module koje vaša zajednica treba, uz jedno povezano korisničko iskustvo.'),
-        ) ?></p>
-    </div>
-</div>
+</section>

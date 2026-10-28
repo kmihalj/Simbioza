@@ -209,41 +209,47 @@ test.describe('complete Backup workflow', () => {
 
     /*
      * EN: Data restoration must not flatten the dynamic bootstrap. Both GUI
-     *     and CLI must still genuinely unload and reload the Theme module.
+     *     and CLI must still genuinely unload and reload an optional module.
+     *     Theme is required in Simbioza and must remain enabled throughout.
      *
      * HR: Povrat podataka ne smije pretvoriti dinamički bootstrap u statički.
-     *     GUI i CLI moraju i dalje stvarno isključiti te ponovno učitati temu.
+     *     GUI i CLI moraju stvarno isključiti te ponovno učitati opcionalni modul.
+     *     Tema je obavezna u Simbiozi i cijelo vrijeme ostaje uključena.
      */
     expect(await readFile(join(project, 'config/app.php'), 'utf8')).toBe(applicationSource);
-    const cliModule = (action) => execFileSync('php', ['vendor/bin/hph', 'modules', action, 'theme'], {
+    const cliModule = (action) => execFileSync('php', ['vendor/bin/hph', 'modules', action, 'calendar'], {
       cwd: project,
       env: { ...process.env, HPH_APP_PATH: project, HPH_CONFIG_PATH: join(project, 'config') },
     });
     try {
       await page.goto('/settings/setup');
-      const themeForm = (action) => page.locator('form')
-        .filter({ has: page.locator('input[name="module"][value="theme"]') })
+      const calendarForm = (action) => page.locator('form')
+        .filter({ has: page.locator('input[name="module"][value="calendar"]') })
         .filter({ has: page.locator(`input[name="action"][value="${action}"]`) });
+      await expect(page.locator('form').filter({
+        has: page.locator('input[name="module"][value="theme"]'),
+      }).filter({ has: page.locator('input[name="action"][value="disable"]') })).toHaveCount(0);
       await Promise.all([
         page.waitForResponse((response) => response.request().method() === 'POST'
           && new URL(response.url()).pathname === '/settings/setup'),
-        themeForm('disable').getByRole('button').click(),
-      ]);
-      await page.goto('/settings/setup');
-      await expect(page.locator('.hph-site-header')).toHaveCount(0);
-      await expect(page.locator('a[href$="/settings/theme"]')).toHaveCount(0);
-      await expect(themeForm('enable').getByRole('button')).toBeVisible();
-      await Promise.all([
-        page.waitForResponse((response) => response.request().method() === 'POST'
-          && new URL(response.url()).pathname === '/settings/setup'),
-        themeForm('enable').getByRole('button').click(),
+        calendarForm('disable').getByRole('button').click(),
       ]);
       await page.goto('/settings/setup');
       await expect(page.locator('.hph-site-header')).toBeVisible();
-      await expect(page.locator('a[href$="/settings/theme"]').first()).toBeVisible();
+      await expect(page.locator('a[href$="/settings/calendar"]')).toHaveCount(0);
+      await expect(calendarForm('enable').getByRole('button')).toBeVisible();
+      await Promise.all([
+        page.waitForResponse((response) => response.request().method() === 'POST'
+          && new URL(response.url()).pathname === '/settings/setup'),
+        calendarForm('enable').getByRole('button').click(),
+      ]);
+      await page.goto('/settings/setup');
+      await expect(page.locator('.hph-site-header')).toBeVisible();
+      await expect(page.locator('a[href$="/settings/calendar"]').first()).toBeVisible();
       cliModule('disable');
-      await page.goto('/calendars');
-      await expect(page.locator('.hph-site-header')).toHaveCount(0);
+      expect((await page.request.get('/calendars')).status()).toBe(404);
+      await page.goto('/settings/setup');
+      await expect(page.locator('.hph-site-header')).toBeVisible();
       const skip = page.getByRole('link', { name: /Skip to main content|Prijeđi na glavni sadržaj/i });
       await page.keyboard.press('Tab');
       await expect(skip).toBeFocused();

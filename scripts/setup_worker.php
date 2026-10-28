@@ -138,7 +138,12 @@ function singlePackageOperation(
     }
 
     if ($install) {
-        $packages->install($slug);
+        // EN: The allowlisted catalog supplies all hard dependencies, including application-level ones.
+        //
+        // HR: Dopušteni katalog zadaje sve nužne ovisnosti, uključujući one na razini aplikacije.
+        foreach ($catalog->optionalSlugsForSelection([$slug]) as $dependency) {
+            $packages->install($dependency);
+        }
     } else {
         $packages->uninstall($slug);
     }

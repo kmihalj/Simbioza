@@ -428,7 +428,7 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\StructuredConfigBacku
 
         $providerFiles = (new \App\Configuration\ApplicationBackupConfiguration(
             ConfigurationPaths::fromEnvironment(dirname(__DIR__)),
-        ))->resolve($files);
+        ))->resolve($files, array_values($config->getAsArrayWithValuesAsNonEmptyStrings('app.modules.enabled') ?? []));
 
         // EN: The application wrapper holds this lock once for settings and language data.
         //

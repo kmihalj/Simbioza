@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use AaiEduHr\HeartPhrameModuleMenu\Service\MenuConfigRepository;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\View\View;
 use Psr\Container\ContainerInterface;
@@ -47,6 +48,50 @@ return [
         /** @var View $view */
         $view = $container->get(View::class);
         $view->addGlobal('key', 'value');
+
+        // EN: Focused products have the same bundled public manual without adding Wiki or Editor.
+        // Native Wiki installations keep their dedicated guide Workspace instead.
+        //
+        // HR: Samostalni alati imaju isti javni priručnik bez dodavanja Wikija ili Editora.
+        // Izvorne Wiki instalacije umjesto toga zadržavaju vlastito područje uputa.
+        $enabledModules = $config->get('app.modules.enabled', []);
+        $wikiEnabled = is_array($enabledModules)
+            && in_array('aaieduhr/simbioza-module-workspace', $enabledModules, true);
+        $menu = is_array($enabledModules)
+            && in_array('aaieduhr/heartphrame-module-menu', $enabledModules, true)
+            && class_exists(MenuConfigRepository::class)
+            ? $container->get(MenuConfigRepository::class)
+            : null;
+        if ($menu instanceof MenuConfigRepository) {
+            $menu->upsertItemsForSection('top', $wikiEnabled ? [] : [[
+                'id' => 'simbioza.guides', 'label' => ['hr' => 'Upute', 'en' => 'Guides'],
+                'translation_key' => 'Upute', 'route' => 'guides.index', 'order' => 80, 'enabled' => true,
+            ]], $wikiEnabled ? ['simbioza.guides'] : []);
+
+            // EN: Focused products need a reader entry, not an administrator-only editor link.
+            // Saved menu labels, ordering and disabled states remain administrator choices.
+            //
+            // HR: Samostalni alati trebaju ulaz za čitatelje, ne samo administratorski editor.
+            // Spremljeni nazivi, redoslijed i isključene stavke ostaju odabir administratora.
+            $contentItems = [];
+            $removeContentIds = [];
+            foreach (
+                [
+                ['aaieduhr/heartphrame-module-editor-html', 'simbioza.pages',
+                    'HTML stranice', 'HTML pages', 'content.pages', 55],
+                ['aaieduhr/heartphrame-module-survey', 'simbioza.surveys', 'Ankete', 'Surveys', 'content.surveys', 60],
+                ] as [$package, $id, $hr, $en, $route, $order]
+            ) {
+                if (is_array($enabledModules) && in_array($package, $enabledModules, true)) {
+                    $contentItems[] = ['id' => $id, 'label' => ['hr' => $hr, 'en' => $en],
+                        'route' => $route, 'order' => $order, 'enabled' => true];
+                } else {
+                    $removeContentIds[] = $id;
+                }
+            }
+
+            $menu->upsertItemsForSection('top', $contentItems, $removeContentIds);
+        }
 
         /** @var LoggerInterface $logger */
         $logger = $container->get(LoggerInterface::class);

@@ -46,7 +46,7 @@ final class ModuleBootstrapConfigTest extends TestCase
         $this->temporaryDirectory = sys_get_temp_dir() . '/simbioza-app-config-' . bin2hex(random_bytes(6));
         $this->assertTrue(mkdir($this->temporaryDirectory . '/config', 0770, true));
         $this->assertTrue(copy(dirname(__DIR__, 3) . '/config/app.php', $this->temporaryDirectory . '/config/app.php'));
-        $this->writeModuleState(['aaieduhr/heartphrame-module-theme']);
+        $this->writeModuleState(['aaieduhr/heartphrame-module-api']);
         $script = <<<'PHP'
 require $argv[2];
 $root = $argv[1];
@@ -65,13 +65,13 @@ file_put_contents($languagePath, '<?php return ["en"=>[],"de"=>[]];');
 file_put_contents($installationPath, '<?php return ["name" => "Before", "supported_locales"=>["en","de"]];');
 $store = new App\Module\ModuleStateStore($root, new App\Module\ModuleCatalog());
 $before = require $root . '/config/app.php';
-$initialState = $store->isEnabled('theme');
+$initialState = $store->isEnabled('api');
 $warmed = opcache_is_script_cached($path);
 $languageWarmed = opcache_is_script_cached($languagePath);
 file_put_contents($path, '<?php return ["enabled" => []];');
 file_put_contents($installationPath, '<?php return ["name" => "After"];');
 file_put_contents($root . '/override/languages.php', '<?php return ["en"=>[]];');
-$afterState = $store->isEnabled('theme');
+$afterState = $store->isEnabled('api');
 $after = require $root . '/config/app.php';
 echo json_encode([
     'warmed' => $warmed, 'initial' => $initialState, 'after_state' => $afterState,
@@ -98,7 +98,7 @@ PHP;
             'warmed' => true, 'initial' => true, 'after_state' => false,
             'before_name' => 'Before', 'after_name' => 'After',
             'language_warmed' => true, 'before_locales' => ['en', 'de'], 'after_locales' => ['en'],
-            'after_theme' => false,
+            'after_theme' => true,
         ], json_decode((string)$output, true, flags: JSON_THROW_ON_ERROR));
     }
 
@@ -168,7 +168,7 @@ PHP;
         ];\n");
         $isolatedSessionConfiguration = require $configDirectory . '/app.php';
         $this->assertSame('SIMBIOZA_DEMO_SESSION', $isolatedSessionConfiguration['session']['options']['name']);
-        $this->assertNotContains(
+        $this->assertContains(
             'aaieduhr/heartphrame-module-theme',
             $disabledConfiguration['modules']['enabled'],
         );

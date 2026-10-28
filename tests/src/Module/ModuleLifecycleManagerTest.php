@@ -167,6 +167,27 @@ final class ModuleLifecycleManagerTest extends TestCase
     }
 
     /**
+     * EN: Every common-core module is protected from lifecycle disable and removal operations.
+     *
+     * HR: Svaki modul zajedničke jezgre zaštićen je od isključivanja i uklanjanja.
+     */
+    public function testAllSixCoreModulesAreProtected(): void
+    {
+        foreach ((new ModuleCatalog())->requiredSlugs() as $slug) {
+            foreach (['disable', 'remove'] as $action) {
+                try {
+                    $this->manager->{$action}($slug);
+                    self::fail('Required module changed: ' . $slug);
+                } catch (RuntimeException $exception) {
+                    $this->assertSame('Required modules cannot be disabled or removed.', $exception->getMessage());
+                }
+
+                $this->assertTrue($this->state->isEnabled($slug));
+            }
+        }
+    }
+
+    /**
      * EN: Removal stores data in NDJSON, drops the schema, and a later add
      *     transactionally restores both data and module state.
      *

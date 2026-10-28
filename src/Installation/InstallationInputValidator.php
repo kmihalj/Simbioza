@@ -163,7 +163,7 @@ final readonly class InstallationInputValidator
             'primary_locale' => $primaryLocale,
             'supported_locales' => $supportedLocales,
             'timezone' => $timezone,
-            'optional_modules' => $optionalModules,
+            'optional_modules' => $catalog->optionalSlugsForSelection($optionalModules),
         ];
     }
 

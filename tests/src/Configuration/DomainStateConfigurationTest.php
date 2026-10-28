@@ -190,7 +190,9 @@ final class DomainStateConfigurationTest extends TestCase
         $this->assertSame(0, $notifications->unreadCount(7));
 
         $state = new ModuleStateStore($this->root, new ModuleCatalog());
-        $this->assertSame($packages, $state->enabledPackages());
+        $this->assertSame(array_values(array_unique([
+            ...(new ModuleCatalog())->packagesForSelection([]), ...$packages,
+        ])), $state->enabledPackages());
         $this->assertSame($before, $this->configurationSnapshot());
     }
 

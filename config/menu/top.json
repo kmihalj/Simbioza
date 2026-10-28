@@ -56,6 +56,20 @@
         "children": []
     },
     {
+        "id": "workspaces",
+        "label": {
+            "hr": "Područja",
+            "en": "Workspaces"
+        },
+        "translation_key": null,
+        "route": "workspace.index",
+        "url": "",
+        "query": [],
+        "order": 50,
+        "enabled": true,
+        "children": []
+    },
+    {
         "id": "editor-html",
         "label": {
             "hr": "Editor",
@@ -70,19 +84,31 @@
         "children": []
     },
     {
-        "id": "workspaces",
+        "id": "simbioza.pages",
         "label": {
-            "hr": "Područja",
-            "en": "Workspaces"
+            "hr": "HTML stranice",
+            "en": "HTML pages"
         },
         "translation_key": null,
-        "route": "workspace.index",
-        "url": "",
-        "query": "",
-        "order": 50,
+        "route": "content.pages",
+        "url": null,
+        "query": [],
+        "order": 55,
         "enabled": true,
-        "children": [],
-        "parent_id": "",
-        "level": 0
+        "children": []
+    },
+    {
+        "id": "simbioza.surveys",
+        "label": {
+            "hr": "Ankete",
+            "en": "Surveys"
+        },
+        "translation_key": null,
+        "route": "content.surveys",
+        "url": null,
+        "query": [],
+        "order": 60,
+        "enabled": true,
+        "children": []
     }
 ]

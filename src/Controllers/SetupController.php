@@ -451,10 +451,14 @@ final readonly class SetupController
             throw new RuntimeException(__('Ciljna verzija mora biti stabilni tag oblika 1.2.3.'));
         }
 
-        return $this->gateway->execute($action, [
+        $result = $this->gateway->execute($action, [
             'locale' => str_starts_with(strtolower($this->translator->getLocale()), 'en') ? 'en' : 'hr',
             'tag' => $tag,
         ]);
+
+        return $action === 'application-update-start'
+        ? __('Nadogradnja aplikacije pokrenuta je u pozadini.')
+        : $result;
     }
 
     /**

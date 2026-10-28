@@ -728,18 +728,18 @@ function verifyMatrixCase(
             'SERVER_PORT' => '80',
             'HTTP_HOST' => 'localhost',
         ];
-        $httpResult = runMatrixCommand(['php', 'public/index.php'], $projectDirectory, $requestEnvironment);
+        $httpResult = runMatrixCommand(
+            ['php', $sourceRoot . '/tests/Fixtures/clean_home_probe.php', $projectDirectory],
+            $projectDirectory,
+            $requestEnvironment,
+        );
         $steps['http_home'] = [
             'exit_code' => $httpResult->exitCode,
             'duration_seconds' => round($httpResult->durationSeconds, 3),
         ];
         if (
             $httpResult->exitCode !== 0
-            || !str_contains($httpResult->output, '<html lang="hr"')
-            || !str_contains(
-                $httpResult->output,
-                'Zajednički prostor za znanje, suradnju i sadržaj koji raste s vašom zajednicom.',
-            )
+            || !str_contains($httpResult->output, '[OK] HTTP homepage and internal destination')
         ) {
             throw new RuntimeException("HTTP homepage failed:\n" . $httpResult->output);
         }

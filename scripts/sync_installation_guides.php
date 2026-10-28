@@ -38,7 +38,8 @@ function installationGuideSources(string $slug, string $locale): array
     }
 
     $names = match ($slug) {
-        'instalacija' => ['installation'],
+        'simbioza' => ['simbioza_overview'],
+        'instalacija' => ['installation', 'modularity'],
         'apache-mod-php-instalacija' => ['installation_mod_php'],
         'php-fpm-instalacija' => ['installation_fpm', 'installation_fpm_secured'],
         default => throw new RuntimeException('Unknown bundled installation guide.'),
@@ -83,7 +84,9 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
         . '<a href="#secured-fpm">Secured FPM</a>. Svaki kreće od početka.</p>' . PHP_EOL;
     }
     foreach (installationGuideSources($slug, $locale) as $name) {
-        $id = str_contains($name, '_secured_') ? 'secured-fpm' : 'ordinary-fpm';
+        $id = $slug === 'php-fpm-instalacija'
+        ? (str_contains($name, '_secured_') ? 'secured-fpm' : 'ordinary-fpm')
+        : basename($name, '.md');
         $process = proc_open(
             ['pandoc', '--from=gfm', '--to=html5', '--no-highlight', '--wrap=none', '--id-prefix=' . $id . '-',
                 $root . '/docs/' . $name],
@@ -165,7 +168,7 @@ function syncInstallationGuides(string $root, bool $apply): void
     $config = new BackupConfig(new Config(new Helper(), ['backup' => [
         'staging_dir' => $temporary . '/staging', 'archive_dir' => $temporary . '/archives',
     ]]), $composer, $root . '/vendor/aaieduhr/heartphrame-module-backup');
-    $slugs = ['instalacija', 'apache-mod-php-instalacija', 'php-fpm-instalacija'];
+    $slugs = ['simbioza', 'instalacija', 'apache-mod-php-instalacija', 'php-fpm-instalacija'];
     try {
         $rendered = [];
         if ($apply) {

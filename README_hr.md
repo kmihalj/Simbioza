@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.19 preuzima konfiguriranu adresu aplikacije za prijavu na ankete te pojašnjava administratorske postavke i proxy pravila. Postojeće ankete, mapiranja i odgovori ostaju sačuvani. Framework i Auth nisu mijenjani. Vidi [bilješke izdanja](docs/release-0.3.19_hr.md).
+> Simbioza 0.3.20 nadopunjuje cjelovitu aplikaciju i dodaje mogućnost užih instalacija zahvaljujući modularnosti HeartPhramea, uz ugrađene upute i ovlasti samostalnih HTML stranica. Vidi [bilješke izdanja](docs/release-0.3.20_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -12,6 +12,24 @@ olakšava stvaranje i povezivanje informacija, a CMS daje strukturu, izgled i
 kontrolu nad objavljenim sadržajem. Simbioza spaja oboje u jednu aplikaciju za
 internu dokumentaciju, postupke, korisničke upute, projektno znanje i javne
 informacijske stranice. Instalacija i podaci ostaju pod vašom kontrolom.
+
+## Cjelovita aplikacija uz modularnu prilagodljivost
+
+Simbioza povezuje stranice i pretraživi timski Wiki, kalendare i sastanke,
+ankete, zadatke, komentare, obavijesti i integracije u jednom okruženju.
+**Simbioza** znači zajednički život različitih organizama: ovdje se različiti
+moduli međusobno nadopunjuju unutar iste aplikacije.
+
+Za one kojima treba manje funkcionalnosti, modularnost HeartPhrame frameworka
+omogućuje i užu instalaciju HTML weba, Kalendara, Wikija ili Anketa. Installer
+uključuje odabrane module i njihove nužne ovisnosti. Svaka instalacija dijeli
+Auth, ORM, Menu, Theme, Backup i Audit; API i pristupačnost mogu se uključiti
+prema potrebi. Uže instalacije mogu se kombinirati ili kasnije proširiti uz
+zadržavanje postojećeg sadržaja.
+
+Vidi [mogućnosti modularne instalacije](docs/modularity_hr.md). Uz Wiki, upute
+ostaju u području Korisničke upute; bez Wikija isti HTML priručnik s navigacijom
+po poglavljima dostupan je preko stavke **Upute**.
 
 **Isprobajte Simbiozu:** Posjetite [javni demo](https://piko.webhop.me/demo/),
 istražite aplikaciju i isprobajte je s objavljenim demo računima. Promjene na
@@ -155,7 +173,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.19` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.20` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -258,7 +276,7 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.19](docs/release-0.3.19_hr.md).
+[bilješkama izdanja 0.3.20](docs/release-0.3.20_hr.md).
 
 ## Dokumentacija
 

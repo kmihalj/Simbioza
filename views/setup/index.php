@@ -591,7 +591,7 @@ $applicationUpdateUi = json_encode(
                                         </form>
                             <?php endif; ?>
 
-                            <?php if ($module['package_installed'] && $module['schema_installed'] && $diagnostics['package_changes_allowed']) : ?>
+                            <?php if ($module['optional'] && $module['package_installed'] && $module['schema_installed'] && $diagnostics['package_changes_allowed']) : ?>
                                         <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm('<?= $this->escape(__('Modul će se sigurnosno kopirati, a njegove tablice i paket ukloniti. Nastaviti?')) ?>')">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                             <input type="hidden" name="action" value="remove">

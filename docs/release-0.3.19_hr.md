@@ -2,6 +2,9 @@
 
 [Engleska inačica](release-0.3.19_en.md)
 
+> Povijesna bilješka izdanja. Za aktualne upute pogledajte
+> [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.20](release-0.3.20_hr.md).
+
 Izdanje uključuje **Survey 0.3.1**. Framework, Auth i verzije ostalih javnih
 modula nisu mijenjani.
 

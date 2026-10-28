@@ -43,8 +43,9 @@ final readonly class ApplicationBackupConfiguration
      * HR: Arhiv nikada ne bira datoteke, slojeve ili mapiranja ključeva.
      *
      * @return list<ConfigDefinition>
+     * @param list<string>|null $enabledPackages
      */
-    public function resolve(mixed $definitions): array
+    public function resolve(mixed $definitions, ?array $enabledPackages = null): array
     {
         if (!is_array($definitions)) {
             throw new RuntimeException('Application backup definitions must be an array.');
@@ -58,6 +59,19 @@ final readonly class ApplicationBackupConfiguration
                 || !is_string($definition['file'] ?? null) || !is_array($definition['include_keys'] ?? null)
             ) {
                 throw new RuntimeException('Invalid application backup definition.');
+            }
+
+            // EN: Absent modules contribute no policy records or unwritable restore targets.
+            //
+            // HR: Odsutni moduli ne dodaju zapise pravila niti nezapisive ciljeve vraćanja.
+            if (isset($definition['required_package'])) {
+                if (!is_string($definition['required_package'])) {
+                    throw new RuntimeException('Invalid application backup module requirement.');
+                }
+
+                if ($enabledPackages !== null && !in_array($definition['required_package'], $enabledPackages, true)) {
+                    continue;
+                }
             }
 
             $include = [];
