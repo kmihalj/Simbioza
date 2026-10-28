@@ -160,14 +160,35 @@ final class MenuThemeConfigurationTest extends TestCase
             ]],
             ['id' => 'simbioza.guides', 'route' => 'guides.index'],
         ], JSON_THROW_ON_ERROR));
+        $queries = 0;
+        $database->listen(static function () use (&$queries): void {
+            $queries++;
+        });
+        $navigation = null;
+        $view = $this->createMock(View::class);
+        $view->method('addGlobal')->willReturnCallback(
+            static function (string $name, mixed $value) use (&$navigation, $view): View {
+                if ($name === 'simbiozaContentNavigation') {
+                    $navigation = $value;
+                }
+
+                return $view;
+            },
+        );
         $container = $this->createMock(ContainerInterface::class);
         $container->expects($this->atLeast(4))->method('get')->willReturnMap([
             [ConfigInterface::class, $config], [MenuConfigRepository::class, $menu],
-            [View::class, $this->createStub(View::class)], [LoggerInterface::class, new NullLogger()],
+            [View::class, $view], [LoggerInterface::class, new NullLogger()],
             [StandaloneContentPresence::class, new StandaloneContentPresence($database)],
         ]);
         $bootstraps = require dirname(__DIR__, 3) . '/config/bootstrap.php';
         $bootstraps[0]($container);
+        $this->assertSame(0, $queries, 'API and CLI bootstrap must not query content for HTML navigation.');
+        $this->assertIsCallable($navigation);
+        $beforeRendering = array_column($menu->rowsForSection('top'), null, 'id');
+        $this->assertArrayHasKey('simbioza.pages', $beforeRendering);
+        $this->assertArrayHasKey('simbioza.surveys', $beforeRendering);
+        $navigation();
         $rows = array_column($menu->rowsForSection('top'), null, 'id');
         $this->assertSame('Our pages', $rows['custom-pages']['label']['en']);
         $this->assertSame('Our surveys', $rows['custom-surveys']['label']['en']);
@@ -188,6 +209,7 @@ final class MenuThemeConfigurationTest extends TestCase
 
         $before = file_get_contents($menu->jsonPathForSection('top'));
         $bootstraps[0]($container);
+        $navigation();
         $this->assertSame($before, file_get_contents($menu->jsonPathForSection('top')));
     }
 

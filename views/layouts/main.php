@@ -10,6 +10,7 @@ declare(strict_types=1);
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeRenderer $themeRenderer
  * @var ?\AaiEduHr\HeartPhrameModuleTheme\Service\ThemeLayoutRenderer $themeLayoutRenderer
  * @var ?\AaiEduHr\HeartPhrameModuleAccessibility\Service\AccessibilityRenderer $accessibilityRenderer
+ * @var (callable():void)|null $simbiozaContentNavigation
  * @var array<string, mixed>|false|null $themeHero
  * @var string|null $userThemeMode
  */
@@ -208,6 +209,10 @@ if (
     && $menuRenderer->isEnabled()
 ) {
     try {
+        if (isset($simbiozaContentNavigation) && is_callable($simbiozaContentNavigation)) {
+            $simbiozaContentNavigation();
+        }
+
         try {
             $topMenuCandidate = $menuRenderer->renderTopMenu($layoutNavigationPresentation);
         } catch (\ArgumentCountError) {

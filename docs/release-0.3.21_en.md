@@ -13,10 +13,12 @@ Deleted or disabled HTML pages and archived surveys do not count. After the last
 standalone page is moved into a Workspace or removed, its automatic entry goes
 away. The same applies after the last standalone survey is placed or archived.
 
-Upgrading from 0.3.20 removes unnecessary automatic entries during normal startup.
+Upgrading from 0.3.20 removes unnecessary automatic entries when navigation is next rendered.
 Focused installations without Workspaces retain their content entries even before
 their first page or survey is created. Custom administrator links are preserved.
-Existing content URLs, attachments and permissions remain unchanged.
+Existing content URLs, attachments and permissions remain unchanged. Catalogue
+checks run only when HTML navigation is rendered, adding no menu queries to API
+or CLI operations.
 
 Update through the secured-FPM GUI or the documented CLI updater. This release
 does not change module versions or add database migrations. Docker installations

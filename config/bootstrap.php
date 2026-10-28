@@ -72,36 +72,47 @@ return [
             // EN: Focused products need public content entries; Workspace sites keep them only for standalone content.
             // Empty Workspace installations remove only these automatic IDs, including entries from 0.3.20.
             // Custom links and focused-product labels, ordering and disabled states remain administrator choices.
+            // Content is resolved only when HTML navigation is rendered, never for API or CLI operations.
             //
             // HR: Samostalni alati trebaju javne ulaze; instalacije s Područjima čuvaju ih samo za samostalni sadržaj.
             // Prazne instalacije s Područjima uklanjaju samo ove automatske ID-eve, uključujući stavke iz 0.3.20.
             // Vlastite poveznice i postavke stavki samostalnih alata ostaju odabir administratora.
-            $contentItems = [];
-            $removeContentIds = [];
-            $presence = $wikiEnabled ? $container->get(StandaloneContentPresence::class) : null;
-            if ($presence !== null && !$presence instanceof StandaloneContentPresence) {
-                throw new LogicException('Standalone content navigation is unavailable.');
-            }
 
-            foreach (
-                [
-                ['aaieduhr/heartphrame-module-editor-html', 'simbioza.pages',
-                    'HTML stranice', 'HTML pages', 'content.pages', 55],
-                ['aaieduhr/heartphrame-module-survey', 'simbioza.surveys', 'Ankete', 'Surveys', 'content.surveys', 60],
-                ] as [$package, $id, $hr, $en, $route, $order]
-            ) {
-                if (
-                    is_array($enabledModules) && in_array($package, $enabledModules, true)
-                    && (!$presence instanceof StandaloneContentPresence || $presence->existsForRoute($route))
-                ) {
-                    $contentItems[] = ['id' => $id, 'label' => ['hr' => $hr, 'en' => $en],
-                        'route' => $route, 'order' => $order, 'enabled' => true];
-                } else {
-                    $removeContentIds[] = $id;
+            // Sadržaj provjerava tek pri prikazu HTML navigacije, nikada za API ili CLI radnje.
+            $view->addGlobal('simbiozaContentNavigation', static function () use (
+                $container,
+                $wikiEnabled,
+                $enabledModules,
+                $menu,
+            ): void {
+                $contentItems = [];
+                $removeContentIds = [];
+                $presence = $wikiEnabled ? $container->get(StandaloneContentPresence::class) : null;
+                if ($presence !== null && !$presence instanceof StandaloneContentPresence) {
+                    throw new LogicException('Standalone content navigation is unavailable.');
                 }
-            }
 
-            $menu->upsertItemsForSection('top', $contentItems, $removeContentIds);
+                foreach (
+                    [
+                    ['aaieduhr/heartphrame-module-editor-html', 'simbioza.pages',
+                        'HTML stranice', 'HTML pages', 'content.pages', 55],
+                    ['aaieduhr/heartphrame-module-survey', 'simbioza.surveys',
+                        'Ankete', 'Surveys', 'content.surveys', 60],
+                    ] as [$package, $id, $hr, $en, $route, $order]
+                ) {
+                    if (
+                        is_array($enabledModules) && in_array($package, $enabledModules, true)
+                        && (!$presence instanceof StandaloneContentPresence || $presence->existsForRoute($route))
+                    ) {
+                        $contentItems[] = ['id' => $id, 'label' => ['hr' => $hr, 'en' => $en],
+                            'route' => $route, 'order' => $order, 'enabled' => true];
+                    } else {
+                        $removeContentIds[] = $id;
+                    }
+                }
+
+                $menu->upsertItemsForSection('top', $contentItems, $removeContentIds);
+            });
         }
 
         /** @var LoggerInterface $logger */

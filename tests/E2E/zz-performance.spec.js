@@ -334,6 +334,8 @@ test('page creation, publication, and public rendering stay inside measured SQL 
    *     njegovo vezanje u stablo područja; generički HTTP duplikat se preskače.
    */
   expectRecordedBudget('page-create', createMarker, 70);
+  expect(queryEvents(createMarker).some((event) => /SELECT (?:d\.id FROM editor_html_documents|s\.uuid FROM survey_surveys)/i
+    .test(event.sql))).toBe(false);
   expectRequestBudget('page-create', createMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,
@@ -362,6 +364,8 @@ test('page creation, publication, and public rendering stay inside measured SQL 
    *     bez skeniranja cijelog područja.
    */
   expectRecordedBudget('page-publish', publishMarker, 72);
+  expect(queryEvents(publishMarker).some((event) => /SELECT (?:d\.id FROM editor_html_documents|s\.uuid FROM survey_surveys)/i
+    .test(event.sql))).toBe(false);
   expectRequestBudget('page-publish', publishMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,
@@ -384,8 +388,16 @@ test('page creation, publication, and public rendering stay inside measured SQL 
    *     read and one bounded exception-root lookup, independent of tree size.
    * HR: Grupne/javne iznimke stranice dodaju jedan skupni dohvat dopuštenja
    *     i jedan ograničeni dohvat korijena iznimki, neovisno o veličini stabla.
+   * EN: Two LIMIT 1 existence probes keep standalone HTML/Survey navigation
+   *     available after adding Workspaces; API operations perform neither probe.
+   * HR: Dvije provjere postojanja uz LIMIT 1 čuvaju navigaciju samostalnog
+   *     HTML-a/anketa nakon dodavanja Područja; API radnje ih ne izvršavaju.
    */
-  expectRecordedBudget('page-public', publicMarker, 39);
+  expectRecordedBudget('page-public', publicMarker, 41);
+  const navigationProbes = queryEvents(publicMarker).filter((event) => /SELECT (?:d\.id FROM editor_html_documents|s\.uuid FROM survey_surveys)/i
+    .test(event.sql));
+  expect(navigationProbes).toHaveLength(2);
+  for (const event of navigationProbes) expect(event.sql).toMatch(/LIMIT 1$/i);
   expectRequestBudget('page-public', publicMarker, {
     durationMs: 1_000,
     peakMemoryBytes: 32 * 1024 * 1024,

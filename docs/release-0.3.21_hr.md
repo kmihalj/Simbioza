@@ -14,10 +14,11 @@ ulaze. Nakon premještanja posljednje samostalne stranice u područje ili njezin
 uklanjanja automatska stavka nestaje. Isto vrijedi nakon smještanja posljednje
 samostalne ankete u područje ili njezina arhiviranja.
 
-Nadogradnja s 0.3.20 uklanja nepotrebne automatske stavke pri uobičajenom pokretanju.
+Nadogradnja s 0.3.20 uklanja nepotrebne automatske stavke pri sljedećem prikazu navigacije.
 Samostalne instalacije bez Područja zadržavaju ulaze u sadržaj i prije izrade prve
 stranice ili ankete. Vlastite poveznice administratora ostaju. Postojeće adrese
-sadržaja, privitci i ovlasti ne mijenjaju se.
+sadržaja, privitci i ovlasti ne mijenjaju se. Provjere kataloga izvršavaju se
+samo pri prikazu HTML navigacije, bez dodatnih upita za API ili CLI radnje.
 
 Nadogradite aplikaciju kroz GUI sigurnog FPM-a ili dokumentiranim CLI postupkom.
 Ovo izdanje ne mijenja verzije modula i ne dodaje migracije baze podataka. Docker
