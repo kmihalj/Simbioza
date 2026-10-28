@@ -1,6 +1,6 @@
 # Module dependencies
 
-> Simbioza 0.3.18 uses Email 0.3.5, HTML Editor/Backup 0.3.3, Menu/Theme/Notification/Task/Comment 0.3.2, Audit/Auth/API/Workspace/Confluence Import 0.3.1 and other public modules (including optional Survey) 0.3.0. Framework remains v0.0.25.
+> Simbioza 0.3.19 uses Email 0.3.5, HTML Editor/Backup 0.3.3, Menu/Theme/Notification/Task/Comment 0.3.2, Audit/Auth/API/Workspace/Confluence Import/Survey 0.3.1 and other public modules 0.3.0. Framework remains v0.0.25.
 
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the

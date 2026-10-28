@@ -2,6 +2,9 @@
 
 [English version](release-0.3.18_en.md)
 
+> Povijesna bilješka izdanja. Za aktualne upute pogledajte
+> [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.19](release-0.3.19_hr.md).
+
 ## Mogućnosti
 
 - **Survey 0.3.0** novi je opcionalni modul. Odaberite ga pri instalaciji ili

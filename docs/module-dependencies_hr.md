@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.18 koristi Email 0.3.5, HTML Editor/Backup 0.3.3, Menu/Theme/Notification/Task/Comment 0.3.2, Audit/Auth/API/Workspace/Confluence Import 0.3.1 i ostale javne module (uključujući opcionalni Survey) 0.3.0. Framework ostaje v0.0.25.
+> Simbioza 0.3.19 koristi Email 0.3.5, HTML Editor/Backup 0.3.3, Menu/Theme/Notification/Task/Comment 0.3.2, Audit/Auth/API/Workspace/Confluence Import/Survey 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je

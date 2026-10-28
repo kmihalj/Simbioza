@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.18 donosi opcionalne Ankete, ilustrirane dvojezične upute i zajednički puni HTML Editor. Obična nadogradnja ne instalira niti uključuje Survey automatski. Framework v0.0.25 i Auth 0.3.1 ostaju nepromijenjeni. Vidi [bilješke izdanja](docs/release-0.3.18_hr.md).
+> Simbioza 0.3.19 preuzima konfiguriranu adresu aplikacije za prijavu na ankete te pojašnjava administratorske postavke i proxy pravila. Postojeće ankete, mapiranja i odgovori ostaju sačuvani. Framework i Auth nisu mijenjani. Vidi [bilješke izdanja](docs/release-0.3.19_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -155,7 +155,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.18` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.19` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -258,7 +258,7 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.18](docs/release-0.3.18_hr.md).
+[bilješkama izdanja 0.3.19](docs/release-0.3.19_hr.md).
 
 ## Dokumentacija
 

@@ -1,5 +1,7 @@
 # Simbioza documentation (EN)
 
+- [Survey settings and application URLs in 0.3.19](release-0.3.19_en.md)
+
 - [Surveys and the shared HTML Editor in 0.3.18](release-0.3.18_en.md)
 
 This is the documentation for the Simbioza collaborative knowledge application and its

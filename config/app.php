@@ -116,6 +116,11 @@ return [
     // Application name
     'name' => $applicationName,
 
+    // EN: Reuse the installed public prefix in HTTP and CLI integrations alike.
+    //
+    // HR: Koristiti instalirani javni prefiks jednako u HTTP i CLI integracijama.
+    'base_path' => is_string($installation['base_path'] ?? null) ? rtrim($installation['base_path'], '/') : null,
+
     // EN: Defense-in-depth for frames and non-script active content. This is
     // not a global script allowlist: sanitization and the page registry control
     // third-party scripts. HSTS belongs to the deployment's env.php, not here.

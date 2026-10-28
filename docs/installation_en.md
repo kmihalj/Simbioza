@@ -2,9 +2,9 @@
 
 [Croatian version](installation_hr.md)
 
-These guides install Simbioza **0.3.18**. Email uses **0.3.5**, HTML Editor/Backup **0.3.3**,
-Menu/Theme/Notification/Task/Comment **0.3.2**, Audit/Auth/API/Workspace/Confluence Import **0.3.1**,
-and the other public modules, including optional Survey, **0.3.0**; Framework
+These guides install Simbioza **0.3.19**. Email uses **0.3.5**, HTML Editor/Backup **0.3.3**,
+Menu/Theme/Notification/Task/Comment **0.3.2**, Audit/Auth/API/Workspace/Confluence Import/Survey **0.3.1**,
+and the other public modules **0.3.0**; Framework
 is unchanged. The 0.3.x baseline starts with a new application directory,
 configuration and database. An upgrade from 0.2.x or reuse of its Simbioza
 backups is not supported.

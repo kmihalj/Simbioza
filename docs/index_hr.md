@@ -1,5 +1,7 @@
 # Dokumentacija Simbioze (HR)
 
+- [Postavke anketa i adrese aplikacije u 0.3.19](release-0.3.19_hr.md)
+
 - [Ankete i zajednički HTML Editor u 0.3.18](release-0.3.18_hr.md)
 
 Ovo je dokumentacija aplikacije Simbioza za zajedničko znanje i njezinih uključenih

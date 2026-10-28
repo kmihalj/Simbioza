@@ -95,6 +95,13 @@ final class SurveyGuideArchivesTest extends TestCase
                     $this->assertSame(array_keys($assets), array_keys($currentVersions));
                     foreach ($versions as $version) {
                         $html = $version['content_html'];
+                        if ($slug === 'ankete-autentikacija') {
+                            $this->assertStringContainsString('survey-settings-guide', (string) $html);
+                            $this->assertStringContainsString('eduPersonAffiliation', (string) $html);
+                            $this->assertStringContainsString('identity_source', (string) $html);
+                            $this->assertStringContainsString('app.public_url', (string) $html);
+                        }
+
                         $this->assertSame(1, $version['is_published']);
                         $this->assertDoesNotMatchRegularExpression(
                             '~piko\.webhop|/hfc/|/guide-image/|/Volumes/|href="[^"\s]*\.md'

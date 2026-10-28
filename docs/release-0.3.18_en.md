@@ -2,6 +2,9 @@
 
 [Croatian version](release-0.3.18_hr.md)
 
+> Historical release note. See the [current installation guides](installation_en.md)
+> and [Simbioza 0.3.19](release-0.3.19_en.md) for current instructions.
+
 ## Features
 
 - **Survey 0.3.0** is a new optional module. Select it during installation or
