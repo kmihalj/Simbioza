@@ -26,7 +26,7 @@ a miješana stabla stranica ne čitaju odgovore ispitanika. Izravne ovlasti Wiki
 stranica koriste već skupno učitane podatke imenika. Provjere ovlasti, privatnost,
 zaštita malih skupina i aktualne provjere prijave ostaju na snazi.
 
-Izdanje uključuje Survey 0.3.2, Workspace 0.3.2, Menu 0.3.3, Theme 0.3.4 i
+Izdanje uključuje Survey 0.3.3, Workspace 0.3.2, Menu 0.3.3, Theme 0.3.5 i
 Accessibility 0.3.1. Verzije Autha i Frameworka nisu mijenjane. Povratna migracija
 anketa dodaje indeks pretrage dodjela bez promjene ovlasti ili odgovora.
 Nadogradnja ga primjenjuje samo gdje je Survey instaliran. Postojeći neobavezni

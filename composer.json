@@ -94,7 +94,7 @@
         "aaieduhr/heartphrame-module-backup": "^0.3.3",
         "aaieduhr/heartphrame-module-menu": "^0.3.3",
         "aaieduhr/heartphrame-module-orm": "^0.3.0",
-        "aaieduhr/heartphrame-module-theme": "^0.3.4",
+        "aaieduhr/heartphrame-module-theme": "^0.3.5",
         "php": ">=8.2"
     },
     "autoload": {
@@ -156,7 +156,7 @@
                 "aaieduhr/heartphrame-module-editor-html": "^0.3.9",
                 "aaieduhr/heartphrame-module-email": "^0.3.5",
                 "aaieduhr/heartphrame-module-notification": "^0.3.2",
-                "aaieduhr/heartphrame-module-survey": "^0.3.2",
+                "aaieduhr/heartphrame-module-survey": "^0.3.3",
                 "aaieduhr/heartphrame-module-task": "^0.3.3",
                 "aaieduhr/simbioza-module-confluence-import": "^0.3.1",
                 "aaieduhr/simbioza-module-user": "^0.3.0",

@@ -561,7 +561,10 @@ function verifyMatrixCase(
                 $sourceRoot . '/' . $path,
                 $projectDirectory . '/' . $path,
                 $path === 'config'
-                    ? ['auth', 'email', 'email.php', 'database.php', 'env.php', 'modules.php', '.modules.lock'] : [],
+                    ? [
+                        'auth', 'email', 'email.php', 'database.php', 'env.php',
+                        'modules.php', 'modules.local.php', '.modules.lock',
+                    ] : [],
             );
         }
 

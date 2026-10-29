@@ -26,7 +26,7 @@ not read participant answers. Direct Wiki page permissions reuse their batched
 directory data. Authorization, privacy filters, small-cell protection and fresh
 admission checks remain in force.
 
-This release includes Survey 0.3.2, Workspace 0.3.2, Menu 0.3.3, Theme 0.3.4 and
+This release includes Survey 0.3.3, Workspace 0.3.2, Menu 0.3.3, Theme 0.3.5 and
 Accessibility 0.3.1. Auth and Framework versions are unchanged. A reversible Survey
 migration adds a grant lookup index without changing permissions or responses.
 The updater applies it only where Survey is installed. Existing optional modules
