@@ -3,12 +3,12 @@
     "version": 1,
     "repository_baseline": {
         "en": {
-            "version": "2026.10.28.6",
-            "sha256": "3f13e7e030955dc4e3ec1a7daa44c86a781c7cfe2cfada33a65939bbfffcacdc"
+            "version": "2026.10.29.1",
+            "sha256": "ca9c30cbd3065b9a58dc2b168cab09a66fb60c4fc89664bb69b3c8493ab01386"
         },
         "hr": {
-            "version": "2026.10.28.6",
-            "sha256": "4239d0950c0891ce2605fcd8a3a7fd40a9a4eb9164659d1e06611663bdaa846c"
+            "version": "2026.10.29.1",
+            "sha256": "d25ecfa933ac3194fa17abc80e2c985362fbf3e0f253aee1b73c2d979c3b7918"
         }
     }
 }

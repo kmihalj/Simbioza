@@ -1,5 +1,7 @@
 # Simbioza 0.3.23 — accessibility and Survey performance
 
+> Historical release notes. See [Simbioza 0.3.24](release-0.3.24_en.md) for the restored gradient behavior.
+
 [Croatian version](release-0.3.23_hr.md)
 
 Survey questions now keep help, limits and validation errors associated with their

@@ -94,7 +94,7 @@
         "aaieduhr/heartphrame-module-backup": "^0.3.3",
         "aaieduhr/heartphrame-module-menu": "^0.3.3",
         "aaieduhr/heartphrame-module-orm": "^0.3.0",
-        "aaieduhr/heartphrame-module-theme": "^0.3.5",
+        "aaieduhr/heartphrame-module-theme": "^0.3.6",
         "php": ">=8.2"
     },
     "autoload": {

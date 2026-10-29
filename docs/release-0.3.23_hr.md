@@ -1,5 +1,7 @@
 # Simbioza 0.3.23 — pristupačnost i performanse anketa
 
+> Povijesna bilješka izdanja. Vidi [Simbiozu 0.3.24](release-0.3.24_hr.md) za vraćeni prikaz gradijenata.
+
 [Engleska verzija](release-0.3.23_en.md)
 
 Pitanja ankete zadržavaju povezanost pomoći, ograničenja i poruka pogreške s

@@ -226,10 +226,16 @@ final class SimbiozaBrandingTest extends TestCase
             $this->assertSame($expected['visual'][3], $hero['visual_right_px'] ?? null);
 
             foreach (['navigation', 'content', 'cards'] as $componentName) {
-                $this->assertSame(
-                    $this->arrayValue($simbiozaComponents, $componentName),
-                    $this->arrayValue($components, $componentName),
-                );
+                $simbiozaComponent = $this->arrayValue($simbiozaComponents, $componentName);
+                $themeComponent = $this->arrayValue($components, $componentName);
+                if ($componentName === 'navigation') {
+                    // EN: Per-theme text shadows do not alter the shared navigation layout.
+                    //
+                    // HR: Sjene teksta pojedine teme ne mijenjaju zajednički raspored navigacije.
+                    unset($simbiozaComponent['text_shadow'], $themeComponent['text_shadow']);
+                }
+
+                $this->assertSame($simbiozaComponent, $themeComponent);
             }
 
             foreach (['light', 'dark'] as $variant) {
