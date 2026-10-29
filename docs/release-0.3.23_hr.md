@@ -1,6 +1,6 @@
-# Simbioza 0.3.22 — pristupačnost i performanse anketa
+# Simbioza 0.3.23 — pristupačnost i performanse anketa
 
-[Engleska verzija](release-0.3.22_en.md)
+[Engleska verzija](release-0.3.23_en.md)
 
 Pitanja ankete zadržavaju povezanost pomoći, ograničenja i poruka pogreške s
 kontrolama. Obvezna pitanja imaju tekstualnu oznaku, poveznice pogrešaka vode na
@@ -33,6 +33,6 @@ Nadogradnja ga primjenjuje samo gdje je Survey instaliran. Postojeći neobavezni
 moduli ostaju neobavezni i nadogradnja ih ne aktivira automatski.
 
 Nadogradite kroz GUI pravilno podešene secured-FPM instalacije ili dokumentirani
-CLI alat. Docker instalacije koriste `ghcr.io/kmihalj/simbioza:0.3.22` uz postojeće
+CLI alat. Docker instalacije koriste `ghcr.io/kmihalj/simbioza:0.3.23` uz postojeće
 trajne podatke. Pogledajte [popis modula](module-dependencies_hr.md),
 [upute za nadogradnju](installation_hr.md) i [Docker upute](docker_hr.md).

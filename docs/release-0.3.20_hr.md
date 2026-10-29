@@ -3,7 +3,7 @@
 [English version](release-0.3.20_en.md)
 
 > Povijesna bilješka izdanja. Za aktualne upute pogledajte
-> [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.22](release-0.3.22_hr.md).
+> [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.23](release-0.3.23_hr.md).
 
 Simbioza povezuje stranice, Wiki, kalendare, ankete i suradnju u jednoj cjelovitoj aplikaciji. Modularnost HeartPhrame frameworka omogućuje i uže instalacije HTML weba, Kalendara, Wikija ili Anketa za one kojima ne trebaju sve funkcionalnosti. Auth, ORM, Menu, Theme, Backup i Audit čine obaveznu osnovu.
 

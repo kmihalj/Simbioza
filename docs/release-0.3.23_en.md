@@ -1,6 +1,6 @@
-# Simbioza 0.3.22 — accessibility and Survey performance
+# Simbioza 0.3.23 — accessibility and Survey performance
 
-[Croatian version](release-0.3.22_hr.md)
+[Croatian version](release-0.3.23_hr.md)
 
 Survey questions now keep help, limits and validation errors associated with their
 controls. Required questions have a text equivalent, error links lead to the
@@ -33,6 +33,6 @@ The updater applies it only where Survey is installed. Existing optional modules
 remain optional and are not automatically enabled by this update.
 
 Update through the secured-FPM GUI or the documented CLI updater. Docker
-installations use `ghcr.io/kmihalj/simbioza:0.3.22` with their persistent volumes.
+installations use `ghcr.io/kmihalj/simbioza:0.3.23` with their persistent volumes.
 See the [module inventory](module-dependencies_en.md), [update guide](installation_en.md)
 and [Docker guide](docker_en.md).

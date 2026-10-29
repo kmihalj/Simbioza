@@ -172,7 +172,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.22` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.23` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -272,14 +272,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.22 release notes](docs/release-0.3.22_en.md).
+the [0.3.23 release notes](docs/release-0.3.23_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
-- [Accessibility and Survey performance in 0.3.22](docs/release-0.3.22_en.md)
+- [Accessibility and Survey performance in 0.3.23](docs/release-0.3.23_en.md)
 - [Full application navigation in 0.3.21](docs/release-0.3.21_en.md)
 - [Modular installations and HTML workspace adoption in 0.3.20](docs/release-0.3.20_en.md)
 - [Surveys and the shared HTML Editor in 0.3.18](docs/release-0.3.18_en.md)
