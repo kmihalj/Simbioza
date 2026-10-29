@@ -289,7 +289,7 @@ if ($renderedTopMenu === '') {
     . 'data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" '
     . 'aria-label="' . $this->escape($fallbackMobileLabel) . '">'
     . $fallbackMobileLabelHtml . '<span class="navbar-toggler-icon"></span></button>'
-    . '<div class="offcanvas offcanvas-end hph-primary-navigation__drawer" tabindex="-1" '
+    . '<section class="offcanvas offcanvas-end hph-primary-navigation__drawer" tabindex="-1" '
     . 'id="navbarNav" aria-labelledby="navbarNavLabel">'
     . '<div class="offcanvas-header"><h2 class="offcanvas-title h5" id="navbarNavLabel">'
     . $this->escape($fallbackMobileLabel)
@@ -302,7 +302,7 @@ if ($renderedTopMenu === '') {
     . $this->escape($this->urlGenerator->getPathFor('about')) . '">'
     . $this->escape(__('O aplikaciji')) . '</a></li>'
     . $fallbackCalendarHtml
-    . '</ul>' . $fallbackAccountHtml . '</div></div></div></nav>';
+    . '</ul>' . $fallbackAccountHtml . '</div></section></div></nav>';
 }
 
 if ($layoutThemeEnabled && method_exists($themeLayoutRenderer, 'renderHeader')) {

@@ -161,6 +161,7 @@ final readonly class ModuleCatalog
                     '20261026000000_install_survey_reporting_schema',
                     '20261026000100_install_survey_result_audience_schema',
                     '20261026000300_install_survey_backup_schema',
+                    '20261029000000_install_survey_performance_schema',
                 ],
                 [
                     'survey_surveys', 'survey_revisions', 'survey_pages', 'survey_blocks',

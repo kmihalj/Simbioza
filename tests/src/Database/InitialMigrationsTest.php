@@ -15,6 +15,7 @@ use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\SchemaBuilder;
+use AaiEduHr\HeartPhrameModuleSurvey\Storage\SurveyPerformanceSchema;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\SimbiozaModuleConfluenceImport\ModuleSimbiozaConfluenceImport;
 use AaiEduHr\SimbiozaModuleUser\ModuleSimbiozaUser;
@@ -115,7 +116,7 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(25, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(26, $migrationFiles, 'Every current application migration must be covered.');
 
         foreach ($migrationFiles as $migrationFile) {
             // EN: Fresh installs stamp application-only data relocation without executing it.
@@ -127,6 +128,7 @@ final class InitialMigrationsTest extends TestCase
         }
 
         $surveySchema = new SchemaBuilder($this->database);
+        $this->assertTrue($surveySchema->hasIndex('survey_grants', SurveyPerformanceSchema::indexName()));
         foreach ((new ModuleCatalog())->definitions()['survey']['tables'] as $table) {
             $this->assertTrue($surveySchema->hasTable($table), 'Missing Survey table: ' . $table);
             $this->assertSame([], $this->database->table($table)->get(), 'Survey fixtures must not be seeded.');

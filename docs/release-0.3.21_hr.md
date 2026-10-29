@@ -2,6 +2,9 @@
 
 [Engleska verzija](release-0.3.21_en.md)
 
+> Povijesna bilješka izdanja. Za aktualne upute pogledajte
+> [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.22](release-0.3.22_hr.md).
+
 Puna Simbioza koristi **Područja** za navigaciju svojim sadržajem. Uz uključena
 Područja automatske stavke **HTML stranice** i **Ankete** u gornjem izborniku
 prikazuju se samo kada postoji pripadajući samostalni sadržaj. HTML i ankete

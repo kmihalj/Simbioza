@@ -2,6 +2,9 @@
 
 [Croatian version](release-0.3.21_hr.md)
 
+> Historical release note. See the [current installation guides](installation_en.md)
+> and [Simbioza 0.3.22](release-0.3.22_en.md) for current instructions.
+
 Full Simbioza installations use **Workspaces** to navigate their content. With
 Workspaces enabled, the automatic **HTML pages** and **Surveys** top-menu entries
 appear only when the corresponding standalone content exists. HTML and surveys
