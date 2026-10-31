@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.28 adds controlled page script bundles, translated WYSIWYG usage instructions and local application JavaScript. See the [release notes](docs/release-0.3.28_en.md).
+> Simbioza 0.3.29 adds recoverable survey and draft removal, clear publication badges and working Demo Playground content actions. See the [release notes](docs/release-0.3.29_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -172,7 +172,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.28` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.29` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -272,14 +272,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.28 release notes](docs/release-0.3.28_en.md).
+the [0.3.29 release notes](docs/release-0.3.29_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
-- [Original gradients and optional text shadows in 0.3.28](docs/release-0.3.28_en.md)
+- [Recoverable survey deletion and collaborative drafts in 0.3.29](docs/release-0.3.29_en.md)
 - [Full application navigation in 0.3.21](docs/release-0.3.21_en.md)
 - [Modular installations and HTML workspace adoption in 0.3.20](docs/release-0.3.20_en.md)
 - [Surveys and the shared HTML Editor in 0.3.18](docs/release-0.3.18_en.md)

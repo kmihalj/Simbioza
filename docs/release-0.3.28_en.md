@@ -1,5 +1,7 @@
 # Simbioza 0.3.28 — controlled page scripts and translated help
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.29](release-0.3.29_en.md).
+
 [Croatian version](release-0.3.28_hr.md)
 
 Application JavaScript, including Bootstrap, is served locally. Published pages may use administrator-approved third-party script bundles only when the page author selects them. Content Security Policy authorizes the application templates and the exact approved page scripts; inline event handlers are blocked.

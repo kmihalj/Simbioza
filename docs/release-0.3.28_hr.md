@@ -1,5 +1,7 @@
 # Simbioza 0.3.28 — kontrolirane skripte stranica i prevedene upute
 
+> Povijesna bilješka izdanja. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.29](release-0.3.29_hr.md).
+
 [Engleska verzija](release-0.3.28_en.md)
 
 Aplikacijski JavaScript, uključujući Bootstrap, učitava se lokalno. Objavljene stranice mogu koristiti administratorski odobrene pakete vanjskih skripti samo kada ih autor uključi na stranici. Content Security Policy dopušta aplikacijske predloške i točno odobrene skripte stranice; ugrađeni HTML događaji blokirani su.
