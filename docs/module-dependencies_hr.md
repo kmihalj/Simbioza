@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.27 koristi HTML Editor 0.3.10, Theme 0.3.7, Email 0.3.5, Menu/Backup/Survey 0.3.4, Workspace/Task/Comment 0.3.3, Notification 0.3.2, Audit/Auth/API/Calendar/Confluence Import 0.3.2 te ORM/User/Workspace Search i Accessibility 0.3.1. Framework ostaje v0.0.25.
+> Simbioza 0.3.28 koristi HTML Editor 0.3.10, Theme 0.3.7, Email 0.3.5, Menu/Backup/Survey 0.3.4, Workspace/Task/Comment 0.3.3, Notification 0.3.2, Audit/Auth/API/Calendar/Confluence Import 0.3.2 te ORM/User/Workspace Search i Accessibility 0.3.1. Framework ostaje v0.0.25.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je

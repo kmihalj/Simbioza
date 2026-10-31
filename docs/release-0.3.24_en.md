@@ -1,6 +1,6 @@
 # Simbioza 0.3.24 — original gradients and optional text shadows
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.27](release-0.3.27_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.28](release-0.3.28_en.md).
 
 [Croatian version](release-0.3.24_hr.md)
 

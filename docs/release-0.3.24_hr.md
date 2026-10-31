@@ -1,6 +1,6 @@
 # Simbioza 0.3.24 — izvorni gradijenti i neobavezne sjene teksta
 
-> Povijesna bilješka izdanja. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.27](release-0.3.27_hr.md).
+> Povijesna bilješka izdanja. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.28](release-0.3.28_hr.md).
 
 [Engleska verzija](release-0.3.24_en.md)
 
