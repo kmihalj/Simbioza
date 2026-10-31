@@ -1,5 +1,7 @@
 # Simbioza 0.3.24 — izvorni gradijenti i neobavezne sjene teksta
 
+> Povijesna bilješka izdanja. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.25](release-0.3.25_hr.md).
+
 [Engleska verzija](release-0.3.24_en.md)
 
 Gradijenti zaglavlja, navigacije i mobilnog izbornika ponovno koriste točne boje teme. Uklonjeno je automatsko zatamnjivanje i posvjetljivanje uvedeno u 0.3.23. Postojeće i nove teme zadano koriste **Bez sjene**; čuvaju se boja teksta, debljina fonta i pozadina.

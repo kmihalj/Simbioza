@@ -7,7 +7,6 @@
 /composer.ci.lock
 /.playwright-cli/
 /node_modules/
-/package-lock.json
 /playwright-report/
 /test-results/
 /output/
@@ -34,3 +33,5 @@ gitlab-token.txt
 !/config/menu/settings.json
 !/config/theme/themes.json
 !/config/theme/settings.json
+
+/config/modules.local.php

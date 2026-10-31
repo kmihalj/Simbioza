@@ -224,7 +224,7 @@ function configureE2eApplication(string $projectDirectory): void
         throw new RuntimeException('E2E Editor configuration directory could not be created.');
     }
     $editor = is_file($editorPath)
-        ? json_decode((string)file_get_contents($editorPath), true, 512, JSON_THROW_ON_ERROR) : [];
+    ? json_decode((string)file_get_contents($editorPath), true, 512, JSON_THROW_ON_ERROR) : [];
     if (!is_array($editor)) {
         throw new RuntimeException('E2E Editor configuration is invalid.');
     }
@@ -233,6 +233,13 @@ function configureE2eApplication(string $projectDirectory): void
     ]));
     if (file_put_contents($editorPath, json_encode($editor, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)) === false) {
         throw new RuntimeException('E2E attachment fixtures could not be configured.');
+    }
+
+    // EN: A fresh test installation must not inherit the development site's script approvals.
+    //
+    // HR: Nova testna instalacija ne smije naslijediti odobrenja skripti razvojnog sitea.
+    if (file_put_contents($editorDirectory . '/external-scripts.json', "{\"scripts\":[]}\n") === false) {
+        throw new RuntimeException('E2E script approval isolation could not be configured.');
     }
 
     $apiConfigPath = $projectDirectory . '/config/api/api.php';

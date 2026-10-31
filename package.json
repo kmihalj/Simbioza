@@ -6,6 +6,6 @@
     "test:e2e": "playwright test --config=tests/E2E/playwright.config.js"
   },
   "devDependencies": {
-    "@playwright/test": "latest"
+    "@playwright/test": "1.64.0"
   }
 }

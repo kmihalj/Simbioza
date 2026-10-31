@@ -1,6 +1,6 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.24 koristi HTML Editor 0.3.9, Email 0.3.5, Theme 0.3.6, Menu/Backup/Task/Comment/Survey 0.3.3, Workspace/Notification 0.3.2, Accessibility/Audit/Auth/API/Calendar/Confluence Import 0.3.1 i ostale javne module 0.3.0. Framework ostaje v0.0.25.
+> Simbioza 0.3.25 koristi HTML Editor 0.3.10, Theme 0.3.7, Email 0.3.5, Menu/Backup/Survey 0.3.4, Workspace/Task/Comment 0.3.3, Notification 0.3.2, Audit/Auth/API/Calendar/Confluence Import 0.3.2 te ORM/User/Workspace Search i Accessibility 0.3.1. Framework ostaje v0.0.25.
 
 Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
 od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
@@ -40,6 +40,7 @@ zadnje kompatibilno izdanje jer novija izdanja zahtijevaju PHP_CodeSniffer 4.
 Donje granice PHPStana i Rectora su `^2.2.15` i `^2.6.7`. To su granice
 kompatibilnosti, ne tvrdnja da ne postoje novije glavne verzije. Ponovno ih
 provjeriti prije svakog izdanja.
+
 
 ## Brzi pregled
 

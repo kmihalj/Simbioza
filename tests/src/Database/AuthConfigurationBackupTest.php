@@ -8,7 +8,6 @@ use AaiEduHr\HeartPhrameModuleAuth\Backup\AuthBackupIdentityResolver;
 use AaiEduHr\HeartPhrameModuleAuth\Backup\AuthBackupProvider;
 use AaiEduHr\HeartPhrameModuleAuth\Configuration\AuthConfigurationStore;
 use AaiEduHr\HeartPhrameModuleAuth\Configuration\AuthConfigurationSynchronizer;
-use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupArchiveReader;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupArchiveWriter;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig;
@@ -85,7 +84,7 @@ final class AuthConfigurationBackupTest extends TestCase
         $this->database->table('auth_user_identities')->insert([
             'user_id' => 1, 'provider_profile_id' => $id, 'subject_identifier' => 'test-subject',
         ]);
-        $resolver = new AuthBackupIdentityResolver($this->database, new AuthUserService($this->database));
+        $resolver = new AuthBackupIdentityResolver($this->database);
         $this->provider = new AuthBackupProvider($this->database, $resolver, $this->store);
         $bridge = new class ($this->root) extends ComposerBridge {
             public function __construct(private readonly string $testRoot)

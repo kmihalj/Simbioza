@@ -278,3 +278,19 @@ opisuje primjere rada iz datoteka i pripadajuće GUI kontrole.
 
 [Kontrolni popis 0.3.0](initial-release-0.3.0_hr.md) prikazuje stanje provjera;
 stari P1–P10 rezultati nisu potvrda objave nove polazne verzije.
+
+## Lokalne aplikacijske skripte
+
+Glavni prikaz isporučuje vlastiti JavaScript i ugrađeni Bootstrap 5.2.3 s lokalnih
+adresa, bez zahtjeva za skriptama s CDN-a. Bootstrapov paket uključuje Popper za
+pozicioniranje padajućih izbornika. Playwright je razvojni alat za testiranje
+preglednika i ne učitava se u stranice aplikacije.
+
+Izričito odobrene skripte sadržaja stranica zasebna su iznimka koju nadzire
+administrator; ne postaju globalne aplikacijske ovisnosti.
+
+## Pravila skripti i ponovljive provjere preglednika
+
+Uobičajene stranice Simbioze odobravaju ugrađene skripte aplikacije svježim nonceom za svaki zahtjev. Proizvoljne ugrađene skripte, HTML atributi sa slušateljima događaja i dinamičko izvršavanje koda blokirani su. Odobrene skripte sadržaja točno se uspoređuju s registrom: ugrađeni kod koristi sažetke, udaljene skripte sa SRI-jem zadržavaju svoj sažetak, a izričito odobrene poveznice bez SRI-ja dobivaju nonce zahtjeva. Njihov udaljeni domaćin ne dodaje se na široki popis dopuštenih izvora. HTML odgovori s nonceom privatni su i ne pohranjuju se u zajedničku predmemoriju. Posebna pravila kontrolera za ispitanike ostaju na snazi.
+
+Alat za provjere preglednika zaključan je na točnu verziju u `package.json`, a posredne verzije i sažeci paketa zapisani su u praćenom `package-lock.json`. Lokalno i u CI-ju koristi se `npm ci`. Ti se alati ne učitavaju na stranicama aplikacije.

@@ -9,6 +9,7 @@ $middleware = [
     \HeartPhrame\Middleware\TrustedProxyMiddleware::class,
     \HeartPhrame\Middleware\SecurityHeadersMiddleware::class,
     \HeartPhrame\Middleware\ErrorHandlerMiddleware::class,
+    \App\Security\ScriptPolicyMiddleware::class,
     \HeartPhrame\Middleware\StartSessionMiddleware::class,
     \HeartPhrame\Middleware\CheckCsrfMiddleware::class,
     \HeartPhrame\Middleware\DeferredModuleLoaderMiddleware::class,

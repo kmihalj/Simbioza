@@ -592,7 +592,7 @@ $applicationUpdateUi = json_encode(
                             <?php endif; ?>
 
                             <?php if ($module['optional'] && $module['package_installed'] && $module['schema_installed'] && $diagnostics['package_changes_allowed']) : ?>
-                                        <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm('<?= $this->escape(__('Modul će se sigurnosno kopirati, a njegove tablice i paket ukloniti. Nastaviti?')) ?>')">
+                                        <form method="post" action="<?= $this->escape($actionPath) ?>" data-hph-confirm="<?= $this->escape(__('Modul će se sigurnosno kopirati, a njegove tablice i paket ukloniti. Nastaviti?')) ?>">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                             <input type="hidden" name="action" value="remove">
                                             <input type="hidden" name="module" value="<?= $this->escape($module['slug']) ?>">
@@ -691,7 +691,7 @@ $applicationUpdateUi = json_encode(
                                                 </form>
                             <?php endif; ?>
                             <?php if (is_array($remote) && !$remote['revision_known'] && $remote['version'] !== '' && $diagnostics['language_changes_allowed']) : ?>
-                                                <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm(<?= $this->escape(json_encode(__('Zamijeniti ručni prijevod provjerenim jezičnim paketom?'), JSON_THROW_ON_ERROR)) ?>)">
+                                                <form method="post" action="<?= $this->escape($actionPath) ?>" data-hph-confirm="<?= $this->escape(__('Zamijeniti ručni prijevod provjerenim jezičnim paketom?')) ?>">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                                     <input type="hidden" name="action" value="language-install"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>"><input type="hidden" name="replace" value="1">
                                                     <button class="btn btn-sm btn-outline-primary"><?= $this->escape(__('Preuzmi jezični paket')) ?></button>
@@ -705,7 +705,7 @@ $applicationUpdateUi = json_encode(
                                                 </form>
                             <?php endif; ?>
                             <?php if ($diagnostics['language_changes_allowed']) : ?>
-                                                <form method="post" action="<?= $this->escape($actionPath) ?>" onsubmit="return confirm(<?= $this->escape(json_encode(__('Deinstalirati jezik?'), JSON_THROW_ON_ERROR)) ?>)">
+                                                <form method="post" action="<?= $this->escape($actionPath) ?>" data-hph-confirm="<?= $this->escape(__('Deinstalirati jezik?')) ?>">
                                 <?= $this->csrfHandler->generateCsrfTokenInputField() ?>
                                                     <input type="hidden" name="action" value="language-remove"><input type="hidden" name="locale" value="<?= $this->escape($language['locale']) ?>">
                                                     <button class="btn btn-sm btn-outline-danger"><?= $this->escape(__('Deinstaliraj')) ?></button>
@@ -881,7 +881,7 @@ $applicationUpdateUi = json_encode(
         </div>
     </div>
 </dialog>
-<script>
+<script nonce="<?= $this->escape(is_string($scriptNonce ?? null) ? $scriptNonce : '') ?>">
 (function () {
     'use strict';
 

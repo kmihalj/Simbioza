@@ -8,6 +8,14 @@ async function submitFormAndExpectPost(page, button, expectedPath) {
     && new URL(response.url()).pathname === expectedPath);
   const [response] = await Promise.all([responsePromise, button.click()]);
   expect([200, 302, 303]).toContain(response.status());
+  // EN: A POST response precedes its redirected page and toolbar scripts; wait for that actual document.
+  // HR: POST odgovor prethodi preusmjerenoj stranici i skriptama alatne trake; pričekaj stvarni dokument.
+  const redirect = response.headers().location;
+  if (redirect) {
+    const target = new URL(redirect, response.url());
+    await page.waitForURL((url) => url.pathname === target.pathname && url.search === target.search);
+  }
+  await page.waitForLoadState('load');
 }
 
 test('task pencil edits list and table rows without losing additional cells', async ({ page }) => {

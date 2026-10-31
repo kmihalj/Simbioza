@@ -1,6 +1,6 @@
 # Module dependencies
 
-> Simbioza 0.3.24 uses HTML Editor 0.3.9, Email 0.3.5, Theme 0.3.6, Menu/Backup/Task/Comment/Survey 0.3.3, Workspace/Notification 0.3.2, Accessibility/Audit/Auth/API/Calendar/Confluence Import 0.3.1 and other public modules 0.3.0. Framework remains v0.0.25.
+> Simbioza 0.3.25 uses HTML Editor 0.3.10, Theme 0.3.7, Email 0.3.5, Menu/Backup/Survey 0.3.4, Workspace/Task/Comment 0.3.3 and Notification 0.3.2, Audit/Auth/API/Calendar/Confluence Import 0.3.2, ORM/User/Workspace Search 0.3.1 and Accessibility 0.3.1. Framework remains v0.0.25.
 
 This document distinguishes **required dependencies**, which Composer must
 install, from **optional integrations**, which only extend behavior when the
@@ -39,6 +39,7 @@ PHP_CodeSniffer `^3.13.6`; Slevomat `^8.22.1` resolves to the last compatible
 release because newer Slevomat releases require PHP_CodeSniffer 4. PHPStan and
 Rector have minimums `^2.2.15` and `^2.6.7`. These are compatibility constraints,
 not a claim that no newer major releases exist. Recheck them before each release.
+
 
 ## Quick reference
 

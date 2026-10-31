@@ -21,6 +21,7 @@ use App\Module\NativeProcessRunner;
 use App\Module\ProcessRunnerInterface;
 use App\Navigation\StandaloneContentPresence;
 use App\Performance\QueryLogWriter;
+use App\Security\ScriptPolicyMiddleware;
 use App\Setup\ApplicationUpdateStatusStore;
 use App\Setup\SetupDiagnostics;
 use App\Setup\SetupGateway;
@@ -50,6 +51,7 @@ use HeartPhrame\Routing\UrlGenerator;
 use HeartPhrame\Session\PhpSessionFactory;
 use HeartPhrame\Session\SessionFactoryInterface;
 use HeartPhrame\Session\SessionInterface;
+use HeartPhrame\View\View;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -58,6 +60,15 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    ScriptPolicyMiddleware::class => static function (ContainerInterface $container): ScriptPolicyMiddleware {
+        $view = $container->get(View::class);
+        $config = $container->get(ConfigInterface::class);
+        if (!$view instanceof View || !$config instanceof ConfigInterface) {
+            throw new RuntimeException('Script policy dependencies are unavailable.');
+        }
+
+        return new ScriptPolicyMiddleware($view, $config, $container);
+    },
     StandaloneContentPresence::class => static function (ContainerInterface $container): StandaloneContentPresence {
         $database = $container->get(Database::class);
         if (!$database instanceof Database) {

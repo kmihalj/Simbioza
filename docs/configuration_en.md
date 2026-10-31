@@ -280,3 +280,19 @@ for file-only examples and the corresponding GUI controls.
 
 See [the 0.3.0 checklist](initial-release-0.3.0_en.md) for current verification
 status; historical P1–P10 results are not a claim that the new baseline is released.
+
+## Local application scripts
+
+The application shell serves its own JavaScript and the bundled Bootstrap
+5.2.3 from local URLs, without CDN script requests. The Bootstrap bundle includes
+Popper for dropdown positioning. Playwright is a development-only browser test
+tool and is not loaded into application pages.
+
+Explicitly approved scripts attached to page content are a separate administrator
+controlled exception; they do not become global application dependencies.
+
+## Script policy and repeatable browser tests
+
+Normal Simbioza pages authorize first-party inline scripts with a fresh request nonce. Arbitrary inline scripts, HTML event-handler attributes, and dynamic code evaluation are blocked. Approved content scripts are matched exactly against the registry: inline code uses hashes, remote scripts with SRI retain their digest, and explicitly approved SRI-free links receive the request nonce. Their remote host is never added to a broad allowlist. HTML responses with nonces are private and are not stored in shared caches. Controller-specific respondent policies remain in force.
+
+Browser test tooling is pinned to the exact version in `package.json`, with transitive versions and package digests recorded in the committed `package-lock.json`. Local and CI installations use `npm ci`. This tooling is not loaded in application pages.

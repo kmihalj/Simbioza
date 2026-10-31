@@ -121,15 +121,16 @@ return [
     // HR: Koristiti instalirani javni prefiks jednako u HTTP i CLI integracijama.
     'base_path' => is_string($installation['base_path'] ?? null) ? rtrim($installation['base_path'], '/') : null,
 
-    // EN: Defense-in-depth for frames and non-script active content. This is
-    // not a global script allowlist: sanitization and the page registry control
-    // third-party scripts. HSTS belongs to the deployment's env.php, not here.
+    // EN: Error responses retain a restrictive fallback. ScriptPolicyMiddleware
+    // adds request nonces and exact approved content hashes to normal responses.
+    // HSTS belongs to the deployment's env.php, not here.
     //
-    // HR: Dodatna zaštita okvira i aktivnog sadržaja koji nije skripta. Ovo nije
-    // globalni popis dopuštenih skripti: njih kontroliraju sanitizer i registar
-    // po stranici. HSTS pripada instalacijskom env.php, ne ovoj datoteci.
+    // HR: Odgovori pogreške zadržavaju stroga zadana pravila. ScriptPolicyMiddleware
+    // uobičajenim odgovorima dodaje nonce zahtjeva i točne sažetke odobrenog sadržaja.
+    // HSTS pripada instalacijskom env.php, ne ovoj datoteci.
     'security_headers' => [
-        'Content-Security-Policy' => "base-uri 'self'; object-src 'none'; frame-ancestors 'self'",
+        'Content-Security-Policy' => "script-src 'self'; script-src-attr 'none'; "
+            . "base-uri 'self'; object-src 'none'; frame-ancestors 'self'",
     ],
 
     // Localization

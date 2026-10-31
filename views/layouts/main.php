@@ -792,7 +792,7 @@ if (
     <?php endif; ?>
 
     <?php if ($renderedRouteLeftMenu !== '') : ?>
-        <script>
+        <script nonce="<?= $this->escape(is_string($scriptNonce ?? null) ? $scriptNonce : '') ?>">
             (() => {
                 const layout = document.querySelector('[data-hph-route-left-layout]');
                 if (!(layout instanceof HTMLElement)) {
@@ -1052,7 +1052,7 @@ if (
     <?php endif; ?>
 
     <?php if ($layoutInnerTitlePlacement === 'content-card' && $layoutInnerPageTitle !== '') : ?>
-        <script>
+        <script nonce="<?= $this->escape(is_string($scriptNonce ?? null) ? $scriptNonce : '') ?>">
             (() => {
                 /*
                  * HR: Integrirani prikazi označavaju ciljnu karticu, dok obične aplikacijske
@@ -1103,7 +1103,7 @@ if (
     <?php endif; ?>
 
     <?php if ($layoutDuplicateInnerTitle !== '') : ?>
-        <script>
+        <script nonce="<?= $this->escape(is_string($scriptNonce ?? null) ? $scriptNonce : '') ?>">
             (() => {
                 /*
                  * HR: Uklanjamo samo prvi sadržajni H1 čiji se tekst potpuno podudara
@@ -1148,7 +1148,7 @@ if (
     }
     ?>
 
-    <script>
+    <script nonce="<?= $this->escape(is_string($scriptNonce ?? null) ? $scriptNonce : '') ?>">
         (() => {
             /*
              * HR: Bootstrap umeće pozadinu modala izravno u `body`. Svaki
@@ -1170,7 +1170,8 @@ if (
         })();
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= $this->escape($this->urlGenerator->getBasePath() . '/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= $this->escape($this->urlGenerator->getBasePath() . '/script-policy.js') ?>"></script>
 
     <?php // Render additional HTML content at the end, if any. ?>
     <?= $this->renderPlaceholder('tail') ?>

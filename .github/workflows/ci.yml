@@ -99,7 +99,7 @@ jobs:
           # EN: Verify this release's published package inventory, including the unchanged Framework.
           #
           # HR: Provjeriti objavljene pakete ovog izdanja, uključujući nepromijenjeni Framework.
-          docker compose -p simbioza-release-ci exec -T app php -r '$s=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $expected=["aaieduhr/heartphrame-framework"=>"0.0.25","aaieduhr/heartphrame-module-accessibility"=>"0.3.1","aaieduhr/heartphrame-module-audit"=>"0.3.1","aaieduhr/heartphrame-module-api"=>"0.3.1","aaieduhr/heartphrame-module-calendar"=>"0.3.1","aaieduhr/heartphrame-module-auth"=>"0.3.1","aaieduhr/heartphrame-module-email"=>"0.3.5","aaieduhr/heartphrame-module-survey"=>"0.3.3","aaieduhr/heartphrame-module-editor-html"=>"0.3.9","aaieduhr/heartphrame-module-backup"=>"0.3.3","aaieduhr/heartphrame-module-menu"=>"0.3.3","aaieduhr/heartphrame-module-theme"=>"0.3.6","aaieduhr/heartphrame-module-task"=>"0.3.3","aaieduhr/heartphrame-module-comment"=>"0.3.3","aaieduhr/heartphrame-module-notification"=>"0.3.2","aaieduhr/simbioza-module-workspace"=>"0.3.2","aaieduhr/simbioza-module-confluence-import"=>"0.3.1"]; foreach($s["packages"] as $p){if(str_starts_with($p["name"],"aaieduhr/") && ltrim($p["version"],"v")!==($expected[$p["name"]]??"0.3.0")){throw new RuntimeException("Unexpected package version: ".$p["name"]);}}'
+          docker compose -p simbioza-release-ci exec -T app php -r '$s=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $expected=["aaieduhr/heartphrame-framework"=>"0.0.25","aaieduhr/heartphrame-module-accessibility"=>"0.3.1","aaieduhr/heartphrame-module-audit"=>"0.3.2","aaieduhr/heartphrame-module-api"=>"0.3.2","aaieduhr/heartphrame-module-calendar"=>"0.3.2","aaieduhr/heartphrame-module-auth"=>"0.3.2","aaieduhr/heartphrame-module-email"=>"0.3.5","aaieduhr/heartphrame-module-survey"=>"0.3.4","aaieduhr/heartphrame-module-editor-html"=>"0.3.10","aaieduhr/heartphrame-module-backup"=>"0.3.4","aaieduhr/heartphrame-module-menu"=>"0.3.4","aaieduhr/heartphrame-module-theme"=>"0.3.7","aaieduhr/heartphrame-module-task"=>"0.3.3","aaieduhr/heartphrame-module-comment"=>"0.3.3","aaieduhr/heartphrame-module-notification"=>"0.3.2","aaieduhr/simbioza-module-workspace"=>"0.3.3","aaieduhr/simbioza-module-confluence-import"=>"0.3.2"]; foreach($s["packages"] as $p){if(str_starts_with($p["name"],"aaieduhr/") && ltrim($p["version"],"v")!==($expected[$p["name"]]??"0.3.0")){throw new RuntimeException("Unexpected package version: ".$p["name"]);}}'
           docker compose -p simbioza-release-ci cp app:/opt/simbioza/composer.lock ../build/docker/composer.lock
       - name: Record all vulnerability findings
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
@@ -462,8 +462,8 @@ jobs:
           php scripts/build_ci_composer.php
           COMPOSER=composer.ci.json composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
-        run: npm install --no-package-lock
+      - name: Install locked browser-test dependencies / Instaliraj zaključane browser-test ovisnosti
+        run: npm ci
 
       - name: Install Chromium / Instaliraj Chromium
         run: npx playwright install --with-deps chromium
@@ -525,8 +525,8 @@ jobs:
           php scripts/build_ci_composer.php
           COMPOSER=composer.ci.json composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
-        run: npm install --no-package-lock
+      - name: Install locked browser-test dependencies / Instaliraj zaključane browser-test ovisnosti
+        run: npm ci
 
       - name: Install Chromium / Instaliraj Chromium
         run: npx playwright install --with-deps chromium
@@ -595,8 +595,8 @@ jobs:
           php scripts/build_ci_composer.php
           COMPOSER=composer.ci.json composer update --with-all-dependencies --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Resolve latest browser-test dependency / Dohvati najnoviju browser-test ovisnost
-        run: npm install --no-package-lock
+      - name: Install locked browser-test dependencies / Instaliraj zaključane browser-test ovisnosti
+        run: npm ci
 
       - name: Install Chromium / Instaliraj Chromium
         run: npx playwright install --with-deps chromium
