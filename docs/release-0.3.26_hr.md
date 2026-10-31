@@ -1,6 +1,6 @@
-# Simbioza 0.3.25 — kontrolirane skripte stranica i prevedene upute
+# Simbioza 0.3.26 — kontrolirane skripte stranica i prevedene upute
 
-[Engleska verzija](release-0.3.25_en.md)
+[Engleska verzija](release-0.3.26_en.md)
 
 Aplikacijski JavaScript, uključujući Bootstrap, učitava se lokalno. Objavljene stranice mogu koristiti administratorski odobrene pakete vanjskih skripti samo kada ih autor uključi na stranici. Content Security Policy dopušta aplikacijske predloške i točno odobrene skripte stranice; ugrađeni HTML događaji blokirani su.
 
@@ -12,4 +12,4 @@ HTML izvoz uključuje odobrene i odabrane skripte stranica: udaljeni resursi ost
 
 Izdanje uklanja nepozivane privatne Auth metode i nepotrebnu servisnu ovisnost, pojednostavljuje ORM provjeru tipa i zaključava verzije alata za provjeru preglednikom. Protokoli prijave, Framework kod, boje tema i migracije baze ostaju isti.
 
-Koristite GUI za secured FPM ili dokumentirani CLI updater. Postavke instalacije i odabir opcionalnih modula ostaju sačuvani. Docker koristi `ghcr.io/kmihalj/simbioza:0.3.25` s postojećim trajnim volumenima. Vidi [instalaciju](installation_hr.md), [ovisnosti modula](module-dependencies_hr.md) i [Docker](docker_hr.md).
+Koristite GUI za secured FPM ili dokumentirani CLI updater. Postavke instalacije i odabir opcionalnih modula ostaju sačuvani. Docker koristi `ghcr.io/kmihalj/simbioza:0.3.26` s postojećim trajnim volumenima. Vidi [instalaciju](installation_hr.md), [ovisnosti modula](module-dependencies_hr.md) i [Docker](docker_hr.md).

@@ -19,6 +19,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionClass;
 
 #[CoversClass(ScriptPolicyMiddleware::class)]
 #[UsesClass(RuntimeTranslator::class)]
@@ -113,10 +114,9 @@ final class ScriptPolicyMiddlewareTest extends TestCase
             $config = new Config(new Helper(), ['app' => ['modules' => ['enabled' => [
                 'aaieduhr/heartphrame-module-editor-html',
             ]]]]);
-            $editor = new EditorHtmlConfig(
-                $config,
-                dirname(__DIR__, 4) . '/heartphrame-module-editor-html',
-            );
+            $editorFile = (new ReflectionClass(EditorHtmlConfig::class))->getFileName();
+            $this->assertIsString($editorFile);
+            $editor = new EditorHtmlConfig($config, dirname($editorFile, 3));
             $container = $this->createMock(ContainerInterface::class);
             $container->method('get')->with(EditorHtmlConfig::class)->willReturn($editor);
             $middleware = new ScriptPolicyMiddleware($this->createStub(View::class), $config, $container);
