@@ -2,7 +2,7 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.26**. Email koristi **0.3.5**, HTML Editor **0.3.9**, Theme **0.3.6**, Menu/Backup/Task/Comment/Survey **0.3.3**,
+Ove upute instaliraju Simbiozu **0.3.27**. Email koristi **0.3.5**, HTML Editor **0.3.9**, Theme **0.3.6**, Menu/Backup/Task/Comment/Survey **0.3.3**,
 Workspace/Notification **0.3.2**, Accessibility/Audit/Auth/API/Calendar/Confluence Import **0.3.1**,
 a ostali javni moduli **0.3.0**; Framework je
 nepromijenjen. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.

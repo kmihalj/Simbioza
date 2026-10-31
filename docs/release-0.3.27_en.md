@@ -1,6 +1,6 @@
-# Simbioza 0.3.26 — controlled page scripts and translated help
+# Simbioza 0.3.27 — controlled page scripts and translated help
 
-[Croatian version](release-0.3.26_hr.md)
+[Croatian version](release-0.3.27_hr.md)
 
 Application JavaScript, including Bootstrap, is served locally. Published pages may use administrator-approved third-party script bundles only when the page author selects them. Content Security Policy authorizes the application templates and the exact approved page scripts; inline event handlers are blocked.
 
@@ -12,4 +12,4 @@ HTML exports include approved, selected page scripts: remote resources remain li
 
 The release removes unused private Auth methods and an unnecessary service dependency, simplifies an ORM type check and locks the browser test tool versions. Authentication protocols, Framework code, theme colors and database migrations are unchanged.
 
-Use the secured-FPM GUI or the documented CLI updater. Installation-specific configuration and the selection of optional modules are preserved. Docker uses `ghcr.io/kmihalj/simbioza:0.3.26` with existing persistent volumes. See [installation](installation_en.md), [module inventory](module-dependencies_en.md) and [Docker](docker_en.md).
+Use the secured-FPM GUI or the documented CLI updater. Installation-specific configuration and the selection of optional modules are preserved. Docker uses `ghcr.io/kmihalj/simbioza:0.3.27` with existing persistent volumes. See [installation](installation_en.md), [module inventory](module-dependencies_en.md) and [Docker](docker_en.md).

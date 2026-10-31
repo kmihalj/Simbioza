@@ -6,6 +6,7 @@ namespace Tests\Security;
 
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorExternalScripts;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlConfig;
+use App\Localization\RuntimeLanguageStorage;
 use App\Localization\RuntimeTranslator;
 use App\Security\ScriptPolicyMiddleware;
 use HeartPhrame\Config\Config;
@@ -23,6 +24,7 @@ use ReflectionClass;
 
 #[CoversClass(ScriptPolicyMiddleware::class)]
 #[UsesClass(RuntimeTranslator::class)]
+#[UsesClass(RuntimeLanguageStorage::class)]
 final class ScriptPolicyMiddlewareTest extends TestCase
 {
     /**
