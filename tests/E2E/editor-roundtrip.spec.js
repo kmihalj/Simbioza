@@ -153,6 +153,7 @@ test('every basic toolbar format, insertion variant and editing command survives
     await page.locator('[data-editor-html-link]').click();
     await page.locator('[data-editor-html-link-url]').fill(`https://example.com/${id}`);
     await page.locator('[data-editor-html-link-url-insert]').click();
+    await expect(page.locator('#editor-html-link-modal')).toBeHidden();
   }
   await selectText(page, 'case-unlink');
   await page.locator('[data-editor-html-command="unlink"]').click();

@@ -59,6 +59,9 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
   }
 
   test('setup creates one public and one restricted published page', async ({ request }) => {
+    const stylesheet = await request.get('/search/assets.css');
+    expect(stylesheet.status()).toBe(200);
+    expect(stylesheet.headers()['content-type']).toMatch(/^text\/css(?:;|$)/i);
     const users = await expectData(await request.get('/api/v1/users?page[limit]=100', {
       headers: adminHeaders,
     }));
@@ -223,13 +226,21 @@ test.describe.serial('Workspace Search web and API ACL boundary', () => {
     await page.locator('#workspace-search-workspace-button').click();
     await page.locator(`[data-workspace-search-scope][value="${restrictedWorkspace}"]`).check();
     await page.locator('#workspace-search-q').fill(sharedTerm);
-    await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
+    await Promise.all([
+      page.waitForURL((url) => url.searchParams.get('q') === sharedTerm
+        && url.searchParams.getAll('workspaces[]').includes(restrictedWorkspace)),
+      page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click(),
+    ]);
     await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toHaveCount(0);
 
     await page.locator('#workspace-search-workspace-button').click();
     await page.locator(`[data-workspace-search-scope][value="${publicWorkspace}"]`).check();
-    await page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click();
+    await Promise.all([
+      page.waitForURL((url) => url.searchParams.getAll('workspaces[]').includes(publicWorkspace)
+        && url.searchParams.getAll('workspaces[]').includes(restrictedWorkspace)),
+      page.getByRole('button', { name: /^Pretraži$|^Search$/ }).click(),
+    ]);
     await expect(page.getByRole('link', { name: 'Ograničeni rezultat pretrage' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Javni rezultat pretrage' })).toBeVisible();
 

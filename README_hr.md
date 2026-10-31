@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.29 donosi oporavljivo brisanje anketa i nacrta, jasne oznake objave i ispravne radnje nad sadržajem u DEMO Igraonici. Vidi [bilješke izdanja](docs/release-0.3.29_hr.md).
+> Simbioza 0.3.30 donosi oporavljivo brisanje anketa i nacrta, jasne oznake objave i ispravne radnje nad sadržajem u DEMO Igraonici. Vidi [bilješke izdanja](docs/release-0.3.30_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -173,7 +173,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.29` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.30` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
@@ -276,11 +276,11 @@ povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni s
 instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
 povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
 bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.29](docs/release-0.3.29_hr.md).
+[bilješkama izdanja 0.3.30](docs/release-0.3.30_hr.md).
 
 ## Dokumentacija
 
-- [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.29](docs/release-0.3.29_hr.md)
+- [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.30](docs/release-0.3.30_hr.md)
 - [Navigacija pune aplikacije u 0.3.21](docs/release-0.3.21_hr.md)
 - [Modularne instalacije i premještanje HTML stranica u 0.3.20](docs/release-0.3.20_hr.md)
 

@@ -1,5 +1,7 @@
 # Simbioza 0.3.29 — survey removal and Playground content
 
+> Historical release notes. This candidate was superseded before publication. See the [current installation guide](installation_en.md) and [Simbioza 0.3.30](release-0.3.30_en.md).
+
 [Croatian version](release-0.3.29_hr.md)
 
 Survey pages now have a trash action in the header, matching ordinary pages. Deletion moves the survey to recoverable trash and stops collection; accepted responses, revisions and settings remain available for administrator recovery. Restoring a previously published survey leaves it closed until a publisher explicitly reopens it. Report schedules remain disabled after deletion.

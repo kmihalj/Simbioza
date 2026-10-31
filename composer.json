@@ -153,7 +153,7 @@
                 "aaieduhr/heartphrame-module-api": "^0.3.2",
                 "aaieduhr/heartphrame-module-calendar": "^0.3.2",
                 "aaieduhr/heartphrame-module-comment": "^0.3.3",
-                "aaieduhr/heartphrame-module-editor-html": "^0.3.10",
+                "aaieduhr/heartphrame-module-editor-html": "^0.3.11",
                 "aaieduhr/heartphrame-module-email": "^0.3.5",
                 "aaieduhr/heartphrame-module-notification": "^0.3.2",
                 "aaieduhr/heartphrame-module-survey": "^0.3.5",
@@ -161,7 +161,7 @@
                 "aaieduhr/simbioza-module-confluence-import": "^0.3.2",
                 "aaieduhr/simbioza-module-user": "^0.3.1",
                 "aaieduhr/simbioza-module-workspace": "^0.3.4",
-                "aaieduhr/simbioza-module-workspace-search": "^0.3.1"
+                "aaieduhr/simbioza-module-workspace-search": "^0.3.2"
             },
             "development-tools": {
                 "phpstan/phpstan": "^2.1",
