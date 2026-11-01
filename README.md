@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.30 adds recoverable survey and draft removal, clear publication badges and working Demo Playground content actions. See the [release notes](docs/release-0.3.30_en.md).
+> Simbioza 0.3.31 aligns script settings with the active theme and makes DataTables sorting and pagination clear. See the [release notes](docs/release-0.3.31_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -172,7 +172,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.30` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.31` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.
@@ -272,13 +272,14 @@ final layer. The [configuration guide](docs/configuration_en.md) describes the
 current fresh-install layout. The earlier [configuration plan](docs/configuration-migration-plan_en.md)
 is a historical implementation record; the [0.3.0 audit](docs/pre-release-audit-0.3.0_en.md)
 records the initial release checks. Current documentation changes are listed in
-the [0.3.30 release notes](docs/release-0.3.30_en.md).
+the [0.3.31 release notes](docs/release-0.3.31_en.md).
 
 ## Documentation
 
 - Main index (EN): [docs/index_en.md](docs/index_en.md)
 - Main index (HR): [docs/index_hr.md](docs/index_hr.md)
 - [Installation](docs/installation_en.md)
+- [Theme-aware script settings and DataTables controls in 0.3.31](docs/release-0.3.31_en.md)
 - [Recoverable survey deletion and collaborative drafts in 0.3.30](docs/release-0.3.30_en.md)
 - [Full application navigation in 0.3.21](docs/release-0.3.21_en.md)
 - [Modular installations and HTML workspace adoption in 0.3.20](docs/release-0.3.20_en.md)

@@ -1,6 +1,7 @@
 # Simbioza documentation (EN)
 
-- [Controlled page scripts and translated help in 0.3.30](release-0.3.30_en.md)
+- [Theme-aware script settings and DataTables controls in 0.3.31](release-0.3.31_en.md)
+- [Recoverable survey deletion and collaborative drafts in 0.3.30](release-0.3.30_en.md)
 - [Original gradients and optional text shadows in 0.3.24](release-0.3.24_en.md)
 - [Full application navigation in 0.3.21](release-0.3.21_en.md)
 - [Modular installations in 0.3.20](release-0.3.20_en.md)

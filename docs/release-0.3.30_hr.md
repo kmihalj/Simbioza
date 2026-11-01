@@ -1,5 +1,7 @@
 # Simbioza 0.3.30 — brisanje anketa i sadržaj Igraonice
 
+> Povijesna bilješka izdanja. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.31](release-0.3.31_hr.md).
+
 [Engleska verzija](release-0.3.30_en.md)
 
 Stranice anketa sada imaju koš za brisanje u zaglavlju, kao obične stranice. Brisanje premješta anketu u oporavljivo smeće i zaustavlja prikupljanje; prihvaćeni odgovori, revizije i postavke ostaju dostupni za administratorski povrat. Vraćena prethodno objavljena anketa ostaje zatvorena dok je objavljivač izričito ne otvori. Rasporedi izvještaja nakon brisanja ostaju isključeni.
