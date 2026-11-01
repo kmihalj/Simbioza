@@ -1,5 +1,7 @@
 # Simbioza 0.3.31 — postavke skripti i kontrole tablica usklađene s temom
 
+> Povijesna bilješka izdanja. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.32](release-0.3.32_hr.md).
+
 [Engleska verzija](release-0.3.31_en.md)
 
 Postavke skripti HTML editora koriste boje pozadine koda, teksta i obruba aktivne teme. Ugniježđeni kod više nema zasebnu obojenu traku. Isječci za učitavanje biblioteke i neobavezni kod za pokretanje prate svijetli i tamni način prikaza.

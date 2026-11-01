@@ -1,5 +1,7 @@
 # Simbioza 0.3.31 — theme-aware script settings and table controls
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.32](release-0.3.32_en.md).
+
 [Croatian version](release-0.3.31_hr.md)
 
 HTML Editor script settings use the active theme's code background, text and border colours. Nested code no longer creates a separate coloured strip. Both library loading snippets and optional startup code follow light and dark mode.

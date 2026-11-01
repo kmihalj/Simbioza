@@ -350,4 +350,9 @@ return [
   'Odaberite instalirani jezik upute.' => 'Odaberite instalirani jezik upute.',
   'Jezik upute' => 'Jezik upute',
   'Prikazuje se prijevod na jeziku sučelja, zatim engleski ili prvi dostupan prijevod.' => 'Prikazuje se prijevod na jeziku sučelja, zatim engleski ili prvi dostupan prijevod.',
+  'Postavke tablice' => 'Postavke tablice',
+  'Sortiranje i paginacija' => 'Sortiranje i paginacija',
+  'Čitatelji mogu sortirati stupce i odabrati broj redaka po stranici. Izvorni redoslijed i sadržaj ostaju sačuvani.' => 'Čitatelji mogu sortirati stupce i odabrati broj redaka po stranici. Izvorni redoslijed i sadržaj ostaju sačuvani.',
+  'Potrebna je tablica s jednim retkom zaglavlja, bez spojenih ćelija i ugniježđenih tablica.' => 'Potrebna je tablica s jednim retkom zaglavlja, bez spojenih ćelija i ugniježđenih tablica.',
+  'Početni broj redaka po stranici' => 'Početni broj redaka po stranici',
 ];

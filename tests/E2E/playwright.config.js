@@ -29,6 +29,10 @@ export default defineConfig({
   use: {
     baseURL,
     browserName: 'chromium',
+    // EN: Local CI can reuse an installed Chrome; hosted CI retains bundled Chromium.
+    //
+    // HR: Lokalni CI može koristiti instalirani Chrome; udaljeni CI zadržava svoj Chromium.
+    channel: process.env.HPH_E2E_BROWSER_CHANNEL || undefined,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

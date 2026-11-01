@@ -1,6 +1,6 @@
 # Dokumentacija Simbioze (HR)
 
-- [Postavke skripti i kontrole tablica usklađene s temom u 0.3.31](release-0.3.31_hr.md)
+- [Vlastite kontrole tablica sadržaja u 0.3.32](release-0.3.32_hr.md)
 - [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.30](release-0.3.30_hr.md)
 - [Izvorni gradijenti i neobavezne sjene teksta u 0.3.24](release-0.3.24_hr.md)
 - [Navigacija pune aplikacije u 0.3.21](release-0.3.21_hr.md)

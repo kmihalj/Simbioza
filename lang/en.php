@@ -350,4 +350,9 @@ return [
   'Odaberite instalirani jezik upute.' => 'Select an installed instruction language.',
   'Jezik upute' => 'Instruction language',
   'Prikazuje se prijevod na jeziku sučelja, zatim engleski ili prvi dostupan prijevod.' => 'Displays the interface-language translation, then English or the first available translation.',
+  'Postavke tablice' => 'Table settings',
+  'Sortiranje i paginacija' => 'Sorting and pagination',
+  'Čitatelji mogu sortirati stupce i odabrati broj redaka po stranici. Izvorni redoslijed i sadržaj ostaju sačuvani.' => 'Readers can sort columns and choose the number of rows per page. The original order and content are preserved.',
+  'Potrebna je tablica s jednim retkom zaglavlja, bez spojenih ćelija i ugniježđenih tablica.' => 'A table needs one header row, with no merged cells or nested tables.',
+  'Početni broj redaka po stranici' => 'Initial rows per page',
 ];

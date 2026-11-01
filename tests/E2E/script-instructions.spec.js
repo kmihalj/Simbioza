@@ -97,67 +97,52 @@ test('approved script help opens a passive accessible modal without changing scr
   await page.screenshot({ path: test.info().outputPath('scripts-without-help.png'), fullPage: true });
 });
 
-test('DataTables examples are pending by default and become usable only after approval and page selection', async ({ page, request }) => {
+test('native table controls are per table, include All, and need no external script approval', async ({ page, request }) => {
   test.setTimeout(120_000);
   await login(page, adminLogin, adminPassword);
   await page.goto('/settings/editor-html');
-  const entries = page.locator('[data-external-script-entry]').filter({ hasText: 'DataTables 3.1.4' });
-  await expect(entries).toHaveCount(1);
-  const ids = [];
-  for (let index = 0; index < 1; index++) {
-    const entry = entries.nth(index);
-    await expect(entry.locator(':scope > summary')).toContainText(/Pending approval|Awaiting approval/);
-    ids.push(await entry.getAttribute('data-external-script-entry'));
-    await entry.locator(':scope > summary').click();
-    const loading = entry.locator('[data-script-loading-code]');
-    await expect(loading).toContainText('datatables.min.css');
-    await expect(loading).toContainText('datatables.min.js');
-    await expect(loading).not.toContainText('new window.DataTable');
-    expect((await loading.textContent()).trim().split('\n')).toHaveLength(2);
-    expect(await loading.evaluate(node => getComputedStyle(node).whiteSpace)).toBe('pre');
-    const startup = entry.locator('[data-script-startup-code]');
-    await expect(startup.locator('pre')).toBeHidden();
-    await startup.locator(':scope > summary').click();
-    await expect(startup.locator('pre')).toContainText('// EN:');
-    await expect(startup.locator('pre')).toContainText('// HR:');
-    await expect(startup.locator('pre')).toContainText('new window.DataTable');
-    await entry.locator(':scope > summary').click();
-  }
-  const slug = `datatable-example-${Date.now()}`;
+  await expect(page.locator('[data-external-script-entry]').filter({ hasText: 'DataTables 3.1.4' })).toHaveCount(0);
+  const slug = `native-table-${Date.now()}`;
+  const rows = Array.from({length: 23}, (_, index) => `<tr><td>${23-index}</td></tr>`).join('');
   await expectData(await request.post('/api/v1/pages', {
     headers: apiHeaders(adminApiToken, { 'Idempotency-Key': idempotencyKey(slug) }),
-    data: { title: 'DataTables example', slug, language: 'en', html: '<table id="dt-tablica-1">'
-      + '<thead><tr><th scope="col">Number</th></tr></thead><tbody><tr><td>2</td></tr><tr><td>1</td></tr></tbody></table>' },
+    data: { title: 'Native tables', slug, language: 'en', html: '<table id="native-test">'
+      + '<thead><tr><th scope="col">Number</th></tr></thead><tbody>' + rows + '</tbody></table>'
+      + '<table id="plain-test"><thead><tr><th>Plain</th></tr></thead><tbody><tr><td>Unchanged</td></tr></tbody></table>' },
   }), 201);
   await page.goto(`/editor-html?document=${slug}&lang=en`);
-  for (const id of ids) await expect(page.locator(`[data-editor-external-script="${id}"]`)).toHaveCount(0);
-  await page.goto(`/editor-html/view?document=${slug}&lang=en`);
-  await expect(page.locator('link[href*="cdn.datatables.net"]')).toHaveCount(0);
-  expect(await page.evaluate(() => typeof window.DataTable)).toBe('undefined');
-  for (const id of ids) {
-    await page.goto('/settings/editor-html');
-    const entry = page.locator(`[data-external-script-entry="${id}"]`);
-    await entry.locator(':scope > summary').click();
-    await entry.locator('button[name="action"][value="approve"]').click();
-    await page.waitForURL((url) => url.searchParams.get('saved') === '1');
-  }
-  await page.goto(`/editor-html?document=${slug}&lang=en`);
-  await page.getByRole('button', { name: 'External scripts', exact: true }).click();
-  for (const id of ids) {
-    await expect(page.locator(`[data-editor-script-help="${id}"]`)).toBeVisible();
-    await page.locator(`[data-editor-external-script="${id}"]`).check();
-  }
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.locator('#native-test tbody td').first().click();
+  await page.getByRole('button', {name:'Table',exact:true}).click();
+  await page.getByRole('button', {name:'Table settings',exact:true}).click();
+  const settings = page.getByRole('dialog', {name:'Table settings',exact:true});
+  await expectUsableModal(settings);
+  await settings.getByRole('checkbox', {name:'Sorting and pagination',exact:true}).check();
+  await settings.getByRole('combobox', {name:'Initial rows per page',exact:true}).selectOption('all');
+  await settings.getByRole('button', {name:'Apply',exact:true}).click();
+  await expect(settings).toBeHidden();
+  await expect(page.locator('[data-editor-html-surface] .editor-html-table-controls')).toHaveCount(0);
+  await expect(page.locator('#native-test')).toHaveAttribute('data-editor-html-table-page-size', 'all');
+  await page.getByRole('button', {name:'Save',exact:true}).click();
   await page.waitForURL((url) => url.searchParams.get('saved') === '1');
   await page.goto(`/editor-html/view?document=${slug}&lang=en`);
-  await expect(page.locator('.dt-container')).toHaveCount(1);
-  await expect(page.locator('link[href="https://cdn.datatables.net/v/bs5/dt-3.1.4/datatables.min.css"]')).toHaveCount(1);
-  const header = page.locator('#dt-tablica-1').getByRole('columnheader');
-  await header.getByRole('button').focus();
-  await page.keyboard.press('Enter');
+  await expect(page.getByRole('combobox', {name:'Rows per page',exact:true})).toHaveValue('all');
+  await expect(page.locator('#native-test tbody tr:visible')).toHaveCount(23);
+  await expect(page.locator('#plain-test button')).toHaveCount(0);
+  await expect(page.locator('script[src*="datatables"], link[href*="cdn.datatables.net"]')).toHaveCount(0);
+  const header = page.locator('#native-test th');
+  await header.getByRole('button').press('Enter');
   await expect(header).toHaveAttribute('aria-sort', 'ascending');
-  await expect(page.locator('#dt-tablica-1 tbody tr').first().locator('td')).toHaveText('1');
+  await expect(page.locator('#native-test tbody tr').first().locator('td')).toHaveText('1');
+  await page.getByRole('combobox', {name:'Rows per page',exact:true}).selectOption('10');
+  await expect(page.locator('#native-test tbody tr:visible')).toHaveCount(10);
+  await page.getByRole('button', {name:'Last page',exact:true}).click();
+  await expect(page.locator('#native-test tbody tr:visible')).toHaveCount(3);
+  await page.getByRole('combobox', {name:'Rows per page',exact:true}).selectOption('all');
+  await expect(page.locator('#native-test tbody tr:visible')).toHaveCount(23);
+  await expect(page.getByRole('button', {name:'Last page',exact:true})).toBeDisabled();
+  await page.emulateMedia({media:'print'});
+  await expect(page.locator('.editor-html-table-controls:visible')).toHaveCount(0);
+  await expect(page.locator('#native-test tbody tr:visible')).toHaveCount(23);
 });
 
 

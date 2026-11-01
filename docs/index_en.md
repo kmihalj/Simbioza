@@ -1,6 +1,6 @@
 # Simbioza documentation (EN)
 
-- [Theme-aware script settings and DataTables controls in 0.3.31](release-0.3.31_en.md)
+- [Native content-table controls in 0.3.32](release-0.3.32_en.md)
 - [Recoverable survey deletion and collaborative drafts in 0.3.30](release-0.3.30_en.md)
 - [Original gradients and optional text shadows in 0.3.24](release-0.3.24_en.md)
 - [Full application navigation in 0.3.21](release-0.3.21_en.md)
