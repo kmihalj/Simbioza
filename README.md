@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.34 removes the unwanted strips behind hero descriptions. Text colors adapt to the actual text position without altering hero gradients. See the [release notes](docs/release-0.3.34_en.md).
+> Simbioza 0.3.35 removes the unwanted strips behind hero descriptions. Text colors adapt to the actual text position without altering hero gradients. See the [release notes](docs/release-0.3.35_en.md).
 
 [Croatian version](README_hr.md)
 
@@ -172,7 +172,7 @@ Choose one complete guide: [Apache mod_php](docs/installation_mod_php_en.md),
 [secured PHP-FPM](docs/installation_fpm_secured_en.md). Each starts from an
 administrator terminal and includes the full installation procedure.
 
-The public immutable image `ghcr.io/kmihalj/simbioza:0.3.34` is an additional
+The public immutable image `ghcr.io/kmihalj/simbioza:0.3.35` is an additional
 Docker/Colima route, with one runtime configuration/data volume and a separate
 PostgreSQL volume. See the [Docker guide](docs/docker_en.md) for initialization,
 explicit migrations and optional SimpleSAMLphp.

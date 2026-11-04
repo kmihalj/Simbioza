@@ -1,8 +1,8 @@
-# Simbioza 0.3.34 — description contrast without background strips
+# Simbioza 0.3.35 — description contrast without background strips
 
-[Croatian version](release-0.3.34_hr.md)
+[Croatian version](release-0.3.35_hr.md)
 
-Theme **0.3.10** removes the unwanted backgrounds introduced behind supporting
+Theme **0.3.11** removes the unwanted backgrounds introduced behind supporting
 descriptions in 0.3.33. Contrast is adjusted through the text foreground only.
 The calculation uses the text's actual position and line width rather than the
 entire hero gradient, so a readable configured color remains unchanged.

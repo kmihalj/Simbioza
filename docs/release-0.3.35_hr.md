@@ -1,8 +1,8 @@
-# Simbioza 0.3.34 — kontrast opisa bez dodanih podloga
+# Simbioza 0.3.35 — kontrast opisa bez dodanih podloga
 
-[Engleska verzija](release-0.3.34_en.md)
+[Engleska verzija](release-0.3.35_en.md)
 
-Theme **0.3.10** uklanja neželjene pozadine dodane iza pratećih opisa u izdanju
+Theme **0.3.11** uklanja neželjene pozadine dodane iza pratećih opisa u izdanju
 0.3.33. Kontrast se prilagođava isključivo bojom slova. Izračun uzima stvarni
 položaj i širinu redaka teksta umjesto cijelog hero gradijenta, pa čitljiva
 zadana boja ostaje sačuvana.

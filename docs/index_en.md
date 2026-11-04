@@ -1,6 +1,6 @@
 # Simbioza documentation (EN)
 
-- [Foreground-only description contrast in 0.3.34](release-0.3.34_en.md)
+- [Foreground-only description contrast in 0.3.35](release-0.3.35_en.md)
 - [Twelve themes and readable page headings in 0.3.33](release-0.3.33_en.md)
 - [Native content-table controls in 0.3.32](release-0.3.32_en.md)
 - [Recoverable survey deletion and collaborative drafts in 0.3.30](release-0.3.30_en.md)
