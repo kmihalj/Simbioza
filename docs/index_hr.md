@@ -1,5 +1,6 @@
 # Dokumentacija Simbioze (HR)
 
+- [Kontrast opisa bez dodanih podloga u 0.3.34](release-0.3.34_hr.md)
 - [Dvanaest tema i čitljivi opisi stranica u 0.3.33](release-0.3.33_hr.md)
 - [Vlastite kontrole tablica sadržaja u 0.3.32](release-0.3.32_hr.md)
 - [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.30](release-0.3.30_hr.md)

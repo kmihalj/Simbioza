@@ -1114,7 +1114,7 @@ test.describe('module browser surfaces', () => {
 
   });
 
-  test('Page descriptions keep readable contrast on their actual surface', async ({ page }) => {
+  test('Descriptions adapt foregrounds without adding background strips', async ({ page }) => {
     test.setTimeout(240_000);
     await login(page, adminLogin, adminPassword);
     await page.goto('/settings/theme', { waitUntil: 'domcontentloaded' });
@@ -1132,46 +1132,70 @@ test.describe('module browser surfaces', () => {
         await saveTheme(theme);
         for (const width of [1440, 390]) {
           await page.setViewportSize({ width, height: 1000 });
-          for (const route of ['/calendars', '/workspaces', '/settings/theme']) {
+          for (const route of ['/', '/calendars', '/workspaces', '/settings/theme']) {
             await page.goto(route, { waitUntil: 'domcontentloaded' });
             const descriptions = page.locator('[data-hph-support-surface]');
             await expect(descriptions.first(), `${theme} ${width} ${route}`).toBeVisible();
             for (const mode of ['light', 'dark']) {
               await page.evaluate((value) => { document.documentElement.dataset.hphTheme = value; }, mode);
-              const contrasts = await descriptions.evaluateAll((elements) => {
+              await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+              const copies = await descriptions.evaluateAll((elements) => {
                 const channels = (color) => color.match(/[\d.]+/g).slice(0, 3).map(Number);
                 const luminance = (color) => channels(color).map((v) => {
                   const n = v / 255;
                   return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
                 }).reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
-                const resolve = (value) => {
-                  const probe = document.createElement('span');
-                  probe.style.color = value;
-                  document.body.append(probe);
-                  const color = getComputedStyle(probe).color;
-                  probe.remove();
-                  return color;
-                };
+                const ratio = (text, background) => (Math.max(text, background) + 0.05)
+                  / (Math.min(text, background) + 0.05);
+                const hero = document.querySelector('[data-hph-hero]');
                 return elements.filter((el) => el.getBoundingClientRect().height > 0).map((el) => {
                   const style = getComputedStyle(el);
-                  const role = el.dataset.hphSupportSurface;
-                  let backgrounds;
-                  if (role === 'hero' && style.backgroundColor.endsWith(', 0)')) {
-                    backgrounds = [1, 2, 3, 4, 5].map((n) => resolve(style.getPropertyValue(`--hph-hero-gradient-${n}`)));
-                  } else if (role === 'hero' || role === 'surface') {
-                    backgrounds = [style.backgroundColor];
-                  } else {
-                    backgrounds = [resolve(style.getPropertyValue(`--hph-${role === 'body' ? 'body' : role}-bg`))];
+                  const range = document.createRange();
+                  range.selectNodeContents(el);
+                  const backgrounds = [];
+                  const localHero = el.closest('.theme-preview-hero') || hero;
+                  const bounds = localHero?.getBoundingClientRect();
+                  let parent = el.parentElement;
+                  let surface = null;
+                  while (parent && parent !== document.body && parent !== localHero) {
+                    const color = getComputedStyle(parent).backgroundColor;
+                    if (color !== 'transparent' && !color.endsWith(', 0)')) {
+                      surface = color;
+                      break;
+                    }
+                    parent = parent.parentElement;
+                  }
+                  for (const line of range.getClientRects()) {
+                    for (const y of [line.top, line.bottom]) {
+                      for (let x = line.left; x <= line.right; x += Math.min(12, line.right - x || 12)) {
+                        if (surface) backgrounds.push(luminance(surface));
+                        else if (bounds && y >= bounds.top && y <= bounds.bottom) {
+                          const stops = [...getComputedStyle(localHero).backgroundImage.matchAll(/rgb\(([^)]+)\)/g)]
+                            .map((m) => m[1].split(',').map(Number));
+                          const position = Math.max(0, Math.min(1, (x - bounds.left) / bounds.width)) * 4;
+                          const index = Math.min(3, Math.floor(position));
+                          const rgb = stops[index].map((c, i) => Math.round(c
+                            + (stops[index + 1][i] - c) * (position - index)));
+                          backgrounds.push(luminance(`rgb(${rgb.join(',')})`));
+                        } else backgrounds.push(luminance(getComputedStyle(document.body).backgroundColor));
+                      }
+                    }
                   }
                   const text = luminance(style.color);
-                  return backgrounds.map((bg) => {
-                    const background = luminance(bg);
-                    return (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05);
-                  });
-                }).flat();
+                  const black = Math.min(...backgrounds.map((bg) => ratio(0, bg)));
+                  const white = Math.min(...backgrounds.map((bg) => ratio(1, bg)));
+                  return {background: style.backgroundColor,
+                    contrast: Math.min(...backgrounds.map((bg) => ratio(text, bg))),
+                    // EN: A wide dark-to-light gradient may have no passing uniform foreground.
+                    // HR: Široki gradijent od tamnog do svijetlog može onemogućiti jednobojni kontrast 4,5:1.
+                    achievable: Math.min(4.49, Math.max(black, white) - 0.01)};
+                });
               });
-              expect(contrasts.length).toBeGreaterThan(0);
-              expect(Math.min(...contrasts), `${theme} ${width} ${route} ${mode}`).toBeGreaterThanOrEqual(4.49);
+              expect(copies.length).toBeGreaterThan(0);
+              for (const copy of copies) {
+                expect(copy.background, `${theme} ${width} ${route} ${mode}`).toBe('rgba(0, 0, 0, 0)');
+                expect(copy.contrast, `${theme} ${width} ${route} ${mode}`).toBeGreaterThanOrEqual(copy.achievable);
+              }
             }
           }
         }

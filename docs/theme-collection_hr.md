@@ -25,6 +25,10 @@ Otvorite **Postavke → Tema**, u polju **Aktivna tema** odaberite naziv i sprem
 
 ## Uvoz na drugu instalaciju
 
+[Preuzmite ZIP kolekcije s pregledom svih 12 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.33/Simbioza-0.3.33-themes.zip).
+Datoteka je prilog izdanja 0.3.33, pod **Assets**. Nadogradnja aplikacije ne
+uvozi ove teme automatski, pa broj dostupnih tema ostaje isti dok ih ne uvezete.
+
 Svaki ZIP u `resources/installation/theme/simbioza-*.zip` potpuni je izvoz jedne teme. U **Postavke → Tema** otvorite **Uvezi cijelu temu**, odaberite odgovarajući ZIP i uvezite ga. Zatim temu odaberite kao aktivnu. Ne učitavajte ZIP cijele kolekcije u obrazac za jednu temu; iz njega prvo raspakirajte pojedini paket.
 
 Paketi sadrže obje palete, raspored i sve četiri pripadajuće slikovne datoteke s kontrolnim sažecima. Teme ne učitavaju vanjske fontove, skripte ili slike. Znak Simbioze ostaje izvorni znak aplikacije; dekorativne vektorske ilustracije izrađene su posebno za kolekciju.

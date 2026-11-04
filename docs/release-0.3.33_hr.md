@@ -1,5 +1,7 @@
 # Simbioza 0.3.33 — dvanaest tema i čitljivi opisi stranica
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [popravak boje slova u Simbiozi 0.3.34](release-0.3.34_hr.md).
+
 [Engleska verzija](release-0.3.33_en.md)
 
 Theme **0.3.9** osigurava razmak navigacije i kartica na stranicama bez unutarnjeg

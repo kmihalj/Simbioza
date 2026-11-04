@@ -1,5 +1,7 @@
 # Simbioza 0.3.33 — twelve themes and readable page descriptions
 
+> Historical release notes. See the [current installation guide](installation_en.md) and the [foreground-only correction in Simbioza 0.3.34](release-0.3.34_en.md).
+
 [Croatian version](release-0.3.33_hr.md)
 
 Theme **0.3.9** keeps a clear gap between navigation and cards on pages without

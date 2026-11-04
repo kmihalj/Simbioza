@@ -25,6 +25,11 @@ Open **Settings → Theme**, choose its name in **Active theme**, and save the s
 
 ## Importing into another installation
 
+[Download the collection ZIP with previews of all 12 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.33/Simbioza-0.3.33-themes.zip).
+The file is attached to release 0.3.33 under **Assets**. Application upgrades do
+not import these themes automatically; the number of available themes remains
+unchanged until you import them.
+
 Each ZIP in `resources/installation/theme/simbioza-*.zip` is a complete export of one theme. Under **Settings → Theme**, open **Import complete theme**, select the appropriate ZIP and import it. Then select it as the active theme. Do not upload the entire collection ZIP into the single-theme form; extract an individual package first.
 
 Packages include both palettes, layout and all four associated image files with checksums. The themes load no remote fonts, scripts or images. The Simbioza mark remains the original application mark; decorative vector illustrations were created specifically for this collection.
