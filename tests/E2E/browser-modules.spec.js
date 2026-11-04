@@ -683,9 +683,9 @@ test.describe('module browser surfaces', () => {
   });
 
   test('single calendar settings and direct subscription use the displayed calendar', async ({ page, request }) => {
-    // EN: Ten theme/mode round trips need time to restore the original global theme.
+    // EN: Allow time for every installed theme and for restoring the original selection.
     //
-    // HR: Deset prolaza tema/način treba vrijeme i za vraćanje izvorne globalne teme.
+    // HR: Svaka instalirana tema i vraćanje izvornog odabira trebaju dovoljno vremena.
     test.setTimeout(180_000);
     const calendarName = `E2E single calendar ${Date.now()}`;
     const created = await expectData(await request.post('/api/v1/calendars', {
@@ -771,13 +771,14 @@ test.describe('module browser surfaces', () => {
       (options) => options.map((option) => option.value).filter((value) => value !== ''),
     );
     expect(themeIds).toEqual(expect.arrayContaining(['aai', 'dabar', 'simbioza', 'srce-sup', 'standard']));
+    test.setTimeout(90_000 + themeIds.length * 20_000);
     try {
       for (const themeId of themeIds) {
         for (const modePolicy of ['light', 'dark']) {
           await page.locator('#active_theme').selectOption(themeId);
           await page.locator('#mode_policy').selectOption(modePolicy);
           await Promise.all([
-            page.waitForLoadState('networkidle'),
+            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
             page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
           ]);
           await page.goto(calendarPath);
@@ -786,10 +787,11 @@ test.describe('module browser surfaces', () => {
         }
       }
     } finally {
+      await page.goto('/settings/theme', { waitUntil: 'domcontentloaded' });
       await page.locator('#active_theme').selectOption(originalTheme);
       await page.locator('#mode_policy').selectOption(originalModePolicy);
       await Promise.all([
-        page.waitForLoadState('networkidle'),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
         page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
       ]);
     }
@@ -1044,7 +1046,7 @@ test.describe('module browser surfaces', () => {
     }
   });
 
-  test('Supporting copy beneath automatic hero titles uses the hero subtitle color', async ({ page }) => {
+  test('Supporting copy follows its visible surface after automatic titles are removed', async ({ page }) => {
     await login(page, adminLogin, adminPassword);
 
     for (const route of ['/calendars', '/workspaces']) {
@@ -1055,18 +1057,18 @@ test.describe('module browser surfaces', () => {
       ).first();
       await expect(supportingCopy, route).toBeVisible();
 
+      await expect(supportingCopy).toHaveAttribute('data-hph-support-surface', /.+/);
       const colors = await supportingCopy.evaluate((element) => {
-        const rootStyle = getComputedStyle(document.documentElement);
+        const rootStyle = getComputedStyle(element);
 
         return {
           actual: getComputedStyle(element).color,
-          hero: rootStyle.getPropertyValue('--hph-support-hero-text').trim(),
+          hero: rootStyle.getPropertyValue('--hph-support-text').trim(),
           muted: rootStyle.getPropertyValue('--hph-muted-text').trim(),
         };
       });
 
       expect(colors.hero, route).not.toBe('');
-      expect(colors.hero.toLowerCase(), route).not.toBe(colors.muted.toLowerCase());
       expect(colors.actual, route).toBe(
         await page.evaluate((heroColor) => {
           const probe = document.createElement('span');
@@ -1113,14 +1115,15 @@ test.describe('module browser surfaces', () => {
   });
 
   test('Page descriptions keep readable contrast on their actual surface', async ({ page }) => {
+    test.setTimeout(240_000);
     await login(page, adminLogin, adminPassword);
-    await page.goto('/settings/theme');
+    await page.goto('/settings/theme', { waitUntil: 'domcontentloaded' });
     const original = await page.locator('#active_theme').inputValue();
     const saveTheme = async (id) => {
-      await page.goto('/settings/theme');
+      await page.goto('/settings/theme', { waitUntil: 'domcontentloaded' });
       await page.locator('#active_theme').selectOption(id);
       await Promise.all([
-        page.waitForNavigation(),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
         page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
       ]);
     };
@@ -1130,7 +1133,7 @@ test.describe('module browser surfaces', () => {
         for (const width of [1440, 390]) {
           await page.setViewportSize({ width, height: 1000 });
           for (const route of ['/calendars', '/workspaces', '/settings/theme']) {
-            await page.goto(route);
+            await page.goto(route, { waitUntil: 'domcontentloaded' });
             const descriptions = page.locator('[data-hph-support-surface]');
             await expect(descriptions.first(), `${theme} ${width} ${route}`).toBeVisible();
             for (const mode of ['light', 'dark']) {

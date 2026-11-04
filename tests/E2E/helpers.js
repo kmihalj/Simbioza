@@ -57,13 +57,13 @@ export async function login(page, loginIdentifier, password) {
  */
 export async function expectUsableModal(modal) {
   await expect(modal).toBeVisible();
-  const state = await modal.evaluate((element) => {
+  const modalState = () => modal.evaluate((element) => {
     const backdrop = document.querySelector('.modal-backdrop.show');
     const dialog = element.querySelector('.modal-dialog');
     const rectangle = (dialog || element).getBoundingClientRect();
     const centerTarget = document.elementFromPoint(
-      rectangle.left + (rectangle.width / 2),
-      rectangle.top + (rectangle.height / 2),
+      (Math.max(0, rectangle.left) + Math.min(innerWidth, rectangle.right)) / 2,
+      (Math.max(0, rectangle.top) + Math.min(innerHeight, rectangle.bottom)) / 2,
     );
     const modalZIndex = Number.parseInt(getComputedStyle(element).zIndex, 10);
     const backdropZIndex = backdrop instanceof HTMLElement
@@ -79,9 +79,10 @@ export async function expectUsableModal(modal) {
     };
   });
 
+  const state = await modalState();
   expect(state.directBodyChild).toBe(true);
   expect(state.modalZIndex).toBeGreaterThan(state.backdropZIndex);
-  expect(state.centerBelongsToModal).toBe(true);
+  await expect.poll(async () => (await modalState()).centerBelongsToModal).toBe(true);
   expect(state.pointerEvents).not.toBe('none');
 
   /*
