@@ -1,5 +1,6 @@
 # Simbioza documentation (EN)
 
+- [Twelve themes and readable page headings in 0.3.33](release-0.3.33_en.md)
 - [Native content-table controls in 0.3.32](release-0.3.32_en.md)
 - [Recoverable survey deletion and collaborative drafts in 0.3.30](release-0.3.30_en.md)
 - [Original gradients and optional text shadows in 0.3.24](release-0.3.24_en.md)
@@ -40,6 +41,7 @@ Brand slogan: **Knowledge that lives together.**
 - [Docker deployment, volumes, image updates and optional SAML](docker_en.md)
 - [Container readiness and verification boundaries](container-readiness_en.md)
 - [Brand identity and the Simbioza theme](branding_en.md)
+- [Twelve optional themes: previews, selection and import](theme-collection_en.md)
 
 
 The documentation is structured for beginners and advanced users. Each topic

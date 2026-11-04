@@ -40,7 +40,7 @@ RUN composer update --no-dev --no-interaction --no-progress --no-scripts --prefe
     && find vendor -type d -name .git -prune -exec rm -r {} +
 
 FROM php-runtime AS application
-ARG VERSION=0.3.32
+ARG VERSION=0.3.33
 ARG REVISION=unknown
 LABEL org.opencontainers.image.title="Simbioza" \
     org.opencontainers.image.source="https://github.com/kmihalj/Simbioza" \

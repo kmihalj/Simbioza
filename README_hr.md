@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.32 dodaje vlastito sortiranje i paginaciju tablica u sadržaju, uključujući izbor Sve, te uklanja ugrađeni primjer DataTables. Vidi [bilješke izdanja](docs/release-0.3.32_hr.md).
+> Simbioza 0.3.33 dodaje dvanaest opcionalnih tema, popravlja razmak kartica od navigacije i čitljivost opisa stranica na hero i sadržajnim pozadinama. Vidi [bilješke izdanja](docs/release-0.3.33_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -173,7 +173,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.32` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.33` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.

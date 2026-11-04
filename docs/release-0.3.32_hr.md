@@ -1,5 +1,7 @@
 # Simbioza 0.3.32 — vlastite kontrole tablica u sadržaju
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.33](release-0.3.33_hr.md).
+
 [Engleska verzija](release-0.3.32_en.md)
 
 HTML Editor **0.3.13** dodaje zasebno uključivanje sortiranja stupaca, paginacije

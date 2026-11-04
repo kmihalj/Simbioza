@@ -1060,7 +1060,7 @@ test.describe('module browser surfaces', () => {
 
         return {
           actual: getComputedStyle(element).color,
-          hero: rootStyle.getPropertyValue('--hph-hero-subtitle').trim(),
+          hero: rootStyle.getPropertyValue('--hph-support-hero-text').trim(),
           muted: rootStyle.getPropertyValue('--hph-muted-text').trim(),
         };
       });
@@ -1110,6 +1110,73 @@ test.describe('module browser surfaces', () => {
       return resolved;
     }, settingsColors.muted));
 
+  });
+
+  test('Page descriptions keep readable contrast on their actual surface', async ({ page }) => {
+    await login(page, adminLogin, adminPassword);
+    await page.goto('/settings/theme');
+    const original = await page.locator('#active_theme').inputValue();
+    const saveTheme = async (id) => {
+      await page.goto('/settings/theme');
+      await page.locator('#active_theme').selectOption(id);
+      await Promise.all([
+        page.waitForNavigation(),
+        page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
+      ]);
+    };
+    try {
+      for (const theme of ['simbioza', 'srce-sup', 'standard']) {
+        await saveTheme(theme);
+        for (const width of [1440, 390]) {
+          await page.setViewportSize({ width, height: 1000 });
+          for (const route of ['/calendars', '/workspaces', '/settings/theme']) {
+            await page.goto(route);
+            const descriptions = page.locator('[data-hph-support-surface]');
+            await expect(descriptions.first(), `${theme} ${width} ${route}`).toBeVisible();
+            for (const mode of ['light', 'dark']) {
+              await page.evaluate((value) => { document.documentElement.dataset.hphTheme = value; }, mode);
+              const contrasts = await descriptions.evaluateAll((elements) => {
+                const channels = (color) => color.match(/[\d.]+/g).slice(0, 3).map(Number);
+                const luminance = (color) => channels(color).map((v) => {
+                  const n = v / 255;
+                  return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+                }).reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
+                const resolve = (value) => {
+                  const probe = document.createElement('span');
+                  probe.style.color = value;
+                  document.body.append(probe);
+                  const color = getComputedStyle(probe).color;
+                  probe.remove();
+                  return color;
+                };
+                return elements.filter((el) => el.getBoundingClientRect().height > 0).map((el) => {
+                  const style = getComputedStyle(el);
+                  const role = el.dataset.hphSupportSurface;
+                  let backgrounds;
+                  if (role === 'hero' && style.backgroundColor.endsWith(', 0)')) {
+                    backgrounds = [1, 2, 3, 4, 5].map((n) => resolve(style.getPropertyValue(`--hph-hero-gradient-${n}`)));
+                  } else if (role === 'hero' || role === 'surface') {
+                    backgrounds = [style.backgroundColor];
+                  } else {
+                    backgrounds = [resolve(style.getPropertyValue(`--hph-${role === 'body' ? 'body' : role}-bg`))];
+                  }
+                  const text = luminance(style.color);
+                  return backgrounds.map((bg) => {
+                    const background = luminance(bg);
+                    return (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05);
+                  });
+                }).flat();
+              });
+              expect(contrasts.length).toBeGreaterThan(0);
+              expect(Math.min(...contrasts), `${theme} ${width} ${route} ${mode}`).toBeGreaterThanOrEqual(4.49);
+            }
+          }
+        }
+      }
+    } finally {
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await saveTheme(original);
+    }
   });
 
   test('Theme editor keeps page order and previews light and dark branding immediately', async ({ page }) => {

@@ -1,5 +1,6 @@
 # Dokumentacija Simbioze (HR)
 
+- [Dvanaest tema i čitljivi opisi stranica u 0.3.33](release-0.3.33_hr.md)
 - [Vlastite kontrole tablica sadržaja u 0.3.32](release-0.3.32_hr.md)
 - [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.30](release-0.3.30_hr.md)
 - [Izvorni gradijenti i neobavezne sjene teksta u 0.3.24](release-0.3.24_hr.md)
@@ -40,6 +41,7 @@ Slogan brenda: **Znanje koje živi zajedno.**
 - [Docker instalacija, volumeni, nadogradnja imagea i opcionalni SAML](docker_hr.md)
 - [Spremnost za containere i granice provjere](container-readiness_hr.md)
 - [Vizualni identitet i tema Simbioza](branding_hr.md)
+- [Dvanaest opcionalnih tema: pregled, odabir i uvoz](theme-collection_hr.md)
 
 
 Dokumentacija je strukturirana za početnike i napredne korisnike. Svaka tema

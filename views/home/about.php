@@ -13,15 +13,22 @@ $themeShowsInnerHero = isset($themeLayoutRenderer)
 && method_exists($themeLayoutRenderer, 'heroEnabled')
 && $themeLayoutRenderer->heroEnabled(false);
 
+// EN: The layout supplies the title when an active theme places it in content.
+//
+// HR: Layout ispisuje naslov kada ga aktivna tema smješta u sadržaj.
+$themeSuppliesContentTitle = isset($themeLayoutRenderer)
+&& $themeLayoutRenderer->isEnabled()
+&& in_array($themeLayoutRenderer->titlePlacement('application'), ['content', 'content-card'], true);
+
 ?>
 
 <div class="card mb-4 hph-content-card">
-    <?php if (!$themeShowsInnerHero) : ?>
+    <?php if (!$themeShowsInnerHero && !$themeSuppliesContentTitle) : ?>
     <div class="card-header">
         <h1><?= $this->escape(__($title)) ?></h1>
     </div>
     <?php endif; ?>
-    <div class="card-body">
+    <div class="card-body" data-hph-content-title-target>
         <p class="lead"><?= $this->escape(__(
             'Simbioza povezuje stranice i Wiki, kalendare i sastanke, ankete, zadatke, komentare i obavijesti. '
             . 'Sve što vašoj zajednici treba za zajednički rad dostupno je u jednoj aplikaciji.',
