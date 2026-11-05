@@ -832,15 +832,21 @@ final class InstallationTest extends TestCase
         $this->assertIsString($themesJson);
         $themes = json_decode($themesJson, true, 512, JSON_THROW_ON_ERROR);
         $this->assertIsArray($themes);
-        $this->assertCount(1, $themes);
-        $this->assertSame('simbioza', $themes[0]['id']);
-        $this->assertSame(72, $themes[0]['components']['header']['height_px'] ?? null);
-        $this->assertSame(56, $themes[0]['components']['navigation']['height_px'] ?? null);
+        $this->assertCount(26, $themes);
+        $themesById = array_column($themes, null, 'id');
+        $this->assertArrayHasKey('simbioza', $themesById);
+        $installedTheme = $themesById['simbioza'];
+        $this->assertFileExists($paths->themeConfigDirectory() . '/collection.json');
+        $this->assertSame(72, $installedTheme['components']['header']['height_px'] ?? null);
+        $this->assertSame(56, $installedTheme['components']['navigation']['height_px'] ?? null);
         $themeDirectories = array_values(array_filter(
             scandir($root . '/data/themes') ?: [],
             static fn(string $entry): bool => !str_starts_with($entry, '.'),
         ));
-        $this->assertSame(['simbioza'], $themeDirectories);
+        $this->assertContains('simbioza', $themeDirectories);
+        $this->assertContains('simbioza-stadion', $themeDirectories);
+        $this->assertContains('aai', $themeDirectories);
+        $this->assertContains('dabar', $themeDirectories);
 
         // EN: A real existing-install update preserves user themes, guide
         //     identity and ACL, and does not reimport an unchanged package.
@@ -884,7 +890,9 @@ $handler = $container->get(\HeartPhrame\Factory\CallableFactory::class)->buildCa
 exit($handler([], ['connection' => 'default', 'path' => 'database/migrations']));
 PHP);
         file_put_contents($root . '/data/update-maintenance.json', '{"target_tag":"0.1.68"}');
-        $customTheme = $themes[0];
+        $themeIndex = array_search('simbioza', array_column($themes, 'id'), true);
+        $this->assertIsInt($themeIndex);
+        $customTheme = $themes[$themeIndex];
         $customTheme['id'] = 'custom-user-theme';
         $customTheme['name'] = 'User custom theme';
         $customTheme['system'] = false;
@@ -894,10 +902,10 @@ PHP);
         //
         // HR: Administrator smije urediti i isporučenu temu, ne samo njezinu kopiju.
         //     Nedostajuća evidencija nadogradnje ili izmijenjeni ZIP ne smiju je resetirati.
-        $themes[0]['light']['colors']['muted_text'] = '#D6D6D6';
-        $themes[0]['dark']['colors']['muted_text'] = '#121212';
-        $themes[0]['components']['header']['height_px'] = 108;
-        $themes[0]['components']['hero']['visual_rotation_deg'] = 17;
+        $themes[$themeIndex]['light']['colors']['muted_text'] = '#D6D6D6';
+        $themes[$themeIndex]['dark']['colors']['muted_text'] = '#121212';
+        $themes[$themeIndex]['components']['header']['height_px'] = 108;
+        $themes[$themeIndex]['components']['hero']['visual_rotation_deg'] = 17;
         $themes[] = $customTheme;
         $themesBeforeUpdate = json_encode($themes, JSON_THROW_ON_ERROR);
         file_put_contents($paths->themeConfigDirectory() . '/themes.json', $themesBeforeUpdate);
@@ -1657,10 +1665,10 @@ PHP);
             );
         }
 
-        copy(
-            $projectRoot . '/resources/installation/theme/simbioza.zip',
-            $root . '/resources/installation/theme/simbioza.zip',
-        );
+        foreach (glob($projectRoot . '/resources/installation/theme/*') ?: [] as $themePackage) {
+            copy($themePackage, $root . '/resources/installation/theme/' . basename($themePackage));
+        }
+
         copy(
             $projectRoot . '/resources/installation/workspace/korisnicke-upute.zip',
             $root . '/resources/installation/workspace/korisnicke-upute.zip',

@@ -1,6 +1,6 @@
 # Simbioza
 
-> Simbioza 0.3.35 uklanja neželjene trake iza hero opisa. Boja slova prilagođava se stvarnom položaju teksta bez promjene hero gradijenata. Vidi [bilješke izdanja](docs/release-0.3.35_hr.md).
+> Simbioza 0.3.36 donosi svih 26 tema, svijetlu/tamnu galeriju i jednokratni uvoz koji poštuje kasnije brisanje tema. Vidi [bilješke izdanja](docs/release-0.3.36_hr.md) i [galeriju](docs/theme-gallery_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -173,7 +173,7 @@ Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.m
 [sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
 administratorskom terminalu i sadrži cijeli postupak instalacije.
 
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.35` dodatni je
+Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.36` dodatni je
 Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
 te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
 inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.

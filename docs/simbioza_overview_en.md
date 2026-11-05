@@ -42,3 +42,21 @@ When adding Workspaces to an existing HTML website, its pages keep working indep
 With Wiki installed, these guides are pages in the **User guides** Workspace. Without Wiki, the same content is available from **Guides**, with chapter navigation. Only languages installed and enabled in the application are offered.
 
 HeartPhrame and its modules can also provide the foundation for a custom application: reuse authentication, data access, navigation, appearance and the API instead of rebuilding everything from scratch.
+
+## A look for your community
+
+Simbioza includes **26 ready-made themes**, each with light and dark appearances. Select one under **Settings → Theme → Active theme**. Customize colours, images, hero height, cards, shadows, navigation and typography. Choosing a theme does not change content or permissions.
+
+Starting with release 0.3.36, upgrades add missing bundled themes once. Existing themes and the active selection are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
+
+[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.36/Simbioza-0.3.36-themes.zip)
+
+Extract the collection, then select an individual ZIP from `themes/` in **Import complete theme**. The collection also contains a gallery that opens offline. Do not upload the whole collection as a single theme.
+
+[Click to enlarge: All themes — light appearance](images/theme-gallery/overview-light-en.webp)
+
+![All themes — light appearance](images/theme-gallery/overview-light-en.webp)
+
+[Click to enlarge: All themes — dark appearance](images/theme-gallery/overview-dark-en.webp)
+
+![All themes — dark appearance](images/theme-gallery/overview-dark-en.webp)

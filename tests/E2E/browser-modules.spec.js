@@ -1372,7 +1372,7 @@ test.describe('module browser surfaces', () => {
   });
 
   test('Workspace themes stay private and never mutate system themes or another workspace', async ({ page }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(120_000);
     const suffix = Date.now();
     const headers = apiHeaders(adminApiToken);
     const alpha = {
@@ -1460,6 +1460,56 @@ test.describe('module browser surfaces', () => {
       name: new RegExp(`Edit theme: Standard .* ${alpha.name}`),
     })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Export complete theme' })).toBeVisible();
+
+    /*
+     * EN: A private theme also exercises breadcrumb clearance with a tall embedded
+     *     menu and with its hero disabled, without modifying any system theme.
+     *
+     * HR: Privatna tema provjerava i razmak breadcrumba od visokog ugrađenog menija
+     *     te prikaz bez hero elementa, bez izmjene ijedne sistemske teme.
+     */
+    const alphaThemePath = page.url();
+    const configurePrivateLayout = async (hero, height) => {
+      await page.goto(alphaThemePath);
+      await page.locator('#theme-editor-form').evaluate((form, values) => {
+        const fields = {
+          'components[hero][inner_enabled]': values.hero,
+          'components[content][inner_title_placement]': 'content-card',
+          'components[content][inner_hero_overlap]': 'small',
+          'components[navigation][placement]': 'hero',
+          'components[navigation][height_px]': values.height,
+        };
+        for (const [name, value] of Object.entries(fields)) {
+          const control = form.querySelector(`[name="${name}"]:not([type="hidden"])`);
+          if (!control) throw new Error(`Missing theme control: ${name}`);
+          if (control.type === 'checkbox') control.checked = value;
+          else control.value = String(value);
+          control.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }, { hero, height });
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+        page.getByRole('button', { name: 'Save theme', exact: true }).click(),
+      ]);
+    };
+    const expectBreadcrumbClearance = async () => {
+      await expect.poll(() => page.locator('.workspace-breadcrumb-nav').evaluate((trail) => {
+        const nav = document.querySelector('.hph-primary-navigation').getBoundingClientRect();
+        return trail.getBoundingClientRect().top - nav.bottom;
+      })).toBeGreaterThanOrEqual(8);
+    };
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    for (const hero of [true, false]) {
+      await configurePrivateLayout(hero, 120);
+      await page.goto(`/workspace/${alpha.slug}/${alpha.page}?lang=en`);
+      await expectBreadcrumbClearance();
+    }
+    await configurePrivateLayout(true, 56);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/workspace/${alpha.slug}/${alpha.page}?lang=en`);
+    await expectBreadcrumbClearance();
+    await expect(page.locator('.workspace-breadcrumb-nav')).toHaveCSS('position', 'static');
+    await page.setViewportSize({ width: 1440, height: 1000 });
 
     await page.goto(`/workspace/${alpha.slug}/${alpha.page}?lang=en`);
     await expect(page.locator('style[data-hph-runtime-theme]')).toHaveCount(1);

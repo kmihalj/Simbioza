@@ -246,6 +246,7 @@ final readonly class InstallationRunner
         $repository->saveSettings($themeId, 'auto', true);
         $repository->deleteTheme(self::THEME_PLACEHOLDER_ID);
         $this->removeUnusedThemeDirectories($repository, $themeId);
+        (new \App\Update\BundledThemeCollection($repository))->apply($config->getAppRootDir());
         $theme = $repository->themeById($themeId);
         $themeFiles = $repository->themeFiles($themeId);
         $light = $theme['light'] ?? null;

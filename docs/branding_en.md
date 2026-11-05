@@ -80,3 +80,19 @@ and its import preserve those settings and every hero and logo asset for both
 colour variants. A full-site backup also captures the effective JSON documents
 in `HPH_CONFIG_PATH/theme/` and the `data/themes` library. Import restores them to
 the target installation's configuration layers and library, including old archives.
+
+## Optional Simbioza Orbit theme
+
+`resources/installation/theme/simbioza-orbit.zip` is a complete, optional theme
+archive. Import it with **Settings → Theme → Import complete theme**, then select
+**Simbioza Orbit** and choose automatic, light, or dark mode. Importing it does
+not replace the existing Simbioza theme. The installer default is unchanged.
+
+Orbit combines charcoal surfaces, blue and mint accents, system fonts, subtle
+borders, and local vector artwork representing connected knowledge. Its
+homepage has a large hero; inner pages place their title in the content card.
+Both variants use the same native Theme controls and remain editable in the GUI.
+The artwork is decorative and static. The theme loads no additional scripts,
+remote fonts, or third-party artwork. Its library is in
+`data/themes/simbioza-orbit/`; the complete archive preserves its configuration
+and four checksummed SVG files.

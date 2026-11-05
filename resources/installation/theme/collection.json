@@ -1,0 +1,109 @@
+{
+    "version": 1,
+    "themes": [
+        {
+            "id": "aai",
+            "sha256": "ed677e915a7667752c4881244486b1e771b08d6b7af80cfec08a83b3f24057d1"
+        },
+        {
+            "id": "dabar",
+            "sha256": "5c64f386446878cac3f9cc1e01697f55a3d61dd75d4e2596d86e5ba089c37169"
+        },
+        {
+            "id": "simbioza-atelje",
+            "sha256": "c9a8dfe8c0a3e1446353a82c899a51d982c859e19ca3556da9fb24b0a0be12d9"
+        },
+        {
+            "id": "simbioza-aurora",
+            "sha256": "85540ff0ed548c7e9002d8098905bc8d051ab3fd5d97c373f4737a535022cb61"
+        },
+        {
+            "id": "simbioza-blueprint",
+            "sha256": "a8fc38d10f27d388f96a85db9f52c79f1b59c9b772eef25af12c9e5df41c56fb"
+        },
+        {
+            "id": "simbioza-botanika",
+            "sha256": "f67f5b53de7eab09f84c7d1a13b83150618652bb9eb3cf568555f9680e8e60b0"
+        },
+        {
+            "id": "simbioza-cassette",
+            "sha256": "8fde2dac99e56d46c302c2b0e4f7aa342171cd2209fdc452efaf47e6a3ac9bb2"
+        },
+        {
+            "id": "simbioza-espresso",
+            "sha256": "3999908ba39b03c68d35f53c0370e61f51846841f6588fd7c62a93ca665fd6ed"
+        },
+        {
+            "id": "simbioza-festival",
+            "sha256": "6464aec1017c6dea0d6ceb37e452154104db48cdf22b27ce62c726814d7729af"
+        },
+        {
+            "id": "simbioza-folio",
+            "sha256": "e5b5a8fe6ea1725e0e34ae0332cee30b652ccd2f3ea553e3f6a60a85f16348aa"
+        },
+        {
+            "id": "simbioza-jadran",
+            "sha256": "a5b89201cb028788f9a27c4406cd0fbd670c225d74b329b78dd5bcfd0a06df25"
+        },
+        {
+            "id": "simbioza-kinoteka",
+            "sha256": "48225cb34a65bec9d6d8fae600a842342d490dcdd2adccc5f6a9e444183165b3"
+        },
+        {
+            "id": "simbioza-mali-svijet",
+            "sha256": "1a4b447fa22407970968b185f64957ad1af509ee1dbee6a3996bf3023cc32c6d"
+        },
+        {
+            "id": "simbioza-manga",
+            "sha256": "94a4ca09505d42969d59d7a9a769244a57d50d048e42fd24abc2fa688dfc514b"
+        },
+        {
+            "id": "simbioza-neon-arcade",
+            "sha256": "9ee78cdd241acc038a109eb7f2d3b937480bfb324fa9a6b57faafcf19aa508d1"
+        },
+        {
+            "id": "simbioza-nocturne",
+            "sha256": "2374ea2367f6e6bc339985f2d7bd3da71c787fc8a3d434bd67510b2f2c91a0e8"
+        },
+        {
+            "id": "simbioza-orbit",
+            "sha256": "4f62d9a11e7defe4ddd74148bee52aef506bc456901f4bbb2e3c597b33d1ce6d"
+        },
+        {
+            "id": "simbioza-planina",
+            "sha256": "a769c891823f449ba87a400d73ec528830d41ad68b53761592f565f0fc0d012f"
+        },
+        {
+            "id": "simbioza-pop-studio",
+            "sha256": "2df3cdd6c9282fce0787de1a1fca43fdb772ec117dbf5a34a409c382d9af907d"
+        },
+        {
+            "id": "simbioza-sakura",
+            "sha256": "574942a2672e3b311369905f91a9d2a70652986a35c0b423eba94e81ef7b833b"
+        },
+        {
+            "id": "simbioza-stadion",
+            "sha256": "7c45a2205d72e811eeffd8e46300eb8483a1426627938c7cf5cbaf6bfc09f69f"
+        },
+        {
+            "id": "simbioza-terminal-84",
+            "sha256": "c58c8a789a604ac839d00790f72193a1395dc8651c0a79ae88c2410ccf7d4ebc"
+        },
+        {
+            "id": "simbioza-ucionica",
+            "sha256": "dcbb8a8c50230d1754e31034147dafff0a20c1548199f4c9f0e53f2f2cf27798"
+        },
+        {
+            "id": "simbioza",
+            "sha256": "d97450d9ded82a52e686c21ed73ecf268cda35fa9acca8821337dca260ff9a88"
+        },
+        {
+            "id": "srce-sup",
+            "sha256": "463a72b27fb57d9098dd50f87875e7d6dff1cb9f4eac55af39a070f7612f500c"
+        },
+        {
+            "id": "standard",
+            "sha256": "0f7ed31b6c81f67cccfe7c0e869d3252f0e399b795f80fa9e8f9aad58c55d912"
+        }
+    ]
+}

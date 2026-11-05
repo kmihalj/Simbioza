@@ -4,6 +4,8 @@
 
 Kolekcija sadrži **12 zasebnih tema**, svaku sa svijetlom i tamnom varijantom. Teme koriste izvorne postavke modula Theme: boje, sistemske fontove, navigaciju, hero, kartice, obrube i sjene. Sve se postavke mogu uređivati u sučelju.
 
+Dostupna je i [dodatna kolekcija osam tema za sport, školu, vrtić i kreativne zajednice](creative-themes_hr.md), s novim fotografijama i ilustracijama.
+
 | Tema | Izgled i namjena |
 | --- | --- |
 | Aurora | Sjeverno svjetlo, hladni plavi tonovi i prozračne kartice. Za moderne portale i timsko znanje. |
@@ -25,9 +27,9 @@ Otvorite **Postavke → Tema**, u polju **Aktivna tema** odaberite naziv i sprem
 
 ## Uvoz na drugu instalaciju
 
-[Preuzmite ZIP kolekcije s pregledom svih 12 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.33/Simbioza-0.3.33-themes.zip).
-Datoteka je prilog izdanja 0.3.33, pod **Assets**. Nadogradnja aplikacije ne
-uvozi ove teme automatski, pa broj dostupnih tema ostaje isti dok ih ne uvezete.
+[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.36/Simbioza-0.3.36-themes.zip)
+
+Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. Postojeće teme i aktivni odabir ostaju sačuvani. Nakon što izbrišete dodatnu temu, sljedeće je nadogradnje neće vratiti. Evidencija uvoza nalazi se u konfiguraciji Tema i uključena je u backup/restore sitea. Temu možete ponovno ručno uvesti iz ZIP-a.
 
 Svaki ZIP u `resources/installation/theme/simbioza-*.zip` potpuni je izvoz jedne teme. U **Postavke → Tema** otvorite **Uvezi cijelu temu**, odaberite odgovarajući ZIP i uvezite ga. Zatim temu odaberite kao aktivnu. Ne učitavajte ZIP cijele kolekcije u obrazac za jednu temu; iz njega prvo raspakirajte pojedini paket.
 
@@ -38,3 +40,5 @@ Paketi sadrže obje palete, raspored i sve četiri pripadajuće slikovne datotek
 Tekst paleta provjeren je prema kontrastu 4,5:1, uključujući hero, gumbe, tablice i upozorenja. Izvorna poveznica za preskakanje sadržaja i kontrole tipkovnicom ostaju uključene. Pregledi koriste isti CSS koji izvozi modul Theme. Teme su provjerene u WebKitu na desktop širini i širini od 390 px, uključujući stvarne stranice HFC-a u svijetlom i tamnom prikazu. Na stranicama bez hero zaglavlja sadržaj zadržava razmak od navigacije. Sadržaj pojedine instalacije svejedno može zahtijevati prilagodbu rasporeda.
 
 Likovni izvor i palete reproduciraju se skriptom `python3 scripts/generate_theme_collection.py`. Ona stvara datoteke u `output/playwright/themes-20261104` i ne prepisuje aktivne postavke. Konačne validirane konfiguracije nalaze se u `resources/theme-collection/catalog.json`.
+
+[Potpuna galerija svih 26 tema](theme-gallery_hr.md).

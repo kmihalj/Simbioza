@@ -1,0 +1,343 @@
+[
+  {
+    "id": "aai",
+    "label": {
+      "hr": "AAI",
+      "en": "AAI"
+    },
+    "light": "aai-light.webp",
+    "dark": "aai-dark.webp"
+  },
+  {
+    "id": "simbioza-atelje",
+    "label": {
+      "hr": "Atelje",
+      "en": "Atelier",
+      "de": "Atelier",
+      "fr": "Atelier",
+      "it": "Atelier",
+      "es": "Taller"
+    },
+    "light": "simbioza-atelje-light.webp",
+    "dark": "simbioza-atelje-dark.webp"
+  },
+  {
+    "id": "simbioza-aurora",
+    "label": {
+      "hr": "Aurora",
+      "en": "Aurora",
+      "de": "Aurora",
+      "fr": "Aurora",
+      "it": "Aurora",
+      "es": "Aurora"
+    },
+    "light": "simbioza-aurora-light.webp",
+    "dark": "simbioza-aurora-dark.webp"
+  },
+  {
+    "id": "simbioza-blueprint",
+    "label": {
+      "hr": "Blueprint",
+      "en": "Blueprint",
+      "de": "Blueprint",
+      "fr": "Blueprint",
+      "it": "Blueprint",
+      "es": "Blueprint"
+    },
+    "light": "simbioza-blueprint-light.webp",
+    "dark": "simbioza-blueprint-dark.webp"
+  },
+  {
+    "id": "simbioza-botanika",
+    "label": {
+      "hr": "Botanika",
+      "en": "Botanika",
+      "de": "Botanika",
+      "fr": "Botanika",
+      "it": "Botanika",
+      "es": "Botanika"
+    },
+    "light": "simbioza-botanika-light.webp",
+    "dark": "simbioza-botanika-dark.webp"
+  },
+  {
+    "id": "simbioza-cassette",
+    "label": {
+      "hr": "Cassette Sunset",
+      "en": "Cassette Sunset",
+      "de": "Cassette Sunset",
+      "fr": "Cassette Sunset",
+      "it": "Cassette Sunset",
+      "es": "Cassette Sunset"
+    },
+    "light": "simbioza-cassette-light.webp",
+    "dark": "simbioza-cassette-dark.webp"
+  },
+  {
+    "id": "simbioza-kinoteka",
+    "label": {
+      "hr": "Kinoteka",
+      "en": "Cinema Club",
+      "de": "Filmklub",
+      "fr": "Cinémathèque",
+      "it": "Cineteca",
+      "es": "Cineclub"
+    },
+    "light": "simbioza-kinoteka-light.webp",
+    "dark": "simbioza-kinoteka-dark.webp"
+  },
+  {
+    "id": "simbioza-ucionica",
+    "label": {
+      "hr": "Učionica",
+      "en": "Classroom",
+      "de": "Klassenzimmer",
+      "fr": "Salle de classe",
+      "it": "Aula",
+      "es": "Aula"
+    },
+    "light": "simbioza-ucionica-light.webp",
+    "dark": "simbioza-ucionica-dark.webp"
+  },
+  {
+    "id": "dabar",
+    "label": {
+      "hr": "Dabar",
+      "en": "Dabar"
+    },
+    "light": "dabar-light.webp",
+    "dark": "dabar-dark.webp"
+  },
+  {
+    "id": "simbioza-espresso",
+    "label": {
+      "hr": "Espresso",
+      "en": "Espresso",
+      "de": "Espresso",
+      "fr": "Espresso",
+      "it": "Espresso",
+      "es": "Espresso"
+    },
+    "light": "simbioza-espresso-light.webp",
+    "dark": "simbioza-espresso-dark.webp"
+  },
+  {
+    "id": "simbioza-festival",
+    "label": {
+      "hr": "Festival",
+      "en": "Festival",
+      "de": "Festival",
+      "fr": "Festival",
+      "it": "Festival",
+      "es": "Festival"
+    },
+    "light": "simbioza-festival-light.webp",
+    "dark": "simbioza-festival-dark.webp"
+  },
+  {
+    "id": "simbioza-folio",
+    "label": {
+      "hr": "Folio",
+      "en": "Folio",
+      "de": "Folio",
+      "fr": "Folio",
+      "it": "Folio",
+      "es": "Folio"
+    },
+    "light": "simbioza-folio-light.webp",
+    "dark": "simbioza-folio-dark.webp"
+  },
+  {
+    "id": "simbioza-jadran",
+    "label": {
+      "hr": "Jadran",
+      "en": "Jadran",
+      "de": "Jadran",
+      "fr": "Jadran",
+      "it": "Jadran",
+      "es": "Jadran"
+    },
+    "light": "simbioza-jadran-light.webp",
+    "dark": "simbioza-jadran-dark.webp"
+  },
+  {
+    "id": "simbioza-mali-svijet",
+    "label": {
+      "hr": "Mali svijet",
+      "en": "Little World",
+      "de": "Kleine Welt",
+      "fr": "Petit Monde",
+      "it": "Piccolo Mondo",
+      "es": "Pequeño Mundo"
+    },
+    "light": "simbioza-mali-svijet-light.webp",
+    "dark": "simbioza-mali-svijet-dark.webp"
+  },
+  {
+    "id": "simbioza-manga",
+    "label": {
+      "hr": "Manga",
+      "en": "Manga",
+      "de": "Manga",
+      "fr": "Manga",
+      "it": "Manga",
+      "es": "Manga"
+    },
+    "light": "simbioza-manga-light.webp",
+    "dark": "simbioza-manga-dark.webp"
+  },
+  {
+    "id": "simbioza-planina",
+    "label": {
+      "hr": "Planina",
+      "en": "Mountain",
+      "de": "Bergwelt",
+      "fr": "Montagne",
+      "it": "Montagna",
+      "es": "Montaña"
+    },
+    "light": "simbioza-planina-light.webp",
+    "dark": "simbioza-planina-dark.webp"
+  },
+  {
+    "id": "simbioza-neon-arcade",
+    "label": {
+      "hr": "Neon Arcade",
+      "en": "Neon Arcade",
+      "de": "Neon Arcade",
+      "fr": "Neon Arcade",
+      "it": "Neon Arcade",
+      "es": "Neon Arcade"
+    },
+    "light": "simbioza-neon-arcade-light.webp",
+    "dark": "simbioza-neon-arcade-dark.webp"
+  },
+  {
+    "id": "simbioza-nocturne",
+    "label": {
+      "hr": "Nocturne",
+      "en": "Nocturne",
+      "de": "Nocturne",
+      "fr": "Nocturne",
+      "it": "Nocturne",
+      "es": "Nocturne"
+    },
+    "light": "simbioza-nocturne-light.webp",
+    "dark": "simbioza-nocturne-dark.webp"
+  },
+  {
+    "id": "simbioza-pop-studio",
+    "label": {
+      "hr": "Pop Studio",
+      "en": "Pop Studio",
+      "de": "Pop Studio",
+      "fr": "Pop Studio",
+      "it": "Pop Studio",
+      "es": "Pop Studio"
+    },
+    "light": "simbioza-pop-studio-light.webp",
+    "dark": "simbioza-pop-studio-dark.webp"
+  },
+  {
+    "id": "simbioza-sakura",
+    "label": {
+      "hr": "Sakura",
+      "en": "Sakura",
+      "de": "Sakura",
+      "fr": "Sakura",
+      "it": "Sakura",
+      "es": "Sakura"
+    },
+    "light": "simbioza-sakura-light.webp",
+    "dark": "simbioza-sakura-dark.webp"
+  },
+  {
+    "id": "simbioza",
+    "label": {
+      "hr": "Simbioza",
+      "en": "Simbioza"
+    },
+    "light": "simbioza-light.webp",
+    "dark": "simbioza-dark.webp"
+  },
+  {
+    "id": "simbioza-orbit",
+    "label": {
+      "hr": "Simbioza Orbit",
+      "en": "Simbioza Orbit",
+      "de": "Simbioza Orbit",
+      "fr": "Simbioza Orbit",
+      "it": "Simbioza Orbit",
+      "es": "Simbioza Orbit",
+      "pt": "Simbioza Orbit",
+      "sl": "Simbioza Orbit",
+      "sr": "Simbioza Orbit",
+      "bs": "Simbioza Orbit",
+      "cs": "Simbioza Orbit",
+      "sk": "Simbioza Orbit",
+      "pl": "Simbioza Orbit",
+      "hu": "Simbioza Orbit",
+      "nl": "Simbioza Orbit",
+      "sv": "Simbioza Orbit",
+      "fi": "Simbioza Orbit",
+      "da": "Simbioza Orbit",
+      "no": "Simbioza Orbit",
+      "ro": "Simbioza Orbit",
+      "bg": "Simbioza Orbit",
+      "el": "Simbioza Orbit",
+      "tr": "Simbioza Orbit",
+      "uk": "Simbioza Orbit",
+      "ru": "Simbioza Orbit",
+      "zh": "Simbioza Orbit",
+      "ja": "Simbioza Orbit",
+      "ko": "Simbioza Orbit",
+      "ar": "Simbioza Orbit"
+    },
+    "light": "simbioza-orbit-light.webp",
+    "dark": "simbioza-orbit-dark.webp"
+  },
+  {
+    "id": "srce-sup",
+    "label": {
+      "hr": "Srce - sup",
+      "en": "Srce - sup"
+    },
+    "light": "srce-sup-light.webp",
+    "dark": "srce-sup-dark.webp"
+  },
+  {
+    "id": "simbioza-stadion",
+    "label": {
+      "hr": "Stadion",
+      "en": "Stadium",
+      "de": "Stadion",
+      "fr": "Stade",
+      "it": "Stadio",
+      "es": "Estadio"
+    },
+    "light": "simbioza-stadion-light.webp",
+    "dark": "simbioza-stadion-dark.webp"
+  },
+  {
+    "id": "standard",
+    "label": {
+      "hr": "Standardna",
+      "en": "Standard"
+    },
+    "light": "standard-light.webp",
+    "dark": "standard-dark.webp"
+  },
+  {
+    "id": "simbioza-terminal-84",
+    "label": {
+      "hr": "Terminal 84",
+      "en": "Terminal 84",
+      "de": "Terminal 84",
+      "fr": "Terminal 84",
+      "it": "Terminal 84",
+      "es": "Terminal 84"
+    },
+    "light": "simbioza-terminal-84-light.webp",
+    "dark": "simbioza-terminal-84-dark.webp"
+  }
+]

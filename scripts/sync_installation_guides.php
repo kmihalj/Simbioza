@@ -61,6 +61,7 @@ function installationGuideSourceHash(string $root, string $slug, string $locale)
         if (!is_string($text)) {
             throw new RuntimeException('Missing installation source: ' . $name);
         }
+
         $sources[$name] = $text;
     }
 
@@ -83,6 +84,7 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
         : '<p>Odaberite jedan cjelovit postupak: <a href="#ordinary-fpm">Obični FPM</a> ili '
         . '<a href="#secured-fpm">Secured FPM</a>. Svaki kreće od početka.</p>' . PHP_EOL;
     }
+
     foreach (installationGuideSources($slug, $locale) as $name) {
         $id = $slug === 'php-fpm-instalacija'
         ? (str_contains($name, '_secured_') ? 'secured-fpm' : 'ordinary-fpm')
@@ -96,6 +98,7 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
         if (!is_resource($process)) {
             throw new RuntimeException('Pandoc is required only to rebuild the public guide packages.');
         }
+
         $rendered = stream_get_contents($pipes[1]);
         $error = stream_get_contents($pipes[2]);
         fclose($pipes[1]);
@@ -103,6 +106,7 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
         if (proc_close($process) !== 0 || !is_string($rendered) || $rendered === '') {
             throw new RuntimeException('Pandoc failed for ' . $name . ': ' . $error);
         }
+
         $rendered = preg_replace_callback('/href="([^"]+)"/', static function (array $match): string {
             $href = html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $pattern = '/\A(installation(?:_mod_php|_fpm(?:_secured)?)?)_(en|hr)\.md(?:#.*)?\z/D';
@@ -126,6 +130,22 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
         if (!is_string($rendered)) {
             throw new RuntimeException('Unable to map installation guide links.');
         }
+
+        $rendered = preg_replace_callback(
+            '/(href|src)="images\/theme-gallery\/([a-z0-9-]+\.webp)"/',
+            static function (array $match) use ($root): string {
+                if (!is_file($root . '/public/assets/theme-gallery/' . $match[2])) {
+                    throw new RuntimeException('Missing public theme gallery image: ' . $match[2]);
+                }
+
+                return $match[1] . '="/assets/theme-gallery/' . $match[2] . '"';
+            },
+            $rendered,
+        );
+        if (!is_string($rendered)) {
+            throw new RuntimeException('Unable to map theme gallery images.');
+        }
+
         $html .= '<section id="' . $id . '">' . PHP_EOL . $rendered . '</section>' . PHP_EOL;
     }
 
@@ -143,6 +163,7 @@ function syncInstallationGuides(string $root, bool $apply): void
     $temporary = sys_get_temp_dir() . '/simbioza-installation-guides-' . bin2hex(random_bytes(8));
     $filesystem = new BackupFilesystem();
     $filesystem->ensureDirectory($temporary);
+
     $composer = new class ($temporary) extends ComposerBridge {
         /**
          * EN: Pins all generated data to the isolated public-guide staging directory.
@@ -178,6 +199,7 @@ function syncInstallationGuides(string $root, bool $apply): void
                 }
             }
         }
+
         $prepared = [];
         foreach (['korisnicke-upute', ...$slugs] as $archiveName) {
             $archive = $root . '/resources/installation/workspace/' . $archiveName . '.zip';
@@ -230,15 +252,18 @@ function syncInstallationGuides(string $root, bool $apply): void
                                                 $archiveName . ': source drift for ' . $slug . '/' . $locale,
                                             );
                                         }
+
                                         $seen[$slug][$locale] = true;
                                         break;
                                     }
                                 }
                             }
+
                             $writer?->writeRecord($metadata['id'], $dataset, $record);
                         }
                     }
                 }
+
                 foreach ($archiveName === 'korisnicke-upute' ? $slugs : [$archiveName] as $slug) {
                     foreach (['en', 'hr'] as $locale) {
                         if (!isset($seen[$slug][$locale])) {
@@ -248,22 +273,26 @@ function syncInstallationGuides(string $root, bool $apply): void
                         }
                     }
                 }
-                if ($writer !== null) {
+
+                if ($writer instanceof \AaiEduHr\HeartPhrameModuleBackup\Service\BackupArchiveWriter) {
                     foreach ($manifest['files'] as $file) {
                         if (str_starts_with($file['path'], 'blobs/')) {
                             $writer->addBlobFile($reader->blobPath($file['sha256']));
                         }
                     }
+
                     $rebuilt = $writer->finish();
                     $verified = new BackupArchiveReader($rebuilt, $config, $filesystem, 'SimbiozaSeed2026!');
                     $verified->close();
                     $prepared[$archive] = $rebuilt;
                 }
+
                 echo $archiveName . ': EN/HR sources verified.' . PHP_EOL;
             } finally {
                 $reader->close();
             }
         }
+
         foreach ($prepared as $destination => $source) {
             if (
                 is_link($destination) || is_link($destination . '.partial')
@@ -281,5 +310,6 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
     if (PHP_SAPI !== 'cli' || array_diff(array_slice($argv, 1), ['--check', '--apply']) !== []) {
         throw new RuntimeException('CLI usage: php scripts/sync_installation_guides.php [--check|--apply]');
     }
+
     syncInstallationGuides(dirname(__DIR__), in_array('--apply', $argv, true));
 }

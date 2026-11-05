@@ -1,5 +1,7 @@
 # Dokumentacija Simbioze (HR)
 
+- [Sve teme i jednokratni uvoz u 0.3.36](release-0.3.36_hr.md)
+- [Galerija svih 26 tema](theme-gallery_hr.md)
 - [Kontrast opisa bez dodanih podloga u 0.3.35](release-0.3.35_hr.md)
 - [Dvanaest tema i čitljivi opisi stranica u 0.3.33](release-0.3.33_hr.md)
 - [Vlastite kontrole tablica sadržaja u 0.3.32](release-0.3.32_hr.md)

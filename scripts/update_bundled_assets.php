@@ -113,6 +113,10 @@ try {
         throw new RuntimeException('Theme configuration upgrade dependencies are unavailable.');
     }
     $themeRepository = ThemeConfigurationUpgrade::repository($themeConfig);
+    if ($themeRepository !== null) {
+        $addedThemes = (new \App\Update\BundledThemeCollection($themeRepository))->apply($root);
+        echo 'New optional themes added: ' . $addedThemes . PHP_EOL;
+    }
 
     if ($workspaceEnabled) {
         $updater = new BundledAssetsUpdater(

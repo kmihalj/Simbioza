@@ -38,12 +38,18 @@ final class ThemeConfigurationUpgrade
     }
 
     /**
-     * EN: Adds missing keys only; the installation ZIP and existing values are never imported.
+     * EN: Adds missing keys and new collection IDs once; existing theme values remain unchanged.
      *
-     * HR: Dodaje samo nedostajuće ključeve; instalacijski ZIP i postojeće vrijednosti ne uvoze se.
+     * HR: Dodaje nedostajuće ključeve i nove ID-jeve kolekcije jednom; čuva postojeće vrijednosti tema.
      */
     public static function apply(ConfigInterface $config): int
     {
-        return self::repository($config)?->persistMissingButtonTextColors() ?? 0;
+        $repository = self::repository($config);
+        if (!$repository instanceof ThemeConfigRepository) {
+            return 0;
+        }
+
+        return $repository->persistMissingButtonTextColors()
+        + (new BundledThemeCollection($repository))->apply($config->getAppRootDir());
     }
 }

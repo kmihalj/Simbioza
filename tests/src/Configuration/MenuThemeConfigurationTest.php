@@ -299,6 +299,7 @@ final class MenuThemeConfigurationTest extends TestCase
         $this->write($repository, $section, '[{"id":"archived"}]');
         if ($repository instanceof ThemeConfigRepository) {
             $repository->writeJsonContents('settings', '{"active_theme":"archived"}');
+            $repository->writeJsonContents('collection', '{"simbioza-stadion":true}');
             $library = $repository->themesDirectoryPath();
             mkdir($library . '/nested', 0770);
             file_put_contents($library . '/nested/image.svg', '<svg/>');
@@ -349,6 +350,10 @@ final class MenuThemeConfigurationTest extends TestCase
         $this->assertSame('[{"id":"archived"}]', file_get_contents($sourceFile));
         if ($module === 'theme') {
             $asset = $target . '/data/themes/nested/image.svg';
+            $this->assertSame(
+                '{"simbioza-stadion":true}',
+                file_get_contents($destination->jsonWritePath('collection')),
+            );
             $this->assertSame('<svg/>', file_get_contents($asset));
             $this->assertSame(0660, fileperms($asset) & 0777);
             $this->assertSame(filegroup($target . '/data/themes'), filegroup(dirname($asset)));

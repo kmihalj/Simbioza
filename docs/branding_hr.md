@@ -77,3 +77,18 @@ prenose iste postavke i sve hero i logotip assete za obje varijante. Potpuni
 backup site-a dodatno sprema efektivne JSON dokumente u `HPH_CONFIG_PATH/theme/`
 i biblioteku `data/themes`. Import ih vraća u konfiguracijske slojeve i biblioteku
 odredišne instalacije, uključujući stare arhive.
+
+## Opcionalna tema Simbioza Orbit
+
+`resources/installation/theme/simbioza-orbit.zip` potpuna je arhiva opcionalne
+teme. Uvezite je kroz **Postavke → Tema → Uvezi cijelu temu**, zatim odaberite
+**Simbioza Orbit** i automatski, svijetli ili tamni način prikaza. Uvoz ne
+zamjenjuje postojeću temu Simbioza. Zadana tema installera ostaje ista.
+
+Orbit kombinira tamne površine, plave i mint naglaske, sistemske fontove,
+diskretne obrube i lokalni vektorski prikaz povezanog znanja. Naslovnica ima
+veliki hero element, a unutarnje stranice naslov u kartici sadržaja. Obje
+varijante koriste postojeće kontrole modula Tema i mogu se uređivati kroz GUI.
+Ilustracija je dekorativna i statična. Tema ne učitava dodatne skripte, udaljene
+fontove ni tuđe ilustracije. Biblioteka je u `data/themes/simbioza-orbit/`;
+potpuna arhiva čuva konfiguraciju i četiri SVG datoteke s kontrolnim zbrojevima.

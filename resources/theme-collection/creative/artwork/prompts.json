@@ -1,0 +1,40 @@
+{
+  "generator": "image_gen built-in tool",
+  "images": [
+    {
+      "id": "stadion",
+      "file": "stadion.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: a landscape hero photograph for a sports club website theme called Stadion, not a website mockup. Original editorial sports photograph: an empty modern athletics track curving through the lower foreground, lush playing field, very distant subtle goalposts, dramatic warm sunset merging into cobalt blue evening sky with a hint of violet. Panoramic landscape composition 3:2. Main track curves and floodlight silhouettes concentrated on the right half, left half calm open deep-blue sky and soft distant field for website heading. Strong realistic color, no people close up, no text, no numbers, no logos, no watermark. Professional natural photographic detail, no artificial lettering."
+    },
+    {
+      "id": "ucionica",
+      "file": "ucionica.png",
+      "prompt": "Use case: illustration-story. Asset type: landscape hero art for a school website theme, not a web mockup. Create an original optimistic editorial illustration of an open sketchbook and colorful geometry models, pencils, a small globe and floating scientific constellations. Sophisticated cut-paper collage meets clean educational illustration, layered cobalt blue, turquoise, sunshine yellow and coral. Warm ivory background, spacious composition, all main objects contained within the frame concentrated in center and right two thirds. No written words, no equations, no numbers, no letters, no logo. Landscape 3:2, sharp beautiful texture, friendly for secondary school and teachers, not babyish. No UI elements, no watermark."
+    },
+    {
+      "id": "mali-svijet",
+      "file": "mali-svijet.png",
+      "prompt": "Use case: illustration-story. Asset type: landscape hero illustration for a kindergarten website theme. Original handcrafted paper cutout miniature world: a friendly smiling sun, rounded rainbow, little colorful houses, a soft green hill, paper trees and playful small flowers; warm children's book art with tactile paper grain and gentle shadows. Peach, butter yellow, sky turquoise, lavender, coral and fresh leaf green. Calm warm cream background with quiet upper left, objects arranged mostly center and right, generous breathing room, all objects contained inside frame. Delightful contemporary preschool art, not stock clipart, no lettering, no words, no numbers, no logos, no watermark. Landscape 3:2."
+    },
+    {
+      "id": "kinoteka",
+      "file": "kinoteka.png",
+      "prompt": "Use case: stylized-concept. Asset type: landscape website hero photograph/illustration for cinema club theme Kinoteka. A sculptural ribbon of vintage 35mm photographic film sweeping diagonally through a deep indigo studio space. Transparent amber celluloid and recognisable perforated sprocket holes on both edges. Three or four film frames showing tiny abstract moody city lights and a moonlit silhouette; no existing movie characters. Elegant cinematic analogue grain, soft gold projector beam, restrained burgundy and violet highlights. Film ribbon concentrated on center/right, left space dark calm indigo, beautiful depth and warm glow. Landscape 3:2. No lettering, no numbers, no logos, no text, no watermark, no website UI."
+    },
+    {
+      "id": "manga",
+      "file": "manga.png",
+      "prompt": "Use case: illustration-story. Asset type: hero artwork for an original anime/comic community website theme. Vibrant original manga triptych with bold black ink panel borders tilted diagonally. Right panel a friendly original young adult adventurer with short dark blue hair and a yellow jacket, left smaller panel a stylized futuristic city skyline, center panel a dynamic expressive eye close-up and motion lines. Contemporary anime ink illustration, visible halftone texture, crisp editorial screen-print finish. Electric cobalt, hot coral, lemon yellow, turquoise and off-white. No copyrighted characters, no speech bubbles, no Japanese writing or any other writing, no text, no logo, no watermark. Entire composition landscape 3:2 with margin so panel edges contained within frame. Energetic, sophisticated and inviting, no weapons."
+    },
+    {
+      "id": "atelje",
+      "file": "atelje.png",
+      "prompt": "Use case: stylized-concept. Asset type: landscape hero artwork for an art studio / creative school website theme. Original abstract watercolor and gouache composition on textured warm paper: broad overlapping translucent brush strokes, flowing pools of vivid ultramarine and turquoise, spontaneous coral and magenta washes with little golden ochre accents. Like a carefully composed contemporary gallery print, no objects, no letters. Saturated color mainly center and right, soft paper negative space left, expressive layered pigment and realistic paper texture, refined not chaotic. Landscape 3:2, no typography, no logo, no watermark, no UI."
+    },
+    {
+      "id": "planina",
+      "file": "planina.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: landscape hero photograph for a hiking / outdoor sports community website. Original cinematic editorial photograph of a jagged alpine mountain range reflected in a perfectly still small lake, evergreen forest, tiny wildflowers at the edge, morning mist and peach-pink sunrise clouds fading to teal blue sky. No people, no buildings, no text, no logo, no watermark. Mountains and lake balanced in a 3:2 landscape composition, ridge highest toward right, calm luminous left sky, high detail and natural photographic realism, inviting and serene, not oversaturated."
+    }
+  ]
+}

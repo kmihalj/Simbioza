@@ -1,5 +1,7 @@
 # Simbioza documentation (EN)
 
+- [All themes and one-time imports in 0.3.36](release-0.3.36_en.md)
+- [Gallery of all 26 themes](theme-gallery_en.md)
 - [Foreground-only description contrast in 0.3.35](release-0.3.35_en.md)
 - [Twelve themes and readable page headings in 0.3.33](release-0.3.33_en.md)
 - [Native content-table controls in 0.3.32](release-0.3.32_en.md)

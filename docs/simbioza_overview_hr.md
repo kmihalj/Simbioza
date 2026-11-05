@@ -42,3 +42,21 @@ Kada postojećem HTML webu dodate Područja, njegove stranice nastavljaju raditi
 Ako je Wiki instaliran, ove su upute stranice u području **Korisničke upute**. Bez Wikija isti je sadržaj dostupan preko stavke **Upute**, s navigacijom po poglavljima. Prikazuju se samo jezici instalirani i aktivni u aplikaciji.
 
 HeartPhrame i njegovi moduli mogu poslužiti i kao temelj prilagođene aplikacije: ponovno iskoristite prijavu, rad s podacima, navigaciju, izgled i API umjesto izrade svega od početka.
+
+## Izgled po mjeri vaše zajednice
+
+Simbioza uključuje **26 gotovih tema**, svaku sa svijetlim i tamnim izgledom. Odaberite temu u **Postavke → Tema → Aktivna tema**. Boje, slike, visinu hero elementa, kartice, sjene, navigaciju i tipografiju možete dodatno prilagoditi. Odabir teme ne mijenja sadržaj ni ovlasti.
+
+Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. Postojeće teme i aktivni odabir ostaju sačuvani. Nakon što izbrišete dodatnu temu, sljedeće je nadogradnje neće vratiti. Evidencija uvoza nalazi se u konfiguraciji Tema i uključena je u backup/restore sitea. Temu možete ponovno ručno uvesti iz ZIP-a.
+
+[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.36/Simbioza-0.3.36-themes.zip)
+
+Raspakirajte kolekciju, pa u obrascu **Uvezi cijelu temu** odaberite pojedinačni ZIP iz direktorija `themes/`. Kolekcija sadrži i galeriju koju možete otvoriti bez interneta. Nemojte cijelu kolekciju učitati kao jednu temu.
+
+[Kliknite za povećanje: Sve teme — svijetli izgled](images/theme-gallery/overview-light-hr.webp)
+
+![Sve teme — svijetli izgled](images/theme-gallery/overview-light-hr.webp)
+
+[Kliknite za povećanje: Sve teme — tamni izgled](images/theme-gallery/overview-dark-hr.webp)
+
+![Sve teme — tamni izgled](images/theme-gallery/overview-dark-hr.webp)
