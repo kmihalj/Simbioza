@@ -2,7 +2,7 @@
 
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.17/docs/release-0.3.17_en.md)
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.38](release-0.3.38_hr.md).
 > [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.18](release-0.3.18_hr.md).
 
 Ova zakrpa aplikacije ispravlja dva problema s različitim korisnicima u

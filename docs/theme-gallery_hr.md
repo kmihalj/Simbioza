@@ -4,7 +4,7 @@ Simbioza uključuje **26 gotovih tema**, svaku sa svijetlim i tamnim izgledom. O
 
 Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. Postojeće teme i aktivni odabir ostaju sačuvani. Nakon što izbrišete dodatnu temu, sljedeće je nadogradnje neće vratiti. Evidencija uvoza nalazi se u konfiguraciji Tema i uključena je u backup/restore sitea. Temu možete ponovno ručno uvesti iz ZIP-a.
 
-[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.37/Simbioza-0.3.37-themes.zip)
+[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.38/Simbioza-0.3.38-themes.zip)
 
 Raspakirajte kolekciju, pa u obrascu **Uvezi cijelu temu** odaberite pojedinačni ZIP iz direktorija `themes/`. Kolekcija sadrži i galeriju koju možete otvoriti bez interneta. Nemojte cijelu kolekciju učitati kao jednu temu.
 

@@ -1,4 +1,4 @@
-# Simbioza 0.3.37 — reliable HTML editing and current documentation
+# Simbioza 0.3.38 — reliable HTML editing and current documentation
 
 HTML form fields now preserve the complete supported editor content through Apply, Save, reload and re-editing. This includes cards, columns, alerts, tables, tabs, expandable blocks, images, video, safe embeds, charts, timelines and canonical integration references. The stored editable source is kept separate from its rendered preview. Existing media spacing, table appearance and header colours remain unchanged when the editor opens; temporary author actions are not saved as page content.
 
@@ -11,7 +11,7 @@ The application includes **33 bilingual guide chapters**, with 440 referenced pu
 ## Additional corrections
 
 - Personal Workspace API access uses the registered `workspace:read` permission. Other users' private content remains inaccessible.
-- Calendar/Workspace archives preserve complete meeting data, validate access to referenced calendars and keep unrelated resource-calendar events outside the selected scope. New archives use schema 2; ordinary schema-1 event archives remain readable, while incomplete legacy meeting archives are rejected before restore.
+- Calendar **0.3.4** / Workspace archives preserve complete meeting data, validate access to referenced calendars and keep unrelated resource-calendar events outside the selected scope. New archives use schema 2; ordinary schema-1 event archives remain readable, while incomplete legacy meeting archives are rejected before restore.
 - New CLI backup exports are recorded for configured retention cleanup. Only tracked expired exports in the configured archive directory are removed; untracked archives and manual retention remain unchanged.
 
 ## Upgrade and verification

@@ -1,4 +1,4 @@
-# Simbioza 0.3.37 — pouzdano HTML uređivanje i aktualna dokumentacija
+# Simbioza 0.3.38 — pouzdano HTML uređivanje i aktualna dokumentacija
 
 HTML polja obrasca sada čuvaju sav podržani sadržaj editora kroz primjenu, spremanje, ponovno učitavanje i uređivanje. To uključuje kartice, stupce, obavijesti, tablice, tabove, padajuće blokove, slike, video, sigurne ugradnje, grafikone, vremenske planove i kanonske integracijske reference. Izvor koji se uređuje sprema se odvojeno od njegova prikaza. Otvaranje editora ne mijenja postojeće razmake medija, izgled tablica ni boje zaglavlja; privremene autorske radnje ne spremaju se kao sadržaj stranice.
 
@@ -11,7 +11,7 @@ Aplikacija uključuje **33 dvojezična poglavlja uputa** s 440 korištenih javni
 ## Dodatni popravci
 
 - API osobnog područja koristi registriranu ovlast `workspace:read`. Privatni sadržaj drugih korisnika ostaje nedostupan.
-- Arhive kalendara u području čuvaju potpune podatke sastanaka, provjeravaju pristup referenciranim kalendarima i izostavljaju nepovezane događaje resursnih kalendara. Nova arhiva koristi shemu 2; stari obični događaji iz sheme 1 i dalje se čitaju, a nepotpune stare arhive sastanaka odbijaju se prije obnove.
+- Calendar **0.3.4**: arhive kalendara u području čuvaju potpune podatke sastanaka, provjeravaju pristup referenciranim kalendarima i izostavljaju nepovezane događaje resursnih kalendara. Nova arhiva koristi shemu 2; stari obični događaji iz sheme 1 i dalje se čitaju, a nepotpune stare arhive sastanaka odbijaju se prije obnove.
 - Novi CLI izvozi sigurnosnih kopija evidentiraju se za čišćenje prema zadanom roku čuvanja. Uklanjaju se samo evidentirani istekli izvozi iz podešenog direktorija arhiva; neevidentirane arhive i ručno čuvanje ostaju nepromijenjeni.
 
 ## Nadogradnja i provjera
