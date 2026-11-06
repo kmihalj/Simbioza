@@ -204,7 +204,7 @@ selection. Session defaults are Secure, HttpOnly and SameSite=Lax; reviewed
 installation session overrides may change them. Configure proxies accurately,
 and use HSTS only for a deployment known to be consistently HTTPS.
 
-The [pre-release audit](pre-release-audit-0.3.0_en.md) records completed Auth,
+The pre-release audit records completed Auth,
 query, language-storage and immutable-deployment corrections. The
 [Docker guide](docker_en.md) documents the image/volume layout and the GUI/CLI
 operations deliberately blocked in immutable deployments. `HPH_CONFIG_PATH`
@@ -278,7 +278,7 @@ Workspace-private themes use the same defaults without replacing their stored
 data. See the [Theme reference](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-theme/-/blob/0.3.2/docs/configuration_en.md)
 for file-only examples and the corresponding GUI controls.
 
-See [the 0.3.0 checklist](initial-release-0.3.0_en.md) for current verification
+See the 0.3.0 checklist for current verification
 status; historical P1–P10 results are not a claim that the new baseline is released.
 
 ## Local application scripts

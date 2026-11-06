@@ -1,142 +1,51 @@
-# Dokumentacija Simbioze (HR)
+# Dokumentacija Simbioze
 
-- [Sve teme i jednokratni uvoz u 0.3.36](release-0.3.36_hr.md)
-- [Galerija svih 26 tema](theme-gallery_hr.md)
-- [Kontrast opisa bez dodanih podloga u 0.3.35](release-0.3.35_hr.md)
-- [Dvanaest tema i čitljivi opisi stranica u 0.3.33](release-0.3.33_hr.md)
-- [Vlastite kontrole tablica sadržaja u 0.3.32](release-0.3.32_hr.md)
-- [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.30](release-0.3.30_hr.md)
-- [Izvorni gradijenti i neobavezne sjene teksta u 0.3.24](release-0.3.24_hr.md)
-- [Navigacija pune aplikacije u 0.3.21](release-0.3.21_hr.md)
-- [Modularne instalacije u 0.3.20](release-0.3.20_hr.md)
-- [Postavke anketa i adrese aplikacije u 0.3.19](release-0.3.19_hr.md)
+[Engleska dokumentacija](index_en.md)
 
-- [Ankete i zajednički HTML Editor u 0.3.18](release-0.3.18_hr.md)
+Simbioza povezuje stranice, pretraživi Wiki, kalendare i sastanke, ankete te timsku suradnju. Ove upute opisuju aktualnu aplikaciju 0.3.x i njezine višekratno upotrebljive module. HeartPhrame Framework zasebno je održavana uzvodna ovisnost.
 
-Ovo je dokumentacija aplikacije Simbioza za zajedničko znanje i njezinih uključenih
-HeartPhrame modula. Framework se koristi iz označenog uzvodnog izdanja; ne razvija se u ovom
-repozitoriju.
+## Odaberite početak
 
-Slogan brenda: **Znanje koje živi zajedno.**
+| Želite… | Počnite ovdje |
+| --- | --- |
+| Koristiti stranice, područja, kalendare ili ankete | [Korisničke upute i navigacija poglavljima](bundled-manual_hr.md) |
+| Instalirati Simbiozu | [Odaberite način instalacije](installation_hr.md) |
+| Instalirati samo dio funkcionalnosti ili proširiti postojeći site | [Modularne instalacije](modularity_hr.md) |
+| Održavati, nadograditi ili sigurnosno kopirati instalaciju | [Održavanje i rješavanje problema](troubleshooting_hr.md) |
+| Ugraditi HTML editor u polje vlastite aplikacije | [HTML editor u polju obrasca](html-editor-forms_hr.md) |
+| Povezati drugi sustav kroz API | [API ugovor](api-v1-contract_hr.md) |
+| Prilagoditi izgled | [Kolekcija tema](theme-collection_hr.md) i [svijetla/tamna galerija](theme-gallery_hr.md) |
 
-- [Odaberite web, kalendar, Wiki, ankete ili cjelovitu Simbiozu](modularity_hr.md)
-- [Korisničke upute s Wikijem i bez njega](bundled-manual_hr.md)
+## Instalirajte i održavajte
 
-- [Ispravak vlasništva pri FPM nadogradnji jezika i aplikacije u 0.3.17](release-0.3.17_hr.md)
-- [Paginacija, log workera i rotacija u 0.3.16](release-0.3.16_hr.md)
-- [Vlasništvo, rotacija i čuvanje logova](logging_hr.md)
-- [Automatska i ručna boja teksta gumba u 0.3.15](release-0.3.15_hr.md)
-- [Jasan pregled nadogradnji u Setupu i Email limit workera u 0.3.14](release-0.3.14_hr.md)
-- [Osvježene javne instalacijske upute u 0.3.13](release-0.3.13_hr.md)
-- [Očuvanje tema/postavki i odabranih boja u 0.3.10](release-0.3.10_hr.md)
-- [Prenosive poveznice uputa i povrat na isti site u 0.3.12](release-0.3.12_hr.md)
-- [Revizije ugrađenih jezika u 0.3.7](release-0.3.7_hr.md)
-- [Provjerena instalacija sigurnog FPM-a u 0.3.6](release-0.3.6_hr.md)
-- [Zaštita privatnih konfiguracijskih direktorija u 0.3.5](release-0.3.5_hr.md)
-- [Sigurnosno Docker izdanje 0.3.3](release-0.3.3_hr.md)
-- [Runtime prava sigurnog FPM-a u 0.3.4](release-0.3.4_hr.md)
-- [Izdanje 0.3.2 s ispravkom secured-FPM setupa](release-0.3.2_hr.md)
-- [Dokumentacijsko izdanje 0.3.1](release-0.3.1_hr.md)
-- [Početno izdanje 0.3.0 i popis provjera](initial-release-0.3.0_hr.md)
-- [Prošireni audit prije releasea i nastavak](pre-release-audit-0.3.0_hr.md)
-- [Aktualna konfiguracija i datoteke u vlasništvu modula](configuration_hr.md)
-- [Provjere dokumentacije, primjera i jezika komentara](documentation-quality_hr.md)
-- [Docker instalacija, volumeni, nadogradnja imagea i opcionalni SAML](docker_hr.md)
-- [Spremnost za containere i granice provjere](container-readiness_hr.md)
-- [Vizualni identitet i tema Simbioza](branding_hr.md)
-- [Dvanaest opcionalnih tema: pregled, odabir i uvoz](theme-collection_hr.md)
+- [Apache mod_php](installation_mod_php_hr.md), [obični PHP-FPM](installation_fpm_hr.md) ili [secured PHP-FPM](installation_fpm_secured_hr.md): odaberite jedan cjelovit postupak.
+- [Docker instalacija i nadogradnja imagea](docker_hr.md).
+- [Obavezne ovisnosti i opcionalne integracije](module-dependencies_hr.md).
+- [Konfiguracija aplikacije i modula](configuration_hr.md), [konfiguracija baze](database_hr.md) i [pohrana podataka područja](workspace-data_hr.md).
+- [Logovi i rotacija](logging_hr.md), [dnevnik aktivnosti i tehnički logovi](audit-logging_hr.md) te [rješavanje problema](troubleshooting_hr.md).
+- [Jezični paketi i prijevodi](localization_hr.md).
+- [Održavanje ugrađenih korisničkih uputa](maintaining_installation_guides_hr.md).
 
+## Koristite i prilagodite
 
-Dokumentacija je strukturirana za početnike i napredne korisnike. Svaka tema
-ima zasebnu hrvatsku i englesku datoteku.
+- [Pregled Simbioze](simbioza_overview_hr.md).
+- [Korisničke upute s Wikijem i bez njega](bundled-manual_hr.md).
+- [Osobna područja](personal-workspaces_hr.md) i [osobni izgled](personal-appearance_hr.md).
+- [Teme, uvoz i brisanje](theme-collection_hr.md), [kreativne teme](creative-themes_hr.md), [svih 26 pregleda](theme-gallery_hr.md) i [vizualni identitet](branding_hr.md).
 
-Predloženi put za početnike:
+Instalirano područje **Korisničke upute** sadrži praktične korake za prijavu, stranice, kalendare, sastanke i ankete. Bez Wikija stavka **Upute** prikazuje ista objavljena poglavlja kao HTML. Priručnik nudi prijevode koji postoje i instalirani su; instaliranje dodatnog jezika sučelja ne prevodi tekst uputa.
 
-1. [Instalacija](installation_hr.md)
-2. [Zapis šest čistih instalacija](installation-lab_hr.md)
-3. [Ovisnosti modula](module-dependencies_hr.md)
-4. [Konfiguracija baze](database_hr.md)
-5. [Konfiguracija](configuration_hr.md)
-6. [Uobičajeni tijekovi rada](common-workflows_hr.md)
-7. [End-to-end testiranje](end-to-end-testing_hr.md)
+## Razvijajte i povezujte
 
-Predloženi put za napredne korisnike:
+- [Ugradite HTML editor u polje obrasca](html-editor-forms_hr.md).
+- [Struktura projekta](project-structure_hr.md), [uobičajeni tijekovi rada](common-workflows_hr.md) i [registracija modula](modules_hr.md).
+- [API v1 ugovor](api-v1-contract_hr.md), [zajednički servisi](common-services_hr.md) i [životni ciklus zahtjeva](request-lifecycle_hr.md).
+- [Rute](routes_hr.md), [middleware](middleware_hr.md), [prikazi](views_hr.md) i [sesije](sessions_hr.md).
+- [Šifriranje](encryption_hr.md) i [dispečer događaja](event-dispatcher_hr.md).
+- [Provjere dokumentacije i primjera](documentation-quality_hr.md) te [end-to-end provjere](end-to-end-testing_hr.md).
 
-1. [Struktura projekta](project-structure_hr.md)
-2. [Moduli](modules_hr.md)
-3. [Zajednički servisi](common-services_hr.md)
-4. [API v1 ugovor](api-v1-contract_hr.md)
-5. [Plan implementacije API-ja](api-implementation-plan_hr.md)
+Svaki višekratno upotrebljiv modul ima vlastiti README i jezično odvojenu dokumentaciju u izvornom repozitoriju. Za integraciju koristite aktualni ugovor modula; njegovo uključivanje ne zamjenjuje ovlasti ni pravila spremanja vaše aplikacije.
 
-## Početak
+## Povijest izdanja
 
-- [Pregled instalacije](installation_hr.md)
-- [Instalacija s običnim PHP-FPM-om](installation_fpm_hr.md)
-- [Instalacija sa secured PHP-FPM-om](installation_fpm_secured_hr.md)
-- [Održavanje instalacijskih uputa](maintaining_installation_guides_hr.md)
-- [Instalacija s Apache mod_php modulom](installation_mod_php_hr.md)
-- [Zapis šest čistih instalacija i screenshotovi](installation-lab_hr.md)
-- [Ovisnosti modula](module-dependencies_hr.md)
-- [Konfiguracija baze](database_hr.md)
-- [Konfiguracija](configuration_hr.md)
-- [Struktura projekta](project-structure_hr.md)
-
-Podržane minimalne kombinacije, dvojezičnu dokumentaciju i potpuni skup provjera
-provjerite naredbama:
-
-```bash
-php scripts/verify_clean_install_matrix.php
-php scripts/audit_bilingual_phpdoc.php
-php scripts/audit_module_documentation.php
-composer on-commit
-composer e2e
-```
-
-## Osnove
-
-- [Životni ciklus zahtjeva](request-lifecycle_hr.md)
-- [Rute](routes_hr.md)
-- [Middleware](middleware_hr.md)
-- [Prikazi](views_hr.md)
-- [Sesije](sessions_hr.md)
-- [Lokalizacija](localization_hr.md)
-
-## Napredne teme
-
-- [Zajednički servisi i ubrizgavanje ovisnosti](common-services_hr.md)
-- [Moduli](modules_hr.md)
-- [Ovisnosti modula](module-dependencies_hr.md)
-- [API v1 ugovor](api-v1-contract_hr.md)
-- [Plan implementacije API-ja](api-implementation-plan_hr.md)
-- [Plan jedinstvene konfiguracije i točka nastavka](configuration-migration-plan_hr.md)
-- [Organizacija podataka područja i stranica](workspace-data_hr.md)
-- [Šifriranje](encryption_hr.md)
-- [Dispečer događaja](event-dispatcher_hr.md)
-- [End-to-end testiranje](end-to-end-testing_hr.md)
-- [Dnevnik aktivnosti i tehničko zapisivanje](audit-logging_hr.md)
-- [Osobna područja](personal-workspaces_hr.md)
-- [Osobni izgled](personal-appearance_hr.md)
-
-Aplikacija uključuje `aaieduhr/heartphrame-module-api` odmah nakon Autha. Rute
-pod `/api/v1` koriste Bearer ključeve i namjerno preskaču pokretanje PHP sesije
-te pregledničku CSRF provjeru. Auth posjeduje korisnike, grupe, hashove ključeva
-i administratorska pravila; API modul posjeduje verzionirane JSON ugovore i
-uvjetni ekran API ključeva.
-
-## Vodiči
-
-- [Uobičajeni tijekovi rada](common-workflows_hr.md)
-- [Rješavanje problema](troubleshooting_hr.md)
-- [Dnevnik aktivnosti i tehničko zapisivanje](audit-logging_hr.md)
-- [Osobna područja](personal-workspaces_hr.md)
-- [Osobni izgled](personal-appearance_hr.md)
-
-## English version
-
-- [English documentation](index_en.md)
-
-### Povijesne bilješke izdanja
-
-Ove bilješke opisuju starija izdanja, ne instalaciju ni nadogradnju čiste osnove 0.3.0.
-
-- [Zapis izdanja 0.2.11](release-0.2.11_hr.md)
+[Bilješke podržane linije 0.3.x](releases_hr.md) opisuju promjene pojedinih verzija. To je povijesna referenca, a ne početak nove instalacije. Aktualni primjeri i naredbe nalaze se u gornjim uputama.

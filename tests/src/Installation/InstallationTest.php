@@ -10,6 +10,10 @@ use AaiEduHr\HeartPhrameModuleCalendar\ModuleCalendar;
 use AaiEduHr\HeartPhrameModuleComment\ModuleComment;
 use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlDocumentFormatter;
+use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlSanitizer;
+use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorHtmlStandaloneAssets;
+use AaiEduHr\HeartPhrameModuleEditorHtml\Service\EditorService;
+use AaiEduHr\HeartPhrameModuleEditorHtml\Service\OrmEditorStorage;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
@@ -30,6 +34,7 @@ use App\Installation\InstallationValidationException;
 use App\Installation\InstallationWebApplication;
 use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
+use HeartPhrame\Authn\AuthnHandlerInterface;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -710,7 +715,14 @@ final class InstallationTest extends TestCase
             512,
             JSON_THROW_ON_ERROR,
         );
-        $this->assertCount(10 + count($surveyGuides), $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
+        $guideSources = json_decode(
+            (string)file_get_contents(dirname(__DIR__, 3) . '/resources/installation/manual-sources.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertIsArray($guideSources);
+        $this->assertCount(count($guideSources), $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)->get());
         $meetingPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('slug', '=', 'sastanci')->first();
         $this->assertIsArray($meetingPage);
@@ -797,6 +809,7 @@ final class InstallationTest extends TestCase
             'podrucja',
             'uredivanje-stranica',
             'ankete',
+            'razvojne-integracije',
         ], array_column($rootNodes, 'slug'));
         $translatedTitles = [];
         foreach ($rootNodes as $node) {
@@ -930,11 +943,19 @@ PHP);
             ->where('node_id', '=', $meetingPage['id'])->get();
         $installationAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $installationPage['id'])->get();
-        $managedPageIds = [(int)$meetingPage['id'], (int)$installationPage['id']];
+        $managedPageIds = [];
+        foreach ($guideSources as $guideSource) {
+            $managedNode = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+                ->where('workspace_id', '=', $workspaceId)
+                ->where('slug', '=', $guideSource['slug'])->first();
+            $this->assertIsArray($managedNode);
+            $managedPageIds[] = (int)$managedNode['id'];
+        }
+
+        $this->assertCount(count($guideSources), array_unique($managedPageIds));
         $overviewPage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('slug', '=', 'simbioza')->first();
         $this->assertIsArray($overviewPage);
-        $managedPageIds[] = (int)$overviewPage['id'];
         $overviewAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
             ->where('node_id', '=', $overviewPage['id'])->get();
         foreach (['apache-mod-php-instalacija', 'php-fpm-instalacija'] as $guideSlug) {
@@ -942,16 +963,14 @@ PHP);
                 ->where('slug', '=', $guideSlug)->first();
             $this->assertIsArray($guideNode);
             $this->assertSame((int)$installationPage['id'], (int)$guideNode['parent_id']);
-            $managedPageIds[] = (int)$guideNode['id'];
         }
 
-        // EN: The new package upgrades only the import guide and preserves its position and ACL.
+        // EN: Refreshing the import guide preserves its position and ACL.
         //
-        // HR: Novi paket nadograđuje samo uputu za uvoz i čuva njen položaj i ACL.
+        // HR: Osvježenje upute za uvoz čuva njezin položaj i ACL.
         $confluencePage = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
             ->where('slug', '=', 'confluence-import')->first();
         $this->assertIsArray($confluencePage);
-        $managedPageIds[] = (int)$confluencePage['id'];
         $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)->insert([
             'node_id' => $confluencePage['id'], 'subject_type' => 'user',
             'subject_id' => $administrator['id'], 'can_view' => 1, 'can_manage' => 1,
@@ -973,16 +992,73 @@ PHP);
             $node = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
                 ->where('slug', '=', $guide['slug'])->first();
             $this->assertIsArray($node);
-            $managedPageIds[] = (int)$node['id'];
             $surveyNodesBefore[(int)$node['id']] = $node;
         }
 
+        // EN: All bundled chapters are managed. Create real user content outside
+        //     that set so preservation checks cannot accidentally target another guide.
+        //
+        // HR: Sva ugrađena poglavlja imaju upravljanu nadogradnju. Stvori stvarni
+        //     korisnički sadržaj kako provjera očuvanja ne bi odabrala drugu uputu.
+        $fixtureAuth = $this->createStub(AuthnHandlerInterface::class);
+        $fixtureAuth->method('check')->willReturn(true);
+        $fixtureAuth->method('userData')->willReturn($administrator);
+        $fixtureEditor = new EditorService(
+            new OrmEditorStorage(
+                $database,
+                $fixtureAuth,
+                $payloadConfig,
+                $formatter,
+                new EditorHtmlStandaloneAssets($payloadConfig),
+            ),
+            new EditorHtmlSanitizer(),
+            $formatter,
+            $payloadConfig,
+        );
+        $otherDocument = $fixtureEditor->createWithContent(
+            'Administrator-owned content',
+            'administrator-owned-content',
+            'en',
+            '<h1>Administrator-owned content</h1><p>Keep this user page unchanged.</p>',
+        );
+        $otherDocumentKey = $otherDocument->id;
+        $otherDocumentBefore = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $otherDocumentKey)->first();
+        $this->assertIsArray($otherDocumentBefore);
+        $otherVersionsBefore = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('document_id', '=', $otherDocumentBefore['id'])->get();
+        $this->assertCount(1, $otherVersionsBefore);
+        $fixtureWorkspaces = new WorkspaceRepository($database);
+        $otherNode = $fixtureWorkspaces->saveNode($workspaceId, [
+            'node_type' => 'document',
+            'slug' => 'administrator-owned-content',
+            'document_key' => $otherDocumentKey,
+            'title' => 'Administrator-owned content',
+            'title_translations' => ['en' => 'Administrator-owned content'],
+            'primary_language' => 'en',
+            'supported_languages' => ['en'],
+            'sort_order' => 10000,
+        ], (int)$administrator['id']);
+        $this->assertNotContains((int)$otherNode['id'], $managedPageIds);
+        $otherWorkflowBefore = $fixtureWorkspaces->saveNodeWorkflow((int)$otherNode['id'], 'en', [
+            'status' => 'published',
+            'current_version_number' => (int)$otherVersionsBefore[0]['version_number'],
+            'published_version_number' => (int)$otherVersionsBefore[0]['version_number'],
+            'published_by_user_id' => (int)$administrator['id'],
+            'published_at' => $otherDocumentBefore['updated_at'],
+        ], (int)$administrator['id']);
+        $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)->insert([
+            'node_id' => $otherNode['id'], 'subject_type' => 'user',
+            'subject_id' => $administrator['id'], 'can_view' => 1, 'can_manage' => 1,
+        ]);
+        $otherNodeAclBefore = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $otherNode['id'])->get();
         $otherNodesBefore = array_values(array_filter(
             $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
         ));
-        $otherDocumentKey = $otherNodesBefore[0]['document_key'];
-        $this->assertIsString($otherDocumentKey);
+        $this->assertCount(1, $otherNodesBefore);
+        $this->assertSame((int)$otherNode['id'], (int)$otherNodesBefore[0]['id']);
         $database->table(ModuleTask::TABLE_STATES)->insert([
             'document_id' => $otherDocumentKey, 'task_uuid' => 'other-page-task',
             'task_list_uuid' => 'other-page-list', 'is_completed' => 1,
@@ -1051,6 +1127,19 @@ PHP);
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
         ));
         $this->assertSame($otherNodesBefore, $otherNodesAfter);
+        $this->assertSame($otherDocumentBefore, $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
+            ->where('document_key', '=', $otherDocumentKey)->first());
+        $this->assertSame($otherVersionsBefore, $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
+            ->where('document_id', '=', $otherDocumentBefore['id'])->get());
+        $this->assertSame($otherDocument->html, BundledAssetsUpdater::guideVersionHtml(
+            $otherVersionsBefore[0],
+            $payloadConfig,
+            $formatter,
+        ));
+        $this->assertSame($otherWorkflowBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
+            ->where('node_id', '=', $otherNode['id'])->where('language_code', '=', 'en')->first());
+        $this->assertSame($otherNodeAclBefore, $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_ACL)
+            ->where('node_id', '=', $otherNode['id'])->get());
         foreach ($surveyNodesBefore as $id => $before) {
             $after = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->where('id', '=', $id)->first();
             $this->assertIsArray($after);
@@ -1674,43 +1763,19 @@ PHP);
             $root . '/resources/installation/workspace/korisnicke-upute.zip',
         );
         copy(
-            $projectRoot . '/resources/installation/workspace/instalacija.zip',
-            $root . '/resources/installation/workspace/instalacija.zip',
-        );
-        foreach (
-            ['simbioza.zip', 'apache-mod-php-instalacija.zip', 'php-fpm-instalacija.zip',
-                'confluence-import.zip'] as $guideArchive
-        ) {
-            copy(
-                $projectRoot . '/resources/installation/workspace/' . $guideArchive,
-                $root . '/resources/installation/workspace/' . $guideArchive,
-            );
-        }
-
-        copy(
-            $projectRoot . '/resources/installation/workspace/sastanci.zip',
-            $root . '/resources/installation/workspace/sastanci.zip',
-        );
-
-        // EN: Exercise the same ordered survey-page update packages as a real installation.
-        //
-        // HR: Provjeri iste poredane pakete anketa za nadogradnju kao u stvarnoj instalaciji.
-        copy(
             $projectRoot . '/resources/installation/survey-guides.json',
             $root . '/resources/installation/survey-guides.json',
         );
-        mkdir($root . '/resources/installation/workspace/surveys', 0770);
-        $surveyGuides = json_decode(
-            (string)file_get_contents($root . '/resources/installation/survey-guides.json'),
-            true,
-            512,
-            JSON_THROW_ON_ERROR,
-        );
-        foreach ($surveyGuides as $guide) {
-            copy(
-                $projectRoot . '/resources/installation/workspace/' . $guide['file'],
-                $root . '/resources/installation/workspace/' . $guide['file'],
-            );
+        // EN: Copy every current guide package used by the real updater.
+        //
+        // HR: Kopiraj svaki aktualni paket uputa koji koristi stvarna nadogradnja.
+        foreach (BundledAssetsUpdater::guidePages($projectRoot) as $guide) {
+            $target = $root . '/resources/installation/workspace/' . $guide['file'];
+            if (!is_dir(dirname($target))) {
+                mkdir(dirname($target), 0770, true);
+            }
+
+            copy($projectRoot . '/resources/installation/workspace/' . $guide['file'], $target);
         }
 
         return $root;

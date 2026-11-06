@@ -1,106 +1,57 @@
 # Project structure
 
-This document explains how the project is organized. It focuses on the
-high‑level structure, not implementation details.
+Simbioza composes independent HeartPhrame modules into one application.
+Its `src/` namespace is `App`; domain modules retain their own repositories,
+services, routes and tests. Framework is installed as an upstream Composer
+package and is not edited in this project.
 
----
+| Path | Purpose |
+| --- | --- |
+| `src/Controllers/`, `views/` | Application Home/About, setup, content entry points and read-only guides; layouts assemble optional module renderers. |
+| `src/Module/`, `src/Installation/`, `src/Setup/` | Module catalog/lifecycle, fresh installation and deployment-aware administrative operations. |
+| `src/Configuration/`, `config/`, `framework.php` | Configuration resolution and trusted bootstrap/routes/services. Private installation values use the configured layers. |
+| `src/Localization/`, `lang/` | Installed languages, consolidated dictionaries and language maintenance. |
+| `src/Update/`, `resources/` | Upgrade support and versioned installation assets: manuals and theme collections. |
+| `src/Guides/`, `docs/user-guide/` | Bundled-manual reader and editable bilingual user-guide sources/screenshots. |
+| `src/Security/`, `src/Performance/` | Host script policy and optional request/query measurements. |
+| `database/migrations/` | Versioned schema changes; migration application state stays in the database. |
+| `public/` | The front controller and deliberately public files. The web document root points here. |
+| `scripts/`, `tests/` | Maintenance/build tools, unit/integration tests and the isolated browser/API suite. |
+| `docs/` | Current developer/administrator references and historical release notes. |
+| `vendor/` | Composer dependencies; managed by Composer, not edited or committed. |
+| `build/` | Ignored test reports, temporary quality manifests and generated development artifacts. |
+| `data/` | Private runtime files such as logs, caches, attachments, temporary archives and administrator-owned theme assets. |
 
-## Top‑level layout
+## Configuration and data boundaries
 
-At the repository root you’ll find:
+`HPH_CONFIG_PATH` chooses the host configuration root; `HPH_CONFIG_OVERRIDE_PATHS`
+adds stronger layers. HTTP and CLI must resolve the same directories. The code
+root is not necessarily the configuration root. See [configuration](configuration_en.md).
 
-### Application code (`src/`)
+Do not replace private JSON/PHP documents with `.dist` examples on an existing
+installation. Keep database credentials, encryption keys, SMTP/provider secrets,
+logs, uploads, sessions and backup archives outside Git and the public web root.
+Do not make application code writable by the web account to solve a runtime
+permission error.
 
-Application source code (e.g., controllers and other app logic).
+Some maintained files under `data/themes/` are tracked **release assets**, not
+administrator uploads. `resources/installation/theme/` contains importable theme
+packages; collection receipts prevent an update from repeatedly restoring a
+theme an administrator deleted. The [Theme documentation](theme-collection_en.md) explains
+collection import/export and the gallery.
 
-- Common substructure:
-  - Controllers/ — Request handlers (actions) that interact with services
-  and return responses.
+## Manuals and module ownership
 
-As your project grows, you can add additional layers such as `Domain/`,
-`Services/`, `Repositories/`, etc., to keep responsibilities clear.
+Edit `docs/user-guide/*_en.md` / `*_hr.md` and their screenshots, then use the
+[manual synchronization procedure](documentation-quality_en.md). The generated
+Workspace package also powers HTML guides on installations without Wiki.
 
+For an application's form field, use the [embedded HTML Editor
+example](user-guide/html-editor-u-obrascu_en.md). Saving a form field is separate
+from creating a published document or a Workspace page; the host owns that
+form's validation, authorization and storage.
 
-### Configuration (`config/`)
-
-Centralized application configuration (app settings, environment, routes,
-middleware, DI services, bootstrap code). For more information,
-see [Configuration](configuration_en.md).
-
-
-### Runtime data (`data/`)
-
-Directory for runtime data. By default, it contains:
-
-- logs/ — Application logs. Ensure this directory is writable by the web
-server user.
-- cache/ — Cache storage. Also, it must be writable.
-- themes/ — Persistent theme-owned files. Preset theme libraries shipped by
-  Simbioza are versioned; files uploaded by administrators remain here and are
-  included by complete-theme export/import.
-
-You are free to choose a different location for these directories
-(see [Configuration](configuration_en.md) on how to override the default
-locations).
-
-Ensure this directory is writable by the web server user. Do not commit cache,
-logs, or other runtime artifacts to version control. The maintained preset
-libraries below `data/themes/` are the intentional exception.
-
-
-### Build artifacts (`build/`)
-
-Used by various development tools (e.g., Composer, static analyzers, testing
-tools) to cache temporary data, store reports, or manage other
-build-related artifacts. This directory is not typically
-committed to version control.
-
-
-### Documentation (`docs/`)
-
-Project documentation.
-
-
-### Web root (`public/`)
-
-Web root containing the front controller (the entry PHP script). Your web
-server must point its document root here.
-
-- This directory is the only one exposed to the web.
-- It contains any static assets you choose to serve.
-
-Requests are routed to the front controller, which bootstraps the app,
-runs middleware, resolves routes, and emits responses.
-
-
-###  Tests (`tests/`)
-
-- Contains automated tests.
-- Use the provided test runner configuration at the root.
-- Recommended workflow:
-  - run tests locally before committing changes.
-  - run tests in CI to validate changes.
-
-
-### Composer vendor directory (`vendor/`)
-
-Composer packages and autoloading classes. Not included in VCS.
-
-
-### Views (`views/`)
-
-Contains templates and layouts which are used to render HTML responses.
-
-Typical structure:
-- layouts/ — Base layouts shared across multiple pages.
-- feature‑specific folders — Grouped by feature or controller for clarity.
-
-Note that you can change the default path for views in the `config/app.php`
-configuration file. See [Views](views_en.md) for more information.
-
-
-###  Other files
-
-- Tooling and meta files — Dependency, testing, static analysis, coding
-standards, and refactoring configs (for example, `composer.json`,
-`phpunit.xml`, `phpstan.neon`, `rector.php`, `phpcs.xml`, `README.md`).
+Change module behavior in its owning repository, not in `vendor/` or by copying
+its private implementation into Simbioza. Keep optional integrations optional;
+see [module dependencies](module-dependencies_en.md) and
+[common workflows](common-workflows_en.md).

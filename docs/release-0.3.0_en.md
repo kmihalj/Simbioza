@@ -1,5 +1,7 @@
 # Simbioza 0.3.0
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
+
 [Croatian version](release-0.3.0_hr.md)
 
 > Historical release note — for the current installation guides, use [installation](installation_en.md) and [release 0.3.3](release-0.3.3_en.md). The original 0.3.0 tag remains unchanged.
@@ -53,4 +55,4 @@ MySQL, browser/API flows and both native image architectures. Exact CI results a
 image digests accompany publication; a prepared source checkout is not proof of
 a published artifact.
 
-[Docker instructions](docker_en.md) · [Publication checklist](release-publication-0.3.0_en.md)
+[Docker instructions](docker_en.md) · Publication checklist

@@ -24,8 +24,11 @@ copied into Simbioza, a module package, or an administrator's installation.
 
 ## What is covered
 
-All 80 scenarios cover every module shipped by Simbioza. They exercise public
-behavior rather than private implementation details.
+The suite loads the complete module set and exercises the selected public
+flows below. It complements domain-module tests; it is not a claim that every
+setting, provider or access-policy combination has a browser scenario.
+The [form-field HTML Editor example](user-guide/html-editor-u-obrascu_en.md)
+has its own integration instructions and runnable fixture.
 
 | Area | End-to-end coverage |
 |---|---|
@@ -42,6 +45,10 @@ behavior rather than private implementation details.
 | Calendar and CalDAV | Calendar ACL, event CRUD, required ranges, ICS export, ETags, well-known discovery, `HEAD`, `OPTIONS`, principal/collection `PROPFIND`, `REPORT`, and calendar-object `PUT`/`GET`/`DELETE`. |
 | Webhooks | Subscription ownership, one-time secret, ETag update, secret rotation, a delivery created by a real domain mutation, delivery inspection/retry, and protected deletion. |
 | Email | Settings persistence, queueing through the real outbox, an immediate attempt against an intentionally unavailable local SMTP endpoint, and observable terminal failure without external delivery. |
+| Survey | API draft creation/archive and standalone navigation visibility; detailed admission, question, response and recovery policies are additionally tested by the Survey module. |
+| Backup | Complete business-area selection, encrypted archive creation, upload/preflight, scoped/full restore and post-restore session behavior. |
+| Accessibility and scripts | Personal browser settings, keyboard/modal behavior and approved script help without executing instructions as code. |
+| Confluence Import | Controlled synthetic import and the resulting ordinary Workspace/Editor content. |
 
 Negative paths are intentional coverage: concealed `404` responses, `403`
 permission failures, invalid keys, missing or stale preconditions, invalid
@@ -82,12 +89,14 @@ jq -s 'sort_by(.duration_ms) | reverse | .[:20] | map({path,duration_ms,peak_mem
 
 ## First run
 
-Install the latest Playwright test package without creating a lock file, then
-install Chromium:
+Install the exact JavaScript tools recorded in `package-lock.json`, then
+install the matching test Chromium. Use an isolated source checkout, not the
+live application directory. This is a test-browser installation; it does not
+need a personal Chrome profile:
 
 ```bash
-npm install --no-package-lock
-npx playwright install chromium
+npm ci
+npx --no-install playwright install chromium
 composer e2e
 ```
 
@@ -108,8 +117,10 @@ empty before every run. Do not use a production schema or production account.
 Avoid `--keep` with a network driver unless retaining its temporary connection
 configuration for diagnostics is intentional.
 
-The application resolves compatible tagged internal releases on every clean
-run. Therefore `package-lock.json` and `composer.lock` are not committed.
+The application resolves compatible tagged PHP releases on each clean run;
+its source does not commit `composer.lock`. JavaScript tools deliberately use
+the tracked `package-lock.json`; `npm ci` preserves those exact versions.
+Keep the generated test/package inventory with any results you need to compare.
 
 ## Test local module edits
 
@@ -180,8 +191,9 @@ or timeout, so later tests retain the built-in homepage.
 
 ## CI
 
-GitHub Actions installs the latest Node.js, resolves the latest npm package,
-installs Chromium with its Linux dependencies, and runs `composer e2e`. A test
+GitHub Actions selects the Node.js version declared in its workflow, runs
+`npm ci` with the committed lock, installs the matching Chromium with its
+Linux dependencies, and runs `composer e2e`. A test
 failure retains the Playwright report, traces, screenshots, videos, and server
 and performance logs as a downloadable CI artifact. A separate job runs the
 same complete suite on clean PostgreSQL and MySQL databases.

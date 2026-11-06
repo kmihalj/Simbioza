@@ -93,7 +93,7 @@ class CartController
 
         // Save the updated cart back to the session
         $this->session->set('cart', $cart);
-        
+
         return $this->responseFactory->redirect('/cart/view');
     }
 

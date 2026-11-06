@@ -1,6 +1,6 @@
 # Simbioza 0.3.35 — kontrast opisa bez dodanih podloga
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.36](release-0.3.36_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
 [Engleska verzija](release-0.3.35_en.md)
 
 Theme **0.3.11** uklanja neželjene pozadine dodane iza pratećih opisa u izdanju

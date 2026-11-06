@@ -1,144 +1,112 @@
 # Ovisnosti modula
 
-> Simbioza 0.3.33 koristi HTML Editor 0.3.13, Theme 0.3.12, Email 0.3.5, Survey 0.3.5, Menu/Backup/Workspace 0.3.4, Task/Comment 0.3.3, Notification 0.3.2, Audit/Auth/API/Calendar/Confluence Import 0.3.2 te Workspace Search 0.3.2 te ORM/User i Accessibility 0.3.1. Framework ostaje v0.0.25.
+Simbioza povezuje neovisne module u cjelovitu aplikaciju. Razlikujte pravilo
+instalacije Simbioze od Composer ovisnosti samog modula: paket može raditi u
+drugoj aplikaciji, a Simbioza uvijek uključuje svoju zajedničku jezgru.
 
-Ovaj dokument razlikuje **obavezne ovisnosti**, koje Composer mora instalirati,
-od **opcionalnih integracija**, koje samo proširuju ponašanje kada je
-odgovarajući modul prisutan. Opcionalni modul ne smije postati skriveni uvjet
-za osnovni rad.
+## Šest obaveznih modula Simbioze
 
-Svi moduli koriste označeno izdanje Frameworka `^0.0.25` i kompatibilna izdanja
-internih modula iz linije `^0.3.0`. Repozitoriji modula i Simbioza ne spremaju
-`composer.lock`; CI pri svakom pokretanju izvršava
-`composer update --with-all-dependencies`, dohvaća najnovije kompatibilne tagove
-i zatim pokreće puni `composer on-commit`.
+Svaka instalacija ima **Auth, ORM, Menu, Theme, Backup i Audit**: identitete i
+ovlasti, rad s bazom, navigaciju, izgled, sigurnosne kopije i dnevnik aktivnosti.
+Upravljanje modulima ne dopušta uklanjanje tih šest modula. API i Accessibility
+su opcionalni.
 
-## Pravilo označenih verzija
+Installer nudi cijelu Simbiozu i uže profile:
 
-Prije provjere ili izdanja provjeriti `composer.json` i stvarno instalirane
-pakete **svakog modula**. Ažurna Simbioza ne ažurira zasebne direktorije `vendor`
-u kojima se razvijaju pojedini moduli. Postojeća lokalna lock datoteka uz
-`composer install` ponovno koristi ranije odabrane verzije.
+| Profil | Dodatni odabir; nužne ovisnosti uključuju se automatski |
+| --- | --- |
+| Cijela Simbioza | Svi dostupni opcionalni moduli |
+| HTML stranice | HTML Editor |
+| Kalendar | Calendar |
+| Wiki | Workspace, Workspace Search i Simbioza User |
+| Ankete | Survey, uključujući njegovu ovisnost o HTML Editoru |
+| Zajednička jezgra | Samo šest obaveznih modula |
 
-Najnoviji kompatibilni objavljeni tag postaviti kao donju granicu svake obavezne
-modulne ovisnosti i razvojne integracije. U tom modulu zatim pokrenuti
-`composer update --with-all-dependencies`, `composer validate --strict`,
-`composer check-platform-reqs` i puni `composer on-commit`. Pregledati i
-`composer outdated --direct`. Koristi se `minimum-stability: stable`; razvojne
-grane pripadaju samo izričito izoliranim lokalnim integracijskim instalacijama.
-Opcionalne integracije moraju ostati opcionalne.
+Dodatne module možete kasnije instalirati kroz **Postavke → Moduli** ili CLI
+`modules`. Isključeni paket nije isto što i uklonjeni. Prije uklanjanja provjerite
+ovisne module i sigurnosnu kopiju podataka; ne zaobilazite provjere izmjenom
+samo Composera ili JSON menija. Ispravno podešen zaštićeni PHP-FPM omogućuje
+GUI održavanje; ostale klasične instalacije koriste dokumentirani CLI postupak
+nadogradnje. Vidi [instalaciju](installation_hr.md) i [modularnost](modularity_hr.md).
 
-Tag ne birati samo prema najvećem broju: nekoliko repozitorija ima povijesne
-tagove `1.x`, starije od aktualne linije `0.3.x`. Provjeriti kompatibilnu liniju,
-referencu koda i povijest izdanja. Repozitorij Frameworka ne uređuje se niti se
-ručno krpa njegova instalirana kopija; koristi se tag koji objavi održavatelj.
+## Izravne ovisnosti paketa
 
-Nove glavne verzije vanjskih paketa zahtijevaju zasebnu provjeru kompatibilnosti.
-Trenutačna testna matrica s podrškom za PHP 8.2 zadržava PHPUnit
-`^10.5.65 || ^11.5.56` i PHP_CodeSniffer `^3.13.6`; Slevomat `^8.22.1` odabire
-zadnje kompatibilno izdanje jer novija izdanja zahtijevaju PHP_CodeSniffer 4.
-Donje granice PHPStana i Rectora su `^2.2.15` i `^2.6.7`. To su granice
-kompatibilnosti, ne tvrdnja da ne postoje novije glavne verzije. Ponovno ih
-provjeriti prije svakog izdanja.
+Tablica odgovara popisima `require` i `suggest` u `composer.json` svakog paketa.
+Framework i posredna PHP proširenja nisu ponavljani rekurzivno. Composer mora
+zadovoljiti cijeli graf; pokrenite `composer check-platform-reqs` za instalirane
+pakete i stvarni PHP. Opcionalni vlasnički moduli mogu dodavati API rute,
+događaje ili Backup providere bez stvaranja ovisnosti u jezgri.
 
+| Paket | Izravno obavezni paketi/proširenja | Opcionalne predložene integracije |
+| --- | --- | --- |
+| ORM | `ext-intl`, `ext-pdo`, Framework | — |
+| Auth | Framework, ORM | Backup, API, Menu, Notification |
+| Menu | Framework, ORM | Backup, Auth |
+| Theme | `ext-intl`, `ext-zip`, Framework | Backup, Menu |
+| Backup | `ext-json`, `ext-zip`, Framework, ORM | Auth, Menu |
+| Audit | `ext-json`, `ext-mbstring`, Framework, Auth, ORM | API, Backup, Menu |
+| Accessibility | Framework | Menu |
+| API | Framework, Auth, ORM | Backup, Menu, Notification, Theme |
+| Calendar | Framework, Auth, ORM | Backup, API, HTML Editor, Menu, Notification, Theme, Workspace |
+| HTML Editor | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | Backup, Menu, Theme, Calendar, Workspace, Task, Comment, API |
+| Email | Framework, Auth, ORM | Audit, Backup |
+| Notification | Framework, Auth, ORM | Backup, API, Email |
+| Survey | `ext-json`, `ext-dom`, `ext-mbstring`, `ext-pdo`, `ext-openssl`, Framework, ORM, Auth, HTML Editor | Workspace, API, Backup, Theme, Menu, Notification, Email, Audit |
+| Task | `ext-dom`, Framework, Auth, ORM, HTML Editor | Backup, API, Workspace, Notification |
+| Comment | `ext-mbstring`, Framework, Auth, HTML Editor, Notification, ORM | Backup, Theme, Workspace |
+| Workspace | Framework, Auth, ORM | Backup, HTML Editor, API, Menu, Notification, Email, Theme |
+| Workspace Search | Framework, Auth, HTML Editor, Menu, ORM, Workspace | Backup, API |
+| Simbioza User | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
+| Confluence Import | `ext-dom`, `ext-fileinfo`, `ext-libxml`, `ext-xmlreader`, `ext-zip`, Framework, Auth, HTML Editor, Menu, ORM, Workspace, Simbioza User | Audit, Backup, Calendar, Comment, Task, Workspace Search |
 
-## Brzi pregled
+## Učitavanje i vlasništvo
 
-| Modul | Obavezno | Opcionalne integracije |
-|---|---|---|
-| `module-survey` | Framework, ORM, Auth, HTML Editor | Workspace, Theme, Menu, API, Backup, Notification, Email, Audit |
-| `module-orm` | Framework, `ext-pdo` | — |
-| `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth i Menu za administratorski GUI; poslovni moduli prijavljuju vlastite providere |
-| `module-auth` | Framework, ORM | API, Menu, Notification |
-| `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu i Theme samo za GUI |
-| `module-menu` | Framework, ORM | Auth |
-| `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth (0.3.0+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
-| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.3.1+ ako je instaliran), Menu, Theme, Calendar, Workspace, Task, Comment |
-| `module-email` | Framework, Auth, ORM | Audit 0.3.1+ za postojeću datoteku loga workera |
-| `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
-| `module-workspace` | Framework, Auth, ORM | Backup (0.3.0+ ako je instaliran), HTML Editor, Menu, Notification; Email samo posredno kroz Notification |
-| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.3.0+ ako je instaliran) |
-| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.3.0+ ako je instaliran) |
-| `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
-| `module-audit` | Framework, Auth, ORM | Menu za Postavke, Backup za prenosivi dnevnik aktivnosti, API za `audit:read` te svi instalirani proizvođači poslovnih događaja |
-| `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
-| `simbioza-module-confluence-import` | Framework, Auth, HTML Editor, Menu, ORM, Workspace, Simbioza User, `ext-dom`, `ext-fileinfo`, `ext-json`, `ext-mbstring`, `ext-zip` | API, Audit, Backup, Calendar, Comment, Task, Workspace Search |
+- Generički HeartPhrame domaćin uključuje pakete u `app.modules.enabled`, uz
+  dostupne obavezne module prije ovisnih. Simbioza taj popis izvodi iz središnjeg
+  kataloga i spremljenog odabira modula.
+- Opcionalna integracija ostaje neaktivna bez uključenog vlasničkog modula.
+  Skrivena stavka menija nikada ne zamjenjuje autorizaciju rute.
+- HTML Editor radi bez Područja. U formi može uređivati textarea polje bez
+  stvaranja dokumenta; slijedite [cjelovit primjer integracije](user-guide/html-editor-u-obrascu_hr.md).
+  Naknadna instalacija Područja ne premješta samostalne stranice automatski.
+- Workspace upravlja hijerarhijom i pravima objave, a Editor HTML-om i privitcima.
+  Task i Comment koriste identitet objavljenog dokumenta i njegova prava.
+- API upravlja Bearer prijenosom i otkrivanjem mogućnosti. Uključeni vlasnički
+  moduli prijavljuju rute i provjeravaju ovlasti. Survey, Audit, Search i osobne
+  User integracije uvjetne su; vidi [stvarni API ugovor](api-v1-contract_hr.md).
+- Backup upravlja prenosivim arhivima. Uključeni moduli prijavljuju svoj sadržaj,
+  postavke i završne poslove. Indeksi pretrage, redovi, sesije i tehnički logovi
+  prolazni su podaci i ne vraćaju se kao poslovni sadržaj.
+- Notification bez Emaila ostaje inbox u aplikaciji. Instalacija Emaila ne
+  pokreće worker; podesite SMTP i izričito rasporedite slanje. Poslovi izvještaja
+  anketa također trebaju svoj raspored i aktualna prava primatelja.
+- Simbioza User upravlja praćenjima, osobnim postavkama i opcionalnim osobnim
+  područjima. Auth radi i bez toga. Accessibility čuva prilagodbe u pregledniku
+  i ne dodjeljuje pravo pristupa sadržaju.
+- Confluence Import pretvara vanjski arhiv u običan Workspace/Editor sadržaj.
+  Zapisi za razrješavanje poveznica metapodaci su integracije, ne druga vrsta
+  područja. Uvezene skripte i dalje traže izričito administratorsko odobrenje.
 
-## Pravila učitavanja
+Uz Wiki, upute ostaju u području **Korisničke upute**. Bez Wikija stavka
+**Upute** prikazuje isti ugrađeni priručnik s HTML navigacijom.
 
-- Obavezni moduli moraju biti instalirani i navedeni prije ovisnog modula u
-  `app.modules.enabled`.
-- Opcionalne integracije koriste kasno razrješavanje servisa i moraju se sigurno
-  isključiti bez prekida osnovnog modula kada paket ili servis nije dostupan.
-- `module-notification` ne zahtijeva `module-email`. Bez njega obavijesti ostaju
-  samo u aplikaciji.
-- `module-workspace` ne zahtijeva `module-notification`. Bez njega workflow radi,
-  ali ne šalje obavijesti.
-- `module-editor-html` radi samostalno bez Workspacea, Calendara, Taska, Commenta,
-  Themea i Menua; pojedine kontrole i renderer pojavljuju se samo uz instaliranu
-  integraciju.
-- `module-task` namjerno zahtijeva HTML Editor jer su definicije i stabilni
-  UUID-evi zadataka dio verzioniranog HTML dokumenta.
-- `module-comment` koristi Editorov dokument i prava čitanja, Notification za
-  prijave neprimjerenog sadržaja te opcionalno Workspaceova prava objavljivanja.
-- `module-api` zahtijeva samo Auth i ORM. Calendar, HTML Editor, Notification,
-  Task i Workspace rute registrira samo kada je odgovarajući paket instaliran i
-  modul uključen.
-- `module-backup` zahtijeva samo ORM. CLI ostaje dostupan bez Autha i Menua;
-  u Simbiozi Auth štiti `/settings/backups`, a Menu prikazuje stavku
-  **Postavke → Sigurnosne kopije → Backup i vraćanje**.
-- Poslovni moduli ne ovise tvrdo o Backupu. Kada je Backup uključen, svaki od
-  njih opcionalno prijavljuje vlastite tablične, datotečne ili završne providere.
-- `module-workspace-search` zahtijeva Workspace i Menu. Indeks nije dio arhiva;
-  Backup nakon uspješnog vraćanja pokreće njegovu ponovnu izgradnju.
-- `module-audit` čuva poslovni dnevnik aktivnosti u bazi, a odvojeni PSR-3
-  tehnički log u rotirajućim datotekama. Poslovni moduli rade i bez Audita te
-  objavljuju neutralne događaje gdje je potreban precizniji zapis. Datoteke
-  tehničkog loga nikad se ne registriraju u Backupu.
-- `simbioza-module-user` sluša neutralni Auth događaj uspješne prijave i tada
-  prema pravilima izrađuje ograničeno osobno područje. Auth zato i dalje radi
-  bez Workspacea i Simbioza Usera. Backup čuva korisnička mapiranja,
-  administratorska pravila i mapiranja unutar pojedinog područja.
-- `simbioza-module-confluence-import` pretvara Confluence XML arhivu u područje,
-  dokumente, privitke, identitete i prava. Simbioza User osigurava stabilno
-  povezivanje uvezenih identiteta, dok se dodatne integracije uključuju samo ako
-  je odgovarajući modul instaliran.
+## Verzije i provjera
 
-## Graf
+Koristite podržana stabilna ograničenja iz manifesta. Aktualna linija Frameworka
+jest `^0.0.25`; koristite izdanje njegova održavatelja i ne krpajte repozitorij
+ni instalirani vendor kod. Interni paketi koriste kompatibilnu liniju `0.3.x`;
+povijesni tagovi `1.x` nisu razlog za preskakanje na drugu glavnu liniju.
 
-Strelica označava obaveznu ovisnost. Isprekidana veza označava opcionalnu
-integraciju.
+Ažuran vendor aplikacije ne ažurira zasebne razvojne ovisnosti susjednog modula.
+U izdvojenom izvornom checkoutu provjerite `composer show`, pokrenite
+`composer validate --strict`, razriješite predviđeni manifest pa pokrenite
+provjere platforme i kvalitete. U generiranom produkcijskom paketu čuvajte
+stvarni lock/popis paketa za ponovljivost, iako izvorne biblioteke ne spremaju
+`composer.lock` u Git.
 
-```text
-ORM ----------> Framework
-Backup -------> ORM + Framework
-Auth ---------> ORM + Framework
-API ----------> Auth + ORM + Framework
-Calendar -----> Auth + ORM + Framework
-Email --------> Auth + ORM + Framework
-Notification -> Auth + ORM + Framework
-Workspace ----> Auth + ORM + Framework
-Editor HTML --> Auth + ORM + Framework
-Task ---------> Editor HTML + Auth + ORM + Framework
-Comment ------> Editor HTML + Notification + Auth + ORM + Framework
-Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
-Audit --------> Auth + ORM + Framework
-Simbioza User -> Workspace + Notification + Auth + ORM + Framework
-Confluence Import -> Simbioza User + Workspace + Menu + Editor HTML + Auth + ORM + Framework
-
-Notification - - > Email
-API          - - > Calendar, Workspace, Editor HTML, Notification, Task
-Auth         - - > API, Menu, Notification
-Calendar     - - > API, Editor HTML, Menu, Theme
-Notification- - > API, Email
-Workspace    - - > Editor HTML, Menu, Notification
-Editor HTML  - - > API, Menu, Theme, Calendar, Workspace, Task, Comment
-Task         - - > API, Workspace, Notification
-Comment      - - > Workspace, Theme
-Business modules - - > Backup provider registration
-Workspace Search - - > API, Backup index rebuild
-Audit        - - > Menu, Backup, API, svi proizvođači poslovnih događaja
-Simbioza User- - > API, Audit, Backup, Calendar, Comment, Email, Task, Theme
-Confluence Import - - > API, Audit, Backup, Calendar, Comment, Task, Workspace Search
-```
+Redovni CI Simbioze koristi deklarirani stabilni katalog; izričiti `--local`
+koristi dopuštene susjedne checkoutove. CI grana modula može koristiti razvojne
+aliase, a CI označenih izdanja provjerava stabilna ograničenja. JavaScript alati
+koriste `package-lock.json` u Gitu i `npm ci`. Vidi
+[end-to-end testiranje](end-to-end-testing_hr.md) i
+[održavanje dokumentacije](documentation-quality_hr.md).

@@ -1,6 +1,6 @@
 # Simbioza 0.3.29 — brisanje anketa i sadržaj Igraonice
 
-> Povijesna bilješka izdanja. Ovaj kandidat zamijenjen je prije objave. Vidi [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.30](release-0.3.30_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
 
 [Engleska verzija](release-0.3.29_en.md)
 

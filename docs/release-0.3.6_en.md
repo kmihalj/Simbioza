@@ -1,5 +1,7 @@
 # Simbioza 0.3.6 — verified secured-FPM installation
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
+
 > Historical release note. For current installation instructions, use the [installation guide](installation_en.md).
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.6/docs/release-0.3.6_hr.md)

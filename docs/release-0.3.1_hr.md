@@ -1,5 +1,7 @@
 # Simbioza 0.3.1 — cjelovite instalacijske upute
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
+
 [Engleska verzija](release-0.3.1_en.md)
 
 > Povijesna bilješka izdanja — koristite aktualne [instalacijske upute](installation_hr.md) i [izdanje 0.3.3](release-0.3.3_hr.md). Izvorni tag 0.3.1 ostaje nepromijenjen.

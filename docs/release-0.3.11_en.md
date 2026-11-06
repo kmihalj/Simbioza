@@ -1,5 +1,7 @@
 # Simbioza 0.3.11 — portable guide links and same-site restore
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
+
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/release-0.3.11_hr.md)
 
 > Historical release note for an unpublished candidate. The immutable 0.3.11

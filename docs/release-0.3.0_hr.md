@@ -1,5 +1,7 @@
 # Simbioza 0.3.0
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
+
 [Engleska verzija](release-0.3.0_en.md)
 
 > Povijesna bilješka izdanja — aktualne upute nalaze se u [instalaciji](installation_hr.md) i [izdanju 0.3.3](release-0.3.3_hr.md). Izvorni tag 0.3.0 ostaje nepromijenjen.
@@ -53,4 +55,4 @@ CI izdanja dodatno provjerava PHP 8.2-8.5, čiste kombinacije modula, PostgreSQL
 MySQL, browser/API tokove i obje nativne arhitekture imagea. Točni CI rezultati i
 digesti imagea dio su objave; pripremljeni checkout nije dokaz objavljenog artefakta.
 
-[Docker upute](docker_hr.md) · [Popis za objavu](release-publication-0.3.0_hr.md)
+[Docker upute](docker_hr.md) · Popis za objavu

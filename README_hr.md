@@ -1,6 +1,5 @@
 # Simbioza
 
-> Simbioza 0.3.36 donosi svih 26 tema, svijetlu/tamnu galeriju i jednokratni uvoz koji poštuje kasnije brisanje tema. Vidi [bilješke izdanja](docs/release-0.3.36_hr.md) i [galeriju](docs/theme-gallery_hr.md).
 
 [Engleska verzija](README.md)
 
@@ -87,7 +86,7 @@ dok ovlašteni urednici mogu pregledati i preuzeti starije inačice.
 ## Više od običnog teksta
 
 Cjeloviti vizualni **HTML editor** podržava oblikovanje sadržaja, slike,
-multimediju, tablice i inačice dokumenata. Ima i napredne dinamičke elemente:
+multimediju, tablice s opcionalnim sortiranjem i paginacijom te inačice dokumenata. Ima i napredne dinamičke elemente:
 uključivanje sadržaja druge stranice, grafikone, vremenske crte te sadržaj
 organiziran u kartice (tabove), harmonike, kartične blokove i padajuće blokove. Uz
 odgovarajuće module u stranice se mogu umetnuti i živi kalendari, zadaci te
@@ -112,7 +111,7 @@ Ispod jedinstvenog sučelja Simbioza je modularna. Instalirajte ono što je
 potrebno, a opcionalne mogućnosti dodajte poslije:
 
 - **Sadržaj i pronalaženje:** Workspace (područja), Workspace Search, HTML
-  Editor, Task i Comment.
+  Editor, Survey, Task i Comment.
 - **Korisnici i komunikacija:** Auth, Simbioza User, Notification i E-mail.
 - **Izgled i planiranje:** Menu, Theme i Calendar.
 - **Integracija i održavanje:** API, Audit, Backup i ORM.
@@ -128,261 +127,54 @@ Počnite s [uputom za instalaciju](docs/installation_hr.md) ili pregledajte
 [dokumentaciju](docs/index_hr.md). Sučelje i upute dostupni su i na
 [engleskom](README.md).
 
-## Ovisnosti
+## Instalirajte i održavajte
 
-Simbioza je izgrađena na [HeartPhrame Frameworku](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame)
-i njegovim samostalno održavanim modulima. Aplikacijski razvoj pripada ovdje i
-u repozitorije modula; Framework se koristi iz označenog izdanja `v0.0.25`
-i ne razvija se u ovom repozitoriju.
+Odaberite jedan cjelovit postupak: [Apache mod_php](docs/installation_mod_php_hr.md), [obični PHP-FPM](docs/installation_fpm_hr.md) ili [secured PHP-FPM](docs/installation_fpm_secured_hr.md). [Docker](docs/docker_hr.md) dodatni je način postavljanja s trajnim volumenima za runtime podatke i bazu.
 
-Svaki HeartPhrame modul zahtijeva
-`aaieduhr/heartphrame-framework:^0.0.25`. Obavezni redoslijed modula i
-opcionalne mogućnosti navedeni su
-u [matrici ovisnosti](docs/module-dependencies_hr.md).
+Svaka Simbioza uključuje **Auth, ORM, Menu, Theme, Backup i Audit**. Installer dodaje nužne ovisnosti opcionalnih mogućnosti koje odaberete. Korijenski produkcijski Composer manifest sadrži obavezni temelj; [katalog i matrica ovisnosti](docs/module-dependencies_hr.md) opisuju opcionalne pakete i njihove kompatibilne verzije. Ti predlošci Simbioze razlikuju se od provjere pojedinačnog višekratno upotrebljivog modula u minimalnoj HeartPhrame aplikaciji.
 
-Najmanje provjerene instalacije su samo Framework, Framework + Theme,
-Framework + Menu te Framework + Theme + Menu. Moduli s bazom dodaju ORM i svoje
-dokumentirane domenske ovisnosti. Composer automatski razrješava sve tranzitivne
-ovisnosti.
+Najmanja verzija PHP-a je **8.2**. Koristite Composer 2 i PHP ekstenzije potrebne odabranim modulima i bazi. Ovisnost o Frameworku ostaje `aaieduhr/heartphrame-framework:^0.0.25`; njegov se izvor održava uzvodno. [Konfiguracija](docs/configuration_hr.md) opisuje privatne putanje i postavke. Web-poslužitelj smije izlagati samo `public/`.
 
-## Preduvjeti
-
-- PHP 8.2 ili noviji
-- Composer 2
-- PDO SQLite za zadanu lokalnu instalaciju
-- Git pristup navedenim repozitorijima modula
-
-## Politika ovisnosti
-
-Framework je ograničen na `^0.0.25`. HTML Editor, Menu, Email i Theme traže najmanje
-`0.3.2`, Backup/Auth/API najmanje `0.3.1`, a ostali moduli kompatibilnu
-liniju izdanja `^0.3.0`. Aplikacija ne sprema `composer.lock`; svaki CI dohvaća
-najnovija kompatibilna označena izdanja i pokreće cijeli skup provjera kvalitete.
-Produkcijski deployment može izvan izvornog repozitorija čuvati vlastiti
-provjereni lock.
-
-Spremljeni Composer metapodaci koriste VCS repozitorije kako bi čista CI kopija
-radila bez susjednih direktorija. Za lokalni rad sa simbolički povezanim
-modulima koristi se nespremljeni `composer.local.json` preko varijable
-`COMPOSER`; lokalni `path` repozitoriji ne spremaju se u zajednički manifest.
-
-## Instalacija i provjera
-
-Odaberite jednu cjelovitu uputu: [Apache mod_php](docs/installation_mod_php_hr.md),
-[obični PHP-FPM](docs/installation_fpm_hr.md) ili
-[sigurni PHP-FPM](docs/installation_fpm_secured_hr.md). Svaka počinje na
-administratorskom terminalu i sadrži cijeli postupak instalacije.
-
-Javni nepromjenjivi image `ghcr.io/kmihalj/simbioza:0.3.36` dodatni je
-Docker/Colima način instalacije, s jednim runtime volumenom za konfiguraciju/podatke
-te zasebnim PostgreSQL volumenom. [Docker upute](docs/docker_hr.md) opisuju
-inicijalizaciju, izričite migracije i opcionalni SimpleSAMLphp.
-
-### Razvojna provjera
+Klasičnu instalaciju nadograđujte dokumentiranim računom vlasnika koda/deploya iz direktorija aplikacije:
 
 ```bash
-composer update --with-all-dependencies
-composer check-platform-reqs
-npm install --no-package-lock
-npx playwright install chromium
-composer e2e
+php update.php --check --lang=hr
+php update.php --lang=hr
 ```
 
-Produkcijske ovisnosti namjerno ne uključuju QA alate. U izoliranoj razvojnoj
-kopiji prvo pripremite QA manifest pa pokrenite statičku analizu i jedinične testove:
+Ispravno podešena secured FPM instalacija podržava i GUI nadogradnju. Obični FPM sam po sebi ne daje tu mogućnost. Docker se nadograđuje zamjenom verzioniranog imagea i izričitom primjenom migracija. Prije održavanja kopirajte podatke aplikacije te potrebnu privatnu i poslužiteljsku konfiguraciju. [Rješavanje problema i održavanje](docs/troubleshooting_hr.md) opisuje odgovarajuće logove i provjere.
+
+Podržana linija aplikacije je 0.3.x. Site s verzijom 0.2.x zahtijeva novu instalaciju; njegov stari Simbioza backup nije put nadogradnje. Redovne 0.3.x nadogradnje čuvaju odabrane opcionalne module, sadržaj i postavke. Novi opcionalni modul postaje dostupan za izričitu instalaciju.
+
+Aktualna kontejnerska slika je `ghcr.io/kmihalj/simbioza:0.3.37`. Trajne podatke i tajne podesite prema [Docker uputi](docs/docker_hr.md), a prije nadogradnje pregledajte [izdanje 0.3.37](docs/release-0.3.37_hr.md).
+
+## Koristite module u vlastitoj aplikaciji
+
+Moduli se mogu koristiti i u drugim HeartPhrame projektima. Za spremanje oblikovanog HTML-a u polju forme koristite **komponentni način** editora: otvorite njegov modal iz tekstualnog polja, primijenite uređenu vrijednost i spremite je svojim obrađivačem forme. Polje ne morate pretvoriti u Wiki stranicu. [Uputa za integraciju polja](docs/html-editor-forms_hr.md) vodi do cjelovitog primjera kontrolera, predloška i JavaScripta, sa sanitizacijom i CSRF obradom.
+
+Za vanjsko povezivanje koristite [API ugovor](docs/api-v1-contract_hr.md). Ključ ograničava radnje i ne zaobilazi prava svojeg vlasnika na sadržaj. Za rute i opsege pojedinih uključenih modula pogledajte njihovu dokumentaciju.
+
+## Dokumentacija
+
+- [Glavni indeks](docs/index_hr.md): upute prema potrebama korisnika, administratora i razvojnih programera.
+- [Korisničke upute s Wikijem i bez njega](docs/bundled-manual_hr.md): isti je priručnik u području Korisničke upute ili kroz stavku **Upute**.
+- [Modularnost i naknadno dodavanje Područja HTML webu](docs/modularity_hr.md).
+- [Svih 26 tema](docs/theme-gallery_hr.md), [uvoz kolekcije](docs/theme-collection_hr.md) i [osobni izgled](docs/personal-appearance_hr.md).
+- [Konfiguracija](docs/configuration_hr.md), [jezici](docs/localization_hr.md), [pohrana područja](docs/workspace-data_hr.md) i [logovi](docs/logging_hr.md).
+- [Povijest izdanja](docs/releases_hr.md). Povijesne promjene odvojene su od aktualnih uputa za korištenje.
+
+## Razvojne provjere
+
+Produkcijske ovisnosti ne sadrže QA alate. U izoliranoj razvojnoj kopiji pripremite QA manifest i pokrenite provjere:
 
 ```bash
 php scripts/build_ci_composer.php
 COMPOSER=composer.ci.json composer update --with-all-dependencies
 COMPOSER=composer.ci.json composer on-commit
+npm ci
+php scripts/run_e2e.php --local --keep
 ```
 
-Opcija `--local` uz `build_ci_composer.php` provjerava neobjavljene susjedne module;
-`HPH_LOCAL_MODULE_ROOT` određuje njihov nadređeni direktorij ako je QA kopija drugdje.
-To ne mijenja produkcijski manifest niti zamjenjuje Framework.
-Vidi [E2E i lokalne provjere](docs/end-to-end-testing_hr.md).
+E2E omotač priprema izdvojenu instalaciju i ovisnosti preglednika. Podržane opcije i baze opisane su u [E2E provjerama](docs/end-to-end-testing_hr.md). Opcija `build_ci_composer.php --local` provjerava susjedne module bez njihove objave; `HPH_LOCAL_MODULE_ROOT` određuje njihov nadređeni direktorij. Framework se ne mijenja.
 
-Poslužiteljska release instalacija smije namjerno biti bez `.git` direktorija i
-čuvati vlastiti provjereni `composer.lock`.
-
-**0.3.0 je čisto početno izdanje.** Koristite novu bazu i aktualni raspored
-konfiguracije/podataka. Nadogradnje s 0.2.x i stare Simbiozine backup arhive
-nisu podržane. Za postojeće 0.2.x siteove potrebna je nova instalacija; vanjski
-Confluence izvozi ostaju podržani.
-
-Od 0.3.0 nadalje GUI i CLI prvo provjeravaju updater najnovijeg stabilnog izdanja.
-Ako je potrebno, atomski ga zamjenjuju i nastavljaju u **novom PHP procesu**,
-prije promjena aplikacijskog koda, modula, konfiguracija ili sheme baze.
-Zatim provjeravajte i instalirajte izdanja aplikacije i kompatibilnih modula:
-
-```bash
-php update.php --check
-php update.php
-```
-
-Cijeli postupak release instalacije i nadogradnje opisan je u
-[uputama za instalaciju](docs/installation_hr.md).
-Nakon početnog podešavanja redovna nadogradnja ne zahtijeva `sudo`; uputa
-opisuje zasebne postupke za FPM i instalacije bez FPM-a.
-
-Konfiguracija aplikacije, migracije, redoslijed modula i API integracija opisani
-su u [hrvatskoj dokumentaciji](docs/index_hr.md). Engleska dokumentacija ima
-zaseban [engleski indeks](docs/index_en.md).
-
-Instalacijske postavke, odabir modula i administracija jezika koriste zajedničke
-config putanje opisane u [konfiguracijskoj uputi](docs/configuration_hr.md).
-Instalirani jezični paketi su podatkovni JSON u `data/languages/catalogs/`;
-paketni `lang/` ostaje read-only kod. GUI/CLI za jezike i backup postavki aplikacije
-koriste tu runtime pohranu; vidi [lokalizaciju](docs/localization_hr.md).
-Auth, Email, HTML Editor i Workspace spremaju aktivne postavke pod `HPH_CONFIG_PATH`
-u `auth/auth.json`, `email/email.json`, `editor-html/editor-html.json` i
-`workspace/workspace.json`. Generički moduli mogu se ručno podesiti bez Simbiozina
-GUI-ja; Workspace ostaje Simbiozin modul s postojećim GUI-jem.
-Dokumentirani početni primjeri su [auth.json.dist](config/auth.json.dist),
-[email.json.dist](config/email.json.dist),
-[editor-html.json.dist](config/editor-html.json.dist) i
-[workspace.json.dist](config/workspace.json.dist). Svaki sadrži dvojezične opise
-`_documentation`. Potrebni primjer kopiraj na aktivnu putanju modula samo pri
-novom podešavanju; ne prepisuj migrirane postavke. Vidi
-[pravila za primjere](docs/configuration_hr.md#primjeri).
-Calendar zadržava GUI, bazu i PHP format; sada čita
-`HPH_CONFIG_PATH/calendar/calendar.php` i podešene override slojeve. Aktualni primjer je
-[calendar.php.dist](config/calendar.php.dist). Isključivanje GUI-ja opcionalno
-je samo gdje ima smisla, ne zahtjev za svaki modul.
-Menu i Theme zadržavaju GUI i čitaju ispravne ručne izmjene iz vlastitih
-direktorija `HPH_CONFIG_PATH/menu/` i `HPH_CONFIG_PATH/theme/`. Globalni JSON i
-PHP postavke su konfiguracija; posebni meniji i asseti tema ostaju podaci.
-
-HTML, privitci, posebni meniji i privatne teme koji pripadaju području koriste
-`data/workspaces/<oznaka-pohrane>--<ID>/`, a datoteke stranice nalaze se pod
-`pages/<oznaka-stranice>--<UUID-dokumenta>/`. Čitljive oznake ne mijenjaju se s
-kasnijim javnim slugom/naslovom; ID i potpuni UUID sprječavaju sukobe.
-HTML u baznom driveru ostaje u bazi. Raspored, promjena drivera, Confluence uvoz
-i backup opisani su u [organizaciji podataka](docs/workspace-data_hr.md).
-Nema Menu/Theme `.dist` predložaka. Backup/import prihvaća postojeće JSON arhive
-i koristi lokalne putanje odredišta. Vidi [postavke Menija i Tema](docs/configuration_hr.md#podatci-su-odvojeni-od-konfiguracije).
-Backup politika i host provideri koriste `HPH_CONFIG_PATH/backup/`, a API politika
-instalacije koristi `HPH_CONFIG_PATH/api/api.php`. Obje se podešavaju i bez GUI-ja.
-Audit koristi zajedničke aplikacijske/log postavke; ORM i framework dijele
-`HPH_CONFIG_PATH/database.php` u korijenu. Vidi [aktualne putanje modula](docs/configuration_hr.md#vlasništvo-konfiguracije).
-Comment, Task i Notification čuvaju nužno stanje dokumenata/korisnika u bazi;
-Accessibility čuva osobne odabire u pregledniku. Nemaju zasebne globalne datoteke
-konfiguracije niti prazne config direktorije. Zajedničke postavke i odabir modula
-već prate `HPH_CONFIG_PATH`; njihov postojeći GUI ostaje.
-Vidi [granice konfiguracije i podataka](docs/configuration_hr.md#moduli-bez-zasebne-politike).
-Updater i backup/vraćanje aplikacijskih postavki također prate te putanje;
-povrat čuva dinamički kod pokretanja i odobrene postavke zapisuje u završni sloj.
-[Konfiguracijske upute](docs/configuration_hr.md) opisuju aktualni raspored čiste
-instalacije. Raniji [plan konfiguracije](docs/configuration-migration-plan_hr.md)
-povijesni je zapis implementacije; [audit 0.3.0](docs/pre-release-audit-0.3.0_hr.md)
-bilježi provjere početnog izdanja. Aktualne promjene dokumentacije navedene su u
-[bilješkama izdanja 0.3.32](docs/release-0.3.32_hr.md).
-
-## Dokumentacija
-
-- [Vlastite kontrole tablica sadržaja u 0.3.32](docs/release-0.3.32_hr.md)
-- [Oporavljivo brisanje anketa i zajednički nacrti u 0.3.30](docs/release-0.3.30_hr.md)
-- [Navigacija pune aplikacije u 0.3.21](docs/release-0.3.21_hr.md)
-- [Modularne instalacije i premještanje HTML stranica u 0.3.20](docs/release-0.3.20_hr.md)
-
-- [Očuvanje tema/postavki i odabranih boja u 0.3.10](docs/release-0.3.10_hr.md)
-- [Prenosive poveznice uputa i povrat na isti site u 0.3.12](docs/release-0.3.12_hr.md)
-- [Revizije ugrađenih jezika u 0.3.7](docs/release-0.3.7_hr.md)
-- [Provjerena instalacija sigurnog FPM-a u 0.3.6](docs/release-0.3.6_hr.md)
-- [Zaštita privatnih konfiguracijskih direktorija u 0.3.5](docs/release-0.3.5_hr.md)
-- [Sigurnosno Docker izdanje 0.3.3](docs/release-0.3.3_hr.md)
-- [Runtime prava sigurnog FPM-a u 0.3.4](docs/release-0.3.4_hr.md)
-- [Izdanje 0.3.2 s ispravkom secured-FPM setupa](docs/release-0.3.2_hr.md)
-- [Dokumentacijsko izdanje 0.3.1](docs/release-0.3.1_hr.md)
-- [Čisto početno izdanje 0.3.0](docs/initial-release-0.3.0_hr.md)
-
-- Glavni indeks (HR): [docs/index_hr.md](docs/index_hr.md)
-- Glavni indeks (EN): [docs/index_en.md](docs/index_en.md)
-- [Instalacija](docs/installation_hr.md)
-- [Ankete i zajednički HTML Editor u 0.3.18](docs/release-0.3.18_hr.md)
-- [Ispravak vlasništva pri FPM nadogradnji jezika i aplikacije u 0.3.17](docs/release-0.3.17_hr.md)
-- [Paginacija, log workera i rotacija u 0.3.16](docs/release-0.3.16_hr.md)
-- [Vlasništvo, rotacija i čuvanje logova](docs/logging_hr.md)
-- [Automatska i ručna boja teksta gumba u 0.3.15](docs/release-0.3.15_hr.md)
-- [Jasan pregled nadogradnji u Setupu i Email limit workera u 0.3.14](docs/release-0.3.14_hr.md)
-- [Osvježene javne instalacijske upute u 0.3.13](docs/release-0.3.13_hr.md)
-- [Instalacija s običnim PHP-FPM-om](docs/installation_fpm_hr.md)
-- [Instalacija sa secured PHP-FPM-om](docs/installation_fpm_secured_hr.md)
-- [Instalacija s Apache mod_php modulom](docs/installation_mod_php_hr.md)
-- [Zapis šest čistih instalacija i screenshotovi](docs/installation-lab_hr.md)
-- [Ovisnosti modula](docs/module-dependencies_hr.md)
-- [Konfiguracija baze](docs/database_hr.md)
-- [Framework parametri i konfiguracija modula](docs/configuration_hr.md)
-- [Plan jedinstvene konfiguracije i točka nastavka](docs/configuration-migration-plan_hr.md)
-- [API v1 ugovor](docs/api-v1-contract_hr.md)
-- [End-to-end testiranje](docs/end-to-end-testing_hr.md)
-- [Vizualni identitet i tema](docs/branding_hr.md)
-
-### Povijesne bilješke izdanja
-
-Ove bilješke opisuju starija izdanja, ne instalaciju ni nadogradnju čiste osnove 0.3.0.
-
-- [Izdanje 0.2.8: obavijesti više ne prekriva widget pristupačnosti](docs/release-0.2.8_hr.md)
-- [Izdanje 0.2.7: prošireni vlastiti widget pristupačnosti na šest jezika](docs/release-0.2.7_hr.md)
-- [Izdanje 0.2.6: potpune instalacijske upute i unaprijed odabrani svi moduli](docs/release-0.2.6_hr.md)
-- [Izdanje 0.2.4: pouzdan dugotrajan izolirani FPM setup](docs/release-0.2.4_hr.md)
-- [Izdanje 0.2.3: pouzdano postavljanje više FPM instalacija i instalacijske upute](docs/release-0.2.3_hr.md)
-- [Izdanje 0.2.2: oporavak importa i ispravak rasporeda dokumenta](docs/release-0.2.2_hr.md)
-- [Izdanje 0.2.1: pouzdaniji uvoz velikih Confluence arhiva](docs/release-0.2.1_hr.md)
-- [Izdanje 0.2.0: nastavivo trajno brisanje područja](docs/release-0.2.0_hr.md)
-- [Izdanje 0.1.99: podrška za privatne module instalacije](docs/release-0.1.99_hr.md)
-- [Izdanje 0.1.98: sigurna nadogradnja i povratak za FPM](docs/release-0.1.98_hr.md)
-- [Izdanje 0.1.97: sigurno istodobno uređivanje i zapamćeni jezik](docs/release-0.1.97_hr.md)
-- [Izdanje 0.1.96: postavke prate instalaciju modula](docs/release-0.1.96_hr.md)
-- [Izdanje 0.1.95: pouzdane postavke modula i provjere instalacije](docs/release-0.1.95_hr.md)
-- [Planiranje sastanaka i isporučene upute u izdanju 0.1.68](docs/release-0.1.68_hr.md)
-
-## Provjere
-
-E2E skup uključuje neosjetljiva ORM i HTTP mjerenja te trajne budžete za broj
-SQL upita, trajanje zahtjeva, vršnu memoriju i veličinu odgovora. Isti potpuni
-skup u CI-ju se pokreće na SQLiteu, PostgreSQL-u i MySQL-u.
-
-Održavanje područja optimizira postojeće slike kao trajni i nastavivi posao s
-vidljivim progress barom. Slike se obrađuju u ograničenim serijama, pa veliki
-site više ne drži jedan HTTP zahtjev otvorenim tijekom cijele obrade; izvorne
-datoteke ostaju nepromijenjene.
-
-## Osobne postavke i povezivanje modula
-
-Simbioza User dodaje praćenja, pravila dostave obavijesti i ograničena osobna
-područja koja se mogu izraditi pri prvoj prijavi prema administratorskom
-pravilu. Dodaje i osobni svijetli/tamni/automatski/sistemski odabir dok je
-globalni način modula Theme automatski. Moduli zadržavaju svoja domenska
-pravila, a aplikacija ih povezuje i daje postavke instalacije.
-
-## Licencija
-
-Ovaj rad objavljen je pod
-[Javnom licencijom Europske unije (EUPL) v1.2](LICENSE).
-
-## Donacije i profesionalne usluge
-
-Simbioza i njezini moduli otvorenog su koda. Sve mogućnosti dostupne su svima
-pod pripadajućim licencijama otvorenog koda: nema plaćenog izdanja ni funkcija
-koje se otključavaju donacijom. Dobrovoljne donacije putem
-[GitHub Sponsors](https://github.com/sponsors/kmihalj) pomažu održati razvoj.
-
-Ako vam treba praktična pomoć, instalacija i podešavanje na lokaciji korisnika,
-prijenos sadržaja i podataka iz postojećih sustava te izrada prilagođenih
-modula ili integracija mogu se ugovoriti kao plaćene usluge. Naplaćuje se rad,
-a ne pristup mogućnostima Simbioze. Za dogovor ili ponudu pišite na
-[kmihalj@me.com](mailto:kmihalj@me.com).
-
-## Zajednica
-
-<a href="https://alternativeto.net/software/simbioza/about/?utm_source=badge&amp;utm_medium=referral" target="_blank">
-  <img src="https://alternativeto.net/static/badges/badge-wide-color.svg"
-       alt="Simbioza | AlternativeTo"
-       width="406" height="73" />
-</a>
-
-- [Autori](AUTHORS_hr.md)
-- [Podrška](SUPPORT_hr.md)
-- [Privatna prijava sigurnosne ranjivosti](SECURITY_hr.md)
-- [Doprinos projektu](CONTRIBUTING_hr.md)
+Izvor istine za ovisnosti jesu zahtjevi Composer paketa i JavaScript lock datoteka. Nemojte preuzimati fiksne verzije iz starih bilježaka izdanja. Privatna konfiguracija, runtime podatci i generirani izvještaji ne spremaju se u Git. [Provjere dokumentacije](docs/documentation-quality_hr.md) obuhvaćaju jezične parove, poveznice i primjere.

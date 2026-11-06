@@ -23,8 +23,11 @@ ne kopiraju u Simbiozu, paket modula ni administratorsku instalaciju.
 
 ## Što se provjerava
 
-Svih 80 scenarija pokriva svaki modul koji Simbioza isporučuje. Provjerava se
-javno ponašanje, a ne privatni detalji implementacije.
+Skup učitava sve module i provjerava odabrane javne tokove u nastavku.
+Dopunjuje testove domenskih modula; ne tvrdi da svaka postavka, provider ili
+kombinacija prava ima zaseban preglednički scenarij. [Primjer HTML Editora
+u obrascu](user-guide/html-editor-u-obrascu_hr.md) ima vlastite upute
+integracije i izvršivi primjer.
 
 | Područje | End-to-end pokrivenost |
 |---|---|
@@ -41,6 +44,10 @@ javno ponašanje, a ne privatni detalji implementacije.
 | Calendar i CalDAV | ACL kalendara, CRUD događaja, obavezni vremenski rasponi, ICS izvoz, ETagovi, well-known discovery, `HEAD`, `OPTIONS`, principal/collection `PROPFIND`, `REPORT` te `PUT`/`GET`/`DELETE` kalendarskog objekta. |
 | Webhookovi | Vlasništvo pretplate, jednokratna tajna, ETag izmjena, rotacija tajne, dostava nastala stvarnom domenskom promjenom, pregled/retry dostave i zaštićeno brisanje. |
 | Email | Spremanje postavki, red kroz stvarni outbox, trenutačni pokušaj prema namjerno nedostupnom lokalnom SMTP-u i vidljiv konačni neuspjeh bez vanjske isporuke. |
+| Survey | API stvaranje/arhiviranje nacrta i vidljivost samostalne navigacije; detaljna pravila pristupa, pitanja, odgovora i oporavka dodatno provjerava Survey modul. |
+| Backup | Odabir potpunih poslovnih cjelina, šifrirani arhiv, upload/preflight, ograničeni/puni povrat i ponašanje sesije nakon vraćanja. |
+| Pristupačnost i skripte | Osobne prilagodbe preglednika, rad tipkovnice/modala i pomoć odobrene skripte bez izvršavanja upute kao koda. |
+| Confluence Import | Kontrolirani sintetički uvoz i dobiveni obični Workspace/Editor sadržaj. |
 
 Negativni tokovi namjerna su pokrivenost: skriveni odgovori `404`, zabrane `403`,
 neispravni ključevi, nedostajući ili zastarjeli preduvjeti, neispravni rasponi i
@@ -82,12 +89,13 @@ jq -s 'sort_by(.duration_ms) | reverse | .[:20] | map({path,duration_ms,peak_mem
 
 ## Prvo pokretanje
 
-Instalirajte najnoviji Playwright testni paket bez lock datoteke, zatim
-instalirajte Chromium:
+Instalirajte točne JavaScript alate zapisane u `package-lock.json`, zatim
+njihov testni Chromium. Koristite izdvojeni izvorni checkout, a ne direktorij
+žive aplikacije. Testni preglednik ne treba osobni Chrome profil:
 
 ```bash
-npm install --no-package-lock
-npx playwright install chromium
+npm ci
+npx --no-install playwright install chromium
 composer e2e
 ```
 
@@ -108,8 +116,10 @@ prije svakog pokretanja. Ne koristite produkcijsku shemu ni produkcijski račun.
 Uz mrežni driver izbjegavajte `--keep`, osim kada svjesno želite zadržati
 privremenu konfiguraciju veze radi dijagnostike.
 
-Aplikacija pri svakoj čistoj provjeri dohvaća kompatibilna označena izdanja
-internih paketa. Zato se `package-lock.json` i `composer.lock` ne spremaju u Git.
+Aplikacija pri čistoj provjeri dohvaća kompatibilna označena PHP izdanja;
+jezin izvor ne sprema `composer.lock`. JavaScript alati namjerno koriste
+`package-lock.json` iz Gita; `npm ci` čuva točne verzije. Uz rezultate koje
+želite uspoređivati sačuvajte stvarni popis testiranih paketa.
 
 ## Testiranje lokalnih izmjena modula
 
@@ -180,8 +190,9 @@ roka, tako da kasniji testovi zadrže ugrađenu naslovnicu.
 
 ## CI
 
-GitHub Actions instalira najnoviji Node.js, razrješava najnoviji npm paket,
-instalira Chromium i njegove Linux ovisnosti te pokreće `composer e2e`. Kod
+GitHub Actions odabire Node.js prema workflowu, pokreće `npm ci` sa
+spremljenim lockom, instalira odgovarajući Chromium s Linux ovisnostima
+i pokreće `composer e2e`. Kod
 greške Playwright izvještaj, traceovi, slike, videozapisi te logovi poslužitelja
 i performansi ostaju dostupni kao CI artefakt. Zaseban job pokreće isti potpuni
 skup nad čistim PostgreSQL i MySQL bazama.

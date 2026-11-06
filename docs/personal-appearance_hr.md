@@ -1,6 +1,6 @@
 # Osobni izgled
 
-Prijavljeni korisnik može odabrati izgled aplikacije u profilu samo dok je pod
+Uz instaliran i uključen modul Simbioza User, prijavljeni korisnik može odabrati izgled aplikacije u profilu samo dok je pod
 **Postavke → Tema → Postavke cijelog site-a → Način primjene** odabrano
 **Automatski**.
 
@@ -20,6 +20,12 @@ spremljene osobne vrijednosti i odbija izravnu promjenu kroz profil ili API dok
 vrijedi prisilna politika. Povratkom globalnog načina na Automatski ponovno se
 prikazuju cjelina i ranije spremljeni odabir.
 
-Postojeća instalacija dobiva postavku `theme_mode` redovnom aplikacijskom
-migracijom uključenom u sljedeću nadogradnju Simbioze. Čista instalacija stupac
-odmah izrađuje u početnoj shemi Simbioza User modula.
+Postavka `theme_mode` čuva se u shemi Simbioza User modula i uključena je u
+njegov backup. Migracije održavajte redovnom nadogradnjom aplikacije; stupac
+ne stvarajte niti preimenujte ručno.
+
+Dropdown zaglavlja samo u Demu prebacuje cijelu temu za jedan preglednik i ne
+mijenja ovu globalnu politiku. Osobni kontrast pristupačnosti smije namjerno
+nadjačati prisilni svijetli/tamni izgled u tom pregledniku. Vidi
+[teme](theme-collection_hr.md), [ovisnosti modula](module-dependencies_hr.md) i
+[korisničke upute](simbioza_overview_hr.md).

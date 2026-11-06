@@ -1,277 +1,198 @@
-# API v1 ugovor
+# Implementirani ugovor API-ja v1
 
-Ovaj dokument definira minimalni stabilni ugovor koji prethodi implementaciji
-javnog HeartPhrame API-ja. Ne opisuje postojeće web-kontrolere kao API. Web-rute
-ostaju namijenjene HTML sučelju, a API dobiva zasebne verzionirane rute,
-autentikaciju, DTO objekte i pravila kompatibilnosti.
+Ovo je aktualni HTTP API Simbioze, a ne plan implementacije. Zajednički HTTP sloj
+pruža `heartphrame-module-api`; uključeni domenski moduli registriraju vlastite
+rute i provode svoja poslovna pravila. Framework je uzvodna ovisnost i ova
+integracija ne mijenja njegov kod.
 
-## 1. Cilj i granice
+## Počnite od stvarne instalacije
 
-- API korijen je `/api/v1`.
-- Prva verzija podržava JSON i UTF-8.
-- Svaki domenski modul ostaje vlasnik svojih podataka, validacije i ACL odluka.
-- `module-api` pruža zajednički HTTP sloj, ali ne čita izravno tablice drugih
-  modula.
-- Postojeće web-rute i session prijava nisu javni API ugovor.
-- API se može isključiti uklanjanjem `module-api`; ostali moduli nastavljaju
-  raditi.
-- API ključ ne može korisniku dati pravo koje nema u aplikaciji.
+Bazna putanja je `/api/v1` u odnosu na aplikaciju. Za instalaciju na
+`https://example.test/simbioza` postavite:
 
-## 2. Vlasništvo modula
-
-| Modul | API odgovornost |
-|---|---|
-| `module-api` | Verzije ruta, JSON odgovori, problem odgovori, paginacija, OpenAPI, CORS, rate limiting, request ID i registar idempotencije |
-| `module-auth` | API ključevi, autentikacija ključa, scopes, korisnički identitet, lokalni user/group CRUD i auth audit |
-| `module-workspace` | Područja, stabla, čvorovi, workflow i Workspace ACL |
-| `module-editor-html` | Dokumenti, jezici, verzije, HTML, privici i objavljeni prikaz |
-| `module-calendar` | Kalendari, događaji, ponavljanja, calendar ACL i ICS |
-| `module-task` | Definicije zadataka, aktualna stanja i povijest promjena |
-| `module-notification` | Obavijesti trenutačnog korisnika |
-| `module-email` | Nema javnu krajnju točku za proizvoljno slanje pošte; ostaje interni servis |
-| `module-theme` | Opcionalni read-only opis aktivne javne teme |
-| `module-menu` | Opcionalni read-only izbornik filtriran za trenutačni API identitet |
-
-Domenski modul prijavljuje svoje API rute samo kada je `module-api` instaliran.
-Opcionalna integracija ne smije postati njegova obavezna Composer ovisnost.
-
-## 3. API identitet i ključevi
-
-Ključ je vezan uz postojećeg aktivnog korisnika. Autorizacija se provodi ovim
-redoslijedom:
-
-1. ključ postoji, nije opozvan i nije istekao
-2. vlasnički korisnik postoji i aktivan je
-3. ključ ima potreban scope
-4. korisnik ima potrebno domensko pravo kroz postojeći ACL
-
-Predloženi format ključa je:
-
-```text
-hfp_live_<public-id>_<secret>
+```bash
+export HPH_API_URL='https://example.test/simbioza/api/v1'
+read -r -s HPH_API_TOKEN
+export HPH_API_TOKEN
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" "$HPH_API_URL/me"
 ```
 
-`public-id` služi za pronalazak zapisa. Tajni dio generira se kriptografski
-sigurnim generatorom, prikazuje samo jednom i u bazi se čuva isključivo njegov
-hash. Nikada se ne zapisuje u audit, iznimku, access log ili HTML.
+Ključ kreirajte u **Postavke → Korisnici → API ključevi**, kopirajte ga jednom i
+držite izvan izvornog koda i logova. Auth posjeduje izdane ključeve, jednosmjerne
+hashove tajni, aktualni identitet korisnika/grupa, istek, opoziv i opcionalna IP
+ograničenja. API posjeduje administraciju/zahtjeve i HTTP sloj. Stvarni oblik
+tokena je `hfp_live_<public-id>_<secret>`; klijent cijelu vrijednost treba
+smatrati neprozirnom tajnom. Izgubljeni ključ rotirajte ili opozovite umjesto
+pokušaja ponovnog čitanja tajne.
 
-Svaki ključ sadrži:
+Aktualni vlasnik mora postojati i ostati aktivan. Svaka radnja traži i scope
+ključa i stvarne domenske ovlasti vlasnika. Administratorski status ne zaobilazi
+scope provjeru. Browser sesija, vanjska prijava samo za anketu ni ID korisnika u
+poslanom JSON-u ne mogu preuzeti identitet drugog vlasnika API ključa.
 
-- naziv i opcionalni opis
-- `user_id`
-- skup scopes
-- vrijeme isteka ili `null`
-- `created_at`, `last_used_at` i `revoked_at`
-- opcionalni popis dopuštenih IP adresa
-- javni prefiks za sigurno prepoznavanje ključa u administraciji
+## Otkrivanje API-ja i trenutačni identitet
 
-## 4. Scopes
-
-Početni registar koristi stabilne ASCII nazive:
+Sve tri rute jezgre zahtijevaju valjan Bearer ključ:
 
 ```text
-workspace:read
-workspace:manage
-page:read
-page:write
-page:publish
-attachment:read
-attachment:write
-calendar:read
-calendar:write
-task:read
-task:write
-users:read
-users:create
-users:update
-users:delete
-groups:read
-groups:manage
-notifications:read
-notifications:write
-webhooks:read
-webhooks:manage
+GET /api/v1
+GET /api/v1/me
+GET /api/v1/openapi.json
 ```
 
-`page:write` obuhvaća izradu stranice i njezina prvog nacrta, izmjenu ili
-odbacivanje nacrta, prijevod, vraćanje verzije i brisanje. `page:publish` je
-zasebno pravo pregleda i objave. `groups:manage` obuhvaća izradu, izmjenu i
-brisanje grupa te dodavanje i uklanjanje članova.
+Discovery vraća resurse i grupe scopeova **trenutačno uključenih** modula.
+`/me` vraća siguran profil vlasnika te javni identitet/scopeove trenutačnog
+ključa, nikada njegovu tajnu. `/openapi.json` generira OpenAPI 3.1 pregled iz
+aktivnog registra ruta, s adresom instalacije u `servers`. Vraća sam dokument
+vrste `application/vnd.oai.openapi+json;version=3.1.0`, uz
+`Cache-Control: no-store`, bez omotača `data`/`meta`/`links`.
 
-Administratorski status sam po sebi nije dovoljan za API operaciju. Ključ
-aktivnog administratora mora imati i odgovarajući scope. `users:*` i
-`groups:*` krajnje točke rade samo s lokalnim Auth zapisima; ne upravljaju
-korisnicima u SAML, CAS, OIDC ili OAuth provideru.
+Generirani dokument opisuje aktivne rute i zajedničke omotače. Sheme tijela
+zahtjeva/odgovora su općenite: točna polja, multipart upload, CSV/ICS/binarna
+preuzimanja, statusne kodove i pravila tijeka rada pročitajte u domenskoj
+referenci. Uvoz dokumenta u klijent ne dodjeljuje scopeove ni prava.
+CORS `OPTIONS` preflight bez autentikacije zaseban je postupak koji provjerava
+podešene dopuštene izvore, metode i zaglavlja.
 
-`DELETE /users/{id}` deaktivira lokalni račun i opoziva njegove API ključeve.
-Fizičko brisanje nije API operacija jer bi prekinulo audit, vlasništvo i
-povijesne reference.
+## Implementirani resursi i vlasništvo
 
-## 5. Zajednički HTTP ugovor
+| Vlasnički modul | API obitelj i scopeovi | Aktualno ponašanje |
+| --- | --- | --- |
+| Auth | `/users`, `/groups`; `users:read/create/update/delete`, `groups:read/manage` | Traži aktivnog administratorskog vlasnika. Samo lokalni računi/grupe; ne upravlja računima vanjskog providera. DELETE korisnika deaktivira račun i opoziva njegove ključeve. |
+| Workspace | `/workspaces`; `workspace:read/manage` | ACL-filtrirana područja/stablo, metapodaci, čvorovi/ovlasti, sažeci, HTML izvoz i posebni izgled područja. |
+| HTML Editor | `/pages`; `page:read/write/publish`, `attachment:read/write` | Sadržaj stranica, jezici, objavljene verzije, zajednički nacrt/pregled/objava i privitci. Samostalni zapis odmah je objavljen, a Workspace zapis slijedi njegov nacrt. |
+| Calendar | `/calendars`; `calendar:read/write` | CRUD kalendara/događaja, ACL, ponavljanja i ICS uvoz/izvoz. DELETE kalendara je nepovratan. |
+| Task | `/pages/{documentId}/tasks`; `task:read/write` | Definicije objavljene stranice, trenutačno stanje i povijest; primjenjuju se ACL stranice i opseg liste zadataka. |
+| Notification | `/notifications`; `notifications:read/write` | Samo vidljivi inbox vlasnika ključa; nema rute za proizvoljno kreiranje obavijesti. |
+| Workspace Search | `/workspace-search`; `workspace-search:read` | ACL-filtrirani naslovi, objavljeni tekst/autori, isječci, zbrojevi i filtri. |
+| Survey | `/surveys`; `surveys:read/write/publish/results/export` | Definicije, nacrt/pregled/objava/oporavak, zbirni rezultati, pojedinačni odgovori samo za upravitelje i privatni izvoz. |
+| Audit | `/audit`; `audit:read` | Redigirani dnevnik aktivnosti samo za čitanje aktivnom administratoru; nema API preuzimanja tehničkih logova. |
+| Simbioza User | `/me/follows`, `/me/follow-preferences`; `follows:read/write` | Praćenja i postavke obavijesti/izgleda samo vlasnika ključa; vrijede ovlasti nad ciljem. |
+| API | `/webhooks`; `webhooks:read/manage` | Pretplate vlasničkog ključa, povijest dostave, rotacija tajne i ponavljanje; asinkrona potpisana dostava. |
 
-### Zahtjev
+Isključeni domenski modul ne doprinosi ni rute ni scopeove. Menu, Theme i Email
+nemaju zasebnu javnu HTTP obitelj resursa. Email ostaje interni transport.
+Radnje teme vezane uz područje pripadaju integraciji Workspacea, a ne globalnom
+Theme API-ju. Sigurnosne kopije koriste zaseban ovlašteni Backup postupak;
+nisu CSV izvoz rezultata.
 
-- `Authorization: Bearer <api-key>`
-- `Accept: application/json`
-- `Content-Type: application/json` za JSON tijelo
-- `Accept-Language` određuje zadani jezik odgovora
-- eksplicitni parametar `lang` ima prednost za višejezični sadržaj
-- klijent može poslati `X-Request-Id`, a poslužitelj ga uvijek vraća
+## Status osobnog područja
 
-### Uspješan odgovor
+`GET /me/personal-workspace` registrira Simbioza User i zahtijeva oglašeni scope
+`workspace:read`. Vraća samo postojeću vezu vlasnika API ključa s njegovim
+osobnim područjem i nikada ne stvara područje. Ako veza ne postoji, vraća
+`exists: false` i `workspace: null`. Praćenja i njihove postavke koriste
+oglašene scopeove `follows:*`.
+
+## Primjeri ruta
+
+Sve sljedeće putanje relativne su istoj baznoj adresi API-ja:
+
+```text
+GET    /users?page[limit]=10
+PUT    /users/{userId}/groups
+GET    /workspaces/{workspaceId}/tree
+POST   /pages
+PATCH  /pages/{documentId}
+POST   /pages/{documentId}/review
+POST   /pages/{documentId}/publish
+POST   /pages/{documentId}/attachments
+PATCH  /calendars/{calendarUuid}/events/{eventId}
+PUT    /pages/{documentId}/tasks/{taskUuid}/state
+GET    /workspace-search?q=upute&lang=hr&per_page=10
+POST   /surveys
+POST   /surveys/{survey}/submit-review
+POST   /surveys/{survey}/publish
+GET    /surveys/{survey}/results
+POST   /surveys/{survey}/exports
+```
+
+Stranica se kreira kroz `/pages` s odgovarajućim poljima smještaja, ne preko
+izmišljene rute `/workspaces/{id}/pages`. Task rute vezane su uz objavljeni
+dokument, a ne uz globalnu kolekciju `/tasks`. Slanje nacrta stranice na pregled
+traži `page:write`; objava dodatno traži `page:publish` i stvarne ovlasti
+objavitelja. U anketama `delete` čuva prihvaćene odgovore u košu,
+`discard-draft` uklanja samo noviji radni nacrt, a administratorski `restore`
+vraća nekadašnju objavu kao zatvorenu.
+
+Nema API-ja predaje samo pomoću tokena niti rute koja bi preuzela nečiju browser
+SAML/OIDC prijavu za anketu. Ispitanici koriste redovni postupak pristupa i
+predaje ankete s pravom sudjelovanja, CSRF-om i zaštitom od ponavljanja.
+
+## Odgovori i paginacija prema domeni
+
+Uobičajeni uspješni JSON odgovor koristi:
 
 ```json
 {
   "data": {},
-  "meta": {
-    "request_id": "opaque-request-id"
-  },
-  "links": {}
+  "meta": {"request_id": "req_example"},
+  "links": {"self": "/simbioza/api/v1/me"}
 }
 ```
 
-Kolekcije koriste cursor paginaciju:
-
-```text
-page[limit]=50
-page[after]=opaque-cursor
-filter[...]=...
-sort=field,-other_field
-```
-
-Zadani limit je `50`, najveći je `100`, a cursor je neproziran i klijent ga ne
-smije rastavljati.
-
-### Pogreška
-
-Pogreške koriste `application/problem+json` i stabilni strojno čitljiv `code`:
+Greške koriste RFC 9457 `application/problem+json`:
 
 ```json
 {
-  "type": "https://heartphrame.example/problems/forbidden",
+  "type": "about:blank",
   "title": "Forbidden",
   "status": 403,
-  "detail": "Trenutačni identitet ne smije čitati ovaj resurs.",
-  "code": "resource_forbidden",
-  "request_id": "opaque-request-id"
+  "detail": "API ključ nema potreban scope.",
+  "code": "insufficient_scope",
+  "request_id": "req_example"
 }
 ```
 
-Produkcijski odgovor ne sadrži SQL, stack trace, datotečne putanje ni tajne.
+Za dijagnostiku zadržite `request_id`, ne token. Statusi, vrste identifikatora
+DTO-a i formati vremena slijede referencu pojedinog vlasničkog modula; nema
+općeg jamstva da je svaki ID string ili svako vrijeme ISO 8601. Kreiranje može
+vratiti `201`, brisanje `204`, a preuzimanja svoju stvarnu medijsku vrstu.
 
-### Vrijeme i identifikatori
+Paginacija nije ista za sve resurse. Users/Groups te glavni popisi Calendara i
+Workspacea koriste neprozirni cursor `page[after]` i ograničeni `page[limit]`
+(zadano 50, najviše 100). Audit i Workspace Search koriste `page`/`per_page`.
+Survey metapodatke popisa/rezultata vraća unutar `data`, uključujući `items`
+ondje gdje je primjenjivo. Slijedite vraćene `links` i metapodatke te domene.
+Ne pretpostavljajte globalne parametre `filter[...]` ili `sort` koje ruta ne
+podržava.
 
-- Datumi u JSON-u koriste ISO 8601 i UTC, primjerice
-  `2026-07-28T12:00:00Z`.
-- Identifikatori su JSON nizovi znakova i smatraju se neprozirnima čak i kada je
-  interni ključ broj.
-- Prikazni naziv ili slug nikada nije zamjena za stabilni identifikator.
+## Pisanje, sukobi i prijenos
 
-## 6. Konkurentne izmjene
+- JSON šaljite kao `Content-Type: application/json`; veličina tijela je ograničena.
+- Za svaku logičku radnju koristite novi `Idempotency-Key` duljine 8–190 znakova.
+  Točno ponovljen zahtjev može dobiti spremljeni sigurni odgovor; drugačiji
+  zahtjev s istim ključem vraća `409`. Multipart/streamani upload odbija to
+  zaglavlje i koristi vlastiti protokol prijenosa.
+- Ondje gdje resurs vraća `ETag` i ruta traži uvjetnu izmjenu, pošaljite ga kao
+  `If-Match`. Zadano izostavljeni uvjet vraća `428`, a zastarjeli `412`.
+  Ugovori Calendara/Workspacea/webhookova navode gdje se to primjenjuje. Nacrti
+  stranica i Survey koriste vlastiti `draft_revision` ili `version`/`revision`
+  i vraćaju `409` za zastarjelu izmjenu.
+- Zadano ograničenje je 120 zahtjeva u minuti po ključu, uz zaglavlja limita i
+  `429`/`Retry-After` pri iscrpljenju. Greška sigurnosne pohrane ne zaobilazi
+  zaštitu pisanja.
+- CORS je zadano isključen. Izričito dopustite samo namijenjene browser izvore.
+  CORS ne zamjenjuje autentikaciju ključa ni ACL.
+- Webhookovi koriste HTTPS/provjeru javnog cilja, šifrirane potpisne tajne,
+  HMAC-SHA256 i asinkroni CLI worker s ograničenim ponavljanjem. Domenska
+  radnja ne čeka mrežni zahtjev prema primatelju. Prije implementacije potrošača
+  pročitajte detaljnu referencu workera i potpisa.
 
-Promjenjivi resursi vraćaju `ETag`, a izmjena traži odgovarajući `If-Match`.
-Editor dodatno zadržava eksplicitni `draft_revision` za domensku zaštitu nacrta.
-Zastarjeli ETag vraća `412 Precondition Failed`, a sukob draft revizije
-`409 Conflict`.
+Uobičajena PHP sesijska prijava i browser CSRF forme nisu mehanizam prijave u
+API. Koristite HTTPS i instalirani API modul umjesto izlaganja web kontrolera
+ili privatnih tablica kao prečaca.
 
-POST operacije koje klijent može ponoviti podržavaju `Idempotency-Key`. Isti
-korisnik, krajnja točka i ključ zahtjeva moraju vratiti prethodni rezultat bez
-ponavljanja poslovne operacije.
+## Detaljne reference i primjeri
 
-## 7. Početni resursi
+- [API brzi početak: cURL, PHP i očekivani odgovori](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-api/-/blob/main/docs/quickstart_hr.md)
+- [Discovery i OpenAPI](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-api/-/blob/main/docs/discovery_hr.md)
+- [Sigurnost, uvjetne izmjene i paginacija](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-api/-/blob/main/docs/security_hr.md)
+- [API HTML Editora](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-editor-html/-/blob/main/docs/api_hr.md)
+- [API anketa i primjeri](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-survey/-/blob/main/docs/api_hr.md)
+- [Webhook operativa](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-api/-/blob/main/docs/webhooks_hr.md)
 
-### Read-only v1 jezgra
-
-```text
-GET /api/v1/me
-GET /api/v1/workspaces
-GET /api/v1/workspaces/{workspaceId}
-GET /api/v1/workspaces/{workspaceId}/tree
-GET /api/v1/pages/{pageId}
-GET /api/v1/pages/{pageId}/attachments
-GET /api/v1/calendars
-GET /api/v1/calendars/{calendarId}
-GET /api/v1/calendars/{calendarId}/events
-GET /api/v1/tasks
-GET /api/v1/tasks/{taskId}
-GET /api/v1/notifications
-```
-
-Kolekcije sadrže samo resurse koje vlasnik ključa smije vidjeti. Pojedinačni
-nedostupan resurs vraća `404` kada bi `403` otkrio postojanje privatnog resursa.
-
-### Administracija lokalnih korisnika
-
-```text
-GET    /api/v1/users
-POST   /api/v1/users
-GET    /api/v1/users/{userId}
-PATCH  /api/v1/users/{userId}
-DELETE /api/v1/users/{userId}
-GET    /api/v1/groups
-POST   /api/v1/groups
-PATCH  /api/v1/groups/{groupId}
-DELETE /api/v1/groups/{groupId}
-PUT    /api/v1/users/{userId}/groups
-```
-
-Ove krajnje točke zahtijevaju aktivnog lokalnog administratora i odgovarajuće
-`users:*` ili `groups:*` scopes. API ne vraća `password_hash`, provider tajne,
-reset tokene ni osjetljivu konfiguraciju. Lozinka se prima samo pri izradi
-korisnika ili izričitoj promjeni i nikada se ne vraća.
-
-## 8. Write operacije
-
-Nacrti, objava, privici, događaji i zadaci koriste domenske rute:
-
-```text
-POST  /api/v1/workspaces/{workspaceId}/pages
-PATCH /api/v1/pages/{pageId}/draft
-POST  /api/v1/pages/{pageId}/review
-POST  /api/v1/pages/{pageId}/publish
-POST  /api/v1/pages/{pageId}/attachments
-POST  /api/v1/calendars/{calendarId}/events
-PATCH /api/v1/calendar-events/{eventId}
-PATCH /api/v1/tasks/{taskId}/state
-```
-
-### Webhook pretplate
-
-```text
-GET    /api/v1/webhooks
-POST   /api/v1/webhooks
-GET    /api/v1/webhooks/{uuid}
-PATCH  /api/v1/webhooks/{uuid}
-DELETE /api/v1/webhooks/{uuid}
-POST   /api/v1/webhooks/{uuid}/rotate-secret
-GET    /api/v1/webhooks/{uuid}/deliveries
-GET    /api/v1/webhooks/{uuid}/deliveries/{deliveryUuid}
-POST   /api/v1/webhooks/{uuid}/deliveries/{deliveryUuid}/retry
-```
-
-Mutacija se dovršava prije mrežne isporuke. API sprema sanitizirani događaj u
-outbox, a CLI worker ga potpisuje HMAC-SHA256 potpisom i šalje uz ograničeni
-retry. Tajna je šifrirana u bazi i vraća se samo pri izradi ili rotaciji.
-
-## 9. Kompatibilnost
-
-- Nova polja u objektu odgovora dopuštena su unutar `v1`.
-- Postojeća polja ne mijenjaju tip ni značenje unutar `v1`.
-- Uklanjanje ili promjena značenja zahtijeva `/api/v2`.
-- Nova opcionalna krajnja točka ne zahtijeva novu glavnu verziju API-ja.
-- OpenAPI opis generira se iz istog registra koji registrira runtime rute.
-- Interni PHP potpis servisa nije automatski dio javnog HTTP ugovora.
-
-## 10. Sigurnosni minimum
-
-Prije prvog javnog write endpointa implementacija mora osigurati:
-
-- hashirane ključeve i prikaz tajne samo jednom
-- opoziv i istek ključa
-- provjeru scopea i domenskog ACL-a
-- rate limiting po ključu i IP adresi
-- audit write operacija i neuspjelih autentikacija
-- ograničenje veličine zahtjeva
-- sigurnu validaciju MIME tipa za upload
-- CORS isključen prema zadanim postavkama
-- zaštitu osjetljivih podataka u zapisima i problem odgovorima
+Za novi klijent provjerite `/me`, otkrijte uključene resurse, pročitajte ovlašteni
+objekt, provjerite kontroliranu izmjenu i njezin sukob/zastarjeli zahtjev u
+izoliranoj instalaciji pa ograničite ključ na konačne potrebne scopeove i IP-eve.

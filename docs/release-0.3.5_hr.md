@@ -1,5 +1,7 @@
 # Simbioza 0.3.5 — zaštita privatnih konfiguracijskih direktorija
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
+
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.5/docs/release-0.3.5_en.md)
 
 > Povijesna bilješka izdanja — za novu instalaciju koristite [aktualni pregled instalacije](installation_hr.md). Izvorni tag i imagei 0.3.5 ostaju nepromijenjeni.

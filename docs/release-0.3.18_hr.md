@@ -2,7 +2,7 @@
 
 [English version](release-0.3.18_en.md)
 
-> Povijesna bilješka izdanja. Za aktualne upute pogledajte
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
 > [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.19](release-0.3.19_hr.md).
 
 ## Mogućnosti

@@ -1,64 +1,80 @@
-# Documentation and comment checks
+# Maintaining documentation
 
-These rules apply to the 0.3.19 application and its 19 public modules. Framework
-is upstream code and is not rewritten by these tools.
+The project keeps developer references in Git and user instructions inside
+Simbioza. Both must describe the behavior of the installed code. Framework is
+an upstream dependency; these maintenance tools do not change its source.
+
+## Source of the user manual
+
+The chapter registry is `resources/installation/manual-sources.json`. Most
+editable chapters are `docs/user-guide/*_en.md` and `*_hr.md`; shared overview,
+installation and gallery sources remain under `docs/`. Referenced public assets
+are recorded in `manual-assets.json`, with screenshots under
+`docs/user-guide/images/`. Keep English and Croatian separate.
+Use the corresponding interface language in every screenshot, and verify that
+the image actually shows the described action and result. Examples must remain
+portable: no links to development surveys, private workspaces or local files.
+
+The same chapters are packaged as the **User guides** Workspace for Wiki
+installations. Without Wiki, the **Guides** menu renders that bundled content
+as read-only HTML with chapter navigation. Do not maintain a second manual for
+those smaller installations or edit generated package records by hand.
+
+For a new chapter, add both language sources and its placement to the source
+registry; register new public images with their checksums in the asset registry.
+The generation step requires the installed development dependencies and Pandoc.
+After editing sources, rebuild and verify the generated manual:
+
+```bash
+php scripts/sync_user_guides.php --apply
+php scripts/sync_user_guides.php --check
+```
+
+`--apply` updates generated release artifacts from the tracked sources;
+`--check` detects drift. This source-maintenance step does not publish a release
+or authorize replacing an administrator's live content. Review its diff before
+using the normal controlled installation/upgrade procedure. See the
+[form-field HTML Editor example](user-guide/html-editor-u-obrascu_en.md) for a
+complete integration chapter shared by the Git and in-application manuals.
 
 ## Language and example rules
 
-`README.md` and `docs/*_en.md` contain English prose; `README_hr.md` and
-`docs/*_hr.md` contain Croatian prose. Code comments and method PHPDoc use one
-complete `EN:` block, a blank comment line, then one complete `HR:` block.
-Do not alternate languages or put both on one line. Type annotations and tool
-directives stay outside the translated prose. Translation dictionaries and
-multilingual JSON menu labels are application data, not documentation prose.
+- `README.md` and `docs/*_en.md` use English; `README_hr.md` and `*_hr.md` use Croatian.
+- Code comments and method PHPDoc use a complete `EN:` block, a blank comment
+  line, then a complete `HR:` block. Type annotations stay outside that prose.
+- Complete PHP examples start with `<?php` and must pass syntax validation.
+  Clearly label configuration entries and layout insertion points as fragments.
+- JSON examples must be valid objects/lists. Inert `_documentation.en` and
+  `_documentation.hr` descriptions in distribution examples are not settings.
+- Never copy a `.dist` example over live private settings. Preserve existing
+  modules, application services and values when showing an addition.
+- Do not include passwords, tokens, private identities or real response data.
 
-Complete PHP examples start with `<?php`; their syntax is checked without
-execution. Array entries and layout insertion points are fragments, not
-replacement application files. JSON examples are complete valid objects/lists.
-Preserve existing host settings when adding options or enabled modules.
+## Automated checks
 
-JSON `.dist` examples explain their options in separate, non-empty
-`_documentation.en` then `_documentation.hr` sections. The script-registry example
-uses equivalent `_description_en` then `_description_hr` sections. These are
-inert descriptions, not operational options. Copy only needed examples to their
-documented `HPH_CONFIG_PATH/<module>/` target, never over private settings.
-`.dist` is not loaded automatically. See [configuration](configuration_en.md).
-
-## Run the checks
-
-From the application source checkout:
+Run these in an isolated source checkout with its development dependencies:
 
 ```bash
 php scripts/audit_bilingual_phpdoc.php
 php scripts/audit_module_documentation.php
 php scripts/audit_module_translations.php
-php scripts/normalize_bilingual_comments.php
+php scripts/sync_user_guides.php --check
 ```
 
-The first checks actual marked PHP comments throughout Git-visible source,
-including templates/tests, and bilingual method documentation in production
-source. Long adjacent PHPDoc is valid. Strings containing examples are not
-comments and are not rewritten. The second checks required Composer dependencies
-early in README, document pairs, relative file links, heading anchors, complete
-PHP/JSON examples and starting-example descriptions. Historical notices use the
-application version only for application release notes. Module releases have
-independent version numbers; their PHP/JSON examples are still checked. It does not fetch remote
-websites or prove that every example fits a custom host. The third checks
-application/module translation-key coverage.
+They check marked PHP comments/PHPDoc, required dependency descriptions, paired
+EN/HR documents, local links and heading anchors, complete PHP/JSON examples,
+translation-key coverage and generated manual consistency. They do not establish
+that an external website exists, that a screenshot matches a new UI, or that a
+code example satisfies a custom application's permission rules. Review those
+against the real code and relevant user flow.
 
-The last command is a **dry run**. For source maintenance only, add `--write`
-to reformat eligible PHP comments. Every edit requires identical executable-token
-hashes and preserved PHPDoc annotation signatures; reports go to `build/a5/`.
-Framework, vendor packages, ignored private settings and data are excluded.
-Review the diff and rerun checks afterwards. JavaScript and CI comments follow
-the same language rule, but this PHP formatter does not parse those languages.
+`php scripts/normalize_bilingual_comments.php` is a dry run. Its explicit
+`--write` option is for source maintenance only: executable-token hashes and
+PHPDoc annotation signatures must stay unchanged. Review the resulting diff;
+the tool excludes Framework, vendor packages, private settings and runtime data.
 
-## Current instructions and history
-
-[Installation](installation_en.md), [configuration](configuration_en.md) and
-[Docker](docker_en.md) describe the current clean-install layout. Older release
-notes retain original details under explicit historical notices; they are not
-current installation/upgrade instructions. The
-[initial pre-release audit](pre-release-audit-0.3.0_en.md) records the initial
-acceptance checks; [0.3.19 release notes](release-0.3.19_en.md) describe the current
-publication. Passing these checks is not release approval.
+Use [installation](installation_en.md), [configuration](configuration_en.md),
+[Docker](docker_en.md) and [end-to-end checks](end-to-end-testing_en.md) as current
+operating references. Release notes describe their historical release, not the
+current installation procedure. Keep development plans and one-off acceptance
+logs outside the published manual.

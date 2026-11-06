@@ -2,7 +2,7 @@
 
 [Engleska verzija](installation_en.md)
 
-Ove upute instaliraju Simbiozu **0.3.36**. Aktualni popis paketa nalazi se u [verzijama i ovisnostima modula](module-dependencies_hr.md). Framework ostaje **0.0.25**. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
+Ove upute instaliraju Simbiozu **0.3.37**. Aktualni popis paketa nalazi se u [verzijama i ovisnostima modula](module-dependencies_hr.md). Framework ostaje **0.0.25**. Osnova 0.3.x kreće s novim direktorijem aplikacije, konfiguracijom i bazom.
 Nadogradnja s 0.2.x ili korištenje njezinih Simbioza backup arhiva nije podržano.
 
 Odaberite **jednu cjelovitu uputu** ispod. Svaka kreće iz administratorskog

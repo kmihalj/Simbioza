@@ -330,7 +330,7 @@ final class BundledGuideArchivesTest extends TestCase
         $applicationRoot = dirname(__DIR__, 3);
         $archives = glob($applicationRoot . '/resources/installation/workspace/*.zip');
         $this->assertIsArray($archives);
-        $this->assertCount(7, $archives);
+        $this->assertCount(13, $archives);
         $temporary = sys_get_temp_dir() . '/simbioza-bundled-guide-test-' . bin2hex(random_bytes(8));
         $filesystem = new BackupFilesystem();
         $filesystem->ensureDirectory($temporary);
@@ -348,11 +348,7 @@ final class BundledGuideArchivesTest extends TestCase
                     $this->assertSame(ModuleBackup::ARCHIVE_VERSION, $manifest['format_version'], basename($archive));
                     $this->assertSame('0.3.0', $manifest['source']['root_version']);
                     $this->assertTrue($manifest['source']['canonical_link_paths']);
-                    $this->assertSame(
-                        basename($archive) === 'korisnicke-upute.zip'
-                            ? 'https://bundled-guides.invalid' : 'https://piko.webhop.me/hfc',
-                        $manifest['source']['site_base_url'],
-                    );
+                    $this->assertSame('https://bundled-guides.invalid', $manifest['source']['site_base_url']);
                     $this->assertSame('/editor-html', $manifest['source']['link_route_roots']['editor']);
                     $this->assertSame('/workspace', $manifest['source']['link_route_roots']['workspace']);
                     $this->assertSame(

@@ -83,8 +83,18 @@ function auditDocumentationPairs(string $root, string $label, array &$issues): v
 {
     $applicationRelease = realpath($root) === realpath(dirname(__DIR__));
     $documentationRoot = $root . '/docs';
-    $english = glob($documentationRoot . '/*_en.md') ?: [];
-    $croatian = glob($documentationRoot . '/*_hr.md') ?: [];
+    $documents = [];
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($documentationRoot, FilesystemIterator::SKIP_DOTS),
+    );
+    foreach ($iterator as $file) {
+        if ($file->isFile() && $file->getExtension() === 'md') {
+            $documents[] = $file->getPathname();
+        }
+    }
+    sort($documents);
+    $english = array_values(array_filter($documents, static fn(string $path): bool => str_ends_with($path, '_en.md')));
+    $croatian = array_values(array_filter($documents, static fn(string $path): bool => str_ends_with($path, '_hr.md')));
 
     foreach ($english as $englishPath) {
         $expected = substr($englishPath, 0, -6) . '_hr.md';
@@ -107,7 +117,7 @@ function auditDocumentationPairs(string $root, string $label, array &$issues): v
         );
     }
 
-    $documents = array_merge(glob($documentationRoot . '/*.md') ?: [], [$root . '/README.md', $root . '/README_hr.md']);
+    $documents = array_merge($documents, [$root . '/README.md', $root . '/README_hr.md']);
     foreach ($documents as $document) {
         $basename = basename($document);
         if (!in_array($basename, ['README.md', 'README_hr.md'], true) && !preg_match('/_(?:en|hr)\.md$/', $basename)) {

@@ -57,7 +57,7 @@ mapiranje na korisnika kojemu se taj puni ACL automatski dodjeljuje.
 ## Profil korisnika i API
 
 Nakon izrade, **Moj profil → Praćenje i obavijesti** sadrži izravnu poveznicu
-**Moje osobno područje**. Autenticirani API ključ sa scopeom `workspaces:read`
+**Moje osobno područje**. Autenticirani API ključ sa scopeom `workspace:read`
 može pročitati samo vlastito mapiranje:
 
 ```http

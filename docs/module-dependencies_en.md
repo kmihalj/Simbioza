@@ -1,143 +1,113 @@
 # Module dependencies
 
-> Simbioza 0.3.33 uses HTML Editor 0.3.13, Theme 0.3.12, Email 0.3.5, Survey 0.3.5, Menu/Backup/Workspace 0.3.4, Task/Comment 0.3.3 and Notification 0.3.2, Audit/Auth/API/Calendar/Confluence Import 0.3.2, Workspace Search 0.3.2, ORM/User 0.3.1 and Accessibility 0.3.1. Framework remains v0.0.25.
+Simbioza combines independent modules into a complete application. Distinguish
+its installation policy from a module's own Composer dependencies: a package
+can be reusable in another host while Simbioza always includes its shared core.
 
-This document distinguishes **required dependencies**, which Composer must
-install, from **optional integrations**, which only extend behavior when the
-corresponding module is present. An optional module must not become a hidden
-requirement for basic operation.
+## Simbioza's six required modules
 
-All modules use the tagged Framework `^0.0.25` release and compatible internal
-module releases from the `^0.3.0` line. Module repositories and Simbioza do not
-commit `composer.lock`; CI runs `composer update --with-all-dependencies` on
-every run, resolves the latest compatible tags, and then executes the complete
-`composer on-commit` suite.
+Every Simbioza installation includes **Auth, ORM, Menu, Theme, Backup and Audit**.
+They provide identities/authorization, database access, navigation, presentation,
+backup/restore and activity records. Module management does not allow removing
+these six. API and Accessibility are optional.
 
-## Tagged-version policy
+The installer offers the complete Simbioza and narrower profiles:
 
-Check both `composer.json` and the installed packages of **each module** before
-testing or releasing it. An up-to-date Simbioza installation does not update the
-separate `vendor` directories used to develop individual modules. An existing
-local lock file makes `composer install` reuse older resolutions.
+| Profile | Additional selection; required dependencies are included automatically |
+| --- | --- |
+| Complete Simbioza | Every available optional module |
+| HTML website | HTML Editor |
+| Calendar | Calendar |
+| Wiki | Workspace, Workspace Search and Simbioza User |
+| Surveys | Survey, including its HTML Editor dependency |
+| Shared core | Only the six required modules |
 
-Use the newest compatible published tag as the minimum constraint for each
-required module and development integration, then run `composer update
---with-all-dependencies`, `composer validate --strict`,
-`composer check-platform-reqs` and the complete `composer on-commit` suite in
-that module. Inspect `composer outdated --direct` too. Dependencies use
-`minimum-stability: stable`; development branches belong only in explicitly
-isolated local integration fixtures. Keep optional integrations optional.
+More modules can be installed later through **Settings → Modules** or the
+`modules` CLI. A disabled package is not the same as an uninstalled package.
+Before removing an optional module, check dependants and its data-backup workflow;
+do not bypass lifecycle checks by editing Composer or menu JSON alone.
+A correctly configured secured PHP-FPM deployment supports GUI maintenance;
+other classic installations use the documented CLI update procedure.
+See [installation](installation_en.md) and [modularity](modularity_en.md).
 
-Do not select a tag solely by its numeric size: several repositories retain
-historical `1.x` tags predating the current `0.3.x` line. Confirm the compatible
-line, source reference and release history. Do not edit the Framework repository
-or patch its installed code; consume its maintainer's published tag.
+## Direct package dependencies
 
-Third-party major upgrades require their own compatibility review. The current
-PHP 8.2-compatible test matrix retains PHPUnit `^10.5.65 || ^11.5.56` and
-PHP_CodeSniffer `^3.13.6`; Slevomat `^8.22.1` resolves to the last compatible
-release because newer Slevomat releases require PHP_CodeSniffer 4. PHPStan and
-Rector have minimums `^2.2.15` and `^2.6.7`. These are compatibility constraints,
-not a claim that no newer major releases exist. Recheck them before each release.
+The table reflects each package's `composer.json` `require` and `suggest` lists.
+Framework and transitive PHP extensions are not repeated recursively. Composer
+must satisfy the full graph; use `composer check-platform-reqs` against the
+installed packages and PHP binary. Optional domain owners may also contribute
+API routes, events or Backup providers without becoming dependencies of the core.
 
+| Package | Direct required packages/extensions | Optional suggested integrations |
+| --- | --- | --- |
+| ORM | `ext-intl`, `ext-pdo`, Framework | — |
+| Auth | Framework, ORM | Backup, API, Menu, Notification |
+| Menu | Framework, ORM | Backup, Auth |
+| Theme | `ext-intl`, `ext-zip`, Framework | Backup, Menu |
+| Backup | `ext-json`, `ext-zip`, Framework, ORM | Auth, Menu |
+| Audit | `ext-json`, `ext-mbstring`, Framework, Auth, ORM | API, Backup, Menu |
+| Accessibility | Framework | Menu |
+| API | Framework, Auth, ORM | Backup, Menu, Notification, Theme |
+| Calendar | Framework, Auth, ORM | Backup, API, HTML Editor, Menu, Notification, Theme, Workspace |
+| HTML Editor | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | Backup, Menu, Theme, Calendar, Workspace, Task, Comment, API |
+| Email | Framework, Auth, ORM | Audit, Backup |
+| Notification | Framework, Auth, ORM | Backup, API, Email |
+| Survey | `ext-json`, `ext-dom`, `ext-mbstring`, `ext-pdo`, `ext-openssl`, Framework, ORM, Auth, HTML Editor | Workspace, API, Backup, Theme, Menu, Notification, Email, Audit |
+| Task | `ext-dom`, Framework, Auth, ORM, HTML Editor | Backup, API, Workspace, Notification |
+| Comment | `ext-mbstring`, Framework, Auth, HTML Editor, Notification, ORM | Backup, Theme, Workspace |
+| Workspace | Framework, Auth, ORM | Backup, HTML Editor, API, Menu, Notification, Email, Theme |
+| Workspace Search | Framework, Auth, HTML Editor, Menu, ORM, Workspace | Backup, API |
+| Simbioza User | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
+| Confluence Import | `ext-dom`, `ext-fileinfo`, `ext-libxml`, `ext-xmlreader`, `ext-zip`, Framework, Auth, HTML Editor, Menu, ORM, Workspace, Simbioza User | Audit, Backup, Calendar, Comment, Task, Workspace Search |
 
-## Quick reference
+## Loading and ownership
 
-| Module | Required | Optional integrations |
-|---|---|---|
-| `module-survey` | Framework, ORM, Auth, HTML Editor | Workspace, Theme, Menu, API, Backup, Notification, Email, Audit |
-| `module-orm` | Framework, `ext-pdo` | — |
-| `module-backup` | Framework, ORM, `ext-json`, `ext-zip` | Auth and Menu for the administrator GUI; business modules register their own providers |
-| `module-auth` | Framework, ORM | API, Menu, Notification |
-| `module-api` | Framework, Auth, ORM | Calendar, HTML Editor, Notification, Task, Workspace; Menu and Theme for the GUI only |
-| `module-menu` | Framework, ORM | Auth |
-| `module-theme` | Framework, `ext-zip` | Menu |
-| `module-calendar` | Framework, Auth (0.3.0+), ORM | API, Backup, HTML Editor, Menu, Notification, Theme, Workspace |
-| `module-editor-html` | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | API, Backup (0.3.1+ when installed), Menu, Theme, Calendar, Workspace, Task, Comment |
-| `module-email` | Framework, Auth, ORM | Audit 0.3.1+ for the existing worker-log file |
-| `module-notification` | Framework, Auth, ORM | API, Calendar, Email |
-| `module-workspace` | Framework, Auth, ORM | Backup (0.3.0+ when installed), HTML Editor, Menu, Notification; Email only indirectly through Notification |
-| `module-task` | Framework, Auth, ORM, HTML Editor, `ext-dom` | API, Workspace, Notification, Backup (0.3.0+ when installed) |
-| `module-comment` | Framework, Auth, ORM, HTML Editor, Notification, `ext-mbstring` | Workspace, Theme, Backup (0.3.0+ when installed) |
-| `module-workspace-search` | Framework, Workspace, Menu, Auth, ORM, HTML Editor | API, Backup |
-| `module-audit` | Framework, Auth, ORM | Menu for Settings, Backup for portable activity-audit archives, API for `audit:read`, and every installed business-event producer |
-| `simbioza-module-user` | Framework, Auth, Notification, ORM, Workspace | API, Audit, Backup, Calendar, Comment, Email, Task, Theme |
-| `simbioza-module-confluence-import` | Framework, Auth, HTML Editor, Menu, ORM, Workspace, Simbioza User, `ext-dom`, `ext-fileinfo`, `ext-json`, `ext-mbstring`, `ext-zip` | API, Audit, Backup, Calendar, Comment, Task, Workspace Search |
+- Generic HeartPhrame hosts enable their packages in `app.modules.enabled`,
+  with required modules available before their dependants. Simbioza instead
+  derives that list from its central catalog and persisted module selection.
+- An optional integration must remain inactive when its owner is absent or
+  disabled. Hiding a menu item is never a replacement for route authorization.
+- HTML Editor works without Workspace. In a form it can edit a textarea without
+  creating a document; follow the [complete embedding example](user-guide/html-editor-u-obrascu_en.md).
+  Adding Workspace later does not automatically move existing standalone pages.
+- Workspace owns hierarchy and publication permissions; Editor owns HTML and
+  attachments. Task and Comment use published document identity and access.
+- API owns Bearer transport/discovery. Enabled owner modules register their
+  routes and check their permissions. Survey, Audit, Search and personal User
+  integrations are conditional; see the [actual API contract](api-v1-contract_en.md).
+- Backup owns portable archives. Enabled modules register their own content,
+  settings and finalizers. Search indexes, queues, sessions and technical logs
+  are transient; they are not restored as business data.
+- Notification remains an in-app inbox without Email. Installing Email does not
+  start a worker; configure SMTP and explicitly schedule delivery. Survey report
+  jobs also require their documented scheduler and current recipient rights.
+- Simbioza User owns follows, preferences and optional personal Workspaces.
+  Auth remains usable without those features. Accessibility stores personal
+  browser adaptations locally and does not grant content access.
+- Confluence Import converts an external archive into ordinary Workspace/Editor
+  content. Its link-resolution records are integration metadata, not a separate
+  type of area. Imported scripts still need explicit administrator approval.
 
-## Loading rules
+With Wiki, user instructions stay in their **User guides** Workspace. Without
+Wiki, the **Guides** menu uses the same bundled manual with HTML navigation.
 
-- Required modules must be installed and listed before the dependent module in
-  `app.modules.enabled`.
-- Optional integrations use late service resolution and must fail closed
-  without breaking the base module when a package or service is unavailable.
-- `module-notification` does not require `module-email`. Without it,
-  notifications remain in-app only.
-- `module-workspace` does not require `module-notification`. Without it, the
-  workflow works but sends no notifications.
-- `module-editor-html` works standalone without Workspace, Calendar, Task,
-  Comment, Theme, and Menu; each control and renderer appears only when its
-  integration is installed.
-- `module-task` intentionally requires HTML Editor because task definitions and
-  stable task UUIDs belong to the versioned HTML document.
-- `module-comment` uses Editor documents and read access, Notification for
-  inappropriate-content reports, and optionally Workspace publish permissions.
-- `module-api` requires only Auth and ORM. Calendar, HTML Editor, Notification,
-  Task, and Workspace routes are registered only when the corresponding package
-  is installed and the module is enabled.
-- `module-backup` requires only ORM. Its CLI remains available without Auth and
-  Menu; in Simbioza, Auth protects `/settings/backups` and Menu exposes
-  **Settings → Backups → Backup and restore**.
-- Business modules do not hard-depend on Backup. When Backup is enabled, each
-  module optionally registers its own database, filesystem, or finalizer providers.
-- `module-workspace-search` requires Workspace and Menu. The derived index is
-  not archived; Backup rebuilds it after a successful restore.
-- `module-audit` keeps the business activity audit in the database and the
-  separate PSR-3 technical log in rotating files. Business modules remain
-  usable without Audit and publish neutral events where richer records are
-  useful. Technical log files are never registered with Backup.
-- `simbioza-module-user` listens to Auth's neutral successful-sign-in event to
-  provision a restricted personal Workspace. Auth therefore remains usable
-  without Workspace or Simbioza User. Backup preserves user mappings,
-  administrator policies, and Workspace-scoped mappings.
-- `simbioza-module-confluence-import` converts a Confluence XML archive into a
-  Workspace, documents, attachments, identities, and permissions. Simbioza User
-  provides stable imported-identity linkage, while additional integrations are
-  enabled only when the corresponding module is installed.
+## Versions and verification
 
-## Graph
+Use the supported stable constraints in each manifest. The current Framework
+line is `^0.0.25`; consume the upstream maintainer's release and never patch its
+repository or installed vendor code. Current internal packages use the `0.3.x`
+compatibility line; historical `1.x` tags are not a reason to jump major lines.
 
-An arrow denotes a required dependency. A dashed relationship denotes an
-optional integration.
+An application's current vendor directory does not update a sibling module's
+separate development dependencies. In an isolated source checkout inspect
+`composer show`, run `composer validate --strict`, resolve the intended manifest,
+then run platform and quality checks. Keep a generated production artifact's
+resolved lock/inventory for reproducibility even though these source libraries
+do not commit `composer.lock`.
 
-```text
-ORM ----------> Framework
-Backup -------> ORM + Framework
-Auth ---------> ORM + Framework
-API ----------> Auth + ORM + Framework
-Calendar -----> Auth + ORM + Framework
-Email --------> Auth + ORM + Framework
-Notification -> Auth + ORM + Framework
-Workspace ----> Auth + ORM + Framework
-Editor HTML --> Auth + ORM + Framework
-Task ---------> Editor HTML + Auth + ORM + Framework
-Comment ------> Editor HTML + Notification + Auth + ORM + Framework
-Workspace Search -> Workspace + Menu + Editor HTML + Auth + ORM + Framework
-Audit --------> Auth + ORM + Framework
-Simbioza User -> Workspace + Notification + Auth + ORM + Framework
-Confluence Import -> Simbioza User + Workspace + Menu + Editor HTML + Auth + ORM + Framework
-
-Notification - - > Email
-API          - - > Calendar, Workspace, Editor HTML, Notification, Task
-Auth         - - > API, Menu, Notification
-Calendar     - - > API, Editor HTML, Menu, Theme
-Notification- - > API, Email
-Workspace    - - > Editor HTML, Menu, Notification
-Editor HTML  - - > API, Menu, Theme, Calendar, Workspace, Task, Comment
-Task         - - > API, Workspace, Notification
-Comment      - - > Workspace, Theme
-Business modules - - > Backup provider registration
-Workspace Search - - > API, Backup index rebuild
-Audit        - - > Menu, Backup, API, all business-event producers
-Simbioza User- - > API, Audit, Backup, Calendar, Comment, Email, Task, Theme
-Confluence Import - - > API, Audit, Backup, Calendar, Comment, Task, Workspace Search
-```
+Simbioza's ordinary CI resolves its declared stable catalog; explicit `--local`
+mode uses allowed sibling checkouts. Module branch CI can use development
+aliases, while module tag CI checks stable constraints. JavaScript tools use
+tracked `package-lock.json` files and `npm ci`. See
+[end-to-end testing](end-to-end-testing_en.md) and
+[documentation maintenance](documentation-quality_en.md).

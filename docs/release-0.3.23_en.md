@@ -1,6 +1,6 @@
 # Simbioza 0.3.23 — accessibility and Survey performance
 
-> Historical release notes. See [Simbioza 0.3.24](release-0.3.24_en.md) for the restored gradient behavior.
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
 
 [Croatian version](release-0.3.23_hr.md)
 

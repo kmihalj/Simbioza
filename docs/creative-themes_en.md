@@ -2,7 +2,7 @@
 
 [Hrvatska verzija](creative-themes_hr.md)
 
-These eight themes extend the [first theme collection](theme-collection_en.md).
+These eight themes are part of Simbioza’s [complete 26-theme collection](theme-collection_en.md), alongside the twelve modern/retro styles and six established themes. The [gallery](theme-gallery_en.md) shows every theme in both appearances.
 Each has light and dark palettes and five separate hero gradient stops. Layout,
 colours, fonts, artwork, cards and shadows remain editable in Theme settings.
 
@@ -29,19 +29,16 @@ Adding the collection does not change the currently selected theme.
 For another installation, select an individual
 `resources/installation/theme/simbioza-<name>.zip` package in **Import complete
 theme**. For example: `simbioza-mali-svijet.zip`. Each package contains its
-configuration, artwork and checksums. Themes are optional; upgrades do not
-replace your existing themes.
+configuration, artwork and checksums. Themes are optional. Upgrades add missing collection IDs once, preserve existing themes and active selection, and remember administrator deletions. A deleted theme returns only through explicit manual import, not the next upgrade.
 
 ## Artwork and sources
 
-Seven raster illustrations and photographs were created with the built-in
-`image_gen` tool. They do not depict a specified real venue or event. Festival
+Seven raster illustrations and photographs were generated for this collection. They do not depict a specified real venue or event. Festival
 uses original static SVG ribbons. The Simbioza mark stays unchanged. Themes
 load no remote images, fonts or additional scripts.
 
 Original raster assets and their prompts are in
 `resources/theme-collection/creative/artwork/`. Each package includes its
-corresponding prompt in `source/artwork.json`. Regenerate palettes and manifests
-with `python3 scripts/generate_creative_themes.py`; it writes to a separate output
-directory and does not change active settings. Final configurations are in
+corresponding prompt in `theme-files/source/artwork.json`. Regenerate palettes and manifests
+with `python3 scripts/generate_creative_themes.py --output output/creative-theme-sources`; it requires the local Theme package and source artwork, writes to a separate output directory and does not install themes or change active settings. Review generated output before replacing prepared packages. Final configurations are in
 `resources/theme-collection/creative/catalog.json`.

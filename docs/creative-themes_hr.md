@@ -2,7 +2,7 @@
 
 [English version](creative-themes_en.md)
 
-Ovih osam tema dopunjuje [prvu kolekciju tema](theme-collection_hr.md). Svaka ima
+Ovih osam tema dio je [potpune kolekcije od 26 tema Simbioze](theme-collection_hr.md), uz dvanaest modernih/retro stilova i šest ranije dostupnih tema. [Galerija](theme-gallery_hr.md) prikazuje svaku temu u oba izgleda. Svaka ima
 svijetlu i tamnu paletu te pet zasebnih boja hero prijelaza. Raspored, boje,
 fontove, ilustracije, kartice i sjene možete naknadno uređivati u postavkama teme.
 
@@ -29,18 +29,16 @@ Trenutačno odabrana tema ne mijenja se dodavanjem kolekcije.
 Za drugu instalaciju koristite pojedinačni paket
 `resources/installation/theme/simbioza-<naziv>.zip` u obrascu **Uvezi cijelu temu**.
 Primjer: `simbioza-mali-svijet.zip`. Svaki paket sadrži konfiguraciju, slike i
-kontrolne sažetke. Teme su opcionalne; nadogradnja ne zamjenjuje vaše postojeće teme.
+kontrolne sažetke. Teme su opcionalne. Nadogradnja jednom dodaje nedostajuće ID-jeve kolekcije, čuva postojeće teme i aktivni odabir te pamti administratorsko brisanje. Uklonjena tema vraća se izričitim ručnim uvozom, ne sljedećom nadogradnjom.
 
 ## Ilustracije i izvori
 
-Sedam rasterskih ilustracija i fotografija izrađeno je ugrađenim alatom
-`image_gen`. Nisu fotografije određenog stvarnog objekta ili događaja. Festival
+Sedam rasterskih ilustracija i fotografija generirano je za ovu kolekciju. Nisu fotografije određenog stvarnog objekta ili događaja. Festival
 koristi izvorne statične SVG vrpce. Znak Simbioze ostaje nepromijenjen.
 Teme ne učitavaju udaljene slike, fontove ni dodatne skripte.
 
 Izvorne rasterske datoteke i korišteni opisi nalaze se u
 `resources/theme-collection/creative/artwork/`. Svaki paket uključuje pripadajući
-opis u `source/artwork.json`. Palete i manifeste možete ponovno izraditi naredbom
-`python3 scripts/generate_creative_themes.py`; ona piše u zaseban izlazni direktorij
-i ne mijenja aktivne postavke. Konačne konfiguracije nalaze se u
+opis u `theme-files/source/artwork.json`. Palete i manifeste možete ponovno izraditi naredbom
+`python3 scripts/generate_creative_themes.py --output output/creative-theme-sources`; treba lokalni Theme paket i izvorne ilustracije, piše u zaseban direktorij i ne instalira teme niti mijenja aktivne postavke. Pregledajte rezultat prije zamjene pripremljenih paketa. Konačne konfiguracije nalaze se u
 `resources/theme-collection/creative/catalog.json`.

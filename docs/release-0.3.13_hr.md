@@ -2,7 +2,7 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.13/docs/release-0.3.13_en.md)
 
-> Povijesna bilješka izdanja. Koristite [aktualnu uputu za instalaciju](installation_hr.md)
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
 > i [Simbiozu 0.3.14](release-0.3.14_hr.md) za aktualne upute.
 
 Ovo dokumentacijsko izdanje odvaja javne upute Simbioze od privatnih postupaka

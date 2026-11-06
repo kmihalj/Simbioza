@@ -1,5 +1,7 @@
 # Simbioza 0.3.2 — nova secured-FPM instalacija
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
+
 [Engleska verzija](release-0.3.2_en.md)
 
 > Povijesna bilješka izdanja — aktualne instalacijske upute i sigurnosne Docker nadogradnje nalaze se u [izdanju 0.3.3](release-0.3.3_hr.md). Izvorni tag i image 0.3.2 ostaju nepromijenjeni.

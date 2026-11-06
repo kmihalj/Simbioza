@@ -1,56 +1,55 @@
-# Održavanje instalacijskih uputa
+# Održavanje instalacijskih uputa i cijelog priručnika
 
-[Engleska verzija](maintaining_installation_guides_en.md)
+[English version](maintaining_installation_guides_en.md)
 
-Održavani izvori su `installation_en.md`/`installation_hr.md` i odvojeni,
-cjeloviti Markdown parovi `installation_mod_php_*`, `installation_fpm_*` i
-`installation_fpm_secured_*`. Svaka instalacija kreće od početka i sadrži
-vlastite naredbe; ne trebaju dijelovi preduvjeta iz druge instalacijske upute.
+Potpuni javni priručnik ima **33 poglavlja na hrvatskom i engleskom**. Mjerodavan popis izvora je `resources/installation/manual-sources.json`; većina parova poglavlja nalazi se pod `docs/user-guide/`. `resources/installation/manual-assets.json` povezuje korištene snimke i ilustracije s održavanim datotekama i kontrolnim sažecima. Jezike održavajte odvojeno, uz očuvanje korisnih slika, prenosivih poveznica i postojećih identiteta stranica.
 
-Instalirane Korisničke upute imaju preglednu stranicu, mod_php stranicu i
-PHP-FPM stranicu. PHP-FPM stranica sadrži dva odvojena cjelovita postupka,
-uz sidra `#ordinary-fpm` i `#secured-fpm`. Oba njezina jezika i arhiva cijelog
-početnog područja generiraju se iz istih Markdown izvora.
+## Odaberite pravi izvor
 
-## Uredite i provjerite
+Četiri uvodne/instalacijske stranice zadržavaju postojeće izvore izravno pod `docs/`:
 
-Iz razvojnog Git direktorija s instaliranim Composer ovisnostima:
+| Objavljena stranica | Izvori pod `docs/` |
+| --- | --- |
+| Simbioza | `simbioza_overview_en.md` / `simbioza_overview_hr.md` |
+| Instalacija | `installation_*` i `modularity_*` |
+| Apache mod_php instalacija | `installation_mod_php_*` |
+| PHP-FPM instalacija | `installation_fpm_*` i `installation_fpm_secured_*` |
 
-```bash
+Ovdje `*` označava odvojene datoteke `en.md` i `hr.md`. Svaki instalacijski postupak je cjelovit; čitatelj ne mora tražiti preduvjete u drugom postupku. Stranica PHP-FPM sadrži obični i secured FPM uz sidra `#ordinary-fpm` i `#secured-fpm`.
+
+Ostala korisnička poglavlja dolaze iz `docs/user-guide/`, uključujući odvojene upute za sastavljače anketa, ispitanike, administratore i API. Razvojne integracije i ugradnja HTML Editora u obrazac imaju vlastita poglavlja. Prije uređivanja pogledajte manifest: održavana kopija na drugoj putanji nije automatski izvor paketa.
+
+## Obnovite i provjerite sva poglavlja
+
+Iz direktorija aplikacije s instaliranim Composer ovisnostima:
+
+```sh
+php scripts/sync_user_guides.php --apply
+php scripts/sync_user_guides.php --check
+php scripts/sync_installation_guides.php --check
+```
+
+Potpuni generator koristi popise izvora i privitaka, obnavlja javni početni paket cijelog područja i pojedinačne pakete upravljanih stranica te uključuje postojeći postupak instalacijskih/preglednih uputa. To je redovna naredba nakon revizije priručnika. Čuvaju se identiteti stranica/dokumenata, hijerarhija, prava, potrebne aktualne verzije privitaka i njihove datoteke. Paketi sadrže javne upute, nikada privatnu konfiguraciju, žive ankete ni odgovore ispitanika.
+
+`--apply` treba Pandoc (`brew install pandoc` ili `sudo apt-get install pandoc`) i priprema arhive u izdvojenom radnom direktoriju. Ne ažurira aktivnu bazu. Provjere rade offline, otkrivaju nesklad izvora i paketa i ne trebaju Pandoc. Pokrenite i testove uputa/arhiva i instalacije; podudaranje sažetka izvora ne dokazuje čisti uvoz, filtriranje jezika i ispravne slike. Pregledajte oba jezika u Wikiju i kroz `/guides` bez Wikija, uz provjeru javnih slika i poveznica kao gost.
+
+## Održavanje samo instalacijskih uputa
+
+Za promjenu ograničenu na četiri početne stranice ostaje uži alat:
+
+```sh
 php scripts/sync_installation_guides.php --apply
 php scripts/sync_installation_guides.php --check
 ```
 
-Samo `--apply` treba Pandoc (`brew install pandoc` ili
-`sudo apt-get install pandoc`). Renderira javni Markdown, osvježava četiri
-šifrirane arhive uputa i čuva identitete dokumenata, prava, nepovezane stranice
-i datoteke privitaka. Ne povezuje se na aplikacijsku bazu niti kopira privatnu
-konfiguraciju. `--check` radi offline i ne treba Pandoc; CI njime odbija
-neusklađene izvore i pakete.
+Ažurira **pet arhiva**: cijeli početni `korisnicke-upute.zip` i četiri pojedinačna paketa stranica. Ne obnavlja sva ostala poglavlja priručnika. Prije završetka revizije koja uključuje `docs/user-guide/` ili njegove privitke koristite potpuni generator.
 
-Šifrirani HTML sadržaj ne uređujte zasebno. Uredite EN/HR Markdown par,
-ponovno izradite pakete, pregledajte razlike i pokrenite testove uputa/instalacije.
-To su razvojne naredbe, ne dio instalacije krajnjeg korisnika.
+Šifrirani HTML ne uređujte neovisno o izvorima. Ako isporučenu uputu promijenite izravno u razvojnom Wikiju, prenesite izmjenu u pripadajući Markdown prije pakiranja; inače je sljedeća upravljana nadogradnja može zamijeniti. Javna fraza početnog paketa nije tajna i ne smije štititi privatne operativne sigurnosne kopije.
 
-## Instalirani siteovi i označena izdanja
+## Instalirani siteovi i izdanja
 
-GitHub `main` može sadržavati novije upute od instaliranog paketa sitea.
-Promjena Markdowna ne mijenja izravno njegove pohranjene stranice.
-Nadogradnje aplikacije osvježavaju ugrađene stranice kroz
-`BundledAssetsUpdater`, bez zamjene nepovezanih stranica ili njihovih ACL-ova.
-Nova instalacija uvozi pakete uputa koji pripadaju odabranom izdanju.
+Razvojni direktorij može sadržavati noviju dokumentaciju od instaliranog izdanja. Promjena Markdowna ili obnova paketa sama ne mijenja pohranjene stranice. Nova instalacija uvozi svoje isporučene pakete; updater kroz `BundledAssetsUpdater` osvježava upravljane stranice uz očuvanje identiteta, prava i nepovezanih stranica. Bez Wikija `/guides` izravno čita isporučeni početni paket cijelog područja.
 
-Poveznice uputa unutar arhiva relativne su aplikaciji. Instalacija i nadogradnja
-dodaju prefiks cilja točno jednom, uključujući ugniježđene instalacijske putanje.
-Updater popravlja i poznate poveznice ugrađenih uputa koje je ranija instalacija
-ostavila s ponovljenim prefiksom ili zabilježenom izvornom adresom. Razrješava samo
-isporučene ciljne upute koje lokalno postoje; nepovezane vanjske poveznice i primjeri
-koda ne preusmjeravaju se. Usklađivanje radi i kada su hashovi arhiva jednaki te ne
-zamjenjuje postavke teme, identitete stranica, prava ili tijek objave.
+Poveznice u arhivama relativne su aplikaciji. Instalacija/nadogradnja dodaje prefiks cilja točno jednom, uključujući ugniježđene putanje. Usklađivanje popravlja poznate poveznice ugrađenih uputa s ponovljenim prefiksom ili izvornom adresom samo kada isporučeni cilj lokalno postoji. Ne preusmjerava nepovezane vanjske poveznice ili primjere koda niti zamjenjuje postavke teme, identitete stranica, prava ili tijek objave.
 
-Pri razvojnom osvježavanju samo dokumentacije objavite obnovljene pakete i
-osvježite upravljane upute razvojnog sitea njegovim aktualnim servisima.
-Nemojte pretpostaviti da su time objavljene i na drugom siteu. Arhiva starog
-izdanja ostaje povijesna snimka dok novo izdanje ne isporuči obnovljene pakete;
-nemojte premještati tag aplikacije samo radi usklađivanja ugrađenih uputa s
-`main`.
+Lokalno osvježavanje dokumentacije vrijedi samo za odabranu razvojnu instalaciju. Ostale dobivaju obnovljene javne pakete redovnom nadogradnjom. Objavljene arhive izdanja ostaju povijesne snimke; nemojte premještati postojeći tag radi zamjene njihove dokumentacije.

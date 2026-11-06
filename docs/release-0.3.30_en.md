@@ -1,6 +1,6 @@
 # Simbioza 0.3.30 — survey removal and Playground content
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.31](release-0.3.31_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
 
 [Croatian version](release-0.3.30_hr.md)
 

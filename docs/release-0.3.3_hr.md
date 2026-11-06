@@ -1,5 +1,7 @@
 # Simbioza 0.3.3 — sigurnosne Docker nadogradnje
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
+
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.3/docs/release-0.3.3_en.md)
 
 > Povijesna bilješka izdanja — za novu instalaciju koristite [aktualni pregled instalacije](installation_hr.md). Izvorni tag i image 0.3.3 ostaju nepromijenjeni.

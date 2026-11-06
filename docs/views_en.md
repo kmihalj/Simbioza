@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 /**
  * @var \HeartPhrame\View\View $this
- * @var string $name 
+ * @var string $name
  */
 ?>
 
@@ -58,7 +58,7 @@ class HomeController
         protected readonly ResponseFactory $responseFactory,
     ) {
     }
-    
+
     public function hello(): ResponseInterface
     {
         return $this->responseFactory->view('greeting', ['name' => 'World']);
@@ -96,7 +96,7 @@ declare(strict_types=1);
  * @var string|null $content
  */
  ?>
- 
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -144,7 +144,7 @@ class HomeController
         protected readonly ResponseFactory $responseFactory,
     ) {
     }
-    
+
     public function hello(): ResponseInterface
     {
         return $this->responseFactory->view(
@@ -178,7 +178,7 @@ class HomeController
         protected readonly ResponseFactory $responseFactory,
     ) {
     }
-    
+
     public function hello(): ResponseInterface
     {
         return $this->responseFactory->view(
@@ -213,18 +213,18 @@ class HomeController
         protected readonly ResponseFactory $responseFactory,
     ) {
     }
-    
+
     public function hello(): ResponseInterface
     {
         // Get the view content as a string, using the default layout.
         $viewContent = $this->view->for('greeting', ['name' => 'World']);
-        
+
         // Get the view content as a string, using a different layout.
         $viewContentAlternative = $this->view->for('greeting', ['name' => 'World'], 'layouts/alternative');
-        
+
         // Get the view content as a string, without any layout.
         $viewContentWithoutLayout = $this->view->for('greeting', ['name' => 'World'], null);
-                
+
         return $this->responseFactory->html($viewContent);
     }
 }
@@ -243,10 +243,10 @@ declare(strict_types=1);
 
 /**
  * @var \HeartPhrame\View\View $this
- * @var string $message 
+ * @var string $message
  */
  ?>
-  
+
  <p><?= $this->escape($message) ?></p>
 ```
 
@@ -259,7 +259,7 @@ declare(strict_types=1);
 
 /**
  * @var \HeartPhrame\View\View $this
- * @var string $message 
+ * @var string $message
  */
  ?>
 

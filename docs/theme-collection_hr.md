@@ -2,9 +2,11 @@
 
 [English version](theme-collection_en.md)
 
-Kolekcija sadrži **12 zasebnih tema**, svaku sa svijetlom i tamnom varijantom. Teme koriste izvorne postavke modula Theme: boje, sistemske fontove, navigaciju, hero, kartice, obrube i sjene. Sve se postavke mogu uređivati u sučelju.
+Simbioza uključuje **26 zasebnih tema**, svaku sa svijetlim i tamnim izgledom. Koriste izvorne postavke modula Theme: boje, sistemske fontove, navigaciju, hero, kartice, obrube i sjene. Sve postavke možete uređivati u sučelju. Odabir teme mijenja izgled, ne sadržaj niti prava pristupa.
 
-Dostupna je i [dodatna kolekcija osam tema za sport, školu, vrtić i kreativne zajednice](creative-themes_hr.md), s novim fotografijama i ilustracijama.
+Potpuna kolekcija obuhvaća šest ranije dostupnih tema (AAI, Dabar, Simbioza, Simbioza Orbit, Srce - sup i Standard), dvanaest stilova navedenih niže te [osam tema za sport, obrazovanje i kreativne zajednice](creative-themes_hr.md). [Potpuna galerija](theme-gallery_hr.md) prikazuje svih 26 tema i oba izgleda.
+
+## Dvanaest uredničkih, modernih i retro stilova
 
 | Tema | Izgled i namjena |
 | --- | --- |
@@ -21,24 +23,28 @@ Dostupna je i [dodatna kolekcija osam tema za sport, školu, vrtić i kreativne 
 | Espresso | Kava, bakar i dugi tekstovi u serifu. Urednička tema za dnevnike, eseje i stručne članke. |
 | Nocturne | Ponoćno plava, mjesečeve orbite i zlatni detalji. Elegantna tema za kulturne ustanove i posebne projekte. |
 
-## Odabir na HFC-u
+## Odabir teme
 
 Otvorite **Postavke → Tema**, u polju **Aktivna tema** odaberite naziv i spremite postavke. Odaberite automatski, svijetli ili tamni prikaz. Za izmjene pojedine teme odaberite je u uređivaču; postojeće teme ostaju zasebne. Kolekcija ne mijenja zadano aktivnu temu.
 
 ## Uvoz na drugu instalaciju
 
-[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.36/Simbioza-0.3.36-themes.zip)
+[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.37/Simbioza-0.3.37-themes.zip)
 
 Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. Postojeće teme i aktivni odabir ostaju sačuvani. Nakon što izbrišete dodatnu temu, sljedeće je nadogradnje neće vratiti. Evidencija uvoza nalazi se u konfiguraciji Tema i uključena je u backup/restore sitea. Temu možete ponovno ručno uvesti iz ZIP-a.
 
-Svaki ZIP u `resources/installation/theme/simbioza-*.zip` potpuni je izvoz jedne teme. U **Postavke → Tema** otvorite **Uvezi cijelu temu**, odaberite odgovarajući ZIP i uvezite ga. Zatim temu odaberite kao aktivnu. Ne učitavajte ZIP cijele kolekcije u obrazac za jednu temu; iz njega prvo raspakirajte pojedini paket.
+Svaki ZIP u `resources/installation/theme/<id-teme>.zip` potpuni je izvoz jedne teme; svih 26 ID-jeva navedeno je u `resources/installation/theme/collection.json`. U **Postavke → Tema** otvorite **Uvezi cijelu temu**, odaberite odgovarajući ZIP i uvezite ga. Zatim temu odaberite kao aktivnu. Ne učitavajte ZIP cijele kolekcije u obrazac za jednu temu; iz njega prvo raspakirajte pojedini paket.
 
-Paketi sadrže obje palete, raspored i sve četiri pripadajuće slikovne datoteke s kontrolnim sažecima. Teme ne učitavaju vanjske fontove, skripte ili slike. Znak Simbioze ostaje izvorni znak aplikacije; dekorativne vektorske ilustracije izrađene su posebno za kolekciju.
+Paketi sadrže obje palete, raspored i datoteke koje ta tema koristi, s kontrolnim sažecima. Teme ne učitavaju vanjske fontove, skripte ili slike. Znak Simbioze ostaje izvorni znak aplikacije; dekorativne vektorske ilustracije izrađene su posebno za kolekciju.
 
 ## Pristupačnost i prenosivost
 
-Tekst paleta provjeren je prema kontrastu 4,5:1, uključujući hero, gumbe, tablice i upozorenja. Izvorna poveznica za preskakanje sadržaja i kontrole tipkovnicom ostaju uključene. Pregledi koriste isti CSS koji izvozi modul Theme. Teme su provjerene u WebKitu na desktop širini i širini od 390 px, uključujući stvarne stranice HFC-a u svijetlom i tamnom prikazu. Na stranicama bez hero zaglavlja sadržaj zadržava razmak od navigacije. Sadržaj pojedine instalacije svejedno može zahtijevati prilagodbu rasporeda.
+Galerija prikazuje stvarni Theme izvoz uz jednak ogledni sadržaj. Izvorna poveznica za preskakanje sadržaja i kontrole tipkovnicom ostaju dostupne. Prije primjene prilagođene teme provjerite kontrast teksta (u pravilu najmanje 4,5:1), vidljivost fokusa, izbornike, navigacijsku putanju i kartice u oba izgleda te na velikom i uskom zaslonu. Sama provjera palete ne dokazuje pristupačnost svake stranice ili fotografije. Boje, visinu hero elementa, položaj ilustracije i razmake možete uređivati. Stranice bez hero elementa trebaju zadržati razmak između navigacije i sadržaja.
 
-Likovni izvor i palete reproduciraju se skriptom `python3 scripts/generate_theme_collection.py`. Ona stvara datoteke u `output/playwright/themes-20261104` i ne prepisuje aktivne postavke. Konačne validirane konfiguracije nalaze se u `resources/theme-collection/catalog.json`.
+## Izvori za održavatelje
+
+Dvanaest izvornih konfiguracija nalazi se u `resources/theme-collection/catalog.json`; osam kreativnih tema ima zasebne [upute o izvorima](creative-themes_hr.md). Mjerodavan instalacijski skup čine 26 provjerenih paketa i `resources/installation/theme/collection.json`.
+
+`python3 scripts/generate_theme_collection.py --output output/theme-sources` ponovno izrađuje dvanaest izvornih definicija i ilustracije u zasebnom direktoriju. Treba instalirani Theme paket i lokalne izvorne datoteke Simbiozina znaka koje generator koristi. Ne instalira teme i ne mijenja aktivnu konfiguraciju. To je postupak održavatelja, ne korak instalacije ili nadogradnje. Pregledajte rezultat prije zamjene pripremljenih paketa.
 
 [Potpuna galerija svih 26 tema](theme-gallery_hr.md).

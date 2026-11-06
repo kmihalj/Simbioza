@@ -1,5 +1,7 @@
 # Simbioza 0.3.1 — complete installation guides
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
+
 [Croatian version](release-0.3.1_hr.md)
 
 > Historical release note — use the current [installation guides](installation_en.md) and [release 0.3.3](release-0.3.3_en.md). The original 0.3.1 tag remains unchanged.

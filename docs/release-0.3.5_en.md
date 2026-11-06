@@ -1,5 +1,7 @@
 # Simbioza 0.3.5 — private configuration directory protection
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
+
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.5/docs/release-0.3.5_hr.md)
 
 > Historical release note — use the [current installation index](installation_en.md) for a new installation. The original 0.3.5 tag and images remain unchanged.

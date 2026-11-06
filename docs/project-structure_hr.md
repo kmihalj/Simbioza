@@ -1,96 +1,56 @@
 # Struktura projekta
 
-Ovaj dokument opisuje organizaciju projekta na visokoj razini, bez
-implementacijskih pojedinosti.
+Simbioza povezuje neovisne HeartPhrame module u jednu aplikaciju. Aplikacijski
+kod u `src/` koristi prostor imena `App`; domenski moduli imaju vlastite
+repozitorije, servise, rute i testove. Framework se instalira kao vanjski
+Composer paket i ne uređuje se u ovom projektu.
 
----
+| Putanja | Namjena |
+| --- | --- |
+| `src/Controllers/`, `views/` | Početna/O aplikaciji, postavke, ulazi u sadržaj i HTML upute; rasporedi povezuju opcionalne renderere modula. |
+| `src/Module/`, `src/Installation/`, `src/Setup/` | Katalog i životni ciklus modula, nova instalacija i administrativne radnje prema načinu postavljanja. |
+| `src/Configuration/`, `config/`, `framework.php` | Razrješavanje konfiguracije te pouzdani bootstrap/rute/servisi. Privatne vrijednosti koriste konfigurirane slojeve. |
+| `src/Localization/`, `lang/` | Instalirani jezici, objedinjeni rječnici i održavanje jezika. |
+| `src/Update/`, `resources/` | Podrška nadogradnji i verzionirani instalacijski sadržaj: upute i kolekcije tema. |
+| `src/Guides/`, `docs/user-guide/` | Čitač ugrađenog priručnika i izvori dvojezičnih korisničkih uputa/slika. |
+| `src/Security/`, `src/Performance/` | Pravila skripti domaćina i opcionalna mjerenja zahtjeva/upita. |
+| `database/migrations/` | Verzionirane promjene sheme; stanje primjene migracija ostaje u bazi. |
+| `public/` | Front controller i namjerno javne datoteke. Web document root pokazuje ovdje. |
+| `scripts/`, `tests/` | Alati održavanja/izgradnje, jedinični i integracijski testovi te izolirani testovi preglednika/API-ja. |
+| `docs/` | Aktualne razvojne/administratorske reference i povijesne bilješke izdanja. |
+| `vendor/` | Composer ovisnosti; ne uređuju se ručno niti spremaju u Git. |
+| `build/` | Ignorirani izvještaji testova, privremeni manifesti provjera i generirane razvojne datoteke. |
+| `data/` | Privatni runtime: logovi, cache, privitci, privremeni arhivi i administratorske datoteke tema. |
 
-## Raspored na najvišoj razini
+## Granica konfiguracije i podataka
 
-U korijenu repozitorija nalaze se sljedeći dijelovi.
+`HPH_CONFIG_PATH` određuje korijen konfiguracije; `HPH_CONFIG_OVERRIDE_PATHS`
+dodaje jače slojeve. HTTP i CLI moraju razrješavati iste direktorije. Korijen
+koda nije nužno korijen konfiguracije. Vidi [konfiguraciju](configuration_hr.md).
 
-### Aplikacijski kod (`src/`)
+Na postojećoj instalaciji ne zamjenjujte privatne JSON/PHP dokumente `.dist`
+primjerima. Pristupni podaci baze, ključevi šifriranja, SMTP/provider tajne,
+logovi, uploadi, sesije i backup arhivi ne pripadaju Gitu ni javnom web korijenu.
+Ne dajte web računu pravo pisanja po kodu radi rješavanja runtime pogreške.
 
-Izvorni kod aplikacije, primjerice kontroleri i ostala logika.
+Dio održavanih datoteka u `data/themes/` jesu **datoteke izdanja**, a ne
+administratorski uploadi. U `resources/installation/theme/` nalaze se paketi za
+uvoz tema; evidencija kolekcije sprječava da nadogradnja stalno vraća temu koju
+je administrator obrisao. [Dokumentacija Teme](theme-collection_hr.md) opisuje uvoz/izvoz
+kolekcije i galeriju.
 
-- Uobičajena podstruktura:
-  - `Controllers/` — obrađivači zahtjeva koji koriste servise i vraćaju
-    odgovore
+## Upute i vlasništvo modula
 
-Kako projekt raste, dodajte slojeve poput `Domain/`, `Services/` ili
-`Repositories/` kako bi odgovornosti ostale jasne.
+Uređujte `docs/user-guide/*_en.md` / `*_hr.md` i njihove slike, zatim primijenite
+[postupak sinkronizacije priručnika](documentation-quality_hr.md). Generirani
+paket područja koristi se i za HTML upute bez Wikija.
 
-### Konfiguracija (`config/`)
+Za polje obrasca druge aplikacije koristite [primjer ugrađenog HTML
+Editora](user-guide/html-editor-u-obrascu_hr.md). Spremanje polja odvojeno je od
+stvaranja objavljenog dokumenta ili stranice područja; aplikacija je vlasnik
+validacije, ovlasti i pohrane tog obrasca.
 
-Središnja konfiguracija aplikacije: postavke, okruženje, rute, middleware, DI
-servisi i bootstrap kod. Više informacija nalazi se u dokumentu
-[Konfiguracija](configuration_hr.md).
-
-### Runtime podaci (`data/`)
-
-Direktorij za podatke nastale tijekom rada. Zadano sadrži:
-
-- `logs/` — aplikacijske zapise; direktorij mora biti zapisiv korisniku
-  web-poslužitelja
-- `cache/` — predmemoriju; također mora biti zapisiva
-- `themes/` — trajne datoteke pojedinih tema. Biblioteke zadanih tema koje
-  isporučuje Simbioza spremaju se u repozitorij; datoteke koje prenesu
-  administratori ostaju ovdje i obuhvaćene su potpunim izvozom i uvozom teme
-
-Lokacije se mogu promijeniti. Postupak je opisan u dokumentu
-[Konfiguracija](configuration_hr.md).
-
-Osigurajte prava pisanja i nemojte spremati cache, zapise ni druge runtime
-artefakte u sustav kontrole verzija. Održavane zadane biblioteke u
-`data/themes/` namjerna su iznimka.
-
-### Artefakti izgradnje (`build/`)
-
-Razvojni alati poput Composera, statičkih analizatora i testnih alata ovdje
-spremaju privremene podatke i izvještaje. Direktorij se u pravilu ne sprema u
-sustav kontrole verzija.
-
-### Dokumentacija (`docs/`)
-
-Dokumentacija projekta na engleskom i hrvatskom jeziku.
-
-### Web-korijen (`public/`)
-
-Web-korijen s prednjim kontrolerom, odnosno ulaznom PHP skriptom. Web-poslužitelj
-mora koristiti ovaj direktorij kao document root.
-
-- To je jedini direktorij izravno izložen webu.
-- Može sadržavati statičke resurse koje aplikacija poslužuje.
-
-Zahtjevi se usmjeravaju prednjem kontroleru, koji pokreće aplikaciju, izvršava
-middleware, razrješava rute i šalje odgovore.
-
-### Testovi (`tests/`)
-
-- Sadrže automatizirane testove.
-- Koriste konfiguraciju testnog alata iz korijena projekta.
-- Preporučeni tijek:
-  - pokrenuti testove lokalno prije commita
-  - pokrenuti ih u CI-ju radi potvrde promjena
-
-### Composer paketi (`vendor/`)
-
-Composer paketi i automatsko učitavanje klasa. Direktorij se ne sprema u VCS.
-
-### Prikazi (`views/`)
-
-Sadrži predloške i rasporede za HTML odgovore.
-
-Uobičajena struktura:
-
-- `layouts/` — osnovni rasporedi zajednički većem broju stranica
-- direktoriji po funkcionalnostima — grupiranje prema mogućnosti ili kontroleru
-
-Zadanu putanju prikaza možete promijeniti u `config/app.php`. Više informacija
-nalazi se u dokumentu [Prikazi](views_hr.md).
-
-### Ostale datoteke
-
-- konfiguracija alata i metapodaci za ovisnosti, testiranje, statičku analizu,
-  standarde koda i refaktoriranje, primjerice `composer.json`, `phpunit.xml`,
-  `phpstan.neon`, `rector.php`, `phpcs.xml` i `README.md`
+Ponašanje modula mijenja se u njegovu repozitoriju, a ne u `vendor/` ni kopiranjem
+privatne implementacije u Simbiozu. Opcionalne integracije ostaju opcionalne;
+vidi [ovisnosti modula](module-dependencies_hr.md) i
+[uobičajene postupke](common-workflows_hr.md).

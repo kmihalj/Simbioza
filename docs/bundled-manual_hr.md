@@ -2,42 +2,33 @@
 
 [English version](bundled-manual_en.md)
 
-Svaka instalacija sadrži iste hrvatske i engleske korisničke upute sa snimkama
-zaslona. Za njihovo čitanje nije potrebno instalirati Wiki.
+Simbioza isporučuje jedan javni priručnik s **33 poglavlja na hrvatskom i engleskom**, uključujući snimke zaslona. Obuhvaća instalaciju, svakodnevni rad, kalendare i sastanke, ankete, administraciju i razvojne integracije. Za čitanje nije potrebno instalirati Wiki. Ponuđene jezike određuju jezici instalirani u aplikaciji.
 
 ## Instalacije s Wikijem
 
-Instalacijski program uvozi upute kao obične stranice u područje **Korisničke
-upute**. Postojeće stablo stranica, prijevodi, privitci i uređivanje stranica
-nastavljaju raditi. Nadogradnja aplikacije osvježava isporučene stranice uputa
-postojećim postupkom nadogradnje ugrađenog sadržaja.
+Instalacijski program uvozi priručnik kao obične stranice u područje **Korisničke upute**. Za kretanje koristite stablo i padajući izbornik jezika. Prijevodi, privitci i redovno uređivanje stranica ostaju dostupni prema pravima područja.
+
+Nadogradnje osvježavaju isporučene stranice uputa uz očuvanje njihova identiteta i postojećih prava; nepovezane stranice područja ne zamjenjuju se. Ako održavate vlastite izmjene isporučene upute, sačuvajte zasebnu kopiju ili prije nadogradnje prenesite promjenu u održavani izvor: sljedeće izdanje može osvježiti tekst upravljane stranice.
 
 ## Instalacije bez Wikija
 
-U gornjem izborniku odaberite **Upute**. Aplikacija prikazuje isporučeni priručnik
-kao HTML stranice, bez stvaranja područja i bez instaliranja HTML Editora samo
-zbog dokumentacije.
+U gornjem izborniku odaberite **Upute**. Simbioza isti pripremljeni priručnik prikazuje kao HTML stranice, bez stvaranja područja i bez instaliranja HTML Editora samo zbog dokumentacije.
 
-- U **Sadržaju uputa** odaberite poglavlje. Na manjim zaslonima proširite taj
-  odjeljak iznad teksta stranice.
-- Za nastavak čitanja koristite **Prethodno poglavlje** i **Sljedeće poglavlje**.
-- Ako su instalirana oba jezika uputa, padajućim izbornikom sa zastavicama
-  odaberite hrvatski ili engleski.
-- Snimke zaslona i ostale isporučene ilustracije ostaju dostupne. Poveznice među
-  poglavljima ostaju unutar ove instalacije.
+- U **Sadržaju uputa** odaberite poglavlje. Na malom zaslonu proširite ga iznad teksta stranice.
+- Nastavite gumbima **Prethodno poglavlje** i **Sljedeće poglavlje**.
+- Ako su instalirana oba jezika priručnika, izbornikom sa zastavicama odaberite hrvatski ili engleski.
+- Snimke i ostale isporučene ilustracije ostaju dostupne. Poveznice između poglavlja ostaju unutar instalacije.
 
-Ove stranice služe samo za čitanje. Dolaze iz instaliranog izdanja, a ne iz živih
-oglednih anketa ili baze druge instalacije. Nadogradnja Simbioze osvježava ovu
-kopiju priručnika. Ove HTML stranice nisu drugo spremište sadržaja za uređivanje.
+Ove stranice služe samo za čitanje i dolaze iz instaliranog izdanja. Ne ovise o živim oglednim anketama ni bazi drugog sitea. Nadogradnja Simbioze osvježava zapakirani primjerak; to nije drugo spremište za uređivanje sadržaja.
 
-Adresa `/guides` radi u obje konfiguracije: bez Wikija otvara HTML priručnik, a s
-Wikijem vodi na odgovarajuću izvornu stranicu uputa. Javna adresa privitaka
-poslužuje samo datoteke koje koriste objavljene isporučene stranice uputa; ne
-otkriva privitke živih dokumenata, konfiguraciju ni sigurnosne kopije.
+## Adrese i jezici
 
-## Dostupnost jezika
+`/guides` otvara uvod. Primjerice, `/guides/ankete?lang=hr` bez Wikija otvara poglavlje anketa, a s uključenim Wikijem vodi na njegovu stranicu u području. Ako je aplikacija u poddirektoriju, dodajte ga ispred svake putanje. Javna adresa privitaka uputa poslužuje samo provjerene datoteke koje koriste objavljene isporučene upute, ne privitke živih dokumenata, privatnu konfiguraciju ni sigurnosne kopije.
 
-Sučelje koristi postavke aktivnih jezika instalacije. Priručnik nudi samo
-prijevode koji postoje u paketu uputa i instalirani su u aplikaciji. Trenutačne
-upute dostupne su na hrvatskom i engleskom; instaliranje drugog jezika sučelja
-ne prevodi automatski njihov tekst ili snimke zaslona.
+Sučelje koristi postavke aktivnih jezika instalacije. Priručnik nudi prijevode koji postoje u paketu i instalirani su u aplikaciji. Tekst i snimke trenutačno su na hrvatskom i engleskom; instalacija drugog jezika sučelja ne prevodi ih automatski. Snimke su primjeri pa se nazivi i datumi mogu razlikovati od vaše instalacije.
+
+## Održavanje priručnika
+
+Održavatelji uređuju odvojene EN/HR izvore pod `docs/user-guide/` te instalacijske/pregledne izvore navedene u `resources/installation/manual-sources.json`. Popis privitaka je `resources/installation/manual-assets.json`. Iz tih izvora nastaju paketi Wiki stranica i priručnik bez Wikija; izmjene se ne održavaju neovisno u dva formata.
+
+Postupak izbora izvora, obnove i provjere opisan je u [Održavanju instalacijskih uputa i cijelog priručnika](maintaining_installation_guides_hr.md). Sama izrada paketa ne mijenja aktivnu bazu niti nadograđuje drugu instalaciju.

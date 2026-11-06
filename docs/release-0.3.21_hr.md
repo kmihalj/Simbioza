@@ -2,7 +2,7 @@
 
 [Engleska verzija](release-0.3.21_en.md)
 
-> Povijesna bilješka izdanja. Za aktualne upute pogledajte
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.37](release-0.3.37_hr.md).
 > [instalacijske upute](installation_hr.md) i [Simbiozu 0.3.23](release-0.3.23_hr.md).
 
 Puna Simbioza koristi **Područja** za navigaciju svojim sadržajem. Uz uključena

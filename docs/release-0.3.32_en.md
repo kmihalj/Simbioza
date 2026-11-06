@@ -1,6 +1,6 @@
 # Simbioza 0.3.32 — native controls for content tables
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.33](release-0.3.33_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
 
 [Croatian version](release-0.3.32_hr.md)
 

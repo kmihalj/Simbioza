@@ -153,9 +153,9 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
 }
 
 /**
- * EN: Checks or rebuilds four existing archives without touching installed content.
+ * EN: Checks or rebuilds the full archive and four page archives without touching installed content.
  *
- * HR: Provjerava ili obnavlja četiri postojeće arhive bez mijenjanja instaliranog sadržaja.
+ * HR: Provjerava ili obnavlja punu arhivu i četiri arhive stranica bez mijenjanja instaliranog sadržaja.
  */
 function syncInstallationGuides(string $root, bool $apply): void
 {

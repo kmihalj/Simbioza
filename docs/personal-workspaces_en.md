@@ -57,7 +57,7 @@ mapping and automatically grants that mapped user the complete ACL.
 ## User profile and API
 
 After creation, **My profile → Following and notifications** contains a direct
-link to **My personal Workspace**. An authenticated API key with `workspaces:read`
+link to **My personal Workspace**. An authenticated API key with `workspace:read`
 can read only its own mapping through:
 
 ```http

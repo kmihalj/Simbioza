@@ -6,6 +6,7 @@ namespace Tests\Controllers;
 
 use App\Controllers\ContentHubController;
 use App\Controllers\HomeController;
+use App\Localization\RuntimeLanguageStorage;
 use App\Localization\RuntimeTranslator;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Http\ResponseFactory;
@@ -18,6 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(HomeController::class)]
 #[UsesClass(RuntimeTranslator::class)]
+#[UsesClass(RuntimeLanguageStorage::class)]
 #[UsesClass(ContentHubController::class)]
 final class HomeControllerTest extends TestCase
 {

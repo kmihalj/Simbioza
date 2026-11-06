@@ -204,7 +204,7 @@ po stranici. Zadana sesija koristi Secure, HttpOnly i SameSite=Lax; pregledani
 instalacijski override može ih promijeniti. Proxyje podesiti ispravno, a HSTS
 koristiti samo na deploymentu koji pouzdano koristi HTTPS.
 
-[Audit prije releasea](pre-release-audit-0.3.0_hr.md) bilježi dovršene ispravke
+Audit prije releasea bilježi dovršene ispravke
 Autha, upita, spremišta jezika i nepromjenjive isporuke.
 [Docker upute](docker_hr.md) opisuju image/volumene i GUI/CLI operacije namjerno
 blokirane u nepromjenjivoj isporuci. `HPH_CONFIG_PATH` sam nije prekidač tog
@@ -276,7 +276,7 @@ Privatne teme područja koriste iste zadane vrijednosti, bez zamjene svojih
 pohranjenih podataka. [Uputa Theme modula](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-theme/-/blob/0.3.2/docs/configuration_hr.md)
 opisuje primjere rada iz datoteka i pripadajuće GUI kontrole.
 
-[Kontrolni popis 0.3.0](initial-release-0.3.0_hr.md) prikazuje stanje provjera;
+Kontrolni popis 0.3.0 prikazuje stanje provjera;
 stari P1–P10 rezultati nisu potvrda objave nove polazne verzije.
 
 ## Lokalne aplikacijske skripte

@@ -2,9 +2,11 @@
 
 [Hrvatska verzija](theme-collection_hr.md)
 
-The collection contains **12 independent themes**, each with light and dark variants. The themes use native Theme settings: colours, system fonts, navigation, hero, cards, borders and shadows. All settings remain editable in the interface.
+Simbioza includes **26 independent themes**, each with light and dark appearances. They use native Theme settings: colours, system fonts, navigation, hero, cards, borders and shadows. All settings remain editable in the interface. Choosing a theme changes presentation, not content or access permissions.
 
-An [additional collection of eight themes for sport, schools, preschools and creative communities](creative-themes_en.md) includes new photographs and illustrations.
+The complete collection combines six established themes (AAI, Dabar, Simbioza, Simbioza Orbit, Srce - sup and Standard), the twelve styles listed below and [eight themes for sport, education and creative communities](creative-themes_en.md). See the [complete gallery](theme-gallery_en.md) for all 26 themes and both appearances.
+
+## Twelve editorial, modern and retro styles
 
 | Theme | Style and purpose |
 | --- | --- |
@@ -27,18 +29,22 @@ Open **Settings → Theme**, choose its name in **Active theme**, and save the s
 
 ## Importing into another installation
 
-[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.36/Simbioza-0.3.36-themes.zip)
+[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.37/Simbioza-0.3.37-themes.zip)
 
 Starting with release 0.3.36, upgrades add missing bundled themes once. Existing themes and the active selection are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
 
-Each ZIP in `resources/installation/theme/simbioza-*.zip` is a complete export of one theme. Under **Settings → Theme**, open **Import complete theme**, select the appropriate ZIP and import it. Then select it as the active theme. Do not upload the entire collection ZIP into the single-theme form; extract an individual package first.
+Each ZIP in `resources/installation/theme/<theme-id>.zip` is a complete export of one theme; all 26 IDs are listed in `resources/installation/theme/collection.json`. Under **Settings → Theme**, open **Import complete theme**, select the appropriate ZIP and import it. Then select it as the active theme. Do not upload the entire collection ZIP into the single-theme form; extract an individual package first.
 
-Packages include both palettes, layout and all four associated image files with checksums. The themes load no remote fonts, scripts or images. The Simbioza mark remains the original application mark; decorative vector illustrations were created specifically for this collection.
+Packages include both palettes, layout and the assets used by that theme, with checksums. The themes load no remote fonts, scripts or images. The Simbioza mark remains the original application mark; decorative vector illustrations were created specifically for this collection.
 
 ## Accessibility and portability
 
-Palette text is checked against a 4.5:1 contrast ratio, including the hero, buttons, tables and alerts. The native skip link and keyboard controls stay enabled. Previews use the same CSS exported by the Theme module. Themes were checked in WebKit at desktop width and at 390 px, including real HFC pages in light and dark modes. Pages without a hero retain spacing between navigation and content. Content on an individual installation may still need layout adjustments.
+The gallery shows the actual Theme export with consistent sample content. The native skip link and keyboard controls remain available. Before applying a customized theme, check text contrast (normally at least 4.5:1), focus visibility, menus, breadcrumbs and cards in both appearances and at desktop and narrow-screen widths. A palette check alone does not prove that every page or photograph is accessible. Theme colours, hero height, artwork position and spacing remain editable. Pages without a hero should retain space between navigation and content.
 
-Reproduce the artwork sources and palettes with `python3 scripts/generate_theme_collection.py`. It writes into `output/playwright/themes-20261104` and does not overwrite active settings. Final validated configurations are in `resources/theme-collection/catalog.json`.
+## Maintainer sources
+
+The twelve source configurations are in `resources/theme-collection/catalog.json`; the eight creative configurations have their own [source guide](creative-themes_en.md). The authoritative installation set is the 26 checked packages and `resources/installation/theme/collection.json`.
+
+`python3 scripts/generate_theme_collection.py --output output/theme-sources` regenerates the twelve source definitions and artwork in a separate directory. It requires the Theme package and the local Simbioza mark inputs used by the generator. It does not install themes or change the active configuration. Regeneration is a maintainer task, not an installation or upgrade step. Review generated output before replacing prepared packages.
 
 [Complete gallery of all 26 themes](theme-gallery_en.md).

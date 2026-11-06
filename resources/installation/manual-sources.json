@@ -1,0 +1,534 @@
+[
+  {
+    "slug": "apache-mod-php-instalacija",
+    "title": {
+      "hr": "Apache mod_php instalacija",
+      "en": "Apache mod_php installation"
+    },
+    "parent": "instalacija",
+    "sources": {
+      "en": [
+        "docs/installation_mod_php_en.md"
+      ],
+      "hr": [
+        "docs/installation_mod_php_hr.md"
+      ]
+    }
+  },
+  {
+    "slug": "confluence-import",
+    "title": {
+      "hr": "Confluence import",
+      "en": "Confluence import"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/confluence-import_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/confluence-import_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "simbioza",
+    "title": {
+      "hr": "Simbioza",
+      "en": "Simbioza"
+    },
+    "parent": null,
+    "sources": {
+      "en": [
+        "docs/simbioza_overview_en.md"
+      ],
+      "hr": [
+        "docs/simbioza_overview_hr.md"
+      ]
+    }
+  },
+  {
+    "slug": "instalacija",
+    "title": {
+      "hr": "Instalacija",
+      "en": "Installation"
+    },
+    "parent": null,
+    "sources": {
+      "en": [
+        "docs/installation_en.md",
+        "docs/modularity_en.md"
+      ],
+      "hr": [
+        "docs/installation_hr.md",
+        "docs/modularity_hr.md"
+      ]
+    }
+  },
+  {
+    "slug": "php-fpm-instalacija",
+    "title": {
+      "hr": "PHP-FPM instalacija",
+      "en": "PHP-FPM installation"
+    },
+    "parent": "instalacija",
+    "sources": {
+      "en": [
+        "docs/installation_fpm_en.md",
+        "docs/installation_fpm_secured_en.md"
+      ],
+      "hr": [
+        "docs/installation_fpm_hr.md",
+        "docs/installation_fpm_secured_hr.md"
+      ]
+    }
+  },
+  {
+    "slug": "prijava-i-korisnici",
+    "title": {
+      "hr": "Prijava i korisnici",
+      "en": "Login and users"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/prijava-i-korisnici_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/prijava-i-korisnici_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "kalendari",
+    "title": {
+      "hr": "Kalendari",
+      "en": "Calendars"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/kalendari_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/kalendari_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja",
+    "title": {
+      "hr": "Područja",
+      "en": "Workspaces"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "uredivanje-stranica",
+    "title": {
+      "hr": "Uređivanje stranica",
+      "en": "Editing pages"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/uredivanje-stranica_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/uredivanje-stranica_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "sastanci",
+    "title": {
+      "hr": "Sastanci — korak po korak",
+      "en": "Meetings — step by step"
+    },
+    "parent": "kalendari",
+    "sources": {
+      "hr": [
+        "docs/user-guide/sastanci_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/sastanci_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-autori",
+    "title": {
+      "hr": "Za sastavljače anketa",
+      "en": "For survey authors"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-autori_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-autori_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-izrada-objava",
+    "title": {
+      "hr": "1. Kreirajte nacrt",
+      "en": "1. Create a draft"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-izrada-objava_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-izrada-objava_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-pitanja",
+    "title": {
+      "hr": "2. Dodajte uvod i pitanja",
+      "en": "2. Add an introduction and questions"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-pitanja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-pitanja_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-grananje-prijevodi",
+    "title": {
+      "hr": "Uvjetna pitanja i više jezika",
+      "en": "Conditional questions and languages"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-grananje-prijevodi_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-grananje-prijevodi_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-pristup-privatnost",
+    "title": {
+      "hr": "3. Odaberite ispitanike i privatnost",
+      "en": "3. Choose participants and privacy"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-pristup-privatnost_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-pristup-privatnost_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-objava",
+    "title": {
+      "hr": "4. Provjerite i objavite anketu",
+      "en": "4. Check and publish the survey"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-objava_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-objava_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-rezultati",
+    "title": {
+      "hr": "5. Pogledajte rezultate i obavijesti",
+      "en": "5. View results and notifications"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-rezultati_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-rezultati_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-kopiranje-backup",
+    "title": {
+      "hr": "Kopirajte ili zatvorite anketu",
+      "en": "Copy or close a survey"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-kopiranje-backup_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-kopiranje-backup_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-ispunjavanje",
+    "title": {
+      "hr": "Za ispitanike — ispunite anketu",
+      "en": "For participants — complete a survey"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-ispunjavanje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-ispunjavanje_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-administratori",
+    "title": {
+      "hr": "Za administratore",
+      "en": "For administrators"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-administratori_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-administratori_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete",
+    "title": {
+      "hr": "Ankete",
+      "en": "Surveys"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-pocetak",
+    "title": {
+      "hr": "Ovlasti za sastavljanje i objavu",
+      "en": "Authoring and publication permissions"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-pocetak_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-pocetak_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-autentikacija",
+    "title": {
+      "hr": "Vanjska prijava i mapiranje podataka",
+      "en": "External sign-in and attribute mapping"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-autentikacija_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-autentikacija_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-backup-detalji",
+    "title": {
+      "hr": "Sigurnosne kopije i vraćanje",
+      "en": "Backup and restore"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-backup-detalji_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-backup-detalji_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-poslovi-izvjestaja",
+    "title": {
+      "hr": "Dostava obavijesti i izvještaja",
+      "en": "Notification and report delivery"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-developeri",
+    "title": {
+      "hr": "Za developere — API",
+      "en": "For developers — API"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-developeri_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-developeri_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api-php",
+    "title": {
+      "hr": "API — PHP primjeri",
+      "en": "API — PHP examples"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api-php_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api-php_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api",
+    "title": {
+      "hr": "API — cURL primjeri",
+      "en": "API — cURL examples"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api-referenca",
+    "title": {
+      "hr": "API — rute, opsezi i greške",
+      "en": "API — routes, scopes and errors"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api-referenca_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api-referenca_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api-primjeri",
+    "title": {
+      "hr": "API — predložak i primjeri",
+      "en": "API — template and examples"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api-primjeri_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api-primjeri_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-html-sadrzaj",
+    "title": {
+      "hr": "HTML sadržaj i sigurnost",
+      "en": "HTML content and safety"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-html-sadrzaj_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-html-sadrzaj_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "razvojne-integracije",
+    "title": {
+      "hr": "Za razvojne programere",
+      "en": "For developers"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/razvojne-integracije_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/razvojne-integracije_en.md"
+      ]
+    }
+  },
+  {
+    "slug": "html-editor-u-obrascu",
+    "title": {
+      "hr": "HTML editor u polju obrasca",
+      "en": "HTML editor in a form field"
+    },
+    "parent": "razvojne-integracije",
+    "sources": {
+      "hr": [
+        "docs/user-guide/html-editor-u-obrascu_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/html-editor-u-obrascu_en.md"
+      ]
+    }
+  }
+]

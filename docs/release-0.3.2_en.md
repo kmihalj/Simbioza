@@ -1,5 +1,7 @@
 # Simbioza 0.3.2 — fresh secured-FPM setup
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.37](release-0.3.37_en.md).
+
 [Croatian version](release-0.3.2_hr.md)
 
 > Historical release note — current installation instructions and Docker security updates are in [release 0.3.3](release-0.3.3_en.md). The original 0.3.2 tag and image remain unchanged.

@@ -1,142 +1,51 @@
-# Simbioza documentation (EN)
+# Simbioza documentation
 
-- [All themes and one-time imports in 0.3.36](release-0.3.36_en.md)
-- [Gallery of all 26 themes](theme-gallery_en.md)
-- [Foreground-only description contrast in 0.3.35](release-0.3.35_en.md)
-- [Twelve themes and readable page headings in 0.3.33](release-0.3.33_en.md)
-- [Native content-table controls in 0.3.32](release-0.3.32_en.md)
-- [Recoverable survey deletion and collaborative drafts in 0.3.30](release-0.3.30_en.md)
-- [Original gradients and optional text shadows in 0.3.24](release-0.3.24_en.md)
-- [Full application navigation in 0.3.21](release-0.3.21_en.md)
-- [Modular installations in 0.3.20](release-0.3.20_en.md)
-- [Survey settings and application URLs in 0.3.19](release-0.3.19_en.md)
+[Croatian documentation](index_hr.md)
 
-- [Surveys and the shared HTML Editor in 0.3.18](release-0.3.18_en.md)
+Simbioza combines pages, a searchable Wiki, calendars and meetings, surveys and team collaboration. These guides describe the current 0.3.x application and its reusable modules. The HeartPhrame Framework is an upstream dependency maintained separately.
 
-This is the documentation for the Simbioza collaborative knowledge application and its
-enabled HeartPhrame modules. The Framework is consumed from a tagged upstream release; it
-is not developed in this repository.
+## Choose a starting point
 
-Brand slogan: **Knowledge that lives together.**
+| You want to… | Start here |
+| --- | --- |
+| Use pages, Workspaces, calendars or surveys | [User guide and chapter navigation](bundled-manual_en.md) |
+| Install Simbioza | [Choose an installation method](installation_en.md) |
+| Install only a focused set of features or extend an existing site | [Modular installation options](modularity_en.md) |
+| Operate, update or back up an installation | [Operations and troubleshooting](troubleshooting_en.md) |
+| Embed the HTML editor in a field of your own application | [HTML editor in form fields](html-editor-forms_en.md) |
+| Connect another system through the API | [API contract](api-v1-contract_en.md) |
+| Customize the appearance | [Theme collection](theme-collection_en.md) and [light/dark gallery](theme-gallery_en.md) |
 
-- [Choose a website, Calendar, Wiki, Survey system or full Simbioza](modularity_en.md)
-- [User guides with and without a Wiki](bundled-manual_en.md)
+## Install and maintain
 
-- [Secured-FPM language/update ownership fixes in 0.3.17](release-0.3.17_en.md)
-- [Log pagination, worker logs and rotation in 0.3.16](release-0.3.16_en.md)
-- [Log ownership, rotation and retention](logging_en.md)
-- [Automatic and custom button text colors in 0.3.15](release-0.3.15_en.md)
-- [Clear Setup update summaries and Email worker limits in 0.3.14](release-0.3.14_en.md)
-- [Refreshed public installation guides in 0.3.13](release-0.3.13_en.md)
-- [Theme/configuration preservation and selected colors in 0.3.10](release-0.3.10_en.md)
-- [Portable guide links and same-site restore in 0.3.12](release-0.3.12_en.md)
-- [Bundled language revisions in 0.3.7](release-0.3.7_en.md)
-- [Verified secured-FPM installation in 0.3.6](release-0.3.6_en.md)
-- [Private configuration directory protection in 0.3.5](release-0.3.5_en.md)
-- [Docker security patch release 0.3.3](release-0.3.3_en.md)
-- [Secured FPM runtime permissions in 0.3.4](release-0.3.4_en.md)
-- [Secured-FPM fix release 0.3.2](release-0.3.2_en.md)
-- [Documentation release 0.3.1](release-0.3.1_en.md)
-- [Initial release 0.3.0 and verification checklist](initial-release-0.3.0_en.md)
-- [Expanded pre-release audit and continuation](pre-release-audit-0.3.0_en.md)
-- [Current configuration and module-owned files](configuration_en.md)
-- [Documentation, examples and comment-language checks](documentation-quality_en.md)
-- [Docker deployment, volumes, image updates and optional SAML](docker_en.md)
-- [Container readiness and verification boundaries](container-readiness_en.md)
-- [Brand identity and the Simbioza theme](branding_en.md)
-- [Twelve optional themes: previews, selection and import](theme-collection_en.md)
+- [Apache mod_php](installation_mod_php_en.md), [ordinary PHP-FPM](installation_fpm_en.md), or [secured PHP-FPM](installation_fpm_secured_en.md): choose one complete walkthrough.
+- [Docker installation and image upgrades](docker_en.md).
+- [Required dependencies and optional integrations](module-dependencies_en.md).
+- [Application and module configuration](configuration_en.md), [database configuration](database_en.md), and [Workspace data layout](workspace-data_en.md).
+- [Logs and rotation](logging_en.md), [activity audit versus technical logs](audit-logging_en.md), and [troubleshooting](troubleshooting_en.md).
+- [Language packs and translations](localization_en.md).
+- [Maintaining the bundled user guide](maintaining_installation_guides_en.md).
 
+## Use and customize
 
-The documentation is structured for beginners and advanced users. Each topic
-has a separate English and Croatian file.
+- [Simbioza overview](simbioza_overview_en.md).
+- [User guide with and without Wiki](bundled-manual_en.md).
+- [Personal Workspaces](personal-workspaces_en.md) and [personal appearance](personal-appearance_en.md).
+- [Themes, import and deletion](theme-collection_en.md), [creative themes](creative-themes_en.md), [all 26 previews](theme-gallery_en.md), and [branding](branding_en.md).
 
-Suggested path for beginners:
+The installed **User guides** Workspace contains the practical instructions for sign-in, pages, calendars, meetings and surveys. Without Wiki, **Guides** presents the same published chapters as HTML. The guide offers only translations that both exist and are installed; installing another interface language does not translate the manual.
 
-1. [Installation](installation_en.md)
-2. [Six clean installations lab record](installation-lab_en.md)
-3. [Module dependencies](module-dependencies_en.md)
-4. [Database configuration](database_en.md)
-5. [Configuration](configuration_en.md)
-6. [Common workflows](common-workflows_en.md)
-7. [End-to-end testing](end-to-end-testing_en.md)
+## Develop and integrate
 
-Suggested path for advanced users:
+- [Embed the HTML editor in a form field](html-editor-forms_en.md).
+- [Project structure](project-structure_en.md), [common workflows](common-workflows_en.md), and [module registration](modules_en.md).
+- [API v1 contract](api-v1-contract_en.md), [shared services](common-services_en.md), and [request lifecycle](request-lifecycle_en.md).
+- [Routes](routes_en.md), [middleware](middleware_en.md), [views](views_en.md), and [sessions](sessions_en.md).
+- [Encryption](encryption_en.md) and [event dispatch](event-dispatcher_en.md).
+- [Documentation and example checks](documentation-quality_en.md) and [end-to-end verification](end-to-end-testing_en.md).
 
-1. [Project structure](project-structure_en.md)
-2. [Modules](modules_en.md)
-3. [Common services](common-services_en.md)
-4. [API v1 contract](api-v1-contract_en.md)
-5. [API implementation plan](api-implementation-plan_en.md)
+Every reusable module has its own README and language-separated documentation in its source repository. Use the module's current contract for host integration; enabling a module never replaces the host application's authorization or persistence rules.
 
-## Getting started
+## Release history
 
-- [Installation overview](installation_en.md)
-- [Ordinary PHP-FPM installation](installation_fpm_en.md)
-- [Secured PHP-FPM installation](installation_fpm_secured_en.md)
-- [Maintaining installation guides](maintaining_installation_guides_en.md)
-- [Apache mod_php installation](installation_mod_php_en.md)
-- [Six clean installations and screenshots](installation-lab_en.md)
-- [Module dependencies](module-dependencies_en.md)
-- [Database configuration](database_en.md)
-- [Configuration](configuration_en.md)
-- [Project structure](project-structure_en.md)
-
-Verify supported minimal combinations, bilingual documentation, and the
-complete quality suite with:
-
-```bash
-php scripts/verify_clean_install_matrix.php
-php scripts/audit_bilingual_phpdoc.php
-php scripts/audit_module_documentation.php
-composer on-commit
-composer e2e
-```
-
-## Fundamentals
-
-- [Request lifecycle](request-lifecycle_en.md)
-- [Routes](routes_en.md)
-- [Middleware](middleware_en.md)
-- [Views](views_en.md)
-- [Sessions](sessions_en.md)
-- [Localization](localization_en.md)
-
-## Advanced topics
-
-- [Common services and dependency injection](common-services_en.md)
-- [Modules](modules_en.md)
-- [Module dependencies](module-dependencies_en.md)
-- [API v1 contract](api-v1-contract_en.md)
-- [API implementation plan](api-implementation-plan_en.md)
-- [Unified configuration plan and continuation point](configuration-migration-plan_en.md)
-- [Workspace and page data storage](workspace-data_en.md)
-- [Encryption](encryption_en.md)
-- [Event dispatcher](event-dispatcher_en.md)
-- [End-to-end testing](end-to-end-testing_en.md)
-- [Activity audit and technical logging](audit-logging_en.md)
-- [Personal spaces](personal-workspaces_en.md)
-- [Personal appearance](personal-appearance_en.md)
-
-The application enables `aaieduhr/heartphrame-module-api` immediately after
-Auth. Routes under `/api/v1` use Bearer keys and intentionally skip PHP session
-startup and browser CSRF validation. Auth owns users, groups, key hashes, and
-administrator rules; the API module owns versioned JSON contracts and the
-conditional API-key screen.
-
-## Guides
-
-- [Common workflows](common-workflows_en.md)
-- [Troubleshooting](troubleshooting_en.md)
-- [Activity audit and technical logging](audit-logging_en.md)
-- [Personal spaces](personal-workspaces_en.md)
-- [Personal appearance](personal-appearance_en.md)
-
-## Croatian version
-
-- [Hrvatska dokumentacija](index_hr.md)
-
-### Historical release notes
-
-These notes describe older releases, not the fresh 0.3.0 installation or upgrade procedure.
-
-- [0.2.11 release record](release-0.2.11_en.md)
+[Supported 0.3.x release notes](releases_en.md) record what changed in each version. They are historical references, not the starting point for a new installation. Current examples and commands belong in the guides above.

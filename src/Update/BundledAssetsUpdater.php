@@ -36,6 +36,48 @@ final readonly class BundledAssetsUpdater
      * @var array<string,array{file:string,slug:string,parent:?string,recovery:string,message:string}>
      */
     private const GUIDE_PAGES = [
+        'prijava_i_korisnici_sha256' => [
+            'file' => 'prijava-i-korisnici.zip',
+            'slug' => 'prijava-i-korisnici',
+            'parent' => null,
+            'recovery' => 'previous_prijava_i_korisnici_guide',
+            'message' => 'Bilingual guide updated; existing page permissions preserved.',
+        ],
+        'podrucja_sha256' => [
+            'file' => 'podrucja.zip',
+            'slug' => 'podrucja',
+            'parent' => null,
+            'recovery' => 'previous_podrucja_guide',
+            'message' => 'Bilingual guide updated; existing page permissions preserved.',
+        ],
+        'kalendari_sha256' => [
+            'file' => 'kalendari.zip',
+            'slug' => 'kalendari',
+            'parent' => null,
+            'recovery' => 'previous_kalendari_guide',
+            'message' => 'Bilingual guide updated; existing page permissions preserved.',
+        ],
+        'uredivanje_stranica_sha256' => [
+            'file' => 'uredivanje-stranica.zip',
+            'slug' => 'uredivanje-stranica',
+            'parent' => null,
+            'recovery' => 'previous_uredivanje_stranica_guide',
+            'message' => 'Bilingual guide updated; existing page permissions preserved.',
+        ],
+        'razvojne_integracije_sha256' => [
+            'file' => 'razvojne-integracije.zip',
+            'slug' => 'razvojne-integracije',
+            'parent' => null,
+            'recovery' => 'previous_razvojne_integracije_guide',
+            'message' => 'Bilingual guide updated; existing page permissions preserved.',
+        ],
+        'html_editor_u_obrascu_sha256' => [
+            'file' => 'html-editor-u-obrascu.zip',
+            'slug' => 'html-editor-u-obrascu',
+            'parent' => 'razvojne-integracije',
+            'recovery' => 'previous_html_editor_u_obrascu_guide',
+            'message' => 'Bilingual guide updated; existing page permissions preserved.',
+        ],
         'overview_sha256' => [
             'file' => 'simbioza.zip',
             'slug' => 'simbioza',
