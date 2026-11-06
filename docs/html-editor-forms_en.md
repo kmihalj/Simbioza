@@ -1,7 +1,8 @@
-# Embed the HTML editor in a form
+# HTML Editor in a custom form
 
-Use the editor component when a field in your own application must store formatted HTML. The component opens a visual editor and returns HTML to your form; your application keeps responsibility for authentication, permissions, sanitization and persistence.
+The maintained integration instructions belong to the HTML Editor module:
 
-Start with [HTML editor in a form field](user-guide/html-editor-u-obrascu_en.md). It includes actual screenshots, the `createField()` API, CSRF handling, a textarea bridge and a link to the complete runnable example in the module repository.
+- [Component integration guide](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/component_en.md).
+- [Complete PHP, template and JavaScript example](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/tree/main/examples/form-field).
 
-The same guide is delivered in Simbioza under **User guides → For developers → HTML editor in a form field**, including installations without Workspaces through **Guides**.
+This developer reference is not part of Simbioza's installed user manual.

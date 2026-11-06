@@ -330,7 +330,9 @@ final class BundledGuideArchivesTest extends TestCase
         $applicationRoot = dirname(__DIR__, 3);
         $archives = glob($applicationRoot . '/resources/installation/workspace/*.zip');
         $this->assertIsArray($archives);
-        $this->assertCount(13, $archives);
+        $this->assertCount(11, $archives);
+        $this->assertFileDoesNotExist($applicationRoot . '/resources/installation/workspace/razvojne-integracije.zip');
+        $this->assertFileDoesNotExist($applicationRoot . '/resources/installation/workspace/html-editor-u-obrascu.zip');
         $temporary = sys_get_temp_dir() . '/simbioza-bundled-guide-test-' . bin2hex(random_bytes(8));
         $filesystem = new BackupFilesystem();
         $filesystem->ensureDirectory($temporary);

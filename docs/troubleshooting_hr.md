@@ -59,7 +59,7 @@ Vidi [API ugovor](api-v1-contract_hr.md).
 ## HTML Editor, skripte ili izgled
 
 Za polje obrasca usporedite učitavanje datoteka, sinkronizaciju editora s formom
-i serversku validaciju s [izvršivim primjerom integracije](user-guide/html-editor-u-obrascu_hr.md).
+i serversku validaciju s [izvršivim primjerom integracije](html-editor-forms_hr.md).
 Editor dokumenta i samostalno polje obrasca imaju različite vlasnike pohrane.
 
 Ako odobrena skripta sadržaja ne radi, provjerite odabir na toj stranici,

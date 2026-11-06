@@ -32,9 +32,9 @@ php scripts/sync_user_guides.php --check
 `--apply` ažurira generirane datoteke izdanja iz izvora u Gitu; `--check` otkriva
 razlike. Održavanje izvora ne objavljuje izdanje niti daje odobrenje za zamjenu
 živog administratorskog sadržaja. Pregledajte razlike pa koristite redovni,
-kontrolirani postupak instalacije/nadogradnje. [Primjer HTML Editora u polju
-obrasca](user-guide/html-editor-u-obrascu_hr.md) zajedničko je poglavlje
-Git dokumentacije i priručnika u aplikaciji.
+kontrolirani postupak instalacije/nadogradnje. [Upute za HTML Editor u polju
+obrasca](html-editor-forms_hr.md) održavaju se u repozitoriju modula za razvojne
+programere; nisu dio korisničkog priručnika u aplikaciji.
 
 ## Jezik i primjeri
 

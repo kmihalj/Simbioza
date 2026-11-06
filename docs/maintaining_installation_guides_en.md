@@ -2,7 +2,7 @@
 
 [Croatian version](maintaining_installation_guides_hr.md)
 
-The complete public manual has **33 chapters in both English and Croatian**. Its canonical source map is `resources/installation/manual-sources.json`; most chapter pairs are under `docs/user-guide/`. `resources/installation/manual-assets.json` maps referenced screenshots and illustrations to their maintained files and checksums. Keep the two languages separate and preserve useful images, portable links and existing page identities.
+The complete public manual has **31 chapters in both English and Croatian**. Its canonical source map is `resources/installation/manual-sources.json`; most chapter pairs are under `docs/user-guide/`. `resources/installation/manual-assets.json` maps referenced screenshots and illustrations to their maintained files and checksums. Keep the two languages separate and preserve useful images, portable links and existing page identities.
 
 ## Choose the right source
 
@@ -17,7 +17,7 @@ Four introduction/installation pages retain their existing root sources:
 
 Here `*` means the separate `en.md` and `hr.md` files. Each installation walkthrough is complete; readers do not need prerequisite fragments from a different walkthrough. The native PHP-FPM page contains ordinary and secured FPM procedures with `#ordinary-fpm` and `#secured-fpm` anchors.
 
-The other user chapters come from `docs/user-guide/`, including separate survey author, respondent, administrator and API guides. Developer integrations and embedding HTML Editor in a form have their own chapters. Consult the manifest before editing: a maintained copy under another path is not automatically a packaging source.
+The other user chapters come from `docs/user-guide/`, including separate survey author, respondent, administrator and API guides. HTML Editor integration in another application is documented separately in its module repository and is not an installed user-guide chapter. Consult the manifest before editing: a maintained copy under another path is not automatically a packaging source.
 
 ## Rebuild and verify all chapters
 

@@ -1,7 +1,8 @@
-# Ugradnja HTML editora u obrazac
+# HTML Editor u obrascu vlastite aplikacije
 
-Komponentu editora koristite kada polje u vašoj aplikaciji treba spremati oblikovani HTML. Komponenta otvara vizualni editor i vraća HTML u obrazac; vaša aplikacija ostaje odgovorna za prijavu, ovlasti, sanitizaciju i spremanje.
+Održavane upute za integraciju nalaze se u repozitoriju modula HTML Editor:
 
-Počnite od [HTML editora u polju obrasca](user-guide/html-editor-u-obrascu_hr.md). Vodič sadrži stvarne snimke, API `createField()`, obradu CSRF zaštite, vezu s tekstualnim poljem i poveznicu na cjelovit izvršivi primjer u repozitoriju modula.
+- [Vodič za ugradnju komponente](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/component_hr.md).
+- [Potpuni PHP, predložak i JavaScript primjer](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/tree/main/examples/form-field).
 
-Isti je vodič u Simbiozi dostupan kroz **Korisničke upute → Za razvojne programere → HTML editor u polju obrasca**, a u instalacijama bez Područja kroz **Upute**.
+Ova razvojna referenca nije dio korisničkog priručnika instaliranog u Simbiozi.

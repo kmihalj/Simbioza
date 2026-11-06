@@ -2,7 +2,7 @@
 
 [English version](maintaining_installation_guides_en.md)
 
-Potpuni javni priručnik ima **33 poglavlja na hrvatskom i engleskom**. Mjerodavan popis izvora je `resources/installation/manual-sources.json`; većina parova poglavlja nalazi se pod `docs/user-guide/`. `resources/installation/manual-assets.json` povezuje korištene snimke i ilustracije s održavanim datotekama i kontrolnim sažecima. Jezike održavajte odvojeno, uz očuvanje korisnih slika, prenosivih poveznica i postojećih identiteta stranica.
+Potpuni javni priručnik ima **31 poglavlje na hrvatskom i engleskom**. Mjerodavan popis izvora je `resources/installation/manual-sources.json`; većina parova poglavlja nalazi se pod `docs/user-guide/`. `resources/installation/manual-assets.json` povezuje korištene snimke i ilustracije s održavanim datotekama i kontrolnim sažecima. Jezike održavajte odvojeno, uz očuvanje korisnih slika, prenosivih poveznica i postojećih identiteta stranica.
 
 ## Odaberite pravi izvor
 
@@ -17,7 +17,7 @@ Potpuni javni priručnik ima **33 poglavlja na hrvatskom i engleskom**. Mjerodav
 
 Ovdje `*` označava odvojene datoteke `en.md` i `hr.md`. Svaki instalacijski postupak je cjelovit; čitatelj ne mora tražiti preduvjete u drugom postupku. Stranica PHP-FPM sadrži obični i secured FPM uz sidra `#ordinary-fpm` i `#secured-fpm`.
 
-Ostala korisnička poglavlja dolaze iz `docs/user-guide/`, uključujući odvojene upute za sastavljače anketa, ispitanike, administratore i API. Razvojne integracije i ugradnja HTML Editora u obrazac imaju vlastita poglavlja. Prije uređivanja pogledajte manifest: održavana kopija na drugoj putanji nije automatski izvor paketa.
+Ostala korisnička poglavlja dolaze iz `docs/user-guide/`, uključujući odvojene upute za sastavljače anketa, ispitanike, administratore i API. Ugradnja HTML Editora u drugu aplikaciju dokumentirana je zasebno u repozitoriju tog modula i nije poglavlje instaliranih korisničkih uputa. Prije uređivanja pogledajte manifest: održavana kopija na drugoj putanji nije automatski izvor paketa.
 
 ## Obnovite i provjerite sva poglavlja
 

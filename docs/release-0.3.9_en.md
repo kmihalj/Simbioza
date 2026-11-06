@@ -1,6 +1,6 @@
 # Simbioza 0.3.9 — unpublished candidate
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.38](release-0.3.38_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.39](release-0.3.39_en.md).
 
 > Historical release note. For current installation instructions, use the [installation guide](installation_en.md).
 

@@ -498,37 +498,5 @@
         "docs/user-guide/ankete-html-sadrzaj_en.md"
       ]
     }
-  },
-  {
-    "slug": "razvojne-integracije",
-    "title": {
-      "hr": "Za razvojne programere",
-      "en": "For developers"
-    },
-    "parent": null,
-    "sources": {
-      "hr": [
-        "docs/user-guide/razvojne-integracije_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/razvojne-integracije_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "html-editor-u-obrascu",
-    "title": {
-      "hr": "HTML editor u polju obrasca",
-      "en": "HTML editor in a form field"
-    },
-    "parent": "razvojne-integracije",
-    "sources": {
-      "hr": [
-        "docs/user-guide/html-editor-u-obrascu_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/html-editor-u-obrascu_en.md"
-      ]
-    }
   }
 ]

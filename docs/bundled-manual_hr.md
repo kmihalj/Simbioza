@@ -2,7 +2,7 @@
 
 [English version](bundled-manual_en.md)
 
-Simbioza isporučuje jedan javni priručnik s **33 poglavlja na hrvatskom i engleskom**, uključujući snimke zaslona. Obuhvaća instalaciju, svakodnevni rad, kalendare i sastanke, ankete, administraciju i razvojne integracije. Za čitanje nije potrebno instalirati Wiki. Ponuđene jezike određuju jezici instalirani u aplikaciji.
+Simbioza isporučuje jedan javni priručnik koji ima **31 poglavlje na hrvatskom i engleskom**, uključujući snimke zaslona. Obuhvaća instalaciju, svakodnevni rad, kalendare i sastanke, ankete, administraciju i API anketa. Za čitanje nije potrebno instalirati Wiki. Ponuđene jezike određuju jezici instalirani u aplikaciji.
 
 ## Instalacije s Wikijem
 

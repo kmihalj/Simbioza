@@ -1,6 +1,6 @@
 # Simbioza 0.3.35 — description contrast without background strips
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.38](release-0.3.38_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.39](release-0.3.39_en.md).
 [Croatian version](release-0.3.35_hr.md)
 
 Theme **0.3.11** removes the unwanted backgrounds introduced behind supporting

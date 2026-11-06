@@ -67,7 +67,7 @@ događaje ili Backup providere bez stvaranja ovisnosti u jezgri.
 - Opcionalna integracija ostaje neaktivna bez uključenog vlasničkog modula.
   Skrivena stavka menija nikada ne zamjenjuje autorizaciju rute.
 - HTML Editor radi bez Područja. U formi može uređivati textarea polje bez
-  stvaranja dokumenta; slijedite [cjelovit primjer integracije](user-guide/html-editor-u-obrascu_hr.md).
+  stvaranja dokumenta; slijedite [cjelovit primjer integracije](html-editor-forms_hr.md).
   Naknadna instalacija Područja ne premješta samostalne stranice automatski.
 - Workspace upravlja hijerarhijom i pravima objave, a Editor HTML-om i privitcima.
   Task i Comment koriste identitet objavljenog dokumenta i njegova prava.

@@ -1,6 +1,6 @@
 # Simbioza 0.3.32 — vlastite kontrole tablica u sadržaju
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.38](release-0.3.38_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.39](release-0.3.39_hr.md).
 
 [Engleska verzija](release-0.3.32_en.md)
 

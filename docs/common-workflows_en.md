@@ -6,7 +6,7 @@ keep administrator settings/data intact, and verify the affected user flow.
 
 ## Use the HTML Editor on a form field
 
-Start with the [complete form-field example](user-guide/html-editor-u-obrascu_en.md).
+Start with the [complete form-field example](html-editor-forms_en.md).
 It explains assets, rendering an editor for a textarea, synchronizing its HTML
 before submission, and server-side handling. This does not require creating a
 Wiki page. The host still authenticates the user, checks permission to edit the

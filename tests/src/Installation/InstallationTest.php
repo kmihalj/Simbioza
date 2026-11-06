@@ -809,7 +809,6 @@ final class InstallationTest extends TestCase
             'podrucja',
             'uredivanje-stranica',
             'ankete',
-            'razvojne-integracije',
         ], array_column($rootNodes, 'slug'));
         $translatedTitles = [];
         foreach ($rootNodes as $node) {

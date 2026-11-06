@@ -1,286 +1,403 @@
 # Uređivanje stranica
 
-Ova je uputa namijenjena urednicima koji u Simbiozi stvaraju i održavaju stranice u područjima. Korak po korak objašnjava otvaranje stranice, naslov i slug, cijelu alatnu traku HTML editora, privitke, svojstva stranice, dinamičke elemente, objavu, prijevode i prava pristupa. Za rad nije potrebno poznavati HTML.
+Ovdje naučite napraviti stranicu, dodati tekst, slike i druge sadržaje te je pripremiti za čitatelje. Radite u vizualnom editoru, slično kao u uređivaču teksta. **Za uobičajeni rad ne trebate poznavati HTML ni pisati programski kod.**
 
-<div class="alert alert-info">
+Za prvu stranicu dovoljno je proći [stvaranje](#nova-stranica), [osnovno oblikovanje](#tekst) i [spremanje i objavu](#spremanje). Ostale dijelove otvorite kada vam zatrebaju. Koraci za ankete opisani su zasebno u [Anketama](ankete_hr.md).
 
-**Primjeri su testni.** Snimke prikazuju namjensko područje *\[Upute\] Primjeri uređivanja stranica* , testne korisnike i izmišljene projektne podatke. Vaši će nazivi, kalendari i korisnici biti drukčiji, ali su koraci isti.
+<a id="nova-stranica"></a>
+## 1. Napravite novu stranicu ili otvorite postojeću
 
-</div>
+1. Otvorite **Područja** i odaberite područje u kojem želite raditi.
+2. Za novu stranicu odaberite ikonu **Nova stranica** uz stablo područja. Naziv ikone vidljiv je kada na njoj zadržite pokazivač miša.
+3. Upišite **Naslov stranice**. Provjerite jezik uz naslov, odredišno **Područje** i **Nadređenu stranicu**. Nadređena stranica određuje mjesto nove stranice u stablu; za početnu razinu odaberite **Korijen stabla**. Obrazac navodi na kojem je primarnom jeziku naslov obvezan.
+4. **Slug** možete ostaviti prazan: sustav ga izrađuje iz naslova. To je kratki dio web-adrese stranice, pa ga poslije ne mijenjajte bez potrebe.
+5. Odaberite **Kreiraj i uredi**. Otvorit će se editor nove stranice.
 
-## 1. Prije početka: područje i prava
+**Rezultat:** stranica postoji na odabranom mjestu i možete unositi sadržaj. Samo stvaranje i upis teksta nisu isto što i objava čitateljima.
 
-Ovo poglavlje opisuje stranice u područjima. Područje određuje osnovni skup korisnika i prava, zadani prikaz sadržaja te stablo stranica. Za stvaranje stranice morate imati pravo **Dodavanje** ; za promjenu postojećeg sadržaja **Uređivanje** ; za objavu nacrta **Objavljivanje** . Pravo **Pregled** omogućuje čitanje, ali ne i uređivanje.
+<figure>
+<img src="images/page-edit-01-hr.jpg" alt="Obrazac Nova stranica s naslovom, jezikom, područjem i nadređenom stranicom." class="img-fluid" loading="lazy">
+<figcaption>Nova stranica: unesite naslov, provjerite jezik i mjesto u stablu pa odaberite Kreiraj i uredi.</figcaption>
+</figure>
 
-1.  Otvorite **Područja** i odaberite željeno područje.
-2.  U lijevom stablu označite stranicu ispod koje želite dodati novu stranicu. Za stranicu na vrhu područja označite korijen područja.
-3.  Odaberite gumb za dodavanje stavke, unesite naslov i odaberite vrstu **Stranica (HTML dokument)** .
-4.  Spremite stavku. Simbioza stvara dokument i otvara ga u HTML editoru.
+Za promjenu postojeće stranice otvorite je iz stabla i odaberite ikonu olovke **Uredi**. Ako ne vidite radnju za stvaranje ili uređivanje, zamolite administratora ili upravitelja područja da provjeri vaša prava.
 
-Stranice koje pripadaju području stvarajte iz njegova stabla. Ako instalacija ima i samostalne HTML stranice, one ostaju dostupne izvan područja sa svojim adresama i pravima; samo dodavanje modula Područja ne premješta ih. Administrator ih po potrebi premješta kroz **Postavke → HTML editor → Stranice izvan područja → Premjesti u područje**. Prije premještanja provjerava prava odredišta; prenose se prijevodi, povijest i privitci, a povezani sadržaj i adrese se usklađuju.
+Instalacija bez Područja može imati stavku **HTML stranice** i radnju **Upravljanje sadržajem**. Ondje stvarate samostalne stranice; njihov sadržaj uređujete istim editorom. Ako su Područja dodana naknadno, samostalne stranice nastavljaju raditi dok ih administrator izričito ne premjesti u područje.
 
-## 2. Naslov, slug i jezik
+<a id="editor"></a>
+## 2. Upoznajte editor
 
-**Naslov** je tekst koji korisnik vidi u stablu, zaglavlju i poveznicama. Može imati prijevod. Izbornik s oznakom **HR** ili **EN** uz naslov mijenja jezik naslova, dok izbornik **Jezik dokumenta** mijenja inačicu sadržaja koju uređujete. To su dvije povezane, ali različite postavke: prije objave engleske inačice provjerite da su i engleski naslov i engleski sadržaj doista uneseni.
+Gore se nalaze podaci o dokumentu, odabir jezika i radnje spremanja. **Alatna traka** nalazi se neposredno iznad sadržaja koji uređujete. Ispod sadržaja je odjeljak **Privitci** za datoteke povezane sa stranicom.
 
-**Slug** je stabilan, čitljiv dio adrese stranice, primjerice `projekt-orion` . Piše se malim slovima, bez razmaka i dijakritičkih znakova; riječi se odvajaju crticom. Slug neka bude kratak i opisuje sadržaj. Nakon što se stranica počne koristiti, ne mijenjajte ga bez potrebe jer stare poveznice i spremljene adrese mogu prestati raditi.
+<figure>
+<img src="images/page-edit-02-hr.jpg" alt="Editor s podacima dokumenta, odabirom jezika, gumbima spremanja i alatnom trakom." class="img-fluid" loading="lazy">
+<figcaption>Gornji dio editora: podaci dokumenta i spremanje iznad alatne trake.</figcaption>
+</figure>
 
-**Omogućeni komentari** određuju smiju li korisnici komentirati objavljenu stranicu. Promjena vrijedi tek nakon objave nacrta. **Zadani prikaz sadržaja stranice** može naslijediti postavku područja ili je samo za tu stranicu nadjačati opcijom *Prikaži* ili *Sakrij* .
+Ako je ponuđeno, **Omogućeni komentari** dopušta nove komentare; postojeći ostaju vidljivi i kada se novi isključe. Na stranici područja promjena se primjenjuje objavom. **Zadani prikaz sadržaja stranice** može naslijediti postavku područja ili odabrati **Prikaži / Sakrij** za tu stranicu.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/fca635b3-ada2-435b-8e5b-c82552bff7f4.png" class="figure-img img-fluid rounded border mb-1" alt="Hrvatski prikaz HTML editora s podacima dokumenta i cijelom alatnom trakom" /> <span class="figure-caption d-block">Pregled editora: gore su prijevodi, povijest i pregled, zatim naslov, slug, jezik dokumenta i gumbi za spremanje. Ispod podataka dokumenta nalaze se alatna traka i uređivi sadržaj.</span> </span>
+Kliknite na mjesto na koje želite nešto upisati ili umetnuti. Za oblikovanje postojećih riječi najprije ih označite; za oblikovanje cijelog odlomka dovoljno je postaviti pokazivač u njega.
 
-## 3. Spremanje, objava, pregled, prijevodi i povijest
+Nazive slikovnih gumba saznajte zadržavanjem pokazivača na ikoni. Na užem prozoru alatna se traka raspoređuje u više redaka. Gumbima i poljima možete se kretati tipkama Tab i Shift+Tab; na gumbu za potvrdu upotrijebite Enter ili razmaknicu.
 
-- **Spremi** čuva nacrt bez promjene javno vidljive inačice. Koristite ga često tijekom rada.
-- **Spremi i objavi** sprema nacrt i čini ga trenutačno važećom objavljenom inačicom. Prije klika provjerite sadržaj i prava.
-- **Pregled** pokazuje stranicu onako kako je vidi čitatelj. Dinamički elementi tek se ovdje prikazuju s pravim podacima i ACL provjerama.
-- **Povijest** prikazuje ranije inačice i omogućuje vraćanje prethodnog sadržaja kada je to potrebno.
-- **Prijevodi** pomažu kopirati postojeću inačicu kao polazište. Nakon kopiranja prevedite naslov, sadržaj, opis slike i ostale tekstove; ne objavljujte strojno ili djelomično prevedenu stranicu bez provjere.
-- **Obriši dokument** uklanja stranicu iz aktivnog prikaza i oslobađa njezinu adresu. Administrator je može vratiti iz popisa obrisanih dokumenata. Prije brisanja provjerite poveznice i blokove *Uključi sadržaj stranice*.
+| Skupina u alatnoj traci | Čemu služi |
+| --- | --- |
+| **Format** | Odlomak, naslovi, citat ili preformatirani tekst. |
+| **Provjeri dokument** | Provjera naslova, slika, poveznica i tablica prije objave. |
+| **Podebljano**, **Kurziv**, **Podcrtano**, **Ukloni formatiranje** | Oblikovanje označenog teksta. |
+| Četiri gumba poravnanja | Lijevo, sredina, desno ili obostrano poravnanje odlomka. |
+| **Lista**, **Numerirana lista**, **Poveznica**, **Ukloni poveznicu** | Popisi i poveznice. |
+| **Poništi**, **Ponovi** | Poništavanje i ponavljanje običnih promjena teksta tijekom otvorenog uređivanja. |
+| **Dinamički elementi** | Tabovi, accordion, padajući sadržaj, grafikoni, vremenski planovi i dostupne integracije. |
+| **Umetni**, **Bootstrap obavijesti**, **Kartice** | Stupci, vodoravna crta, ugrađeni sadržaj i istaknute cjeline. |
+| **Tablica**, **Mediji** | Rad s odabranom tablicom, slikom ili drugim medijem. |
+| **Vanjske skripte** | Dodatne mogućnosti koje je administrator pripremio i odobrio. |
+| **Izvorni kod**, **Cijeli ekran** | Napredni HTML prikaz ili više prostora za vizualno uređivanje. |
 
-## 4. Osnovno uređivanje teksta
+Neke se mogućnosti pojavljuju samo kada je odgovarajući modul uključen i kada imate potrebna prava. Siva radnja tablice ili medija često samo znači da još niste označili tablicu odnosno sliku.
 
-Kliknite u sadržaj i pišite kao u uobičajenom uređivaču teksta. Za oblikovanje najprije označite tekst. Za radnju na odlomku dovoljno je postaviti pokazivač unutar njega. Nemojte oblikovati naslove povećavanjem ili podebljavanjem običnog teksta: odaberite odgovarajuću razinu naslova jer ona gradi sadržaj stranice i pomaže čitačima zaslona.
+<figure>
+<img src="images/page-edit-03-hr.jpg" alt="Otvoren izbornik Dinamički elementi s tabovima, accordionom, padajućim sadržajem i drugim blokovima." class="img-fluid" loading="lazy">
+<figcaption>Izbornik Dinamički elementi otvara postavke složenijih sadržaja. Dostupne integracije ovise o instaliranim modulima.</figcaption>
+</figure>
 
-- **Format** : Paragraf je običan tekst; Naslov 1–5 gradi hijerarhiju; Citat označava citirani odlomak; Preformatirano čuva razmake i prikladno je za kratke tehničke primjere. Na stranici koristite jedan glavni Naslov 1, a cjeline slažite s Naslovom 2 i podcjelinama s Naslovom 3 bez preskakanja razina.
-- **Provjeri dokument** traži prazne naslove, neispravnu hijerarhiju, slike bez zamjenskog teksta i nepostojeće interne poveznice. Provjeru pokrenite prije svake objave.
-- **Podebljano, Kurziv i Podcrtano** naglašavaju označeni tekst. Podcrtavanje koristite rijetko jer ga korisnici mogu zamijeniti za poveznicu.
-- **Ukloni formatiranje** uklanja neželjeni stil, osobito nakon lijepljenja iz Worda ili weba.
-- **Poravnaj lijevo, sredinu, desno i Obostrano poravnanje** primjenjuju poravnanje na odlomak. Za dulji tekst najbolje je lijevo poravnanje.
-- **Lista i Numerirana lista** : lista je za stavke bez redoslijeda, numerirana lista za korake koji se izvode po redu. Enter stvara novu stavku, a dvostruki Enter završava listu.
-- **Poveznica** pretvara označeni tekst u internu ili vanjsku poveznicu. Tekst poveznice neka opisuje odredište, npr. „pravila prijave”, a ne „kliknite ovdje”. **Ukloni poveznicu** ostavlja tekst i uklanja samo vezu.
-- **Poništi** vraća zadnju promjenu, a **Ponovi** ponovno primjenjuje poništenu promjenu. Ta povijest vrijedi samo u trenutačno otvorenoj sesiji uređivanja.
+<a id="tekst"></a>
+## 3. Napišite i oblikujte tekst
 
-## 5. Umetanje rasporeda, obavijesti i kartica
+### Naslovi, odlomci i popisi
 
-### Stupci i vodoravna crta
+1. Upišite kratak odlomak koji čitatelju objašnjava temu stranice.
+2. Za novu cjelinu napišite naslov, postavite pokazivač u njega i u **Formatu** odaberite odgovarajuću razinu naslova. Naslov stranice već je glavna cjelina; u sadržaju je obično dovoljno početi s **Naslov 2**, a podcjeline označiti kao **Naslov 3**.
+3. Za nabrajanje upotrijebite **Listu**, a za postupak koji ima redoslijed **Numeriranu listu**.
+4. Za kratko isticanje označite riječi i odaberite podebljanje ili kurziv. Za uklanjanje neželjenih stilova nakon lijepljenja označite taj tekst i odaberite **Ukloni formatiranje**.
 
-Izbornik **Umetni** nudi **Dva stupca** , **Tri stupca** i **Horizontalnu liniju** . Stupce koristite za kratke usporedne cjeline, ne za duge članke: na uskom zaslonu slažu se jedan ispod drugoga. Vodoravna crta vizualno odvaja velike cjeline, ali nije zamjena za smisleni naslov.
+**Rezultat:** stranica dobiva jasne cjeline, a čitatelji i pomoćne tehnologije lakše se kreću sadržajem. Nemojte običan podebljani odlomak koristiti umjesto pravog naslova.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/991c8129-88bc-4415-a011-95fa288fc134.png" class="figure-img img-fluid rounded border mb-1" alt="Izbornik Umetni s dva stupca, tri stupca i horizontalnom linijom" /> <span class="figure-caption d-block">Izbornik Umetni dodaje gotovu strukturu na mjesto pokazivača. Nakon umetanja kliknite u svaki stupac i zamijenite ogledni sadržaj vlastitim tekstom.</span> </span>
+**Citat** koristite za citirane riječi. **Preformatirano** čuva razmake i raspored kratkog tekstualnog primjera. Za duže odlomke koristite lijevo poravnanje; obostrano poravnanje može stvarati velike praznine između riječi.
 
-### Bootstrap obavijesti
+### Poveznice
 
-Obavijest ističe kratku važnu poruku. Izbornik nudi osam vrsta: **primarna** za opću istaknutu poruku, **sekundarna** za dopunu, **uspjeh** za pozitivan ishod, **opasnost** za kritičnu zabranu ili pogrešku, **upozorenje** za potreban oprez, **informativna** za objašnjenje te **svijetla** i **tamna** za neutralne naglaske. Boja ne smije biti jedini nositelj značenja: započnite jasnom riječi poput „Važno”, „Upozorenje” ili „Uspješno”.
+1. Označite tekst koji treba voditi na drugu stranicu, primjerice „Uvjeti prijave”.
+2. Odaberite **Poveznica**.
+3. Za vanjsku stranicu upišite web-adresu i odaberite **Umetni URL poveznicu**. Za Simbiozinu stranicu u dijelu **Interna poveznica** odaberite područje i stranicu pa potvrdite unos.
+4. Ako je popis dug, koristite pretragu i **Učitaj još**. Ponuđene su stranice koje smijete odabrati.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/05e31fa7-ae70-49e5-a67f-0bf1c0e4bf67.png" class="figure-img img-fluid rounded border mb-1" alt="Izbornik Bootstrap obavijesti sa svih osam vrsta" /> <span class="figure-caption d-block">Odaberite vrstu prema značenju, zatim zamijenite ogledni tekst. Za jednu poruku koristite jednu obavijest; niz šarenih okvira otežava čitanje.</span> </span>
+**Ukloni poveznicu** zadržava riječi, ali uklanja njihovo odredište. Nakon spremanja otvorite poveznicu u prikazu stranice i provjerite rezultat.
 
-### Kartice
+<a id="raspored"></a>
+## 4. Odvojite cjeline stupcima, obavijestima i karticama
 
-**Kartica s naslovom** umeće odvojeni okvir s zaglavljem i tijelom; prikladna je za sažetak projekta, kontaktnu karticu ili povezanu cjelinu. **Kartica bez naslova** umeće samo tijelo. Naslov kartice neka bude kratak, a važnu hijerarhiju stranice i dalje gradite pravim naslovima.
+| Želite… | Kako | Rezultat |
+| --- | --- | --- |
+| Dvije ili tri usporedne cjeline | **Umetni → Dva stupca / Tri stupca**, zatim zamijenite tekst u svakom stupcu. | Na širokom zaslonu sadržaji stoje usporedno, a na uskom jedan ispod drugoga. |
+| Kratku važnu napomenu | **Bootstrap obavijesti**, odaberite stil i zamijenite ogledni tekst. | Poruka je vizualno istaknuta. Započnite je jasnom riječi poput „Važno”; boja nije dovoljna sama za sebe. |
+| Odvojeni okvir s povezanim informacijama | **Kartice → Kartica s naslovom / Kartica bez naslova**. Upišite tekst u tijelo, a po potrebi i naslov. | Sažetak, kontakt ili druga cjelina odvojeni su od ostatka teksta. |
+| Jednostavan razdjelnik | **Umetni → Horizontalna linija**. | Pojavljuje se vodoravna crta između dviju cjelina. |
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/d8211283-a2f2-49d8-b894-43a4ca3d5a2e.png" class="figure-img img-fluid rounded border mb-1" alt="Izbornik Kartice s opcijama kartice s naslovom i bez naslova" /> <span class="figure-caption d-block">Kartica se umeće na mjesto pokazivača. Kliknite zasebno u naslov i tijelo da zamijenite oba ogledna teksta.</span> </span>
+Stupce i kartice koristite za povezane kratke sadržaje, a naslove za strukturu duljeg članka. Uvijek zamijenite sav umetnuti ogledni tekst.
 
-## 6. Tablice
+<a id="tabovi"></a>
+## 5. Tabovi: više sadržaja na istom mjestu
 
-Odaberite **Umetni tablicu**, a zatim označite broj redaka i stupaca. Tablicu koristite za podatke koji imaju stvaran odnos redak–stupac, a ne za slaganje izgleda stranice.
+Tabovi su korisni za različite mogućnosti iste teme, primjerice „Prije dolaska”, „Program” i „Kontakt”. Čitatelj bira naslov taba i vidi pripadajući sadržaj.
 
-- **Umetni red iznad/ispod** dodaje red uz ćeliju u kojoj je pokazivač; **Obriši red** uklanja cijeli red.
-- **Umetni stupac lijevo/desno** dodaje stupac; **Obriši stupac** uklanja cijeli stupac.
-- **Spoji s ćelijom desno/ispod** stvara veću zajedničku ćeliju. Spajajte samo kada je značenje jasno jer složena tablica može biti teška korisnicima čitača zaslona.
-- **Podijeli ćeliju** poništava prethodno spajanje odabrane ćelije.
+1. Postavite pokazivač na mjesto umetanja i otvorite **Dinamički elementi → Umetni tabove**.
+2. Upišite **od 2 do 6 naslova**, svaki u zaseban redak, i odaberite **Umetni**.
+3. U glavnom editoru upišite sadržaj svakog taba na označeno mjesto. Ondje možete uređivati i naslove. Sadržaji su tijekom uređivanja prikazani tako da možete raditi na svakome.
+4. Spremite i provjerite prikaz stranice: klik na naslov treba pokazati odgovarajući sadržaj.
 
-Prvi red neka sadrži jasne nazive stupaca. Nakon svake veće izmjene pregledajte tablicu na užem prozoru; vrlo široka tablica zahtijeva vodoravno pomicanje.
+<figure>
+<img src="images/page-edit-04-hr.jpg" alt="Dijalog Umetni tabove s tri naslova, svaki u zasebnom retku." class="img-fluid" loading="lazy">
+<figcaption>U ovom primjeru nastaju tri taba. Njihove sadržaje nakon umetanja upisujete u glavnom editoru.</figcaption>
+</figure>
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/aa76fe0d-bb65-40d2-9048-4573fe5c20a6.png" class="figure-img img-fluid rounded border mb-1" alt="Izbornik Tablica sa svim operacijama nad redovima, stupcima i ćelijama" /> <span class="figure-caption d-block">Operacije se primjenjuju u odnosu na ćeliju u kojoj je pokazivač. Ako je naredba onemogućena, najprije kliknite unutar postojeće tablice i odgovarajuće ćelije.</span> </span>
+Olovka uz blok ponovno otvara postavke. **Ukloni tabove** uklanja cijeli blok. Kada u popisu naslova uklonite pojedini naslov, uklanja se i njegov sadržaj. Naslove i sadržaje mijenjajte zajedno; prepisivanje ili preslagivanje samih redaka nije automatsko premještanje pripadajućeg teksta.
 
-### Sortiranje i paginacija po tablici
+<a id="accordion"></a>
+## 6. Accordion: skup dijelova koji se otvaraju klikom
 
-1. Kliknite bilo koju ćeliju postojeće tablice.
+Accordion je prikladan za česta pitanja ili nekoliko kraćih postupaka. Čitatelj klikne naslov pitanja i otvori odgovor. Može otvoriti više dijelova istodobno.
+
+1. Odaberite **Dinamički elementi → Umetni accordion**.
+2. Unesite **od 1 do 12 naslova**, svaki u zaseban redak, pa odaberite **Umetni**.
+3. U glavnom editoru ispod svakog naslova upišite njegov tekst. Možete dodavati poveznice, slike, tablice i druge sadržaje.
+4. U prikazu stranice otvorite i zatvorite pojedini dio kako biste provjerili naslov i pripadajući sadržaj.
+
+<figure>
+<img src="images/page-edit-05-hr.jpg" alt="Dijalog Umetni accordion s tri naslova čestih pitanja u zasebnim retcima." class="img-fluid" loading="lazy">
+<figcaption>Svaki redak postaje naslov jednog dijela accordiona; odgovore upisujete nakon umetanja.</figcaption>
+</figure>
+
+Za promjenu broja dijelova koristite olovku uz blok. Dodani naslov dobiva prazno tijelo, a uklanjanjem naslova briše se i njegovo tijelo. **Ukloni accordion** uklanja cijeli skup.
+
+<a id="padajuci-sadrzaj"></a>
+## 7. Padajući sadržaj: jedna sklopiva napomena
+
+Za samo jednu dodatnu napomenu ili objašnjenje odaberite **Dinamički elementi → Umetni padajući sadržaj**.
+
+1. Upišite **Naslov** koji jasno govori što se nalazi unutra.
+2. Ako čitatelj pri otvaranju stranice odmah treba vidjeti tekst, uključite **Prikaži sadržaj otvoren pri učitavanju stranice**.
+3. Odaberite **Umetni** i u glavnom editoru upišite sadržaj ispod naslova.
+
+<figure>
+<img src="images/page-edit-06-hr.jpg" alt="Dijalog Umetni padajući sadržaj s naslovom i uključenim početnim otvorenim stanjem." class="img-fluid" loading="lazy">
+<figcaption>Postavka otvorenog sadržaja određuje što će čitatelj vidjeti pri učitavanju stranice.</figcaption>
+</figure>
+
+U editoru je sadržaj otvoren radi uređivanja. U prikazu stranice primjenjuje se odabrano početno stanje; čitatelj ga otvara i zatvara klikom na naslov. Olovka uz blok otvara postavke i nudi uklanjanje bloka.
+
+Tabovi, accordion i padajući sadržaj mogu sadržavati oblikovani tekst i druge elemente. Najvažniju informaciju stranice ipak napišite vidljivo, bez potrebe za otvaranjem skrivenog dijela.
+
+<figure>
+<img src="images/page-edit-15-hr.jpg" alt="Objavljena stranica s odabranim tabom Materijali, otvorenim odgovorom u accordionu i otvorenim padajućim sadržajem." class="img-fluid" loading="lazy">
+<figcaption>Rezultat za čitatelja: odabrani tab pokazuje materijale, a klik na naslov otvara pojedini odgovor ili dodatnu napomenu.</figcaption>
+</figure>
+
+<a id="tablice"></a>
+## 8. Tablice, sortiranje i broj redaka
+
+### Napravite i uredite tablicu
+
+Odaberite **Tablica → Umetni tablicu** i unesite podatke u pripremljene ćelije. Prvi redak namijenite nazivima stupaca, primjerice „Naziv”, „Status” i „Rok”.
+
+Za izmjenu najprije kliknite ćeliju na odgovarajućem mjestu pa ponovno otvorite **Tablicu**:
+
+- **Umetni red iznad / ispod** i **Obriši red** djeluju na redak odabrane ćelije.
+- **Umetni stupac lijevo / desno** i **Obriši stupac** djeluju na njezin stupac.
+- **Spoji s ćelijom desno / ispod** spaja ćelije; **Podijeli ćeliju** razdvaja prethodno spojenu ćeliju.
+
+Tablicu koristite za podatke, a ne za slaganje izgleda stranice. Za raspored sadržaja postoje [stupci](#raspored).
+
+### Omogućite čitatelju sortiranje i listanje
+
+1. Kliknite ćeliju tablice.
 2. Otvorite **Tablica → Postavke tablice**.
-3. Uključite **Sortiranje i paginacija** i odaberite početni broj redaka: **10, 25, 50, 100 ili Sve**.
-4. Odaberite **Primijeni**, spremite i objavite stranicu.
+3. Uključite **Sortiranje i paginacija**.
+4. Odaberite **Početni broj redaka po stranici**: **10, 25, 50, 100 ili Sve**.
+5. Odaberite **Primijeni**, zatim spremite stranicu.
 
-Čitatelj klikom na naziv stupca sortira uzlazno, drugim klikom silazno, a trećim vraća početni redoslijed. Strelice pokazuju smjer. Čitatelj može promijeniti broj redaka i listati stranice bez promjene spremljenog sadržaja. U editoru se i dalje uređuju svi retci. Pri ispisu se prikazuju svi retci; kontrole rade i u HTML izvozu.
+<figure>
+<img src="images/page-edit-07-hr.jpg" alt="Postavke tablice s uključenim sortiranjem i paginacijom te početnim brojem 10 redaka po stranici." class="img-fluid" loading="lazy">
+<figcaption>Postavke vrijede za odabranu tablicu. Broj redaka poslije može promijeniti i čitatelj.</figcaption>
+</figure>
 
-Ovo uključujete zasebno za svaku tablicu. Nisu potrebne vanjske skripte ni DataTables. Tablica mora imati jedan redak zaglavlja, jednak broj ćelija u retcima te ne smije sadržavati spojene ćelije ni ugniježđene tablice. Složene tablice zadržavaju običan prikaz. Postojeće tablice ostaju obične dok ne uključite ovu postavku.
+**Rezultat:** u prikazu stranice čitatelj može kliknuti naslov stupca za uzlazni redoslijed, ponovno za silazni i treći put za izvorni redoslijed. Strelice pokazuju smjer. Iznad/uz tablicu bira broj redaka, a kontrolama za listanje mijenja stranicu. **Sve** prikazuje sve retke.
 
-## 7. Privitci, slike i izbornik Mediji
+Ovo uključujete **zasebno za svaku tablicu**. U editoru se i dalje uređuju svi retci; čitateljevo sortiranje ne mijenja spremljene podatke. Nije potrebno odabrati vanjsku skriptu. Kontrole rade i u HTML izvozu, a pri ispisu prikazuju se svi retci.
 
-1.  U odjeljku **Privitci** odaberite jednu ili više datoteka i kliknite **Učitaj** .
-2.  Za sliku ispunite smislen zamjenski tekst koji opisuje informaciju na slici. Ako je slika isključivo ukrasna, označite je na odgovarajući način umjesto ponavljanja okolnog teksta.
-3.  Postavite opis ili natpis kada čitatelju treba dodatno objašnjenje.
-4.  Postavite pokazivač u sadržaj i na kartici privitka kliknite **Umetni** .
-5.  Provjerite vidljivost privitka. Javno objavljena stranica ne smije se oslanjati na sliku koju gosti ne smiju otvoriti.
+Za ovu mogućnost tablica mora imati jedan redak zaglavlja, jednak broj ćelija u podatkovnim retcima te ne smije imati spojene ćelije ili tablicu unutar ćelije. Ako je složenija, zadržite običan prikaz ili razdvojite podatke u jednostavnije tablice.
 
-Kada je slika označena, izbornik **Mediji** nudi širine **25 %, 50 %, 75 % i 100 %** ; razmake **bez razmaka, mali, srednji i veliki** ; poravnanje **lijevo, sredina i desno** ; te **Resetiraj medij** , koji uklanja te postavke. Širina je prilagodljiva zaslonu. Za snimku sučelja obično je najbolje 100 %, a za malu ilustraciju 25–50 %.
+<figure>
+<img src="images/page-edit-08-hr.jpg" alt="Sortirana tablica u prikazu stranice s odabranih 10 redaka po stranici i drugom stranicom koja prikazuje retke 11 do 12 od ukupno 12." class="img-fluid" loading="lazy">
+<figcaption>Čitateljev prikaz: odabrano je 10 redaka po stranici, a na drugoj su stranici preostala dva retka, 11–12 od ukupno 12. Strelica u zaglavlju pokazuje sortiranje.</figcaption>
+</figure>
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/92d7fd98-eb88-43a6-bda0-e7f780643429.png" class="figure-img img-fluid rounded border mb-1" alt="Izbornik Mediji s opcijama širine, razmaka, poravnanja i resetiranja" /> <span class="figure-caption d-block">Izbornik Mediji djeluje na trenutačno odabranu sliku ili drugi medij. Ako se ništa ne promijeni, najprije kliknite baš na sliku, a ne na odlomak pokraj nje.</span> </span>
+<a id="privitci"></a>
+## 9. Učitajte sliku, video ili drugu datoteku
 
-### Ugrađeni iframe sadržaj
+1. Ispod sadržaja otvorite **Privitci**, odaberite **Dodaj privitak / Odaberi datoteke** i zatim **Učitaj**. Pričekajte završetak učitavanja.
+2. Uz datoteku unesite **Prikazni naziv**. To je naziv koji želite pokazati čitatelju; može biti razumljiviji od izvornog naziva datoteke.
+3. Za sliku unesite **Alternativni tekst**: kratak opis informacije koju slika prenosi. Primjer: „Raspored prostorija s označenim ulazom”, a ne samo „slika1.png”.
+4. **Caption** je kratki natpis uz umetnuti medij, a **Opis** služi dodatnom objašnjenju privitka. Odaberite **Spremi metapodatke**.
+5. Postavite pokazivač na željeno mjesto u sadržaju i uz privitak odaberite **Umetni**.
 
-Za H5P, Facebook i druge pouzdane servise otvorite **Umetni** i odaberite **Umetni ugrađeni sadržaj**. Zalijepite potpuni iframe blok koji je dao pružatelj ili unesite samo njegov HTTPS URL.
+**Rezultat:** slika ili video pojavljuju se u sadržaju, a druga datoteka kao poveznica za otvaranje/preuzimanje. Samo učitavanje privitka ne umeće ga automatski u tekst.
 
-1.  Upišite kratak **pristupačni naslov** koji opisuje sadržaj iframea.
-2.  Odredite visinu u pikselima i uključite prikaz preko cijelog zaslona samo kada ga pružatelj podržava.
-3.  Odaberite **Umetni**. Editor normalizira širinu na 100% raspoloživog prostora i zadržava samo podržane sigurnosne atribute.
+<figure>
+<img src="images/page-edit-10-hr.jpg" alt="Privitci sa slikom i tekstualnom datotekom te poljima prikaznog naziva, alternativnog teksta, natpisa i opisa." class="img-fluid" loading="lazy">
+<figcaption>Uz učitanu sliku unesite opisne podatke i spremite metapodatke. Gumb Umetni dodaje odabrani privitak u sadržaj.</figcaption>
+</figure>
 
-<span class="d-block w-100 overflow-hidden border rounded shadow-sm"><img src="images/40fdd927-ee49-402d-b056-b9accfc91916.png" class="img-fluid d-block w-100" alt="Dijalog za unos iframe koda s pristupačnim naslovom, visinom i prikazom preko cijelog zaslona" /><span class="figure-caption d-block">Dijalog prihvaća potpuni iframe blok ili HTTPS URL. Spremljeni sadržaj uvijek zauzima 100% raspoložive širine.</span></span>
+### Veličina, razmak i poravnanje medija
 
-<div class="alert alert-warning">
+Kliknite umetnutu sliku ili drugi medij i otvorite **Mediji**. Odaberite širinu **25 %, 50 %, 75 % ili 100 %**, razmak **bez razmaka, mali, srednji ili veliki** i poravnanje **lijevo, sredina ili desno**. **Resetiraj medij** vraća njegove postavke izgleda na početne vrijednosti.
 
-**Sigurnost:** ugrađujte samo sadržaj pružatelja kojima vjerujete. Proizvoljni JavaScript iz zalijepljenog koda ne sprema se niti izvršava. Skripte izdvojene iz uvoza postaju kandidati za administratorski pregled; sam poznati URL nije odobrenje. Izvršavaju se samo lokalno odobrene skripte koje su odabrane za tu stranicu. Za H5P resizer i slične integracije administrator najprije provjerava i odobrava točan kod ili URL.
+**Uredi alternativni tekst slike** mijenja opis odabrane slike. **Označi sliku kao ukrasnu** upotrijebite samo kada slika nema informacijsku ulogu, primjerice za ukrasni razdjelnik. Natpis uz sliku nije zamjena za alternativni tekst.
 
-</div>
+Za snimku sučelja obično je najčitljivija puna širina. Nakon izmjene pogledajte stranicu i u užem prozoru.
 
-Iframe bez JavaScripta, primjerice Facebookov ugrađeni post, radi izravno. Za promjenu postojećeg bloka odaberite ikonu olovke. Ako uvezeni Confluence HTML sadrži nepoznatu skriptu ili više iframeova u istom makrou, Simbioza ga ostavlja za ručni pregled.
+<figure>
+<img src="images/page-edit-09-hr.jpg" alt="Odabrana slika i otvoren cijeli izbornik Mediji s postavkama širine, razmaka, poravnanja i alternativnog teksta." class="img-fluid" loading="lazy">
+<figcaption>Najprije odaberite sliku, zatim u izborniku Mediji podesite njezin izgled i opis.</figcaption>
+</figure>
 
-### Vanjske skripte i upute uz njih
+### Popis i povijest privitaka
 
-Ako stranici treba dodatna funkcija koju je pripremio administrator, otvorite izbornik **Vanjske skripte** i označite odobrenu skriptu. Odabir se sprema s inačicom stranice. Mali **upitnik u kružiću** otvara uputu za korištenje kada ona postoji; samo čitanje upute ne uključuje skriptu. Uputa objašnjava treba li u izvornom HTML-u postaviti neki ID ili drugi podatak.
+**Vidljivost** u odjeljku privitaka određuje tko vidi **popis** privitaka: bez popisa, svi uključujući goste ili prijavljeni korisnici. To samo po sebi ne daje pravo pristupa privatnoj stranici ili datoteci.
 
-Ako skripte nema na popisu, obratite se administratoru. On u **Postavke → HTML editor → Vanjske skripte** priprema biblioteku, opcionalni CSS, dodatni kod i prevedene upute te daje odobrenje. Opozvana ili neodobrena skripta ne radi. Skripte se ne pokreću u editoru, nacrtu ili povijesti; provjerite ih u objavljenom prikazu. HTML izvoz uključuje samo odabrane i odobrene skripte: ugrađeni kod kao lokalnu datoteku, a udaljeni kao poveznicu. Udaljeni kod za rad i dalje treba mrežu.
+Uz privitak možete preuzeti datoteku, promijeniti metapodatke i, uz odgovarajuća prava, obrisati je. Ako je dostupna **Povijest datoteke**, ondje pregledajte prethodne inačice i po potrebi vratite odabranu. Uklanjanje slike iz teksta i brisanje privitka različite su radnje: brisanje datoteke može utjecati na mjesta koja je koriste.
 
-## 8. Provjera dokumenta, izvorni kod i cijeli ekran
+<a id="ugradjeni-sadrzaj"></a>
+## 10. Ugradite sadržaj drugog servisa
 
-### Provjera dokumenta
+Za sadržaj poput interaktivnog obrazovnog materijala ili videa koji pruža drugi servis otvorite **Umetni → Umetni ugrađeni sadržaj**.
 
-Provjera je završna kontrolna lista, a ne zamjena za čitanje. Otvorite rezultat, ispravite svaku prijavljenu stavku i kliknite **Ponovno provjeri** . Posebno provjerite zamjenske tekstove slika, redoslijed naslova i interne poveznice. Poruka *Nema pronađenih problema* znači da automatska pravila prolaze; i dalje pročitajte stranicu u Pregledu.
+1. Zalijepite njegov **Iframe kôd ili HTTPS URL** koji je pripremio pružatelj.
+2. Unesite **Pristupačni naslov**, primjerice „Vježba: prepoznajte geometrijske likove”.
+3. Podesite **Visinu** i, ako je potrebno, **Dopusti prikaz preko cijelog zaslona**.
+4. Odaberite **Umetni**, spremite i provjerite stranicu. Za kasnije promjene koristite olovku uz blok.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/a53026ae-b3ab-4fe8-affe-96868f4323b5.png" class="figure-img img-fluid rounded border mb-1" alt="Uspješna provjera dokumenta bez pronađenih problema" /> <span class="figure-caption d-block">Uspješna provjera nakon popravka naslova, slika i poveznica. Provjeru ponovite nakon naknadnih promjena sadržaja.</span> </span>
+Ako se sadržaj ne prikazuje, pružatelj možda ne dopušta ugrađivanje ili traži dodatnu prijavu. Ako je potrebna dodatna skripta, zamolite administratora da pripremi podržanu integraciju; nemojte samostalno lijepiti nepoznati programski kod.
 
-### Izvorni kod
+<a id="grafikon"></a>
+## 11. Grafikon za usporedbu brojčanih podataka
 
-**Izvorni kod** prikazuje HTML. Namijenjen je naprednim urednicima za precizan pregled ili popravak oznaka. Ne lijepite skripte, stilove ni kod iz neprovjerenih izvora; sustav dio nedopuštenog sadržaja može ukloniti pri spremanju. Nakon ručne promjene vratite vizualni prikaz i pokrenite provjeru dokumenta.
+1. Odaberite **Dinamički elementi → Umetni grafikon**.
+2. Izaberite vrstu: **Stupčasti, Linijski, Površinski, Kružni ili Prstenasti**. Za usporedbu broja sudionika po mjesecima prikladan je stupčasti grafikon.
+3. Unesite naslov, kategorije i brojčane vrijednosti. **Dodaj kategoriju** dodaje novu skupinu, a **Dodaj seriju** drugi niz vrijednosti, primjerice drugu godinu.
+4. Po potrebi dodajte nazive osi i opis, uključite legendu te podesite orijentaciju, izgled, širinu i poravnanje. Pozadina može pratiti temu.
+5. Odaberite **Umetni grafikon** i provjerite rezultat u prikazu stranice.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/8648073b-3b2b-40ed-b1b2-f21c7eb188a2.png" class="figure-img img-fluid rounded border mb-1" alt="HTML editor u načinu prikaza izvornog koda" /> <span class="figure-caption d-block">Izvorni kod prikazuje strukturu trenutačne jezične inačice. Ne mijenjajte atribute dinamičkih blokova ako ne znate njihovu ulogu.</span> </span>
+**Rezultat:** uneseni brojevi prikazuju se kao grafikon. Podaci se ne dohvaćaju automatski iz ankete ili druge tablice. Za promjenu brojeva ili izgleda kliknite olovku uz grafikon; u njegovim postavkama možete ga i ukloniti.
 
-### Cijeli ekran
+<figure>
+<img src="images/page-edit-11-hr.jpg" alt="Postavke grafikona s tri kategorije, njihovim brojčanim vrijednostima i pregledom stupčastog grafikona." class="img-fluid" loading="lazy">
+<figcaption>Primjer grafikona s tri kategorije. Dok mijenjate vrijednosti i izgled, pregled pokazuje njihov učinak.</figcaption>
+</figure>
 
-**Cijeli ekran** ostavlja alatnu traku i sadržaj, a skriva podatke dokumenta kako bi što više prostora ostalo za uređivanje. Navigacija projekta ostaje vidljiva samo ako je tema projekta postavljena kao ljepljiva. Ponovnim klikom na istu ikonu vraćate se u običan prikaz. Spremanje i objava ponovno su dostupni izvan cijelog ekrana.
+<a id="vremenski-plan"></a>
+## 12. Vremenski plan za raspored aktivnosti
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/7f323695-4e29-447a-9187-831b98ab73e6.png" class="figure-img img-fluid rounded border mb-1" alt="Cijeli ekran s vidljivom alatnom trakom i sadržajem bez podataka dokumenta" /> <span class="figure-caption d-block">Ispravan puni prikaz: alatna traka ostaje dostupna, a prostor iznad nje ne zauzimaju naslov, slug ni gumbi dokumenta.</span> </span>
+1. Odaberite **Dinamički elementi → Umetni vremenski plan**.
+2. Unesite naslov te početak i završetak razdoblja koje prikazujete.
+3. Odaberite mjerilo vremena: **Dani, Tjedni, Mjeseci ili Tromjesečja**.
+4. Dodajte grupu, primjerice „Priprema događaja”, i u nju aktivnosti s datumima početka i završetka. Po potrebi dodajte druge grupe i oznake važnih datuma.
+5. Odaberite **Umetni vremenski plan** i provjerite jesu li sve aktivnosti unutar zadanog razdoblja.
 
-## 9. Dinamički elementi
+**Rezultat:** na stranici se vidi kada pojedina aktivnost počinje i završava. To je prikaz plana koji ste unijeli, a ne automatski kalendar ni sustav slanja podsjetnika. Olovkom uz blok ponovno otvorite njegove postavke.
 
-Dinamički element u editoru izgleda kao označeni blok ili sažetak postavki, a u Pregledu se pretvara u podatke i interaktivne kontrole. Nakon umetanja obvezno otvorite Pregled. Rezultat ovisi o pravima trenutačnog čitatelja; administrator često vidi više od običnog korisnika.
+<figure>
+<img src="images/page-edit-12-hr.jpg" alt="Postavke vremenskog plana s razdobljem, tjednim mjerilom i dvjema aktivnostima u jednoj grupi." class="img-fluid" loading="lazy">
+<figcaption>Primjer vremenskog plana: jedna grupa s dvije aktivnosti i zasebnim datumima početka i završetka.</figcaption>
+</figure>
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/b6f18cf4-3501-4c60-9ea4-ec0e259323ea.png" class="figure-img img-fluid rounded border mb-1" alt="Izbornik Dinamički elementi sa sedam vrsta sadržaja" /> <span class="figure-caption d-block">Izbornik sadrži tabove, grafikon, vremenski plan, popis zadataka, dinamički sadržaj, uključeni sadržaj stranice i kalendar. Svaka stavka otvara zaseban obrazac.</span> </span>
+<a id="integracije"></a>
+## 13. Prikažite podatke iz drugih dijelova Simbioze
 
-### 9.1. Tabovi
+Ove stavke izbornika **Dinamički elementi** ovise o instaliranim modulima. Ako ih nema, provjerite s administratorom jesu li dostupne na vašoj instalaciji.
 
-Tabovi prikazuju više kraćih cjelina na istom mjestu. Dodajte naziv svakog taba i njegov sadržaj, gumbom **+** dodajte sljedeći, a **Ukloni** briše odabrani. Nazivi moraju biti kratki i međusobno razlikovni. Ne skrivajte ključne upute u posljednjem tabu jer čitatelj možda neće primijetiti da postoji; za dugačak ili obvezan redoslijed koristite naslove umjesto tabova.
+| Mogućnost | Što napraviti | Što čitatelj dobiva |
+| --- | --- | --- |
+| **Umetni popis zadataka** | Upišite naslov i zadatke, svaki u zaseban redak. Odaberite popis ili tablicu te tko smije mijenjati status. | Zadatke sa statusima, prema pravima koja ste odabrali. |
+| **Umetni kalendar** | Odaberite jedan ili više ponuđenih kalendara, naslov, mjesečni/tjedni/dnevni prikaz te trenutačni ili zadani datum. | Događaje kalendara koje čitatelj smije vidjeti. Prava kalendara ne mijenjaju se umetanjem. |
+| **Uključi sadržaj stranice** | Pronađite područje i stranicu pretragom; po potrebi odaberite **Učitaj još** i potvrdite. | Sadržaj izabrane stranice bez ručnog održavanja druge kopije; pristup se provjerava i za čitatelja. |
+| **Umetni dinamički sadržaj** | Odaberite tablicu stranica i svojstava, galeriju privitaka, pretragu područja ili nedavne promjene. Podesite područja, naslov, filtere i broj stavki. | Ažuran pregled iz dostupnih stranica i njihovih podataka. |
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/d6f5e463-2ec8-4ea5-9c30-406470d43a2d.png" class="figure-img img-fluid rounded border mb-1" alt="Modal za unos više tabova s naslovima i sadržajem" /> <span class="figure-caption d-block">U primjeru se svi tabovi pripremaju u jednom obrascu. Prije umetanja provjerite da svaki ima naslov i smislen sadržaj.</span> </span>
+Za promjenu postavki koristite olovku uz umetnuti blok. U editoru se dio tih sadržaja prikazuje kao okvir sa sažetkom postavki. Konačan izgled provjerite nakon spremanja u prikazu stranice.
 
-### 9.2. Grafikon
+### Svojstva za tablicu stranica
 
-Grafikon pretvara numeričke podatke u vizualnu usporedbu. Unesite jasan naslov, odaberite vrstu grafikona, nazive kategorija i brojčane vrijednosti. Dodajte serije kada uspoređujete više skupova. Stupčasti grafikon prikladan je za usporedbu kategorija, linijski za promjenu kroz vrijeme, a kružni samo za mali broj dijelova jedne cjeline. Vrijednosti unosite dosljednom jedinicom i u okolnom tekstu napišite zaključak kako informacija ne bi ovisila samo o slici.
+Ako želite pregled projekata sa stupcima poput „Status” i „Rok”, najprije na izvornim stranicama unesite jednako nazvana svojstva i njihove vrijednosti. Zatim u dinamičkom bloku odaberite **Tablica stranica i svojstava** i ta svojstva upišite kao stupce. Ne pojavljuju li se podaci, provjerite točan naziv svojstva, odabrana područja, filter oznaka i prava čitanja izvornih stranica. Više o svojstvima i postavkama pročitajte u [Područjima](podrucja_hr.md).
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/a9aca03e-815b-4c00-9e2a-4bac8cff10d9.png" class="figure-img img-fluid rounded border mb-1" alt="Popunjeni modal grafikona s vrstom, kategorijama i serijama podataka" /> <span class="figure-caption d-block">Primjer prikazuje popunjene kategorije i vrijednosti prije umetanja. Ne ostavljajte ogledne oznake; provjerite da broj vrijednosti odgovara broju kategorija.</span> </span>
+### Vanjske skripte koje je pripremio administrator
 
-### 9.3. Vremenski plan
+1. Otvorite **Vanjske skripte**.
+2. Ako uz skriptu postoji **? u kružiću**, kliknite ga i pročitajte uputu. Upitnik se prikazuje samo kada je uputa pripremljena; njegovo otvaranje ne uključuje skriptu.
+3. Označite skriptu koju trebate i spremite stranicu. Odabir se čuva s inačicom sadržaja.
 
-Vremenski plan prikazuje aktivnosti po datumima. Zadajte početak i kraj prikaza, mjerilo, grupe, aktivnosti i prekretnice. Aktivnost ima naziv, početni i završni datum te pripadajuću grupu; prekretnica označava važan trenutak bez trajanja. Raspon neka bude dovoljno uzak da se stavke mogu pročitati. Datume redovito održavajte: vremenski plan je statička konfiguracija u sadržaju i neće sam promijeniti projektne rokove iz drugog sustava.
+Na popisu su samo odobrene skripte. Ako uputa traži izmjenu izvornog HTML-a koju ne znate napraviti, zamolite administratora ili iskusnijeg urednika da pripremi primjer za vašu stranicu. **Za ugrađeno sortiranje i listanje tablica ne trebate vanjsku skriptu.**
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/cc1d2344-8c6d-4215-95d1-e37a493a72cc.png" class="figure-img img-fluid rounded border mb-1" alt="Modal vremenskog plana s grupama, aktivnostima, prekretnicama i mjerilom" /> <span class="figure-caption d-block">Grupe odvajaju tokove rada, aktivnosti imaju trajanje, a prekretnice jedan datum. U Pregledu provjerite preklapaju li se nazivi.</span> </span>
+Skripte se provjeravaju na objavljenoj stranici; ne izvršavaju se u editoru, nacrtu ni povijesti. Opozvana skripta prestaje raditi. HTML izvoz uključuje odabrane i odobrene skripte, a udaljene skripte i dalje trebaju mrežnu vezu.
 
-### 9.4. Popis zadataka
+<a id="spremanje"></a>
+## 14. Spremite rad, provjerite ga i objavite
 
-Popis zadataka omogućuje označavanje dovršenih stavki. Unesite naslov i zadatke, a zatim odaberite tko smije mijenjati stanje. Opseg za urednike prikladan je za internu kontrolnu listu; opseg za prijavljene čitatelje omogućuje širem krugu korisnika označavanje stavki. Anonimni posjetitelji ne dobivaju trajno osobno stanje. Promjene zadataka bilježe se uz korisnika kada je to moguće, pa popis nemojte koristiti za osjetljive osobne ili kadrovske podatke.
+| Radnja | Što znači |
+| --- | --- |
+| **Spremi** | Sprema promjene kao nacrt. U području postojeća objavljena inačica ostaje vidljiva čitateljima. |
+| **Spremi i pošalji na pregled** | Sprema nacrt i šalje ga osobi koja ima pravo objave. Koristite je kada je sadržaj spreman, a ne objavljujete ga sami. |
+| **Spremi i objavi** | Uz pravo uređivanja i objave sprema sadržaj i odmah ga objavljuje. |
+| **Odustani** | Napušta uređivanje; ako postoje nespremljene promjene, pratite poruku prije izlaska. |
 
-Za ACL primjer ista stranica sadrži urednički i čitateljski popis. Korisnik s pravom samo Pregled vidi prvi zaključan, a drugi može označavati. Time se provjerava stvarno ponašanje, a ne samo administratorski prikaz.
+Radnje slanja na pregled i objave odnose se na stranice u područjima. Samostalne HTML stranice nemaju taj isti tijek pregleda područja: spremanje mijenja njihov vlastiti sadržaj.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/fe472484-ef0c-4b49-9da4-aa082c33c170.png" class="figure-img img-fluid rounded border mb-1" alt="Modal popisa zadataka s više stavki i odabirom ovlaštenih korisnika" /> <span class="figure-caption d-block">Odabir prava na izmjenu važniji je od samog izgleda popisa. Nakon objave testirajte ga korisnikom koji ima samo pravo čitanja.</span> </span>
+### Provjera prije objave
 
-### 9.5. Dinamički sadržaj
+1. Odaberite **Provjeri dokument** u alatnoj traci.
+2. Ispravite prijavljene probleme, primjerice prazan naslov, preskočenu razinu naslova, sliku bez alternativnog teksta ili tablicu bez zaglavlja.
+3. Odaberite **Ponovno provjeri**. Provjera pomaže, ali ne može ocijeniti je li tekst razumljiv ili jesu li svi podaci točni.
+4. Spremite promjene i otvorite **Pregled**. Provjerite koju inačicu i jezik gledate. Za provjeru neobjavljenih promjena u području odaberite **Pregledaj nacrt**; obični čitateljski prikaz objavljene stranice ne zamjenjuje se samim spremanjem nacrta.
+5. Otvorite poveznice, tabove i sklopive dijelove; provjerite slike i podatke te raspored na užem prozoru.
+6. Objavite ili pošaljite na pregled. Nakon objave ponovno otvorite stranicu kao čitatelj.
 
-Dinamički sadržaj se osvježava prema trenutačnom stanju područja. Dostupne su četiri vrste:
+**Lokalni nacrt** koji editor može ponuditi nakon prekida rada spremljen je samo u tom pregledniku. To nije zamjena za **Spremi**. Ako drugi urednik u međuvremenu promijeni zajednički nacrt, usporedite ponuđene verzije prije vraćanja svojih promjena.
 
-- **Tablica stranica i svojstava** pronalazi stranice prema području, oznakama ili drugim kriterijima te prikazuje odabrane stupce svojstava. Koristi se za katalog projekata, imenik ili evidenciju rokova. Nazivi svojstava moraju biti dosljedni na svim uključenim stranicama.
-- **Galerija privitaka** prikazuje slike ili datoteke povezane sa stranicama. Vidljivost svakog privitka i pravo čitanja izvorne stranice i dalje se provjeravaju.
-- **Pretraga područja** umeće tražilicu ograničenu na područje. Rezultati uključuju samo stranice koje trenutni korisnik smije vidjeti.
-- **Nedavne promjene** prikazuju novije izmjene i pomažu pratiti aktivnost. Broj stavki i obuhvat držite razumnima kako popis ne bi potisnuo glavni sadržaj.
+**Odbaci zajednički nacrt** uklanja neobjavljene zajedničke promjene i vraća zadnju objavljenu inačicu. Prije potvrde uskladite se s drugim urednicima. Ako nova stranica **nikada nije bila objavljena**, odbacivanje nacrta može je trajno obrisati; pročitajte potvrdu prije nastavka.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/c71a010a-e7c1-48cd-af59-2508211cd78c.png" class="figure-img img-fluid rounded border mb-1" alt="Modal dinamičkog sadržaja s vrstama tablice, galerije, pretrage i nedavnih promjena" /> <span class="figure-caption d-block">Najprije odaberite vrstu, zatim ispunite postavke koje se pojave. Prazan rezultat u Pregledu najčešće znači da nijedna stranica ne odgovara filtru ili da korisnik nema pravo čitanja.</span> </span>
+U prikazu stranice možete vidjeti i **Pošalji na pregled**, **Vrati u nacrt** ili **Objavi**, ovisno o statusu i pravima. Objavljivač može objaviti nacrt i izravno, bez prethodnog slanja na pregled. Ako imate samo pravo objave, otvorite **Pregledaj nacrt**, provjerite sadržaj i jezik pa u traci stranice odaberite **Objavi**; samo to pravo ne daje i uređivanje teksta. Arhiviranu stranicu treba vratiti u nacrt i ponovno objaviti prije nego što postane dostupna čitateljima.
 
-### 9.6. Uključi sadržaj stranice
+<a id="jezici-povijest"></a>
+## 15. Prijevodi i povrat starijeg sadržaja
 
-Ovaj blok prikazuje sadržaj druge stranice bez kopiranja. Odaberite područje i stranicu. Kasnija promjena izvora automatski se vidi na svim mjestima uključivanja, pa je to dobro za zajedničku kontaktnu informaciju ili standardnu napomenu. Izbjegavajte kružno uključivanje i duboke lance. Korisnik mora imati pravo vidjeti uključenu stranicu; u suprotnom dobiva sigurnu zamjensku poruku, a ne skriveni sadržaj.
+### Drugi jezik stranice
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/eedf4e52-ab99-43d9-9a88-6035eac71a85.png" class="figure-img img-fluid rounded border mb-1" alt="Modal za odabir područja i stranice čiji se sadržaj uključuje" /> <span class="figure-caption d-block">U editoru se vidi oznaka uključene stranice, dok se pravi sadržaj dohvaća u Pregledu uz provjeru prava trenutačnog korisnika.</span> </span>
+1. U **Jeziku dokumenta** odaberite jezik koji želite uređivati. Ponuđeni su jezici instalirani i omogućeni u aplikaciji.
+2. U izborniku uz **Naslov** provjerite i naslov na tom jeziku.
+3. Preko **Prijevodi → Kopiraj prijevod** možete kopirati postojeći sadržaj kao početak. Odaberite izvorni i ciljni jezik te **Kopiraj za prijevod**.
+4. Prevedite tekst, naslove tabova, natpise i opise slika; provjerite i objavite tu jezičnu inačicu.
 
-### 9.7. Kalendar
+**Kopiranje ne prevodi tekst automatski.** Postojeći ciljni prijevod zamjenjuje se novom inačicom. Nije potrebno prevoditi stranicu na svaki ponuđeni jezik; objavite samo jezike za koje imate pripremljen sadržaj.
 
-Odaberite kalendar koji smijete koristiti, vrstu prikaza i početno razdoblje. Mjesečni prikaz daje pregled datuma, a popisni prikaz bolje odgovara slijedu događaja. Fiksni početni mjesec upotrebljavajte samo kada stranica opisuje određeno razdoblje; za trajnu stranicu obično je bolji aktualni datum.
+### Povijest
 
-Pravo na stranicu ne daje automatski pravo na kalendar. Ako čitatelj smije vidjeti stranicu, ali nema pravo na ugrađeni kalendar, Simbioza ne otkriva događaje nego prikazuje obavijest da kalendar nije dostupan. U primjeru su namjerno ugrađeni jedan dopušteni i jedan uskraćeni kalendar kako bi se ta razlika mogla provjeriti.
+Otvorite **Povijest**. Uz raniju inačicu odaberite **Pregled** kako biste je prvo pročitali. Ako želite vratiti njezin sadržaj, odaberite **Vrati** i pratite potvrdu. Nakon povrata provjerite aktualni nacrt i provedite objavu ako je potrebna. **Poništi** i **Ponovi** u alatnoj traci služe običnim promjenama teksta u trenutačnom uređivanju. Ne obuhvaćaju sve promjene postavki medija i posebnih blokova, pa se za njihov povrat nemojte oslanjati na te gumbe. Prije većih izmjena odaberite **Spremi**; povijest čuva spremljene inačice.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/4d315daf-a757-4ea8-a020-8adcdbddce88.png" class="figure-img img-fluid rounded border mb-1" alt="Modal kalendara s odabirom kalendara, prikaza i razdoblja" /> <span class="figure-caption d-block">Umetnite kalendar, objavite nacrt i pregledajte stranicu i kao običan čitatelj. Administratorski prikaz ne može potvrditi da je ograničenje ispravno.</span> </span>
+<a id="prava-stranice"></a>
+## 16. Tko vidi i uređuje stranicu
 
-## 10. Svojstva stranice
+Većina stranica nasljeđuje prava svojeg područja. Za običan unos i promjenu teksta dovoljno je imati odgovarajuća prava; ne trebate sami mijenjati postavke pristupa. Nacrt bez objavljene inačice dostupan je odgovarajućim urednicima, objavljivačima i upraviteljima, a ne običnim čitateljima. U stablu i statusu stranice označeno je da je riječ o nacrtu.
 
-Svojstvo je strukturirani podatak vezan uz stranicu. Za razliku od teksta u članku, svojstvo ima stalni naziv i vrstu pa ga dinamička tablica može filtrirati, sortirati i prikazati kao stupac. Primjerice, stranice projekata mogu imati `status` , `owner` , `budget` i `due_date` .
+Ako imate ovlasti za to, otvorite **Upravljaj stranicom i dozvolama** u njezinoj gornjoj traci radnji. Ondje razlikujte:
 
-Otvorite **Postavke stavke stabla/stranice** . U odjeljku **Svojstva stranice** unesite naziv, vrstu i vrijednost. Gumbom **+** dodajte više redaka, uredite postojeće vrijednosti i kliknite **Ukloni** za svojstvo koje više ne želite. Sve promjene zatim spremite zajedno gumbom **Spremi stavku** ; nije potrebno zatvarati dijalog nakon svakog retka.
+- **Ograničenja naslijeđenih prava:** dodatno ograničavaju postojeća prava na toj stranici i podređenim stranicama. Ne služe dodavanju osobe koja prije nije imala pristup.
+- **Izravna dopuštenja korisnicima i grupama:** iznimke za odabranu stranicu. Možete odabrati korisnike ili grupe; pojedina iznimka ne otvara automatski ostale stranice područja ni podstranice.
 
-- **text** : kratak slobodan tekst, npr. kontakt ili oznaka odjela.
-- **status** : kontrolirana poslovna oznaka, npr. U pripremi, U tijeku ili Završeno. Iste statuse pišite jednako na svim stranicama.
-- **number** : broj za izračun, sortiranje ili usporedbu; ne upisujte valutu ni razmake u brojčanu vrijednost.
-- **date** : datum u zadanom formatu, prikladan za rokove i vremensko filtriranje.
-- **user** : korisnička oznaka postojećeg korisnika, korisna za vlasnika ili odgovornu osobu.
-- **link** : potpuna adresa s `https://` . Tekstualno objasnite kamo poveznica vodi.
+U pretraživom odabiru najprije otvorite popis korisnika ili grupa, pronađite primatelja i dodajte ga. Ako popis ima više rezultata, pretražite ga ili učitajte sljedeće ponuđene stavke. Provjerite **Čitanje**, **Uređivanje** i **Objavljivanje** pa odaberite **Spremi izravna dopuštenja**. Uređivanje i objavljivanje uključuju čitanje; samo objavljivanje ne uključuje uređivanje. Zaseban odjeljak ograničenja odnosi se na pojedine korisnike koji već imaju naslijeđena prava, a ne na cijele grupe.
 
-**Oznake stranice** odvajaju se zarezom i služe za grupiranje i filtre, primjerice `portfolio, active, 2026` . Oznake nisu zamjena za svojstva s vrijednošću: oznaka govori da stranica pripada skupini, a svojstvo nosi podatak koji se prikazuje u vlastitom stupcu.
+Publika **Javno** daje pravo čitanja, uključujući gostima. Ne može dati pravo uređivanja ili objavljivanja. Tako i pojedina objavljena stranica u privatnom području može biti javna; ostatak privatnog sadržaja ostaje zaštićen. Time se nacrt ne objavljuje. Područje se tada može pojaviti u popisu dostupnih područja, ali čitatelj u stablu vidi samo ono čemu smije pristupiti.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/4001644d-182a-4b37-b966-bd6e12381af4.png" class="figure-img img-fluid rounded border mb-1" alt="Postavke stavke stabla i stranice s oznakama i više svojstava" /> <span class="figure-caption d-block">Više svojstava dodaje se i uređuje u istom dijalogu. U primjeru se pripremaju podaci za tablicu projekata; gumb Ukloni briše samo odgovarajući red nakon spremanja stavke.</span> </span>
+<figure>
+<img src="images/page-edit-13-hr.jpg" alt="Izravna dopuštenja: Ana ima čitanje, grupa Urednici čitanje i uređivanje, a publika Javno samo čitanje." class="img-fluid" loading="lazy">
+<figcaption>Primjer izravnih dopuštenja za jednu stranicu: korisnik, grupa i publika Javno imaju različita prava.</figcaption>
+</figure>
 
-### Tablica stranica i svojstava
+Promjena prava može otvoriti sadržaj drugima. Ako niste sigurni, zamolite administratora ili upravitelja područja da to podesi. Nakon promjene zamolite osobu kojoj je pristup namijenjen da otvori stranicu; administratorski prikaz nije dokaz da je pristup dobro postavljen za ostale. Za podrobnije objašnjenje pogledajte [prava u Područjima](podrucja_hr.md).
 
-Za izvještaj umetnite **Dinamički sadržaj → Tablica stranica i svojstava** , odaberite područje, filter oznaka i stupce. Primjer s projektima Orion i Luna prikazuje status, odgovornu osobu, proračun, rok, kontakt i poveznicu. Nova stranica s istim svojstvima automatski ulazi u tablicu ako zadovoljava filter; nije potrebno ručno mijenjati stranicu izvještaja.
+<a id="radnje-stranice"></a>
+## 17. Ostale radnje na stranici
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/fb305a97-511a-4370-8e90-4d0705508a4f.png" class="figure-img img-fluid rounded border mb-1" alt="Objavljeni prikaz tablice svojstava, pretrage područja i zadataka" /> <span class="figure-caption d-block">Objavljeni dinamički prikaz spaja strukturirana svojstva i ostale blokove. Ako vrijednost nedostaje samo u jednom retku, provjerite naziv i vrstu svojstva na toj izvornoj stranici.</span> </span>
+Gornja traka objavljene stranice prikazuje samo radnje koje su dostupne u vašoj instalaciji i za vaš račun. Zadržite pokazivač na ikoni kako biste pročitali naziv.
 
-## 11. Prava na stranici: nasljeđivanje i izravno dopuštenje
+<figure>
+<img src="images/page-edit-14-hr.jpg" alt="Vrh objavljene stranice s njezinom trakom radnji." class="img-fluid" loading="lazy">
+<figcaption>Radnje na objavljenoj stranici: ponuđene ikone ovise o vašim pravima i uključenim mogućnostima.</figcaption>
+</figure>
 
-Prava područja temelj su pristupa. Postavke pojedine stavke nude dva posebna mehanizma, koji nisu isto:
+- **Prikaži privitke / Sakrij privitke** otvara ili zatvara popis datoteka uz stranicu. **Prikaži sadržaj / Sakrij sadržaj** prikazuje ili skriva popis naslova na stranici.
+- **Povijest** otvara spremljene inačice, a izbornik sa zastavicom bira postojeći prijevod.
+- **Kopiraj ili premjesti stranicu** dostupno je upraviteljima područja. Odaberite kopiranje ili premještanje, ciljno područje i roditelja te želite li prenijeti povijest i izravna dopuštenja/ograničenja. Sadržaj, prijevodi i privitci prenose se zajedno. Kopija ostavlja izvor na mjestu; premještanje ga uklanja nakon uspješnog prijenosa. Kopira se samo odabrana stranica; premještanje stranice s podstranicama nije dostupno. Nakon postupka provjerite prava odredišta.
+- **Izvezi stranicu u HTML** preuzima ZIP s datotekom `index.html` i povezanim lokalnim datotekama. Raspakirajte ga prije otvaranja HTML datoteke. Za stranicu područja izvozi se objavljena inačica, a ne neobjavljeni nacrt. To nije sigurnosna kopija za povrat cijelog područja.
+- Za PDF otvorite preglednikov **Ispis → Spremi kao PDF**. Prije spremanja provjerite pregled ispisa i raspored sadržaja.
+- **Obriši stranicu i podgranu** uklanja i podstranice; pažljivo pročitajte potvrdu. Objavljene stranice brišu se uz mogućnost oporavka, ali brisanje novog, nikad objavljenog dokumenta kroz editor može biti trajno. Za oporavak pitajte administratora; nemojte pretpostaviti da se svako brisanje može poništiti.
+- Ako su uključeni, **Prati** i komentari služe praćenju promjena i raspravi uz stranicu.
 
-### Ograničenja naslijeđenih prava
+**Izvorni kod** u editoru prikazuje HTML i namijenjen je iskusnijim urednicima. Za opisane postupke nije potreban. **Cijeli ekran** daje više prostora sadržaju; istom se ikonom vratite na podatke dokumenta i gumbe spremanja.
 
-Ograničenje korisniku oduzima pravo koje već ima preko područja ili grupe. Vrijedi na odabranoj stranici i njezinim podređenim stranicama. Njime nije moguće dodijeliti novo pravo. U tablici odaberite korisnika i isključite samo prava koja treba uskratiti; uklanjanje korisnika iz tablice vraća njegova puna naslijeđena prava.
+<a id="pomoc"></a>
+## 18. Ako nešto ne izgleda kako očekujete
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/a095c22e-ae99-4dce-a01c-0512e3c67e86.png" class="figure-img img-fluid rounded border mb-1" alt="Ograničavanje naslijeđenih prava korisnika na stranici i podstablu" /> <span class="figure-caption d-block">Legenda razlikuje zadržano pravo, uskraćeno pravo i pravo koje korisnik uopće nije naslijedio. Ograničenje se uvijek primjenjuje na korisnika, ne na cijelu grupu.</span> </span>
+| Što vidite | Što napraviti |
+| --- | --- |
+| Nema gumba za uređivanje ili objavu. | Provjerite račun i područje. Zamolite upravitelja ili administratora da provjeri vaša prava. |
+| Uredili ste tekst, a čitatelj još vidi staru stranicu. | Spremite nacrt i provjerite treba li ga još objaviti. Provjerite i jezik. |
+| Naredba za tablicu ili sliku ne djeluje. | Najprije kliknite ćeliju tablice ili označite baš sliku, zatim ponovite radnju. |
+| Padajući sadržaj u editoru je stalno otvoren. | To je prikaz za uređivanje. Početno stanje provjerite u prikazu stranice. |
+| Tabovi ili accordion imaju naslov, ali nemaju tekst. | Nakon umetanja treba u glavnom editoru popuniti tijelo svakog dijela. |
+| Ne vidite sortiranje i broj redaka. | Uključite ih u **Postavkama te tablice**, provjerite ima li jednostavno zaglavlje i pogledajte spremljenu stranicu. |
+| Privitak je učitan, ali nije u tekstu. | Postavite pokazivač u tekst pa na privitku odaberite **Umetni**. |
+| Kalendar, uključena stranica ili dinamički popis vidljiv je vama, ali ne čitatelju. | Provjerite čitateljeva prava i na izvornom sadržaju. Umetanje ne otvara privatne podatke. |
+| Skripta nije ponuđena ili ne radi. | Pročitajte njezinu uputu i provjerite objavljeni prikaz. Odobravanje i pripremu rješava administrator. |
+| Nakon lijepljenja tekst izgleda neujednačeno. | Primijenite **Ukloni formatiranje** pa ponovno postavite naslove i popise. |
+| Poništi ne vraća promijenjenu širinu slike ili druge postavke bloka. | Te postavke vratite kroz njihov izbornik. Prije većih zahvata spremite rad. Za odbacivanje nespremljenih promjena odaberite **Odustani**; već spremljene promjene ostaju spremljene. |
 
-### Izravna dopuštenja
-
-Izravno dopuštenje daje korisniku pristup samo toj jednoj stranici i ne prenosi se na podređene stranice. Korisnik bez prava na cijelo područje tada u stablu vidi samo izravno dopuštene stranice. Možete dopustiti Čitanje, Uređivanje ili Objavljivanje; uređivanje i objavljivanje uključuju čitanje. Možete dodati **korisnike i grupe**, uključujući javnu skupinu **Svi** kada stranica treba biti javna i u privatnom području. Iznimka otvara samo dopuštenu stranicu; ostale privatne stranice i sadržaj roditelja ostaju skriveni. Područje je u popisu vidljivo kada u njemu postoji stranica dostupna tom posjetitelju. Koristite iznimke promišljeno i provjerite konačan prikaz kao ciljani korisnik ili gost.
-
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/b2e6bcd7-16d3-4b77-b13b-cb5b9b3dde43.png" class="figure-img img-fluid rounded border mb-1" alt="Izravna dopuštenja korisniku samo za jednu stranicu" /> <span class="figure-caption d-block">Izravno dopuštenje je iznimka za jednu stranicu. Nakon spremanja provjerite rezultat preuzimanjem tog korisnika ili namjenskim testnim računom.</span> </span>
-
-### Kako testirati ACL
-
-1.  Spremite prava i objavite stranicu.
-2.  Provjerite kao administrator da je sadržaj tehnički ispravan.
-3.  Prijavite se ili preuzmite korisnika sa samo čitanjem. Provjerite stablo, uključene stranice, oba kalendara i oba popisa zadataka.
-4.  Provjerite korisnika s izravnim dopuštenjem i potvrdite da ne vidi ostatak područja.
-5.  Vratite administratorsku sesiju. Ne zaključujte prema administratorskom prikazu jer administrator po definiciji zaobilazi velik dio ograničenja.
-
-## 12. Preporučeni radni postupak
-
-1.  Odaberite pravo područje i stvorite stranicu u odgovarajućem dijelu stabla.
-2.  Unesite naslov i provjerite slug. Dodajte drugu jezičnu inačicu naslova.
-3.  Pišite u kratkim odlomcima, koristite pravilnu hijerarhiju naslova i opisne poveznice.
-4.  Učitajte privitke, unesite zamjenske tekstove i tek ih zatim umetnite.
-5.  Dodajte svojstva i oznake prije izrade dinamičke tablice.
-6.  Umetnite dinamičke elemente i spremite nacrt.
-7.  Pokrenite Provjeru dokumenta te ispravite sve nalaze.
-8.  Otvorite Pregled na oba jezika i na uskom i širokom zaslonu.
-9.  Ako stranica sadrži ograničene kalendare, zadatke ili uključeni sadržaj, testirajte barem jednog običnog čitatelja.
-10. Kada je sve provjereno, odaberite Spremi i objavi. Nakon objave ponovno otvorite javni prikaz.
-
-## 13. Česte pogreške i rješenja
-
-- **Promjena se ne vidi u Pregledu:** sadržaj je spremljen samo kao nacrt. Objavite ga ili provjerite gledate li isti jezik dokumenta.
-- **Engleska stranica ima hrvatski naslov:** promijenjen je jezik dokumenta, ali nije prijevod naslova. Otvorite izbornik uz Naslov i unesite EN naslov.
-- **Dinamička tablica je prazna:** provjerite područje, filter oznaka, točan naziv svojstva i prava čitanja izvornih stranica.
-- **Slika je slomljena za goste:** privitak nema odgovarajuću vidljivost ili je izvorna stranica nedostupna.
-- **Kalendar je vidljiv administratoru, ali ne čitatelju:** čitatelj nema zasebno pravo na kalendar; to je očekivana zaštita, a ne nužno pogreška.
-- **Naredbe tablice ili medija ne rade:** pokazivač nije u ćeliji odnosno slika nije označena.
-- **U sadržaju se pojavljuje čudan stil iz Worda:** označite tekst i primijenite Ukloni formatiranje, zatim ponovno postavite naslove i liste.
-- **Izravno dopuštenje otvara i podstranice:** to ne bi trebalo; izravno dopuštenje vrijedi samo za jednu stranicu. Provjerite je li korisnik ipak član grupe s pravom na područje.
-
-<div class="alert alert-success">
-
-**Završna provjera:** dobar rezultat nije samo „izgleda dobro administratoru”. Stranica mora proći provjeru dokumenta, imati oba potpuna prijevoda, ispravne privitke i očekivano ponašanje za čitatelja s ograničenim pravima.
-
-</div>
+Prije nego završite, provjerite **sadržaj, spremanje, odabrani jezik, poveznice i očekivani pristup čitatelja**. Za većinu stranica to je važnije od broja umetnutih ukrasnih elemenata.

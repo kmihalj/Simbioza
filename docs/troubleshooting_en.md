@@ -60,7 +60,7 @@ API request. See the [API contract](api-v1-contract_en.md).
 ## HTML Editor, scripts or appearance
 
 For a form field, compare asset loading, the editor's form synchronization and
-server validation with the [working integration example](user-guide/html-editor-u-obrascu_en.md).
+server validation with the [working integration example](html-editor-forms_en.md).
 A document editor and a standalone form field have different storage owners.
 
 If an approved content script does not run, check its selection on that page,

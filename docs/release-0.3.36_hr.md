@@ -1,6 +1,6 @@
 # Simbioza 0.3.36 — sve teme, galerije i trajni odabir tema
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.38](release-0.3.38_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.39](release-0.3.39_hr.md).
 
 Izdanje uključuje svih **26 tema**: Orbit, prvu kolekciju od dvanaest tema i osam kreativnih tema za sport, školu, vrtić, film, umjetnost i zajednice. Svaka tema ima svijetli i tamni izgled. Modul Tema: **0.3.12**. Framework ostaje **0.0.25** i nije mijenjan.
 

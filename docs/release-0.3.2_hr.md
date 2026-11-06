@@ -1,6 +1,6 @@
 # Simbioza 0.3.2 — nova secured-FPM instalacija
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.38](release-0.3.38_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.39](release-0.3.39_hr.md).
 
 [Engleska verzija](release-0.3.2_en.md)
 

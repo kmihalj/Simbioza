@@ -6,7 +6,7 @@ administratorske postavke/podatke i provjerite pogođeni korisnički tok.
 
 ## HTML Editor u polju obrasca
 
-Počnite s [cjelovitim primjerom polja obrasca](user-guide/html-editor-u-obrascu_hr.md).
+Počnite s [cjelovitim primjerom polja obrasca](html-editor-forms_hr.md).
 Objašnjava datoteke, prikaz editora uz textarea polje, sinkronizaciju HTML-a
 prije predaje i serversku obradu. Nije potrebno stvarati Wiki stranicu.
 Aplikacija i dalje prijavljuje korisnika, provjerava pravo uređivanja zapisa,

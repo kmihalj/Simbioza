@@ -64,20 +64,6 @@ final readonly class BundledAssetsUpdater
             'recovery' => 'previous_uredivanje_stranica_guide',
             'message' => 'Bilingual guide updated; existing page permissions preserved.',
         ],
-        'razvojne_integracije_sha256' => [
-            'file' => 'razvojne-integracije.zip',
-            'slug' => 'razvojne-integracije',
-            'parent' => null,
-            'recovery' => 'previous_razvojne_integracije_guide',
-            'message' => 'Bilingual guide updated; existing page permissions preserved.',
-        ],
-        'html_editor_u_obrascu_sha256' => [
-            'file' => 'html-editor-u-obrascu.zip',
-            'slug' => 'html-editor-u-obrascu',
-            'parent' => 'razvojne-integracije',
-            'recovery' => 'previous_html_editor_u_obrascu_guide',
-            'message' => 'Bilingual guide updated; existing page permissions preserved.',
-        ],
         'overview_sha256' => [
             'file' => 'simbioza.zip',
             'slug' => 'simbioza',

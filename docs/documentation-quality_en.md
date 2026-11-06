@@ -33,9 +33,9 @@ php scripts/sync_user_guides.php --check
 `--apply` updates generated release artifacts from the tracked sources;
 `--check` detects drift. This source-maintenance step does not publish a release
 or authorize replacing an administrator's live content. Review its diff before
-using the normal controlled installation/upgrade procedure. See the
-[form-field HTML Editor example](user-guide/html-editor-u-obrascu_en.md) for a
-complete integration chapter shared by the Git and in-application manuals.
+using the normal controlled installation/upgrade procedure. The
+[HTML Editor form-field integration](html-editor-forms_en.md) is maintained in
+the module repository for developers; it is not part of the installed user manual.
 
 ## Language and example rules
 

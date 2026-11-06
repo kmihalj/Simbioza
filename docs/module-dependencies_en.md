@@ -68,7 +68,7 @@ API routes, events or Backup providers without becoming dependencies of the core
 - An optional integration must remain inactive when its owner is absent or
   disabled. Hiding a menu item is never a replacement for route authorization.
 - HTML Editor works without Workspace. In a form it can edit a textarea without
-  creating a document; follow the [complete embedding example](user-guide/html-editor-u-obrascu_en.md).
+  creating a document; follow the [complete embedding example](html-editor-forms_en.md).
   Adding Workspace later does not automatically move existing standalone pages.
 - Workspace owns hierarchy and publication permissions; Editor owns HTML and
   attachments. Task and Comment use published document identity and access.

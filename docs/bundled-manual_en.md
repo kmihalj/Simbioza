@@ -2,7 +2,7 @@
 
 [Croatian version](bundled-manual_hr.md)
 
-Simbioza ships one public manual with **33 chapters in Croatian and English**, including screenshots. It covers installation, everyday use, calendars and meetings, surveys, administration and developer integrations. Installing Wiki is not required to read it. The visible language choices follow the languages installed in your application.
+Simbioza ships one public manual with **31 chapters in Croatian and English**, including screenshots. It covers installation, everyday use, calendars and meetings, surveys, administration and the Survey API. Installing Wiki is not required to read it. The visible language choices follow the languages installed in your application.
 
 ## Installations with Wiki
 

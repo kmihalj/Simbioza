@@ -298,6 +298,46 @@ function syncUserGuides(string $root, bool $apply): void
     );
     try {
         $records = manualRecords($full);
+        // EN: The source manifest is authoritative. Retired chapters must leave the public
+        // package, not remain as orphaned pages inherited from its previous version.
+        // This only filters generated seed records; it never removes live user pages.
+        //
+        // HR: Manifest izvora je mjerodavan. Povučena poglavlja moraju izaći iz javnog
+        // paketa, a ne ostati kao nepovezane stranice iz prethodne verzije paketa.
+        // Filtriraju se samo zapisi instalacijskog paketa; žive korisničke stranice ne brišu se.
+        $publishedSlugs = array_fill_keys(array_column($pages, 'slug'), true);
+        $retiredNodes = [];
+        $retiredDocuments = [];
+        foreach ($records['workspace-scope']['nodes'] as $node) {
+            if (!isset($publishedSlugs[$node['slug']])) {
+                $retiredNodes[$node['uuid']] = true;
+                $retiredDocuments[$node['document_key']] = true;
+            }
+        }
+        if (!$apply && $retiredNodes !== []) {
+            throw new RuntimeException(
+                'The bundled manual still contains retired chapters; regenerate it from the source manifest.',
+            );
+        }
+        $retiredDocumentIds = [];
+        foreach ($records['editor-html-workspace']['documents'] as $document) {
+            if (isset($retiredDocuments[$document['document_key']])) {
+                $retiredDocumentIds[(int)$document['source_id']] = true;
+            }
+        }
+        foreach ($records as $provider => $datasets) {
+            foreach ($datasets as $dataset => $rows) {
+                $records[$provider][$dataset] = array_values(array_filter(
+                    $rows,
+                    static fn(array $row): bool => !isset($retiredDocuments[$row['document_key'] ?? ''])
+                        && !isset($retiredNodes[$row['node_uuid'] ?? ''])
+                        && !($provider === 'workspace-scope' && $dataset === 'nodes'
+                            && isset($retiredNodes[$row['uuid'] ?? '']))
+                        && !($provider === 'comment-workspace' && $dataset === 'settings'
+                            && isset($retiredDocumentIds[(int)($row['document_id'] ?? 0)])),
+                ));
+            }
+        }
         $nodes = &$records['workspace-scope']['nodes'];
         $documents = &$records['editor-html-workspace']['documents'];
         $versions = &$records['editor-html-workspace']['versions'];

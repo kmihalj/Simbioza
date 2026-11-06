@@ -46,7 +46,7 @@ Uređujte `docs/user-guide/*_en.md` / `*_hr.md` i njihove slike, zatim primijeni
 paket područja koristi se i za HTML upute bez Wikija.
 
 Za polje obrasca druge aplikacije koristite [primjer ugrađenog HTML
-Editora](user-guide/html-editor-u-obrascu_hr.md). Spremanje polja odvojeno je od
+Editora](html-editor-forms_hr.md). Spremanje polja odvojeno je od
 stvaranja objavljenog dokumenta ili stranice područja; aplikacija je vlasnik
 validacije, ovlasti i pohrane tog obrasca.
 

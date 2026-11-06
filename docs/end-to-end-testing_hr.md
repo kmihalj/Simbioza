@@ -26,7 +26,7 @@ ne kopiraju u Simbiozu, paket modula ni administratorsku instalaciju.
 Skup učitava sve module i provjerava odabrane javne tokove u nastavku.
 Dopunjuje testove domenskih modula; ne tvrdi da svaka postavka, provider ili
 kombinacija prava ima zaseban preglednički scenarij. [Primjer HTML Editora
-u obrascu](user-guide/html-editor-u-obrascu_hr.md) ima vlastite upute
+u obrascu](html-editor-forms_hr.md) ima vlastite upute
 integracije i izvršivi primjer.
 
 | Područje | End-to-end pokrivenost |

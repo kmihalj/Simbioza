@@ -47,7 +47,7 @@ Edit `docs/user-guide/*_en.md` / `*_hr.md` and their screenshots, then use the
 Workspace package also powers HTML guides on installations without Wiki.
 
 For an application's form field, use the [embedded HTML Editor
-example](user-guide/html-editor-u-obrascu_en.md). Saving a form field is separate
+example](html-editor-forms_en.md). Saving a form field is separate
 from creating a published document or a Workspace page; the host owns that
 form's validation, authorization and storage.
 

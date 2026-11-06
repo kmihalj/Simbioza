@@ -27,7 +27,7 @@ copied into Simbioza, a module package, or an administrator's installation.
 The suite loads the complete module set and exercises the selected public
 flows below. It complements domain-module tests; it is not a claim that every
 setting, provider or access-policy combination has a browser scenario.
-The [form-field HTML Editor example](user-guide/html-editor-u-obrascu_en.md)
+The [form-field HTML Editor example](html-editor-forms_en.md)
 has its own integration instructions and runnable fixture.
 
 | Area | End-to-end coverage |

@@ -1,286 +1,403 @@
 # Editing pages
 
-This guide is for editors who create and maintain pages inside Simbioza workspaces. It explains page creation, titles and slugs, every HTML editor toolbar control and submenu, attachments, page properties, dynamic elements, publishing, translations, and access rights. You do not need to know HTML.
+Learn how to create a page, add text, images and other content, and prepare it for readers. You work in a visual editor, much like a word processor. **You do not need to know HTML or write programming code for everyday editing.**
 
-<div class="alert alert-info">
+For your first page, follow [page creation](#new-page), [basic formatting](#text) and [saving and publishing](#saving). Return to the other sections when you need them. Surveys have their own [separate guides](ankete_en.md).
 
-**All examples are test data.** The screenshots use the dedicated *\[Guide\] Page editing examples* workspace, purpose-made users, and fictional projects. Your names, calendars, and users will differ, but the steps are the same.
+<a id="new-page"></a>
+## 1. Create a new page or open an existing one
 
-</div>
+1. Open **Workspaces** and choose the workspace where you want to work.
+2. To create a page, select the **New page** icon beside the workspace tree. Hover over an icon to read its name.
+3. Enter the **Page title**. Check its language, the destination **Workspace** and **Parent page**. The parent determines where the new page appears in the tree; choose **Tree root** for the top level. The form states which primary language requires a title.
+4. You can leave **Slug** empty: the system derives it from the title. It is the short part of the page's web address, so avoid changing it later without a reason.
+5. Select **Create and edit**. The new page opens in the editor.
 
-## 1. Before you start: workspace and permissions
+**Result:** the page exists in the selected place and is ready for content. Creating the page and typing text are separate from publishing it to readers.
 
-This chapter describes pages inside a Workspace. The workspace defines the base set of users and permissions, the default table-of-contents display, and the page tree. You need **Add** to create a page, **Edit** to change existing content, **Publish** to make a draft live, and **View** to read content without editing it.
+<figure>
+<img src="images/page-edit-01-en.jpg" alt="New page form with a title, language, workspace and parent page." class="img-fluid" loading="lazy">
+<figcaption>New page: enter a title, check its language and position in the tree, then select Create and edit.</figcaption>
+</figure>
 
-1.  Open **Workspaces** and select the relevant workspace.
-2.  In the left-hand tree, select the page under which the new page should appear. Select the workspace root to create a top-level page.
-3.  Choose the add-item button, enter a title, and select **Page (HTML document)** .
-4.  Save the item. Simbioza creates the document and opens it in the HTML editor.
+To change an existing page, open it from the tree and select the **Edit** pencil. If the create or edit action is missing, ask an administrator or workspace manager to check your permissions.
 
-Create pages belonging to a Workspace from its tree. Existing standalone HTML pages can coexist with Workspaces: they keep their addresses and permissions until an administrator moves them through **Settings → HTML editor → Pages outside Workspaces → Move to a Workspace**. Installing Workspaces does not move them automatically. The move transfers translations, history and attachments and reconciles links; check the destination permissions before confirming.
+An installation without Workspaces may have **HTML pages** and **Manage content**. Create standalone pages there and edit their content with the same editor. If Workspaces are installed later, standalone pages keep working until an administrator explicitly moves them into a workspace.
 
-## 2. Title, slug, and language
+<a id="editor"></a>
+## 2. Find your way around the editor
 
-The **Title** is visible in the tree, page heading, and links, and it can be translated. The **HR** / **EN** menu beside the title selects the title language. The **Document language** menu selects the content version you are editing. These settings are related but separate: before publishing English, make sure that both the English title and the English content have been entered.
+Document details, language selection and save actions are at the top. The **toolbar** sits immediately above the content you edit. **Attachments**, below the content, holds files associated with the page.
 
-The **slug** is the stable, readable part of the page address, such as `project-orion` . Use lowercase letters, no spaces or accented characters, and hyphens between words. Keep it short and descriptive. Avoid changing a slug after the page is in use because bookmarks and incoming links may stop working.
+<figure>
+<img src="images/page-edit-02-en.jpg" alt="Editor with document details, language selection, save buttons and the toolbar." class="img-fluid" loading="lazy">
+<figcaption>The top of the editor: document details and save actions above the toolbar.</figcaption>
+</figure>
 
-**Comments enabled** controls whether readers may comment on the published page; a change takes effect when the draft is published. **Default page table-of-contents display** inherits the workspace setting unless you explicitly choose *Show* or *Hide* for this page.
+Where offered, **Comments enabled** allows new comments; existing comments remain when new comments are switched off. On a workspace page this change follows publication. **Default page table-of-contents display** can inherit the workspace setting or choose **Show / Hide** for that page.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/10e85075-ca0a-494f-92d2-8929f3efc9fa.png" class="figure-img img-fluid rounded border mb-1" alt="English HTML editor with document details and the complete toolbar" /> <span class="figure-caption d-block">Editor overview: translations, history, and preview are at the top, followed by the title, slug, document language, and save actions. The toolbar and editable content are below the document details.</span> </span>
+Click where you want to type or insert something. Select existing words before formatting them; to format a whole paragraph, place the caret inside it.
 
-## 3. Save, publish, preview, translations, and history
+Hover over a picture button to read its name. On a narrower window the toolbar wraps onto several rows. Use Tab and Shift+Tab to move between buttons and fields; activate a focused button with Enter or Space.
 
-- **Save** stores a draft without replacing the live version. Use it frequently while editing.
-- **Save and publish** saves the draft and makes it the current published version. Check content and permissions first.
-- **Preview** shows the reader-facing page. Dynamic blocks are resolved here with real data and ACL checks.
-- **History** lists earlier versions and lets an authorised editor restore older content.
-- **Translations** can copy one version as a starting point. Translate the title, body, image descriptions, and every visible label before publishing; do not leave a partially translated page live.
-- **Delete document** moves it to the trash. First check whether an *Include page content* block depends on it. Administrators can restore it or delete it permanently; permanent deletion cannot be undone.
+| Toolbar group | What it does |
+| --- | --- |
+| **Format** | Paragraphs, headings, quotations or preformatted text. |
+| **Check document** | Checks headings, images, links and tables before publication. |
+| **Bold**, **Italic**, **Underline**, **Remove formatting** | Formats selected text. |
+| Four alignment buttons | Left, centre, right or justified paragraph alignment. |
+| **Unordered list**, **Ordered list**, **Link**, **Unlink** | Lists and links. |
+| **Undo**, **Redo** | Reverses or repeats ordinary text changes in the current editing session. |
+| **Dynamic elements** | Tabs, accordion, dropdown content, charts, timelines and available integrations. |
+| **Insert**, **Bootstrap alerts**, **Cards** | Columns, a horizontal rule, embedded content and highlighted sections. |
+| **Table**, **Media** | Works on the selected table, image or other media. |
+| **External scripts** | Additional features prepared and approved by an administrator. |
+| **Source code**, **Fullscreen** | Advanced HTML view or more space for visual editing. |
 
-## 4. Basic text editing
+Some features appear only when the corresponding module is enabled and you have the necessary permissions. An unavailable table or media command often simply means that you have not selected a table cell or image yet.
 
-Click in the body and type as in a normal word processor. Select text before applying inline formatting; for a paragraph-level action, place the caret anywhere in that paragraph. Do not imitate headings by enlarging or bolding normal text. Real heading levels build the page contents and provide an accessible structure.
+<figure>
+<img src="images/page-edit-03-en.jpg" alt="Open Dynamic elements menu with tabs, accordion, dropdown content and other blocks." class="img-fluid" loading="lazy">
+<figcaption>Dynamic elements opens the settings for more complex content. Available integrations depend on installed modules.</figcaption>
+</figure>
 
-- **Format** : Paragraph is normal text; Headings 1–5 create hierarchy; Block quote marks a quotation; Preformatted preserves spacing for short technical examples. The page title is the main heading. Start the body with Heading 2 for major sections and Heading 3 for subsections, without skipping levels.
-- **Check document** finds empty headings, broken hierarchy, images without alternative text, and missing internal links. Run it before every publication.
-- **Bold, Italic, and Underline** emphasise selected text. Use underlining sparingly because readers may mistake it for a link.
-- **Clear formatting** removes unwanted styling, especially after pasting from Word or another website.
-- **Align left, centre, right, and Justify** apply to the current paragraph. Left alignment is the most readable choice for long text.
-- **Bulleted list** is for unordered items; **Numbered list** is for steps that must be followed in sequence. Enter creates a new item; pressing Enter twice ends the list.
-- **Link** turns selected text into an internal or external link. Use descriptive link text such as “application rules”, not “click here”. **Unlink** keeps the text but removes the link.
-- **Undo** reverses the latest edit and **Redo** reapplies an undone edit. This short-term history only applies to the current editor session.
+<a id="text"></a>
+## 3. Write and format text
 
-## 5. Insert layouts, alerts, and cards
+### Headings, paragraphs and lists
 
-### Columns and horizontal rule
+1. Write a short opening paragraph explaining the page's subject.
+2. For a new section, type a heading, place the caret in it and choose its level under **Format**. The page title is already the main heading; body sections normally start with **Heading 2**, followed by **Heading 3** for subsections.
+3. Use **Unordered list** for items and **Ordered list** for steps that must happen in sequence.
+4. Select a few words and apply bold or italic for emphasis. To remove unwanted pasted styling, select that text and choose **Remove formatting**.
 
-The **Insert** menu offers **Two columns** , **Three columns** , and **Horizontal rule** . Columns are suitable for short parallel sections, not long articles; on a narrow screen they stack vertically. A horizontal rule separates large sections visually but does not replace a meaningful heading.
+**Result:** the page has clear sections, making it easier for readers and assistive technology to navigate. Do not use an ordinary bold paragraph as a substitute for a real heading.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/e8a8549f-2bba-4b50-9cb2-16a8d6975e20.png" class="figure-img img-fluid rounded border mb-1" alt="Insert menu with two columns, three columns, and horizontal rule" /> <span class="figure-caption d-block">Insert adds a prepared structure at the caret. Click into every new column and replace all placeholder content.</span> </span>
+Use **Quote** for quoted words. **Preformatted** preserves spaces and the layout of a short text example. Left alignment works best for longer paragraphs; justification can introduce large gaps between words.
 
-### Bootstrap alerts
+### Links
 
-An alert highlights one short important message. The eight choices are **primary** for a general highlight, **secondary** for supplementary information, **success** for a positive result, **danger** for a critical error or prohibition, **warning** for required caution, **info** for an explanation, and **light** / **dark** for neutral emphasis. Colour must not carry the meaning alone; start with an explicit word such as “Important”, “Warning”, or “Success”.
+1. Select words that should lead somewhere, such as “Application requirements”.
+2. Select **Link**.
+3. For an external page, enter the web address and select **Insert URL link**. For a Simbioza page, choose a workspace and page under **Internal link**, then confirm.
+4. For a long list, use search and **Load more**. The picker offers pages you may select.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/441c6794-d718-4753-8498-4ce05c473661.png" class="figure-img img-fluid rounded border mb-1" alt="Bootstrap alerts menu showing all eight alert styles" /> <span class="figure-caption d-block">Choose a style that matches the meaning and replace the placeholder text. Avoid long sequences of colourful boxes because they make the page harder to scan.</span> </span>
+**Unlink** keeps the words and removes their destination. After saving, open the link from the page view to check it.
 
-### Cards
+<a id="layout"></a>
+## 4. Separate sections with columns, alerts and cards
 
-**Card with header** inserts a bordered block with a header and body, useful for a project summary, contact card, or related group. **Card without header** inserts only the body. Keep the card header short and continue to use real headings for the page's semantic structure.
+| You want… | What to do | Result |
+| --- | --- | --- |
+| Two or three parallel sections | **Insert → Two columns / Three columns**, then replace the text in each column. | Content appears side by side on a wide screen and stacks on a narrow screen. |
+| A short important note | Open **Bootstrap alerts**, choose a style and replace the sample text. | The message stands out. Begin with a clear word such as “Important”; colour alone is not enough. |
+| A separate box of related information | **Cards → Card with title / Card without title**. Fill in the body and, where applicable, the header. | A summary, contact or related section is separated from the surrounding text. |
+| A simple divider | **Insert → Horizontal rule**. | A horizontal line separates two sections. |
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/57f734e6-96bd-41e5-bca0-823b429be4ba.png" class="figure-img img-fluid rounded border mb-1" alt="Cards menu with header and no-header choices" /> <span class="figure-caption d-block">The card appears at the caret. Edit the header and body separately and remove every placeholder.</span> </span>
+Use columns and cards for short related content, and headings for a longer article's structure. Always replace all inserted sample text.
 
-## 6. Tables
+<a id="tabs"></a>
+## 5. Tabs: several alternatives in one place
 
-Choose **Insert table** and select the number of rows and columns. Use tables for data with a genuine row-and-column relationship, never merely to position page content.
+Tabs work well for alternatives within one topic, such as “Before arrival”, “Programme” and “Contact”. Readers select a tab title to see its content.
 
-- **Insert row above/below** adds a row relative to the cell containing the caret; **Delete row** removes the entire row.
-- **Insert column left/right** adds a column; **Delete column** removes it.
-- **Merge with cell right/below** creates a larger shared cell. Use merged cells sparingly because complex tables are harder for screen-reader users.
-- **Split cell** reverses a previous merge for the selected cell.
+1. Place the caret where the block should go and open **Dynamic elements → Insert tabs**.
+2. Enter **2 to 6 titles**, one per line, and select **Insert**.
+3. In the main editor, fill in the content for each tab. You can also edit titles there. During editing, the contents are laid out so that you can work on each one.
+4. Save and check the page view: selecting a title should display the corresponding content.
 
-Give the first row clear column headings. Preview the table in a narrow window after substantial changes; a very wide table will require horizontal scrolling.
+<figure>
+<img src="images/page-edit-04-en.jpg" alt="Insert tabs dialog with three titles, each on a separate line." class="img-fluid" loading="lazy">
+<figcaption>This example creates three tabs. After inserting them, write their bodies in the main editor.</figcaption>
+</figure>
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/63f221ec-bf5d-4b1f-9c1f-7e4b2a82d8d8.png" class="figure-img img-fluid rounded border mb-1" alt="Table menu with all row, column, merge, and split operations" /> <span class="figure-caption d-block">Commands act relative to the cell containing the caret. If an action is unavailable, click inside the relevant table cell first.</span> </span>
+The pencil beside the block reopens its settings. **Remove tabs** removes the whole block. Removing a title from the title list also removes its content. Change titles and content together; rewriting or rearranging title lines does not automatically move the associated text.
 
-### Enable sorting and pagination for one table
+<a id="accordion"></a>
+## 6. Accordion: sections readers can expand
 
-1. Click a cell in the existing table.
+An accordion suits frequently asked questions or several short procedures. Readers select a question title to open its answer. They can keep several sections open at once.
+
+1. Choose **Dynamic elements → Insert accordion**.
+2. Enter **1 to 12 titles**, one per line, then select **Insert**.
+3. In the main editor, fill in the body under each title. You can add links, images, tables and other content.
+4. In the page view, open and close individual sections to check their titles and content.
+
+<figure>
+<img src="images/page-edit-05-en.jpg" alt="Insert accordion dialog with three question titles on separate lines." class="img-fluid" loading="lazy">
+<figcaption>Each line becomes one accordion section title; write the answers after inserting the block.</figcaption>
+</figure>
+
+Use the block's pencil to change the number of sections. A new title receives an empty body; removing a title also removes its body. **Remove accordion** removes the entire group.
+
+<a id="dropdown-content"></a>
+## 7. Dropdown content: one expandable note
+
+For a single additional note or explanation, choose **Dynamic elements → Insert dropdown content**.
+
+1. Enter a **Title** that clearly describes what is inside.
+2. Enable **Show content expanded when the page loads** if readers should see the text immediately.
+3. Select **Insert** and fill in the body beneath the title in the main editor.
+
+<figure>
+<img src="images/page-edit-06-en.jpg" alt="Insert dropdown content dialog with a title and the initially expanded option enabled." class="img-fluid" loading="lazy">
+<figcaption>The expanded-content setting determines what a reader sees when the page loads.</figcaption>
+</figure>
+
+The body stays open in the editor so that you can edit it. The page view follows your chosen initial state; readers select the title to open or close it. The block's pencil opens its settings and offers removal.
+
+Tabs, accordion and dropdown content can contain formatted text and other elements. Keep the page's most important information visible without requiring readers to open a hidden section.
+
+<figure>
+<img src="images/page-edit-15-en.jpg" alt="Published page with the Materials tab selected, an accordion answer open and dropdown content expanded." class="img-fluid" loading="lazy">
+<figcaption>The result for readers: the selected tab shows materials, while selecting a heading opens an answer or an additional note.</figcaption>
+</figure>
+
+<a id="tables"></a>
+## 8. Tables, sorting and row counts
+
+### Create and edit a table
+
+Choose **Table → Insert table** and fill in the prepared cells. Use the first row for column headings, such as “Name”, “Status” and “Due date”.
+
+To change a table, first click the relevant cell and reopen **Table**:
+
+- **Insert row above / below** and **Delete row** act on that cell's row.
+- **Insert column left / right** and **Delete column** act on its column.
+- **Merge with cell right / below** joins cells; **Split cell** separates a previously merged cell.
+
+Use tables for data, rather than page layout. Use [columns](#layout) to arrange content.
+
+### Let readers sort and browse rows
+
+1. Click a table cell.
 2. Open **Table → Table settings**.
-3. Enable **Sorting and pagination** and choose the initial row count: **10, 25, 50, 100 or All**.
-4. Select **Apply**, then save and publish the page.
+3. Enable **Sorting and pagination**.
+4. Choose the **Initial rows per page**: **10, 25, 50, 100 or All**.
+5. Select **Apply**, then save the page.
 
-Readers click a column heading to sort ascending, click again for descending order, and click a third time to restore the original order. Arrows show the direction. Changing the row count or page does not alter saved content. The editor still shows all rows. Printing shows every row, and the controls also work in HTML exports.
+<figure>
+<img src="images/page-edit-07-en.jpg" alt="Table settings with sorting and pagination enabled and an initial page size of 10 rows." class="img-fluid" loading="lazy">
+<figcaption>These settings apply to the selected table. Readers can change the row count afterwards.</figcaption>
+</figure>
 
-Enable this separately for each table. No external scripts or DataTables are needed. Use one header row, the same cell count in every body row, no merged cells and no nested tables. Complex tables keep the ordinary view. Existing tables remain unchanged until this option is enabled.
+**Result:** readers select a column heading to sort ascending, select it again for descending order and a third time for the original order. Arrows show the direction. They can choose a row count beside the table and browse pages with the pagination controls. **All** displays every row.
 
-## 7. Attachments, images, and the Media menu
+Enable this **separately for each table**. The editor still shows every row; a reader's sorting does not change the saved data. No external script is required. The controls also work in HTML exports, and printing shows all rows.
 
-1.  In **Attachments** , choose one or more files and click **Upload** .
-2.  For an image, add meaningful alternative text that conveys the image's information. Mark a purely decorative image appropriately instead of repeating nearby text.
-3.  Add a description or caption when the reader needs more context.
-4.  Place the caret in the content and click **Insert** on the attachment card.
-5.  Check attachment visibility. A public page must not depend on an image that guests cannot access.
+This feature needs one header row, the same number of cells in each data row, no merged cells and no table nested inside a cell. For a more complex table, keep the ordinary view or split the data into simpler tables.
 
-With an image selected, **Media** offers **25%, 50%, 75%, and 100%** widths; **no, small, medium, and large** spacing; **left, centre, and right** alignment; and **Reset media** . Width remains responsive. A UI screenshot usually needs 100%; a small illustration often works at 25–50%.
+<figure>
+<img src="images/page-edit-08-en.jpg" alt="Sorted table in page view with 10 rows per page selected and page two showing rows 11 to 12 of 12." class="img-fluid" loading="lazy">
+<figcaption>Reader view: 10 rows per page is selected. Page two shows the remaining two rows, 11–12 of 12. The header arrow indicates sorting.</figcaption>
+</figure>
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/f748f1fd-2483-4d73-9ab5-ba08301b2207.png" class="figure-img img-fluid rounded border mb-1" alt="Media menu with width, spacing, alignment, and reset options" /> <span class="figure-caption d-block">Media commands apply to the selected image or media item. If nothing changes, click the image itself rather than the adjacent paragraph.</span> </span>
+<a id="attachments"></a>
+## 9. Upload an image, video or another file
 
-### Embedded iframe content
+1. Below the content, open **Attachments**, choose **Add attachment / Choose files**, then **Upload**. Wait for the upload to finish.
+2. Enter a **Display name** beside the file. This is the name you want readers to see; it can be clearer than the original filename.
+3. For an image, enter **Alternative text**: a short description of the information it conveys. For example, “Room layout with the entrance marked”, rather than “image1.png”.
+4. **Caption** is a short note beside the inserted media; **Description** provides additional information about the attachment. Select **Save metadata**.
+5. Put the caret where the file should appear and select **Insert** beside the attachment.
 
-For H5P, Facebook, and other trusted services, open **Insert** and choose **Insert embedded content**. Paste the complete iframe block supplied by the provider, or enter only its HTTPS URL.
+**Result:** an image or video appears in the content; another file appears as a link for opening or downloading. Uploading alone does not insert a file into the text.
 
-1.  Enter a short **accessible title** that describes the iframe content.
-2.  Set the height in pixels and enable fullscreen only when the provider supports it.
-3.  Choose **Insert**. The editor normalises the width to 100% of the available space and retains only supported security attributes.
+<figure>
+<img src="images/page-edit-10-en.jpg" alt="Image and text attachments with fields for display name, alternative text, caption and description." class="img-fluid" loading="lazy">
+<figcaption>Enter descriptive information beside the uploaded image and save its metadata. Insert adds the selected attachment to the content.</figcaption>
+</figure>
 
-<span class="d-block w-100 overflow-hidden border rounded shadow-sm"><img src="images/f0b1d0fc-b94b-4ef8-b68c-8c4df4654e2b.png" class="img-fluid d-block w-100" alt="Iframe dialog with code, accessible title, height, and fullscreen controls" /><span class="figure-caption d-block">The dialog accepts a complete iframe block or an HTTPS URL. Saved content always uses 100% of the available width.</span></span>
+### Media size, spacing and alignment
 
-<div class="alert alert-warning">
+Select an inserted image or other media and open **Media**. Choose a width of **25%, 50%, 75% or 100%**, **no, small, medium or large** spacing, and **left, centre or right** alignment. **Reset media** restores its initial appearance settings.
 
-**Security:** embed content only from providers you trust. Arbitrary JavaScript from pasted code is neither stored nor executed. Scripts extracted from imports become candidates for administrator review; a familiar URL alone is not approval. Only locally approved scripts selected for the page run. An administrator first reviews and approves the exact H5P resizer code or URL.
+**Edit image alternative text** changes the selected image's description. Use **Mark image as decorative** only when the image conveys no information, such as a decorative divider. A visible caption does not replace alternative text.
 
-</div>
+A full width is usually easiest to read for a screenshot. Check the page in a narrow window after making changes.
 
-An iframe without JavaScript, such as a Facebook embedded post, works directly. To change an existing block, choose its pencil icon. If imported Confluence HTML contains an unknown script or multiple iframes in one macro, Simbioza leaves it for manual review.
+<figure>
+<img src="images/page-edit-09-en.jpg" alt="Selected image and the full Media menu with width, spacing, alignment and alternative-text commands." class="img-fluid" loading="lazy">
+<figcaption>First select the image, then use Media to set its appearance and description.</figcaption>
+</figure>
 
-### External scripts and their instructions
+### Attachment lists and history
 
-If a page needs an additional function prepared by an administrator, open **External scripts** and select the approved script. The choice is saved with that page version. A small **circled question mark** opens usage instructions when they exist; reading instructions does not enable the script. They explain whether a table ID or another marker is needed in the HTML source.
+**Visibility** in the attachment section controls who sees the attachment **list**: no list, everyone including guests, or authenticated users. It does not itself grant access to a private page or file.
 
-If the script is unavailable, ask the administrator. **Settings → HTML editor → External scripts** manages the library, optional CSS, additional code, translated instructions and approval. Revoked or unapproved scripts do not run. Scripts do not execute in the editor, draft or history: test the published view. HTML export includes only selected, approved scripts, storing inline code locally and retaining remote links. Remote code still needs a network connection.
+You can download a file, change its metadata and, with the appropriate permissions, delete it. Where **File history** is available, review previous versions and restore one if necessary. Removing an image from the text and deleting its attachment are different actions: deleting the file can affect places that use it.
 
-## 8. Document check, source code, and fullscreen
+<a id="embedded-content"></a>
+## 10. Embed content from another service
 
-### Document check
+For content such as an interactive learning activity or a video supplied by another service, open **Insert → Insert embedded content**.
 
-The checker is a final checklist, not a substitute for proofreading. Correct every reported item and choose **Check again** . Pay particular attention to image alternatives, heading order, and internal links. *No issues found* means the automated rules passed; you should still read the page in Preview.
+1. Paste the provider's **Iframe code or HTTPS URL**.
+2. Enter an **Accessible title**, such as “Exercise: identify geometric shapes”.
+3. Set the **Height** and, if needed, **Allow fullscreen**.
+4. Select **Insert**, save and check the page. Use the block's pencil for later changes.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/ae1eced0-daee-4182-bbe9-63f365db685b.png" class="figure-img img-fluid rounded border mb-1" alt="Successful English document check with no issues found" /> <span class="figure-caption d-block">A successful check after correcting headings, images, and links. Run it again after later content changes.</span> </span>
+If the content does not appear, the provider may forbid embedding or require a separate sign-in. If an additional script is required, ask the administrator to prepare a supported integration; do not paste unfamiliar programming code yourself.
 
-### Source code
+<a id="chart"></a>
+## 11. Compare numerical data with a chart
 
-**Source code** exposes the HTML and is intended for advanced editors who need to inspect or repair exact markup. Do not paste scripts, styles, or code from untrusted sources; unsupported content may be sanitised on save. Return to visual mode after a manual edit and run the document checker.
+1. Choose **Dynamic elements → Insert chart**.
+2. Select **Bar, Line, Area, Pie or Doughnut**. A bar chart works well for comparing participant counts by month.
+3. Enter a title, categories and numerical values. **Add category** adds another category; **Add series** adds a second set of values, such as another year.
+4. Add axis names and a description if useful; choose a legend, orientation, appearance, width and alignment. The background can follow the theme.
+5. Select **Insert chart** and check the page view.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/54d3ca6f-8097-4bc9-9d28-07f95cd0e46c.png" class="figure-img img-fluid rounded border mb-1" alt="HTML editor showing the page source code" /> <span class="figure-caption d-block">Source mode shows the current language version's structure. Do not alter dynamic-block attributes unless you understand their purpose.</span> </span>
+**Result:** the values you entered are displayed as a chart. They are not automatically fetched from a survey or another table. Use the chart's pencil to change its values or appearance; its settings also offer removal.
 
-### Fullscreen
+<figure>
+<img src="images/page-edit-11-en.jpg" alt="Chart settings with three categories, their numerical values and a bar-chart preview." class="img-fluid" loading="lazy">
+<figcaption>A chart with three categories. The preview shows the effect as you change its values and appearance.</figcaption>
+</figure>
 
-**Fullscreen** keeps the toolbar and body while hiding document metadata, leaving more room to edit. Project navigation remains only when the project theme makes it sticky. Click the same icon again to return to the normal view; save and publish actions are available outside fullscreen.
+<a id="roadmap"></a>
+## 12. Show activities on a timeline
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/71992915-8881-4582-a673-9edcd157f5ef.png" class="figure-img img-fluid rounded border mb-1" alt="Fullscreen editor with toolbar and content but no document metadata" /> <span class="figure-caption d-block">Correct fullscreen mode: the toolbar remains available and the title, slug, and document actions do not leave an empty gap above it.</span> </span>
+1. Choose **Dynamic elements → Insert timeline**.
+2. Enter a title and the start and end of the period you want to show.
+3. Select the time scale: **Days, Weeks, Months or Quarters**.
+4. Use **Add group** to add a group, such as “Event preparation”, and activities with start and end dates. Add further groups and important-date markers where needed.
+5. Select **Insert timeline** and check that every activity fits the chosen period.
 
-## 9. Dynamic elements
+**Result:** the page shows when each activity starts and ends. This is a presentation of the plan you entered, rather than an automatic calendar or reminder service. Use the block's pencil to reopen its settings.
 
-A dynamic element appears as a labelled placeholder or configuration summary in the editor, then becomes real data and interactive controls in Preview. Always preview after insertion. The output is permission-aware, and an administrator usually sees more than a normal reader.
+<figure>
+<img src="images/page-edit-12-en.jpg" alt="Timeline settings with a date range, weekly scale and two activities in one lane." class="img-fluid" loading="lazy">
+<figcaption>A timeline example: one lane with two activities and individual start and end dates.</figcaption>
+</figure>
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/506a7c04-6609-417b-b9c6-a9e7ad7a777c.png" class="figure-img img-fluid rounded border mb-1" alt="Dynamic elements menu with seven element types" /> <span class="figure-caption d-block">The menu contains tabs, chart, timeline, task list, dynamic content, included page content, and calendar. Each item opens a dedicated form.</span> </span>
+<a id="integrations"></a>
+## 13. Show data from other parts of Simbioza
 
-### 9.1 Tabs
+These **Dynamic elements** menu entries depend on installed modules. If an entry is missing, ask an administrator whether that feature is available in your installation.
 
-Tabs place several short sections in the same area. Enter a distinct short label and content for each tab, use **+** to add another, and **Remove** to delete one. Do not hide essential instructions in the last tab; readers may not notice it. Use normal headings instead when the information is long or must be read in order.
+| Feature | What to do | What readers see |
+| --- | --- | --- |
+| **Insert task list** | Enter a title and tasks, one per line. Choose a list or table and who may change statuses. | Tasks and their statuses, according to the selected permissions. |
+| **Insert calendar** | Choose one or more offered calendars, a title, month/week/day view and the current or a fixed date. | Events from calendars the reader may access. Embedding does not change calendar permissions. |
+| **Include page content** | Search for a workspace and page; use **Load more** where needed, then confirm. | The selected page's content without maintaining a second copy; reader access is still checked. |
+| **Insert dynamic content** | Choose a page-property table, attachment gallery, workspace search or recent changes. Set workspaces, a title, filters and item count. | An up-to-date view of accessible pages and their data. |
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/af8c219c-79ac-4f67-89b7-577c5a9ae629.png" class="figure-img img-fluid rounded border mb-1" alt="Tabs dialog with multiple tab titles and contents" /> <span class="figure-caption d-block">Prepare all tabs in one form. Make sure every tab has both a title and meaningful body before inserting the block.</span> </span>
+Use the inserted block's pencil to change its settings. Some blocks appear as a settings summary in the editor. Save and open the page view to check their final appearance.
 
-### 9.2 Chart
+### Properties for a page table
 
-A chart turns numbers into a visual comparison. Enter a clear title, choose the chart type, and provide category labels and numeric values. Add data series when comparing multiple sets. A bar chart is suitable for categories, a line chart for change over time, and a pie chart only for a small number of parts of one whole. Use a consistent unit and state the main conclusion in nearby text so the meaning is not available only visually.
+For a project overview with columns such as “Status” and “Due date”, first add consistently named properties and values to the source pages. In the dynamic block, choose **Pages and properties table** and list those properties as columns. If data is missing, check the exact property name, selected workspaces, label filter and source-page read permissions. See [Workspaces](podrucja_en.md) for properties and page settings.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/cc949eea-586a-4e2c-89a5-5d4c055d3fc4.png" class="figure-img img-fluid rounded border mb-1" alt="Completed chart dialog with type, categories, and data series" /> <span class="figure-caption d-block">Replace every sample label and verify that each series contains the same number of values as there are categories.</span> </span>
+### External scripts prepared by an administrator
 
-### 9.3 Timeline
+1. Open **External scripts**.
+2. If a script has a **circled ?**, select it and read the instructions. The question mark appears only when instructions exist; reading them does not enable the script.
+3. Select the script you need and save the page. The selection is kept with that content version.
 
-A timeline displays dated activities. Set the visible start and end, scale, groups, activities, and milestones. An activity has a title, start date, end date, and group; a milestone marks one important date with no duration. Keep the range narrow enough to remain readable. Dates are static content in this block, so update them when the project plan changes.
+Only approved scripts appear. If the instructions require a source-code change that you do not know how to make, ask an administrator or experienced editor to prepare an example for your page. **Built-in table sorting and pagination do not need an external script.**
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/762a92f0-ec27-41f1-a73e-d90d4b975f16.png" class="figure-img img-fluid rounded border mb-1" alt="Timeline dialog with groups, activities, milestones, and scale" /> <span class="figure-caption d-block">Groups separate work streams, activities have a duration, and milestones have one date. Preview the result to check label overlap.</span> </span>
+Check scripts on the published page; they do not run in the editor, drafts or history. A revoked script stops running. HTML export includes selected approved scripts; remote scripts still need a network connection.
 
-### 9.4 Task list
+<a id="saving"></a>
+## 14. Save, check and publish your work
 
-A task list lets authorised users tick items as complete. Enter a title and tasks, then choose who may change their state. Editor-only scope is suitable for an internal checklist; signed-in-reader scope allows a broader audience to update items. Anonymous visitors do not receive persistent personal state. Updates are attributed to a user when possible, so do not use the block for sensitive personal or HR information.
+| Action | Meaning |
+| --- | --- |
+| **Save** | Saves changes as a draft. In a workspace, the existing published version remains visible to readers. |
+| **Save and submit for review** | Saves the draft and submits it for someone with publishing permission. Use it when the content is ready but you do not publish it yourself. |
+| **Save and publish** | With editing and publishing permissions, saves the content and publishes it immediately. |
+| **Cancel** | Leaves the editor; if changes are unsaved, follow the message before leaving. |
 
-The ACL example places an editor list and a reader list on the same page. A view-only user sees the first locked and may operate the second. This tests the real reader experience rather than relying on the administrator's view.
+Submitting for review and publishing apply to workspace pages. Standalone HTML pages do not use the same workspace review process: saving updates their own content.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/7a88f7b0-d0c8-479c-9a98-70e46ffb8cc1.png" class="figure-img img-fluid rounded border mb-1" alt="Task list dialog with several items and an editing-scope choice" /> <span class="figure-caption d-block">The editing scope is as important as the list itself. After publishing, verify it with a user who only has View permission.</span> </span>
+### Check before publishing
 
-### 9.5 Dynamic content
+1. Select **Check document** on the toolbar.
+2. Correct reported issues, such as an empty heading, skipped heading level, image without alternative text or table without a header.
+3. Select **Check again**. The check helps, but cannot judge whether your text is understandable or every fact is correct.
+4. Save changes and open **Preview**. Check which version and language you are viewing. To inspect unpublished workspace changes, choose **Preview draft**; saving a draft does not replace the ordinary published page view.
+5. Test links, tabs and expandable sections; check images, data and the layout in a narrow window.
+6. Publish or submit for review. After publishing, reopen the page as a reader.
 
-Dynamic content refreshes from the current workspace state. Four types are available:
+A **local draft** offered after an interruption is saved only in that browser. It does not replace **Save**. If another editor has changed the shared draft, compare the offered versions before restoring your changes.
 
-- **Pages and properties table** finds pages by workspace, tags, or other criteria and displays selected property columns. Use it for a project portfolio, directory, or deadline register. Property names must be consistent on all source pages.
-- **Attachment gallery** presents images or files attached to pages. Each attachment's visibility and its source page's read permission still apply.
-- **Workspace search** inserts a search limited to the workspace. Results only contain pages the current user may read.
-- **Recent changes** lists newer edits. Keep the limit and scope reasonable so the activity list does not overwhelm the page.
+**Discard shared draft** removes unpublished shared changes and returns to the last published version. Coordinate with other editors before confirming. On a new page that has **never been published**, discarding its draft can delete the page permanently; read the confirmation before continuing.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/6ed35254-d2c0-4e8d-b8b2-262a794818b1.png" class="figure-img img-fluid rounded border mb-1" alt="Dynamic content dialog with table, gallery, search, and recent-changes types" /> <span class="figure-caption d-block">Select a type first, then complete its settings. An empty Preview usually means no page matches the filter or the reader cannot access the matching pages.</span> </span>
+In the page view you may also see **Submit for review**, **Return to draft** or **Publish**, depending on status and permissions. A publisher can publish a draft directly; a prior review submission is not mandatory. If you only have publishing permission, open **Preview draft**, check the content and language, then choose **Publish** in the page action bar; that permission alone does not allow text editing. An archived page must be returned to draft and published again before becoming available to readers.
 
-### 9.6 Include page content
+<a id="languages-history"></a>
+## 15. Translate a page or restore earlier content
 
-This block displays another page without copying it. Select its workspace and page. A later source update appears everywhere the page is included, making the block useful for shared contact information or a standard notice. Avoid circular inclusion and long inclusion chains. Readers must be allowed to view the source page; otherwise Simbioza shows a safe unavailable message rather than leaking the content.
+### Another page language
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/b35e2fca-d4b2-4886-82c1-f338231dd546.png" class="figure-img img-fluid rounded border mb-1" alt="Include page content dialog with workspace and page selection" /> <span class="figure-caption d-block">The editor shows a placeholder; Preview fetches the real page and applies the current user's read permission.</span> </span>
+1. Under **Document language**, choose the language you want to edit. Offered languages are installed and enabled in the application.
+2. Check the title in that language using the menu beside **Title**.
+3. **Translations → Copy translation** can copy existing content as a starting point. Choose a source and target language, then **Copy for translation**.
+4. Translate the text, tab titles, captions and image descriptions; check and publish that language version.
 
-### 9.7 Calendar
+**Copying does not translate the text automatically.** An existing target translation is replaced by a new version. You do not have to translate into every offered language; publish only those for which you have prepared content.
 
-Select a calendar you are allowed to use, its view, and the initial period. Month view is useful for dates at a glance; list view is better for a sequence of events. Fix the initial month only when the page describes a specific period; a long-lived page normally starts from the current date.
+### History
 
-Page access does not automatically grant calendar access. A reader who can view the page but not the embedded calendar receives an unavailable message, and no event details are exposed. The test example deliberately embeds one allowed and one denied calendar to demonstrate the distinction.
+Open **History**. Select **Preview** beside an older version to read it first. To bring its content back, select **Restore** and follow the confirmation. Then check the current draft and publish if needed. Toolbar **Undo** and **Redo** handle ordinary text changes in the current editing session. They do not cover every media-setting or special-block change, so do not rely on them to restore those settings. Select **Save** before larger changes; history keeps saved versions.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/1d026aca-cdcd-41b3-b7ae-0adc2a196b41.png" class="figure-img img-fluid rounded border mb-1" alt="Calendar dialog with calendar, view, and period selections" /> <span class="figure-caption d-block">Insert and publish the calendar, then preview it as a normal reader. The administrator's view cannot prove that access restrictions work.</span> </span>
+<a id="page-access"></a>
+## 16. Who can read and edit a page
 
-## 10. Page properties
+Most pages inherit workspace permissions. For everyday writing you only need the relevant editing permissions; you do not have to change access settings yourself. A draft without a published version is available to the relevant editors, publishers and managers, rather than ordinary readers. The tree and page status identify it as a draft.
 
-A property is structured data attached to a page. Unlike prose, it has a stable name and type, so a dynamic table can filter, sort, and display it as a column. Project pages might use `status` , `owner` , `budget` , and `due_date` .
+Where you have permission, open **Manage page and permissions** in the page's upper action bar. Distinguish between:
 
-Open **Tree item/page settings** . Under **Page properties** , enter a property name, type, and value. Use **+** to add multiple rows, edit existing values, and choose **Remove** for a property that is no longer needed. Save all changes together with **Save item** ; you do not have to close the dialog after every property.
+- **Restrictions on inherited permissions:** further limit existing rights for the page and its descendants. They do not add someone who had no access before.
+- **Direct permissions for users and groups:** exceptions for the selected page. You can choose users or groups; an exception does not automatically open other workspace pages or descendants.
 
-- **text** : short free text, such as a contact or department code.
-- **status** : a controlled business state such as Planned, In progress, or Completed. Spell the same states consistently on every page.
-- **number** : a numeric value for sorting or comparison; do not include currency symbols or grouping spaces in the value.
-- **date** : a date in the expected format, suitable for deadlines and time filters.
-- **user** : the username of an existing user, useful for an owner or responsible editor.
-- **link** : a complete address beginning with `https://` . Explain the destination in visible text.
+Open the searchable user or group picker, find the recipient and add them. If there are more results, search or load additional offered items. Check **Read**, **Editing** and **Publish**, then select **Save direct permissions**. Editing and publishing include reading; publishing alone does not include editing. The separate restriction panel applies to individual users who already have inherited rights, not to whole groups.
 
-**Page tags** are comma-separated group labels such as `portfolio, active, 2026`. They are not a replacement for valued properties: a tag places the page in a set, while a property provides a value for a report column.
+The **Public** audience grants read access, including to guests. It cannot grant editing or publishing. This can make a published page public inside a private workspace while the remaining private content stays protected; it does not publish a draft. The workspace may then appear among available workspaces, but its tree shows only content that reader may access.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/384a3b08-ee1a-4ef9-81e2-e47cc1d9f036.png" class="figure-img img-fluid rounded border mb-1" alt="Tree item and page settings with tags and multiple page properties" /> <span class="figure-caption d-block">Multiple properties can be added and edited in one dialog. The example prepares data for a project table; Remove deletes only its row when the item is saved.</span> </span>
+<figure>
+<img src="images/page-edit-13-en.jpg" alt="Direct permissions: Ana can read, the Editors group can read and edit, and the Public audience can only read." class="img-fluid" loading="lazy">
+<figcaption>Direct permissions for a single page: a user, a group and the Public audience have different rights.</figcaption>
+</figure>
 
-### Pages and properties table
+Changing permissions can expose content to others. If uncertain, ask an administrator or workspace manager to configure access. Afterwards, ask the intended reader to open the page; an administrator's view is not proof that access is correct for everyone else. See [Workspace permissions](podrucja_en.md) for more detail.
 
-For a report, insert **Dynamic content → Pages and properties table** , choose the workspace, tag filter, and columns. The Orion and Luna example displays status, owner, budget, due date, contact, and project link. A new page with the same properties appears automatically when it matches the filter; the report page itself does not need manual editing.
+<a id="page-actions"></a>
+## 17. Other page actions
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/44579703-ac4c-4408-823d-db937734ac94.png" class="figure-img img-fluid rounded border mb-1" alt="Published page-property table, workspace search, and reader task list" /> <span class="figure-caption d-block">The published dynamic view combines structured properties and other live blocks. If one row has an empty value, check that source page's property name and type.</span> </span>
+The page's upper action bar shows only actions available in your installation and for your account. Hover over an icon to read its name.
 
-## 11. Page access: inherited restrictions and direct permission
+<figure>
+<img src="images/page-edit-14-en.jpg" alt="Top of a published page with its action bar." class="img-fluid" loading="lazy">
+<figcaption>Published-page actions: the offered icons depend on your permissions and enabled features.</figcaption>
+</figure>
 
-Workspace rights are the access foundation. Individual item settings add two different exception mechanisms:
+- **Show attachments / Hide attachments** opens or closes the file list. **Show table of contents / Hide table of contents** shows or hides the list of headings within the page.
+- **History** opens saved versions; the flag menu chooses an existing translation.
+- **Copy or move page** is available to workspace managers. Choose copy or move, a destination workspace and parent, and whether to transfer history and direct permissions/restrictions. Content, translations and attachments travel together. A copy leaves the original in place; a move removes it after successful transfer. Only the chosen page is copied; moving a page with descendants is unavailable. Check destination permissions afterwards.
+- **Export page to HTML** downloads a ZIP containing `index.html` and associated local files. Extract it before opening the HTML file. For workspace pages, this exports the published version, rather than an unpublished draft. It is not a backup for restoring the whole workspace.
+- For a PDF, open the browser's **Print → Save as PDF**. Check the print preview and layout before saving.
+- **Delete page and subtree** also removes descendants; read the confirmation carefully. Published pages use recoverable deletion, while deleting a new never-published document through the editor can be permanent. Ask an administrator about recovery instead of assuming every deletion can be undone.
+- Where enabled, **Follow** and comments support change notifications and discussion.
 
-### Inherited permission restrictions
+In the editor, **Source code** displays HTML for experienced editors; it is unnecessary for the procedures above. **Fullscreen** gives content more room; use the same icon to return to document details and save actions.
 
-A restriction removes a right the user already has from the workspace or group. It applies to the selected page and its descendants and cannot grant a new right. Select the user and disable only the rights that must be denied; removing the user from the table fully restores their inherited rights.
+<a id="help"></a>
+## 18. When something is unexpected
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/5c0d9fce-2c82-42e3-9030-321626c3c446.png" class="figure-img img-fluid rounded border mb-1" alt="Restricting a user&#39;s inherited rights on a page subtree" /> <span class="figure-caption d-block">The legend distinguishes a retained inherited right, a denied inherited right, and a right the user never inherited. Restrictions apply to users, not whole groups.</span> </span>
+| What you see | What to do |
+| --- | --- |
+| No edit or publish action. | Check the account and workspace. Ask a manager or administrator to check your permissions. |
+| You changed text but readers still see the old page. | Save the draft and check whether publication is still needed. Check the language too. |
+| A table or image command does nothing. | First click a table cell or select the image itself, then repeat the command. |
+| Dropdown content stays open in the editor. | This is the editing view. Check the initial state in the page view. |
+| Tabs or accordion have titles but no body text. | After insertion, fill in each section's body in the main editor. |
+| Sorting and row counts are missing. | Enable them in **that table's settings**, check its simple header and view the saved page. |
+| A file is uploaded but absent from the text. | Place the caret in the content, then choose **Insert** beside the attachment. |
+| You see a calendar, included page or dynamic list, but a reader does not. | Check their rights on the source content too. Embedding does not open private data. |
+| A script is missing or does not work. | Read its instructions and check the published view. An administrator prepares and approves scripts. |
+| Pasted text has inconsistent styling. | Apply **Remove formatting**, then set headings and lists again. |
+| Undo does not restore a changed image width or other block settings. | Restore those settings through their menu. Save before larger changes. Choose **Cancel** to discard unsaved changes; changes already saved remain saved. |
 
-### Direct page permissions
-
-A direct permission grants access to this page only and is not inherited by child pages. A user with no workspace access sees only directly permitted pages in the tree. You may grant Read, Edit, or Publish; Edit and Publish imply Read. You can add **users and groups**, including the public **Everyone** audience for a public page in a private Workspace. The exception exposes only the allowed page; other private pages and parent content remain hidden. The Workspace appears in the visitor’s list when it contains an accessible page. Check the result as the intended user or guest.
-
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top w-100 me-2 mb-2"> <img src="images/270ff17a-2577-404d-aba4-7463c8336afd.png" class="figure-img img-fluid rounded border mb-1" alt="Granting a direct permission to one user for one page" /> <span class="figure-caption d-block">A direct permission is a one-page exception. Verify the outcome by impersonating that user or using a purpose-made test account.</span> </span>
-
-### How to test ACL behaviour
-
-1.  Save permissions and publish the page.
-2.  As administrator, confirm that the content is technically correct.
-3.  Sign in or impersonate a view-only user. Check the tree, included page, both calendars, and both task lists.
-4.  Check the direct-permission user and confirm they cannot see the rest of the workspace.
-5.  Return to the administrator session. Do not infer normal-reader access from the administrator view because administrators bypass many restrictions.
-
-## 12. Recommended publishing workflow
-
-1.  Select the correct workspace and create the page at the correct place in the tree.
-2.  Enter the title and check the slug. Add the other language's title.
-3.  Write short paragraphs with proper heading hierarchy and descriptive links.
-4.  Upload attachments, add alternative text, and only then insert them.
-5.  Add properties and tags before building the dynamic table.
-6.  Insert dynamic elements and save a draft.
-7.  Run Check document and correct every finding.
-8.  Preview both languages at narrow and wide widths.
-9.  If the page contains restricted calendars, tasks, or included content, test at least one normal reader.
-10. Choose Save and publish only after these checks, then open the published view once more.
-
-## 13. Common problems
-
-- **A change is missing from Preview:** it was saved as a draft only, or you are viewing a different document language.
-- **The English page has a Croatian title:** the document language changed, but the title translation did not. Use the title-language menu and enter the EN title.
-- **The dynamic table is empty:** check the workspace, tag filter, exact property names, and source-page read rights.
-- **An image is broken for guests:** the attachment visibility or source-page access is too restrictive.
-- **A calendar works for the administrator but not a reader:** the reader lacks separate calendar access. This is expected protection, not necessarily an error.
-- **Table or media commands do nothing:** the caret is not in a table cell or the image is not selected.
-- **Pasted Word content looks inconsistent:** select it, use Clear formatting, and reapply headings and lists.
-- **A direct permission appears to expose child pages:** it should not. Check whether the user also belongs to a group with workspace rights.
-
-<div class="alert alert-success">
-
-**Final test:** “It looks correct to the administrator” is not enough. The page should pass the document checker, contain two complete language versions, load all attachments, and behave correctly for a restricted reader.
-
-</div>
+Before finishing, check **content, saving, the selected language, links and the reader's expected access**. For most pages these matter more than the number of decorative elements you insert.

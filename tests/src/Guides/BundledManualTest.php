@@ -28,7 +28,7 @@ final class BundledManualTest extends TestCase
         foreach (['hr', 'en'] as $locale) {
             $pages = $manual->pages($locale);
             $slugs = array_column($pages, 'slug');
-            $this->assertGreaterThanOrEqual(30, count($pages));
+            $this->assertCount(31, $pages);
             $this->assertSame($slugs, array_values(array_unique($slugs)));
             foreach (['simbioza', 'instalacija', 'ankete', 'ankete-api-php', 'ankete-ispunjavanje'] as $slug) {
                 $this->assertContains($slug, $slugs, $locale);
@@ -69,8 +69,11 @@ final class BundledManualTest extends TestCase
         $pages = [];
         foreach (['hr', 'en'] as $locale) {
             $pages[$locale] = array_column($manual->pages($locale), null, 'slug');
-            $this->assertArrayHasKey('html-editor-u-obrascu', $pages[$locale]);
-            $this->assertSame('razvojne-integracije', $pages[$locale]['html-editor-u-obrascu']['parent']);
+            $this->assertCount(31, $pages[$locale]);
+            $this->assertArrayNotHasKey('html-editor-u-obrascu', $pages[$locale]);
+            $this->assertArrayNotHasKey('razvojne-integracije', $pages[$locale]);
+            $this->assertArrayHasKey('ankete-developeri', $pages[$locale]);
+            $this->assertArrayHasKey('ankete-api-php', $pages[$locale]);
         }
 
         $packages = BundledAssetsUpdater::guidePages($root);
