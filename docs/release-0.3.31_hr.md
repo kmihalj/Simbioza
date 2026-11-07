@@ -1,6 +1,6 @@
 # Simbioza 0.3.31 — postavke skripti i kontrole tablica usklađene s temom
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.42](release-0.3.42_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.43](release-0.3.43_hr.md).
 
 [Engleska verzija](release-0.3.31_en.md)
 

@@ -2,8 +2,9 @@
 
 Ove bilješke opisuju promjene pojedinih izdanja 0.3.x. Aktualna instalacija, konfiguracija i korištenje počinju u [indeksu dokumentacije](index_hr.md). Razvojni planovi i jednokratni zapisnici prihvata nisu dokumentacija proizvoda.
 
-Trenutačno objavljena verzija aplikacije je **0.3.42**; svaki modul ima vlastitu verziju. Cijela udaljena povijest izdanja dostupna je na [GitHub Releases](https://github.com/kmihalj/Simbioza/releases).
+Trenutačno objavljena verzija aplikacije je **0.3.43**; svaki modul ima vlastitu verziju. Cijela udaljena povijest izdanja dostupna je na [GitHub Releases](https://github.com/kmihalj/Simbioza/releases).
 
+- [0.3.43](release-0.3.43_hr.md)
 - [0.3.42](release-0.3.42_hr.md)
 - [0.3.36](release-0.3.36_hr.md)
 - [0.3.35](release-0.3.35_hr.md)

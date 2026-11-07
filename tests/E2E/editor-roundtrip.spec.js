@@ -1,4 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { apiHeaders, createEditorSurface, e2eEnvironment, expectData, getDataWithEtag, idempotencyKey, login } from './helpers.js';
 
 const { adminLogin, adminPassword, adminApiToken } = e2eEnvironment();
@@ -251,6 +256,173 @@ test('all table operations and media layout menu values survive persistence', as
   }
   await expect(view.locator('#media-reset')).toHaveAttribute('alt', '');
   await expect(view.locator('#media-reset')).toHaveAttribute('data-editor-html-decorative', '1');
+});
+
+test('intrinsic wide images stay inside content in the editor, published page and offline export', async ({ page, request }) => {
+  test.setTimeout(120_000);
+  const path = await editor(page, request, 'roundtrip-image-bounds');
+  const documentId = new URL(path, 'http://localhost').searchParams.get('document');
+  expect(documentId).toBeTruthy();
+
+  // EN: Generate a real large image in memory; no remote image or checked-in binary fixture is needed.
+  // HR: Stvori stvarnu veliku sliku u memoriji, bez udaljene slike ili binarne datoteke u repozitoriju.
+  const png = Buffer.from(await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2000;
+    canvas.height = 1000;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#2255aa';
+    context.fillRect(0, 0, 2000, 1000);
+    context.fillStyle = '#ffdd33';
+    context.fillRect(0, 0, 100, 1000);
+    context.fillRect(1900, 0, 100, 1000);
+    return canvas.toDataURL('image/png').split(',')[1];
+  }), 'base64');
+  expect(png.readUInt32BE(16)).toBe(2000);
+  expect(png.readUInt32BE(20)).toBe(1000);
+  const asset = await expectData(await request.post(`/api/v1/pages/${documentId}/attachments?lang=en`, {
+    headers: apiHeaders(adminApiToken),
+    multipart: { attachment: { name: 'overflow-2000x1000.png', mimeType: 'image/png', buffer: png } },
+  }), 201);
+  const imageSource = `/editor-html/asset/${asset.uuid}`;
+  const image = (id, style = 'width:100%', classes = '') => `<img id="${id}" src="${imageSource}"`
+    + ` alt="Overflow ${id}" width="2000" height="1000"`
+    + (style ? ` style="${style}"` : '') + (classes ? ` class="${classes}"` : '') + '>';
+  // EN: Use the native two-tab contract; the sanitizer deliberately rejects one-tab collections.
+  // HR: Koristi nativni ugovor s dva taba; sanitizer namjerno odbacuje kolekcije sa samo jednim tabom.
+  const tabs = (id, html) => `<section class="editor-html-tabs" data-editor-html-tabs="1"`
+    + ` data-editor-html-tabs-id="${id}" contenteditable="false">`
+    + '<div class="editor-html-tabs__list" role="tablist" aria-label="Image tabs">'
+    + [0, 1].map((index) => `<button type="button" role="tab" id="${id}-tab-${index + 1}"`
+      + ` class="editor-html-tabs__tab${index === 0 ? ' editor-html-tabs__tab--active' : ''}"`
+      + ` aria-controls="${id}-panel-${index + 1}" aria-selected="${index === 0}"`
+      + ` tabindex="${index === 0 ? 0 : -1}" data-editor-html-tab="${index}">`
+      + `${index === 0 ? 'Image tab' : 'Second tab'}</button>`).join('')
+    + '</div><div class="editor-html-tabs__panels">'
+    + [html, '<p>Second tab text</p>'].map((body, index) => `<div role="tabpanel"`
+      + ` class="editor-html-tabs__panel${index === 0 ? ' editor-html-tabs__panel--active' : ''}"`
+      + ` id="${id}-panel-${index + 1}" aria-labelledby="${id}-tab-${index + 1}" tabindex="0"`
+      + ` data-editor-html-tab-panel="${index}"${index === 0 ? '' : ' hidden="hidden"'}>${body}</div>`).join('')
+    + '</div></section>';
+  const accordion = (id, html) => `<section class="editor-html-accordion" data-editor-html-accordion="1"`
+    + ` data-editor-html-accordion-id="${id}" contenteditable="false">`
+    + '<details class="editor-html-accordion__item"><summary class="editor-html-accordion__title">Image accordion</summary>'
+    + `<div class="editor-html-accordion__body">${html}</div></details></section>`;
+  const card = (html) => `<div class="card"><div class="card-body">${html}</div></div>`;
+  await source(page, '<h2>Image containment regression</h2>'
+    + `<p>${image('overflow-percent')}</p><p>${image('overflow-pixels', 'width:2000px')}</p>`
+    + `<p>${image('overflow-inline-height', 'width:2000px;height:1000px')}</p>`
+    + `<figure class="figure w-100"><a href="${imageSource}">${image('overflow-figure')}</a>`
+    + '<figcaption class="figure-caption">Semantic figure caption</figcaption></figure>'
+    + '<span class="figure editor-html-media-figure editor-html-media-image w-100">'
+    + `<a href="${imageSource}">${image('overflow-linked', 'width:2000px')}</a>`
+    + '<span class="figure-caption">Linked editor figure caption</span></span>'
+    + '<div class="text-end"><span class="figure editor-html-media-figure editor-html-media-image w-100 d-inline-block me-5">'
+    + image('overflow-spaced-right') + '</span></div>'
+    + '<div><span class="figure editor-html-media-figure editor-html-media-image w-100 d-inline-block mx-3">'
+    + image('overflow-spaced-horizontal') + '</span></div>'
+    + '<div><span class="figure editor-html-media-figure editor-html-media-image w-100 d-inline-block m-2">'
+    + image('overflow-spaced-all') + '</span></div>'
+    + card(`<p>${image('overflow-card')}</p>`)
+    + tabs('overflow-tabs', `<p>${image('overflow-tab')}</p>`)
+    + accordion('overflow-accordion', `<p>${image('overflow-accordion-image')}</p>`)
+    + card(tabs('overflow-nested-tabs', accordion('overflow-nested-accordion', `<p>${image('overflow-nested')}</p>`)))
+    + [25, 50, 75].map((size) => `<p>${image(`overflow-palette-${size}`, '', `w-${size}`)}</p>`).join(''));
+
+  const checkGeometry = async (targetPage, selector, stage) => {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+      await targetPage.setViewportSize(viewport);
+      const content = targetPage.locator(selector);
+      await expect(content).toBeVisible();
+      // EN: Published/exported accordions start closed; open them as a reader before measuring every image.
+      // HR: Objavljeni/izvezeni accordioni počinju zatvoreni; otvori ih kao čitatelj prije mjerenja svih slika.
+      for (const details of await content.locator('details').all()) {
+        if (!await details.evaluate((node) => node.open)) await details.locator(':scope > summary').click();
+      }
+      await expect(content.locator('img[alt^="Overflow "]')).toHaveCount(15);
+      await expect.poll(() => content.locator('img[alt^="Overflow "]').evaluateAll((images) => images.every(
+        (node) => node.complete && node.naturalWidth > 0,
+      ))).toBe(true);
+      const geometry = await content.evaluate((root) => {
+        const box = (node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          const left = rect.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+          return { left, right: left + node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) };
+        };
+        const overflow = [];
+        const images = Array.from(root.querySelectorAll('img[alt^="Overflow "]')).map((node) => {
+          const rect = node.getBoundingClientRect();
+          let child = node;
+          while (child !== root && child.parentElement) {
+            const parent = child.parentElement;
+            const boundary = box(parent);
+            const childRect = child.getBoundingClientRect();
+            const childStyle = getComputedStyle(child);
+            // EN: A figure's selected spacing must fit too, not only its border box.
+            // HR: Mora stati i odabrani razmak figure, ne samo njezin rubni okvir.
+            const figure = child.matches('figure, span.figure');
+            const left = childRect.left - (figure ? parseFloat(childStyle.marginLeft) || 0 : 0);
+            const right = childRect.right + (figure ? parseFloat(childStyle.marginRight) || 0 : 0);
+            if (parent.clientWidth > 0 && (left < boundary.left - 2 || right > boundary.right + 2)) {
+              overflow.push({ image: node.alt, wrapper: child.tagName, left, right, boundary });
+            }
+            child = parent;
+          }
+          const paragraph = node.closest('p');
+          const paragraphWidth = paragraph ? box(paragraph).right - box(paragraph).left : 0;
+          return { alt: node.alt, width: rect.width, height: rect.height, paragraphWidth };
+        });
+        const rect = root.getBoundingClientRect();
+        return { images, overflow, clientWidth: root.clientWidth, scrollWidth: root.scrollWidth,
+          left: rect.left, right: rect.right, viewport: innerWidth };
+      });
+      await test.info().attach(`${stage}-${viewport.width}-image-geometry`, {
+        body: JSON.stringify(geometry, null, 2), contentType: 'application/json',
+      });
+      expect(geometry.overflow).toEqual([]);
+      expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth + 2);
+      expect(geometry.left).toBeGreaterThanOrEqual(-2);
+      expect(geometry.right).toBeLessThanOrEqual(geometry.viewport + 2);
+      for (const measured of geometry.images) {
+        expect(measured.width, measured.alt).toBeGreaterThan(0);
+        // EN: The web variant may be smaller than the original, but must retain its 2:1 aspect ratio.
+        // HR: Web izvedenica može biti manja od izvornika, ali mora zadržati njegov omjer 2 : 1.
+        expect(Math.abs(measured.height - measured.width / 2), measured.alt).toBeLessThanOrEqual(2);
+        if (viewport.width === 1440 && measured.alt.includes('overflow-palette-')) {
+          const percentage = Number(measured.alt.split('-').at(-1));
+          expect(Math.abs(measured.width - measured.paragraphWidth * percentage / 100), measured.alt).toBeLessThanOrEqual(2);
+        }
+      }
+    }
+  };
+
+  await checkGeometry(page, '[data-editor-html-surface]', 'editor');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const { stored } = await persist(page, path);
+  for (const size of [25, 50, 75]) expect(stored).toContain(`w-${size}`);
+  await expect(page.locator('.editor-html-view-content')).toContainText('Linked editor figure caption');
+  await checkGeometry(page, '.editor-html-view-content', 'published');
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const downloadPromise = page.waitForEvent('download');
+  await page.locator('a.editor-html-view-action[href*="/editor-html/export"]').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/\.zip$/);
+  const archivePath = await download.path();
+  expect(archivePath).toBeTruthy();
+  const directory = await mkdtemp(join(tmpdir(), 'simbioza-image-containment-'));
+  const offline = await page.context().newPage();
+  try {
+    execFileSync('php', ['-r', '$zip = new ZipArchive(); if ($zip->open($argv[1]) !== true'
+      + ' || !$zip->extractTo($argv[2])) { exit(2); } $zip->close();', archivePath, directory], { timeout: 15_000 });
+    await offline.goto(pathToFileURL(join(directory, 'index.html')).href);
+    await checkGeometry(offline, '#editor-html-standalone-content', 'offline-export');
+    await expect(offline.locator('#editor-html-standalone-content')).toContainText('Semantic figure caption');
+  } finally {
+    await offline.close();
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test('all native dynamic element types and chart/timeline variants survive save and render', async ({ page, request }) => {

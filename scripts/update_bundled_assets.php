@@ -15,6 +15,7 @@ use App\Localization\LanguageRepository;
 use App\Localization\RepositoryLanguageManager;
 use App\Module\ModuleCatalog;
 use App\Update\BundledAssetsUpdater;
+use App\Update\EditorHtmlAssetsUpgrade;
 use App\Update\ThemeConfigurationUpgrade;
 use Composer\InstalledVersions;
 use HeartPhrame\App;
@@ -112,6 +113,11 @@ try {
     if (!$themeConfig instanceof ConfigInterface) {
         throw new RuntimeException('Theme configuration upgrade dependencies are unavailable.');
     }
+
+    if (EditorHtmlAssetsUpgrade::apply($themeConfig)) {
+        echo 'Existing standalone HTML editor CSS refreshed; saved HTML and versions preserved.' . PHP_EOL;
+    }
+
     $themeRepository = ThemeConfigurationUpgrade::repository($themeConfig);
     if ($themeRepository !== null) {
         $addedThemes = (new \App\Update\BundledThemeCollection($themeRepository))->apply($root);

@@ -7,7 +7,7 @@
 
 [Versione croata](installation_hr.md)
 
-Queste guide installano Simbioza **0.3.42**. Consulta [versioni e dipendenze del modulo](module-dependencies_en.md) per l'inventario dei pacchetti corrente. Il framework rimane **0.0.25**. La baseline 0.3.x inizia con una nuova directory applicativa, configurazione e database. Un aggiornamento da 0.2.x o il riutilizzo dei relativi backup Simbioza non è supportato.
+Queste guide installano Simbioza **0.3.43**. Consulta [versioni e dipendenze del modulo](module-dependencies_en.md) per l'inventario dei pacchetti corrente. Il framework rimane **0.0.25**. La baseline 0.3.x inizia con una nuova directory applicativa, configurazione e database. Un aggiornamento da 0.2.x o il riutilizzo dei relativi backup Simbioza non è supportato.
 
 Scegli **una guida completa** di seguito. Ciascuna inizia da un terminale amministratore, installa/controlla gli strumenti host, scarica la versione, prepara il database e le autorizzazioni, configura il server Web, esegue la procedura guidata e verifica il primo accesso. Non utilizzare questa panoramica come passaggio di installazione aggiuntivo.
 

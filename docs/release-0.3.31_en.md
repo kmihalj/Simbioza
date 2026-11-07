@@ -1,6 +1,6 @@
 # Simbioza 0.3.31 — theme-aware script settings and table controls
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.42](release-0.3.42_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.43](release-0.3.43_en.md).
 
 [Croatian version](release-0.3.31_hr.md)
 

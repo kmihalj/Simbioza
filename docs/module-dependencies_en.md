@@ -125,7 +125,7 @@ Each link opens the module-owned beginner guide, with a complete minimal PHP pro
 | Backup | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-backup/-/blob/main/docs/how_to_en.md) | `0.3.6` |
 | Calendar | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-calendar/-/blob/main/docs/how_to_en.md) | `0.3.5` |
 | Comment | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-comment/-/blob/main/docs/how_to_en.md) | `0.3.5` |
-| HTML Editor | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/how_to_en.md) | `0.3.18` |
+| HTML Editor | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/how_to_en.md) | `0.3.19` |
 | Email | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/main/docs/how_to_en.md) | `0.3.7` |
 | Menu | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-menu/-/blob/main/docs/how_to_en.md) | `0.3.6` |
 | Notification | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-notification/-/blob/main/docs/how_to_en.md) | `0.3.4` |

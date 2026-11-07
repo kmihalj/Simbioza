@@ -7,6 +7,7 @@ namespace App\Deployment;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\MigrationInterface;
 use App\Module\ModuleCatalog;
+use App\Update\EditorHtmlAssetsUpgrade;
 use App\Update\ThemeConfigurationUpgrade;
 use Composer\InstalledVersions;
 use HeartPhrame\Config\Config;
@@ -306,6 +307,7 @@ final readonly class ContainerRuntime
             //
             // HR: Nadogradnje imagea dodaju iste nedostajuće ključeve kao klasični updater, bez uvoza defaulta.
             ThemeConfigurationUpgrade::apply($config);
+            EditorHtmlAssetsUpgrade::apply($config);
             $this->clearCache();
             $this->publish('data/.image-state.json', json_encode([
                 'code_id' => $this->image()['code_id'], 'migrated_at' => gmdate(DATE_ATOM),

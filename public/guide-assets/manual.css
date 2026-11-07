@@ -3,10 +3,85 @@
     overflow-wrap: anywhere;
 }
 
-.simbioza-manual-content img,
-.simbioza-manual-content video {
-    height: auto;
-    max-width: 100%;
+.simbioza-manual-content :is(img, video, svg, figure, span.figure) {
+    --editor-html-media-ms: 0px;
+    --editor-html-media-me: 0px;
+    box-sizing: border-box;
+    max-width: calc(100% - var(--editor-html-media-ms) - var(--editor-html-media-me)) !important;
+    max-inline-size: calc(100% - var(--editor-html-media-ms) - var(--editor-html-media-me)) !important;
+    min-width: 0;
+}
+
+.simbioza-manual-content :is(img, video, svg) {
+    height: auto !important;
+}
+
+/* EN: Both selected horizontal margins belong inside the content width.
+ * HR: Oba odabrana bočna razmaka uračunavaju se u raspoloživu širinu sadržaja.
+ */
+.simbioza-manual-content :is(img, video, svg, figure, span.figure):is(.m-1, .mx-1) {
+    --editor-html-media-ms: .25rem;
+    --editor-html-media-me: .25rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure):is(.m-2, .mx-2) {
+    --editor-html-media-ms: .5rem;
+    --editor-html-media-me: .5rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure):is(.m-3, .mx-3) {
+    --editor-html-media-ms: 1rem;
+    --editor-html-media-me: 1rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure):is(.m-4, .mx-4) {
+    --editor-html-media-ms: 1.5rem;
+    --editor-html-media-me: 1.5rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure):is(.m-5, .mx-5) {
+    --editor-html-media-ms: 3rem;
+    --editor-html-media-me: 3rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).ms-1 {
+    --editor-html-media-ms: .25rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).ms-2 {
+    --editor-html-media-ms: .5rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).ms-3 {
+    --editor-html-media-ms: 1rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).ms-4 {
+    --editor-html-media-ms: 1.5rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).ms-5 {
+    --editor-html-media-ms: 3rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).me-1 {
+    --editor-html-media-me: .25rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).me-2 {
+    --editor-html-media-me: .5rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).me-3 {
+    --editor-html-media-me: 1rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).me-4 {
+    --editor-html-media-me: 1.5rem;
+}
+
+.simbioza-manual-content :is(img, video, svg, figure, span.figure).me-5 {
+    --editor-html-media-me: 3rem;
 }
 
 .simbioza-manual-content pre {
