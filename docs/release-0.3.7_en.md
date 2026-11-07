@@ -1,6 +1,6 @@
 # Simbioza 0.3.7 — bundled language revisions
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.41](release-0.3.41_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.42](release-0.3.42_en.md).
 
 > Historical release note. For current installation instructions, use the [installation guide](installation_en.md).
 

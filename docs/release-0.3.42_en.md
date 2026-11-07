@@ -1,4 +1,4 @@
-# Simbioza 0.3.41 — complete multilingual guides and reusable modules
+# Simbioza 0.3.42 — complete multilingual guides and reusable modules
 
 The bundled manual now contains **90 chapters in six languages**: Croatian, English, German, Spanish, French and Italian. It covers everyday reading and editing, Workspaces, calendars and meetings, surveys, collaboration, themes, menus, administration, installation and 123 API operations. Chapters are organised by task and role. Croatian and English retain screenshots of their own interfaces; the four new translations reuse the English screenshots with a clear notice and translated descriptions.
 

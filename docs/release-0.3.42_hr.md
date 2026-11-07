@@ -1,4 +1,4 @@
-# Simbioza 0.3.41 — potpune višejezične upute i samostalni moduli
+# Simbioza 0.3.42 — potpune višejezične upute i samostalni moduli
 
 Isporučeni priručnik sada ima **90 poglavlja na šest jezika**: hrvatskom, engleskom, njemačkom, španjolskom, francuskom i talijanskom. Obuhvaća svakodnevno čitanje i uređivanje, područja, kalendare i sastanke, ankete, suradnju, teme, izbornike, administraciju, instalaciju i 123 API operacije. Poglavlja su organizirana prema radnji i ulozi. Hrvatski i engleski zadržavaju snimke vlastitog sučelja; četiri nova prijevoda koriste engleske snimke uz jasnu napomenu i prevedene opise.
 

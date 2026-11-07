@@ -1,6 +1,6 @@
 # Simbioza 0.3.17 — preserve shared language configuration during updates
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.41](release-0.3.41_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.42](release-0.3.42_en.md).
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.17/docs/release-0.3.17_hr.md)
 

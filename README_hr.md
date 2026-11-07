@@ -146,7 +146,7 @@ Ispravno podešena secured FPM instalacija podržava i GUI nadogradnju. Obični 
 
 Podržana linija aplikacije je 0.3.x. Site s verzijom 0.2.x zahtijeva novu instalaciju; njegov stari Simbioza backup nije put nadogradnje. Redovne 0.3.x nadogradnje čuvaju odabrane opcionalne module, sadržaj i postavke. Novi opcionalni modul postaje dostupan za izričitu instalaciju.
 
-Aktualna kontejnerska slika je `ghcr.io/kmihalj/simbioza:0.3.41`. Trajne podatke i tajne podesite prema [Docker uputi](docs/docker_hr.md), a prije nadogradnje pregledajte [izdanje 0.3.41](docs/release-0.3.41_hr.md).
+Aktualna kontejnerska slika je `ghcr.io/kmihalj/simbioza:0.3.42`. Trajne podatke i tajne podesite prema [Docker uputi](docs/docker_hr.md), a prije nadogradnje pregledajte [izdanje 0.3.42](docs/release-0.3.42_hr.md).
 
 ## Koristite module u vlastitoj aplikaciji
 

@@ -1,6 +1,6 @@
 # Simbioza 0.3.7 — revizije ugrađenih jezika
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.41](release-0.3.41_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.42](release-0.3.42_hr.md).
 
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.7/docs/release-0.3.7_en.md)
 

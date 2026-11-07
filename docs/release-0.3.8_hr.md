@@ -1,6 +1,6 @@
 # Simbioza 0.3.8 — neobjavljeni kandidat
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.41](release-0.3.41_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.42](release-0.3.42_hr.md).
 
 Tag 0.3.8 bilježi prijelaznog kandidata. GitHub izdanje nije objavljeno i za
 njega nije objavljen stabilni Docker image. Završna provjera FPM Secured

@@ -62,7 +62,7 @@ Simbioza include **26 temi pronti all'uso**, ciascuno con aspetto chiaro e scuro
 
 A partire dalla versione 0.3.36, gli aggiornamenti aggiungono una sola volta i temi inclusi mancanti. I temi esistenti e la selezione attiva vengono mantenuti. Eliminando un tema aggiuntivo, gli aggiornamenti successivi non lo ripristinano. La registrazione dell'importazione viene conservata nella configurazione Theme e inclusa nel backup e nel ripristino del sito. È comunque possibile importare nuovamente un tema a mano dal suo ZIP.
 
-[Scaricare la raccolta ZIP di tutti i 26 temi](https://github.com/kmihalj/Simbioza/releases/download/0.3.41/Simbioza-0.3.41-themes.zip)
+[Scaricare la raccolta ZIP di tutti i 26 temi](https://github.com/kmihalj/Simbioza/releases/download/0.3.42/Simbioza-0.3.42-themes.zip)
 
 Estrarre la raccolta, quindi selezionare un singolo ZIP da `themes/` in **Importa tema completo**. La raccolta contiene anche una galleria consultabile senza connessione. Non caricare l'intera raccolta come un unico tema.
 
