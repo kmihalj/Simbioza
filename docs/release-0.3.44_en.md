@@ -1,4 +1,4 @@
-# Simbioza 0.3.43 — images stay within HTML content
+# Simbioza 0.3.44 — images stay within HTML content
 
 Images now fit within the HTML content container, including large images imported from Markdown and images with a fixed pixel width. A width of **100%** uses the available space inside that container. The correction preserves the image's proportions, smaller chosen widths, links and captions; it does not crop the image or enlarge small images.
 
@@ -6,7 +6,7 @@ Images now fit within the HTML content container, including large images importe
 
 The HTML Editor **0.3.19** shares the same media boundaries between the document editor, published pages, reusable HTML form fields, survey HTML content and newly generated standalone HTML exports. Guides displayed without Wiki have the same protection. Images inside cards, tabs, accordions, tables and links also respect their containing content area and spacing.
 
-A browser regression test covers oversized original images, percentage and fixed widths, captions, nested content and spacing in the editor, published view and offline HTML export at desktop and mobile widths. The source HTML remains editable; this correction changes presentation rules rather than rewriting stored content.
+A browser regression test uses a portable PNG image and covers oversized originals, percentage and fixed widths, captions, nested content and spacing in the editor, published view and offline HTML export at desktop and mobile widths. The source HTML remains editable; this correction changes presentation rules rather than rewriting stored content.
 
 ## Upgrade
 

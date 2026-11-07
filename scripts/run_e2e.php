@@ -35,8 +35,8 @@ use PDO;
 use RuntimeException;
 use Throwable;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
-require dirname(__DIR__) . '/src/Tools/CleanInstallMatrix.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/src/Tools/CleanInstallMatrix.php';
 
 const E2E_ADMIN_LOGIN = 'e2e-admin';
 const E2E_ADMIN_PASSWORD = 'E2eAdmin!2026';
@@ -215,9 +215,9 @@ function configureE2eApplication(string $projectDirectory): void
     $installation['session_name'] = 'HEARTPHRAME_E2E_SESSION';
     writeMatrixPhpConfig($installationPath, $installation);
 
-    // EN: Local host upload restrictions are valid, but the disposable suite explicitly uploads TXT fixtures.
+    // EN: Local host upload restrictions are valid, but the disposable suite explicitly uploads TXT and PNG fixtures.
     //
-    // HR: Ograničenja lokalnog sitea vrijede, ali izdvojeni test izričito učitava ogledne TXT datoteke.
+    // HR: Ograničenja lokalnog sitea vrijede, ali izdvojeni test izričito učitava ogledne TXT i PNG datoteke.
     $editorPath = $projectDirectory . '/config/editor-html/editor-html.json';
     $editorDirectory = dirname($editorPath);
     if (!is_dir($editorDirectory) && !mkdir($editorDirectory, 0770, true) && !is_dir($editorDirectory)) {
@@ -229,7 +229,7 @@ function configureE2eApplication(string $projectDirectory): void
         throw new RuntimeException('E2E Editor configuration is invalid.');
     }
     $editor['uploads']['allowed_mime_types'] = array_values(array_unique([
-        ...($editor['uploads']['allowed_mime_types'] ?? []), 'text/plain',
+        ...($editor['uploads']['allowed_mime_types'] ?? []), 'text/plain', 'image/png',
     ]));
     if (file_put_contents($editorPath, json_encode($editor, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)) === false) {
         throw new RuntimeException('E2E attachment fixtures could not be configured.');
@@ -691,4 +691,9 @@ function runEndToEndSuite(): int
     }
 }
 
-exit(runEndToEndSuite());
+// EN: Importing configuration helpers for focused tests must not start servers or browser scenarios.
+//
+// HR: Uvoz pomoćnih konfiguracijskih funkcija za ciljane testove ne smije pokrenuti servere ili browser scenarije.
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    exit(runEndToEndSuite());
+}

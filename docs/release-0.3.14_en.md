@@ -1,6 +1,6 @@
 # Simbioza 0.3.14 — clear Setup update summaries
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.43](release-0.3.43_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.44](release-0.3.44_en.md).
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.14/docs/release-0.3.14_hr.md)
 

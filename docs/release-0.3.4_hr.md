@@ -1,6 +1,6 @@
 # Simbioza 0.3.4 — runtime prava sigurnog FPM-a
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.43](release-0.3.43_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.44](release-0.3.44_hr.md).
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/release-0.3.4_en.md)
 

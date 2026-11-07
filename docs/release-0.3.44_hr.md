@@ -1,4 +1,4 @@
-# Simbioza 0.3.43 — slike ostaju unutar HTML sadržaja
+# Simbioza 0.3.44 — slike ostaju unutar HTML sadržaja
 
 Slike sada stanu u okvir HTML sadržaja, uključujući velike slike uvezene iz Markdowna i slike s fiksnom širinom u pikselima. Širina **100%** koristi raspoloživi prostor unutar tog okvira. Popravak čuva omjer slike, manje odabrane širine, poveznice i potpise; ne reže sliku niti povećava male slike.
 
@@ -6,7 +6,7 @@ Slike sada stanu u okvir HTML sadržaja, uključujući velike slike uvezene iz M
 
 HTML Editor **0.3.19** dijeli ista ograničenja medija između uređivanja dokumenta, objavljenih stranica, HTML polja u obrascima, HTML sadržaja anketa i novih samostalnih HTML izvoza. Istu zaštitu imaju upute prikazane bez Wikija. Slike u karticama, tabovima, harmonikama, tablicama i poveznicama također poštuju širinu pripadajućeg sadržaja i razmake.
 
-Regresijski test preglednika obuhvaća velike izvorne slike, postotne i fiksne širine, potpise, ugniježđeni sadržaj i razmake u editoru, objavljenom prikazu i HTML izvozu bez poslužitelja, na desktopu i mobitelu. Izvorni HTML ostaje moguće uređivati; popravak mijenja pravila prikaza, a ne prepisuje spremljeni sadržaj.
+Regresijski test preglednika koristi prenosivu PNG sliku te obuhvaća velike izvornike, postotne i fiksne širine, potpise, ugniježđeni sadržaj i razmake u editoru, objavljenom prikazu i HTML izvozu bez poslužitelja, na desktopu i mobitelu. Izvorni HTML ostaje moguće uređivati; popravak mijenja pravila prikaza, a ne prepisuje spremljeni sadržaj.
 
 ## Nadogradnja
 

@@ -280,10 +280,12 @@ test('intrinsic wide images stay inside content in the editor, published page an
   }), 'base64');
   expect(png.readUInt32BE(16)).toBe(2000);
   expect(png.readUInt32BE(20)).toBe(1000);
-  const asset = await expectData(await request.post(`/api/v1/pages/${documentId}/attachments?lang=en`, {
+  const upload = await request.post(`/api/v1/pages/${documentId}/attachments?lang=en`, {
     headers: apiHeaders(adminApiToken),
     multipart: { attachment: { name: 'overflow-2000x1000.png', mimeType: 'image/png', buffer: png } },
-  }), 201);
+  });
+  expect(upload.status(), await upload.text()).toBe(201);
+  const asset = await expectData(upload, 201);
   const imageSource = `/editor-html/asset/${asset.uuid}`;
   const image = (id, style = 'width:100%', classes = '') => `<img id="${id}" src="${imageSource}"`
     + ` alt="Overflow ${id}" width="2000" height="1000"`

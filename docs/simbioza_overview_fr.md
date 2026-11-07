@@ -62,7 +62,7 @@ Simbioza comprend **26 thèmes prêts à l’emploi**, chacun avec une apparence
 
 À partir de la version 0.3.36, les mises à niveau ajoutent une seule fois les thèmes fournis qui manquent. Les thèmes existants et la sélection active sont conservés. La suppression d’un thème supplémentaire empêche les mises à niveau ultérieures de le restaurer. Le reçu d’importation est conservé dans la configuration du module Theme et inclus dans la sauvegarde et la restauration du site. Vous pouvez toujours réimporter un thème manuellement à partir de son ZIP.
 
-[Télécharger la collection ZIP des 26 thèmes](https://github.com/kmihalj/Simbioza/releases/download/0.3.43/Simbioza-0.3.43-themes.zip)
+[Télécharger la collection ZIP des 26 thèmes](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
 
 Extrayez la collection, puis sélectionnez un ZIP individuel dans `themes/`, sous **Importer un thème complet**. La collection contient également une galerie consultable hors connexion. Ne téléversez pas toute la collection comme un seul thème.
 

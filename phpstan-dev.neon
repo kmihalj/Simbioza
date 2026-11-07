@@ -4,6 +4,7 @@ parameters:
 	paths:
 		- tests
 	scanFiles:
+		- scripts/run_e2e.php
 		- scripts/sync_user_guides.php
 		- scripts/sync_installation_guides.php
 		- scripts/audit_module_documentation.php

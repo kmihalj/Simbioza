@@ -1,6 +1,6 @@
 # Simbioza 0.3.33 — twelve themes and readable page descriptions
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.43](release-0.3.43_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.44](release-0.3.44_en.md).
 
 [Croatian version](release-0.3.33_hr.md)
 

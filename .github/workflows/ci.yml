@@ -558,8 +558,8 @@ jobs:
         with:
           name: hfclean-postgresql-e2e-diagnostics
           path: |
-            build/playwright-report
-            build/test-results
+            build/playwright-report-pgsql
+            build/test-results-pgsql
             build/e2e-server-*.log
             build/e2e-query-log-*.jsonl
             build/e2e-request-log-*.jsonl
@@ -628,8 +628,8 @@ jobs:
         with:
           name: hfclean-mysql-e2e-diagnostics
           path: |
-            build/playwright-report
-            build/test-results
+            build/playwright-report-mysql
+            build/test-results-mysql
             build/e2e-server-*.log
             build/e2e-query-log-*.jsonl
             build/e2e-request-log-*.jsonl

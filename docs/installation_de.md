@@ -7,7 +7,7 @@
 
 [Kroatische Version](installation_hr.md)
 
-Diese Anleitungen installieren Simbioza **0.3.43**. Den aktuellen Paketbestand finden Sie unter [Modulversionen und Abhängigkeiten](module-dependencies_en.md). Das Framework bleibt **0.0.25**. Die 0.3.x-Baseline beginnt mit einem neuen Anwendungsverzeichnis, einer neuen Konfiguration und einer neuen Datenbank. Ein Upgrade von 0.2.x oder die Wiederverwendung seiner Simbioza-Backups wird nicht unterstützt.
+Diese Anleitungen installieren Simbioza **0.3.44**. Den aktuellen Paketbestand finden Sie unter [Modulversionen und Abhängigkeiten](module-dependencies_en.md). Das Framework bleibt **0.0.25**. Die 0.3.x-Baseline beginnt mit einem neuen Anwendungsverzeichnis, einer neuen Konfiguration und einer neuen Datenbank. Ein Upgrade von 0.2.x oder die Wiederverwendung seiner Simbioza-Backups wird nicht unterstützt.
 
 Wählen Sie unten **eine vollständige Anleitung** aus. Jeder startet an einem Administratorterminal, installiert/überprüft die Host-Tools, lädt die Version herunter, bereitet die Datenbank und Berechtigungen vor, konfiguriert den Webserver, führt den Assistenten aus und überprüft die erste Anmeldung. Nutzen Sie diese Übersicht nicht als zusätzlichen Installationsschritt.
 

@@ -1,6 +1,6 @@
 # Simbioza 0.3.9 — neobjavljeni kandidat
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.43](release-0.3.43_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.44](release-0.3.44_hr.md).
 
 Tag bilježi provjerenog prijelaznog kandidata, ne objavljeno izdanje. Završni
 pregled očuvanja konfiguracije zahtijevao je dodatne ispravke navigacije u
