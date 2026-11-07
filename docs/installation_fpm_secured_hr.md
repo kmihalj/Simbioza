@@ -43,11 +43,11 @@ git --version
 ```
 
 PHP mora biti **8.2 ili noviji**, Composer verzije 2, a potrebne PHP ekstenzije
-su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
+su `ctype dom fileinfo intl json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.39
+## 2. Preuzmite čisto izdanje Simbioze 0.3.40
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -73,7 +73,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.39 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.40 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -82,7 +82,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.39` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.40` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -572,7 +572,7 @@ opcionalni paketi instaliraju se kroz GUI.
 Ako svjesno ne koristite namjenski pomoćni program, prije nastavka obrasca
 kao deploy korisnik pripremite odabrane opcionalne pakete naredbom
 `php scripts/installation_packages.php prepare` (svi moduli) ili navedite
-`--modules=theme,calendar` za uži izbor. Popis prilagodite stvarnom odabiru i
+`--modules=calendar` za uži izbor. Popis prilagodite stvarnom odabiru i
 osvježite instalacijski obrazac. Bez pomoćnog programa kasnije GUI izmjene
 paketa nisu dostupne. Instalacija/ažuriranje/uklanjanje jezika piše samo
 runtime podatke i konfiguraciju te ne treba taj helper. Osigurajte da PHP

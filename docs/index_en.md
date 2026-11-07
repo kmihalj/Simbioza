@@ -13,7 +13,7 @@ Simbioza combines pages, a searchable Wiki, calendars and meetings, surveys and 
 | Install only a focused set of features or extend an existing site | [Modular installation options](modularity_en.md) |
 | Operate, update or back up an installation | [Operations and troubleshooting](troubleshooting_en.md) |
 | Embed the HTML editor in a field of your own application | [HTML editor in form fields](html-editor-forms_en.md) |
-| Connect another system through the API | [API contract](api-v1-contract_en.md) |
+| Connect another system through the API | [Complete API manual with examples](user-guide/api-koristenje_en.md) |
 | Customize the appearance | [Theme collection](theme-collection_en.md) and [light/dark gallery](theme-gallery_en.md) |
 
 ## Install and maintain
@@ -33,13 +33,15 @@ Simbioza combines pages, a searchable Wiki, calendars and meetings, surveys and 
 - [Personal Workspaces](personal-workspaces_en.md) and [personal appearance](personal-appearance_en.md).
 - [Themes, import and deletion](theme-collection_en.md), [creative themes](creative-themes_en.md), [all 26 previews](theme-gallery_en.md), and [branding](branding_en.md).
 
-The installed **User guides** Workspace contains the practical instructions for sign-in, pages, calendars, meetings and surveys. Without Wiki, **Guides** presents the same published chapters as HTML. The guide offers only translations that both exist and are installed; installing another interface language does not translate the manual.
+The manual has **90 chapters in Croatian, English, German, Spanish, French and Italian**, with separate procedures for readers and authors, administrators, and developers. Open [pages and editing](user-guide/uredivanje-stranica_en.md), [Workspaces](user-guide/podrucja_en.md), [calendars](user-guide/kalendari_en.md), [surveys](user-guide/ankete_en.md), [themes](user-guide/teme_en.md), [menus](user-guide/izbornici_en.md), or [administration](user-guide/admin-pregled_en.md). The [API manual](user-guide/api-koristenje_en.md) covers 123 concrete operations, including requests, responses, and the permissions each operation requires.
+
+With Wiki, chapters live in the **User guides** Workspace. Without Wiki, **Guides** presents the same content as HTML with chapter navigation. The guide offers only translations that both exist and are installed; installing another interface language does not translate the manual.
 
 ## Develop and integrate
 
 - [Embed the HTML editor in a form field](html-editor-forms_en.md).
 - [Project structure](project-structure_en.md), [common workflows](common-workflows_en.md), and [module registration](modules_en.md).
-- [API v1 contract](api-v1-contract_en.md), [shared services](common-services_en.md), and [request lifecycle](request-lifecycle_en.md).
+- [Complete API manual: cURL/PHP, authorization, and actual responses](user-guide/api-koristenje_en.md), [API v1 contract summary](api-v1-contract_en.md), [shared services](common-services_en.md), and [request lifecycle](request-lifecycle_en.md).
 - [Routes](routes_en.md), [middleware](middleware_en.md), [views](views_en.md), and [sessions](sessions_en.md).
 - [Encryption](encryption_en.md) and [event dispatch](event-dispatcher_en.md).
 - [Documentation and example checks](documentation-quality_en.md) and [end-to-end verification](end-to-end-testing_en.md).

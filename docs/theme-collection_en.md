@@ -29,7 +29,7 @@ Open **Settings → Theme**, choose its name in **Active theme**, and save the s
 
 ## Importing into another installation
 
-[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.39/Simbioza-0.3.39-themes.zip)
+[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.40/Simbioza-0.3.40-themes.zip)
 
 Starting with release 0.3.36, upgrades add missing bundled themes once. Existing themes and the active selection are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
 

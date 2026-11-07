@@ -1,41 +1,13 @@
 [
   {
-    "slug": "apache-mod-php-instalacija",
-    "title": {
-      "hr": "Apache mod_php instalacija",
-      "en": "Apache mod_php installation"
-    },
-    "parent": "instalacija",
-    "sources": {
-      "en": [
-        "docs/installation_mod_php_en.md"
-      ],
-      "hr": [
-        "docs/installation_mod_php_hr.md"
-      ]
-    }
-  },
-  {
-    "slug": "confluence-import",
-    "title": {
-      "hr": "Confluence import",
-      "en": "Confluence import"
-    },
-    "parent": "podrucja",
-    "sources": {
-      "hr": [
-        "docs/user-guide/confluence-import_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/confluence-import_en.md"
-      ]
-    }
-  },
-  {
     "slug": "simbioza",
     "title": {
       "hr": "Simbioza",
-      "en": "Simbioza"
+      "en": "Simbioza",
+      "de": "Simbioza",
+      "es": "Simbioza",
+      "fr": "Simbioza",
+      "it": "Simbioza"
     },
     "parent": null,
     "sources": {
@@ -44,6 +16,2386 @@
       ],
       "hr": [
         "docs/simbioza_overview_hr.md"
+      ],
+      "de": [
+        "docs/simbioza_overview_de.md"
+      ],
+      "es": [
+        "docs/simbioza_overview_es.md"
+      ],
+      "fr": [
+        "docs/simbioza_overview_fr.md"
+      ],
+      "it": [
+        "docs/simbioza_overview_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "uredivanje-stranica",
+    "title": {
+      "hr": "Uređivanje stranica",
+      "en": "Editing pages",
+      "de": "Seiten bearbeiten",
+      "es": "Editar páginas",
+      "fr": "Modifier les pages",
+      "it": "Modifica delle pagine"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/uredivanje-stranica_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/uredivanje-stranica_en.md"
+      ],
+      "de": [
+        "docs/user-guide/uredivanje-stranica_de.md"
+      ],
+      "es": [
+        "docs/user-guide/uredivanje-stranica_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/uredivanje-stranica_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/uredivanje-stranica_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "samostalne-html-stranice",
+    "title": {
+      "hr": "Samostalne HTML stranice",
+      "en": "Standalone HTML pages",
+      "de": "Eigenständige HTML-Seiten",
+      "es": "Páginas HTML independientes",
+      "fr": "Pages HTML autonomes",
+      "it": "Pagine HTML indipendenti"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/samostalne-html-stranice_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/samostalne-html-stranice_en.md"
+      ],
+      "de": [
+        "docs/user-guide/samostalne-html-stranice_de.md"
+      ],
+      "es": [
+        "docs/user-guide/samostalne-html-stranice_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/samostalne-html-stranice_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/samostalne-html-stranice_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja",
+    "title": {
+      "hr": "Područja",
+      "en": "Workspaces",
+      "de": "Arbeitsbereiche – der Einstieg",
+      "es": "Espacios de trabajo: primeros pasos",
+      "fr": "Espaces de travail — par où commencer",
+      "it": "Aree di lavoro — da dove iniziare"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-citanje",
+    "title": {
+      "hr": "Pronađite i pročitajte sadržaj",
+      "en": "Find and read content",
+      "de": "Inhalte finden und lesen",
+      "es": "Buscar y leer contenidos",
+      "fr": "Trouver et lire du contenu",
+      "it": "Trovare e leggere contenuti"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-citanje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-citanje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-citanje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-citanje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-citanje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-citanje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-stvaranje",
+    "title": {
+      "hr": "Napravite novo područje",
+      "en": "Create a workspace",
+      "de": "Einen Arbeitsbereich erstellen",
+      "es": "Crear un espacio de trabajo",
+      "fr": "Créer un espace de travail",
+      "it": "Creare un'area di lavoro"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-stvaranje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-stvaranje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-stvaranje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-stvaranje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-stvaranje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-stvaranje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-upravljanje",
+    "title": {
+      "hr": "Upravljajte svojim područjem",
+      "en": "Manage your workspace",
+      "de": "Den eigenen Arbeitsbereich verwalten",
+      "es": "Gestionar su espacio de trabajo",
+      "fr": "Gérer votre espace de travail",
+      "it": "Gestisci la tua area di lavoro"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-upravljanje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-upravljanje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-upravljanje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-upravljanje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-upravljanje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-upravljanje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-clanovi-prava",
+    "title": {
+      "hr": "Dodajte članove i dodijelite prava",
+      "en": "Add members and assign permissions",
+      "de": "Mitglieder hinzufügen und Berechtigungen vergeben",
+      "es": "Añadir miembros y asignar permisos",
+      "fr": "Ajouter des membres et attribuer des droits",
+      "it": "Aggiungi membri e assegna autorizzazioni"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-clanovi-prava_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-clanovi-prava_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-clanovi-prava_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-clanovi-prava_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-clanovi-prava_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-clanovi-prava_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-stablo",
+    "title": {
+      "hr": "Uredite stablo i podatke stranice",
+      "en": "Arrange the tree and page details",
+      "de": "Seitenbaum und Seitendaten bearbeiten",
+      "es": "Organizar el árbol y los datos de las páginas",
+      "fr": "Organiser l’arborescence et les informations de la page",
+      "it": "Organizza l’albero e i dettagli della pagina"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-stablo_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-stablo_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-stablo_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-stablo_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-stablo_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-stablo_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-objava",
+    "title": {
+      "hr": "Spremite nacrt i objavite stranicu",
+      "en": "Save a draft and publish a page",
+      "de": "Einen Entwurf speichern und eine Seite veröffentlichen",
+      "es": "Guardar un borrador y publicar una página",
+      "fr": "Enregistrer un brouillon et publier une page",
+      "it": "Salva una bozza e pubblica una pagina"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-objava_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-objava_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-objava_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-objava_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-objava_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-objava_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-prava-stranice",
+    "title": {
+      "hr": "Ograničite ili otvorite jednu stranicu",
+      "en": "Restrict or share one page",
+      "de": "Eine einzelne Seite einschränken oder freigeben",
+      "es": "Restringir o compartir una sola página",
+      "fr": "Restreindre ou partager une page",
+      "it": "Limita o condividi una pagina"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-prava-stranice_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-prava-stranice_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-prava-stranice_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-prava-stranice_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-prava-stranice_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-prava-stranice_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "podrucja-izvoz-backup",
+    "title": {
+      "hr": "Izvezite područje ili vratite kopiju",
+      "en": "Export a workspace or restore a backup",
+      "de": "Einen Arbeitsbereich exportieren oder eine Sicherung wiederherstellen",
+      "es": "Exportar un espacio de trabajo o restaurar una copia de seguridad",
+      "fr": "Exporter un espace de travail ou restaurer une sauvegarde",
+      "it": "Esporta un'area di lavoro o ripristina un backup"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/podrucja-izvoz-backup_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/podrucja-izvoz-backup_en.md"
+      ],
+      "de": [
+        "docs/user-guide/podrucja-izvoz-backup_de.md"
+      ],
+      "es": [
+        "docs/user-guide/podrucja-izvoz-backup_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/podrucja-izvoz-backup_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/podrucja-izvoz-backup_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "pretraga",
+    "title": {
+      "hr": "Pronađite sadržaj pretragom",
+      "en": "Find content with search",
+      "de": "Inhalte mit der Suche finden",
+      "es": "Buscar contenidos con el buscador",
+      "fr": "Trouver du contenu avec la recherche",
+      "it": "Trova contenuti con la ricerca"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/pretraga_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/pretraga_en.md"
+      ],
+      "de": [
+        "docs/user-guide/pretraga_de.md"
+      ],
+      "es": [
+        "docs/user-guide/pretraga_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/pretraga_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/pretraga_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "confluence-import",
+    "title": {
+      "hr": "Confluence import",
+      "en": "Confluence import",
+      "de": "Import aus Confluence",
+      "es": "Importar desde Confluence",
+      "fr": "Importer depuis Confluence",
+      "it": "Importazione da Confluence"
+    },
+    "parent": "podrucja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/confluence-import_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/confluence-import_en.md"
+      ],
+      "de": [
+        "docs/user-guide/confluence-import_de.md"
+      ],
+      "es": [
+        "docs/user-guide/confluence-import_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/confluence-import_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/confluence-import_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "kalendari",
+    "title": {
+      "hr": "Kalendari",
+      "en": "Calendars",
+      "de": "Kalender – der Einstieg",
+      "es": "Calendarios: primeros pasos",
+      "fr": "Calendriers — par où commencer",
+      "it": "Calendari: da dove cominciare"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/kalendari_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/kalendari_en.md"
+      ],
+      "de": [
+        "docs/user-guide/kalendari_de.md"
+      ],
+      "es": [
+        "docs/user-guide/kalendari_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/kalendari_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/kalendari_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "kalendari-pregled",
+    "title": {
+      "hr": "Pronađite događaj i podesite pregled",
+      "en": "Find events and adjust your view",
+      "de": "Termine finden und die Ansicht anpassen",
+      "es": "Buscar eventos y ajustar la vista",
+      "fr": "Trouver des événements et adapter l’affichage",
+      "it": "Trova eventi e modifica la tua visualizzazione"
+    },
+    "parent": "kalendari",
+    "sources": {
+      "hr": [
+        "docs/user-guide/kalendari-pregled_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/kalendari-pregled_en.md"
+      ],
+      "de": [
+        "docs/user-guide/kalendari-pregled_de.md"
+      ],
+      "es": [
+        "docs/user-guide/kalendari-pregled_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/kalendari-pregled_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/kalendari-pregled_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "kalendari-dogadaji",
+    "title": {
+      "hr": "Dodajte ili promijenite događaj",
+      "en": "Add or change an event",
+      "de": "Einen Termin hinzufügen oder ändern",
+      "es": "Añadir o modificar un evento",
+      "fr": "Ajouter ou modifier un événement",
+      "it": "Aggiungi o modifica un evento"
+    },
+    "parent": "kalendari",
+    "sources": {
+      "hr": [
+        "docs/user-guide/kalendari-dogadaji_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/kalendari-dogadaji_en.md"
+      ],
+      "de": [
+        "docs/user-guide/kalendari-dogadaji_de.md"
+      ],
+      "es": [
+        "docs/user-guide/kalendari-dogadaji_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/kalendari-dogadaji_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/kalendari-dogadaji_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "kalendari-osobni",
+    "title": {
+      "hr": "Izradite i podijelite osobni kalendar",
+      "en": "Create and share a personal calendar",
+      "de": "Einen persönlichen Kalender erstellen und teilen",
+      "es": "Crear y compartir un calendario personal",
+      "fr": "Créer et partager un calendrier personnel",
+      "it": "Crea e condividi un calendario personale"
+    },
+    "parent": "kalendari",
+    "sources": {
+      "hr": [
+        "docs/user-guide/kalendari-osobni_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/kalendari-osobni_en.md"
+      ],
+      "de": [
+        "docs/user-guide/kalendari-osobni_de.md"
+      ],
+      "es": [
+        "docs/user-guide/kalendari-osobni_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/kalendari-osobni_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/kalendari-osobni_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "kalendari-povezivanje",
+    "title": {
+      "hr": "Prenesite događaje ili povežite kalendarsku aplikaciju",
+      "en": "Transfer events or connect a calendar application",
+      "de": "Termine übertragen oder eine Kalenderanwendung verbinden",
+      "es": "Transferir eventos o conectar una aplicación de calendario",
+      "fr": "Transférer des événements ou connecter une application de calendrier",
+      "it": "Trasferisci eventi o collega un'applicazione di calendario"
+    },
+    "parent": "kalendari",
+    "sources": {
+      "hr": [
+        "docs/user-guide/kalendari-povezivanje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/kalendari-povezivanje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/kalendari-povezivanje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/kalendari-povezivanje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/kalendari-povezivanje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/kalendari-povezivanje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "sastanci",
+    "title": {
+      "hr": "Sastanci — korak po korak",
+      "en": "Meetings — step by step",
+      "de": "Besprechungen – Schritt für Schritt",
+      "es": "Reuniones: paso a paso",
+      "fr": "Réunions — pas à pas",
+      "it": "Riunioni: passo dopo passo"
+    },
+    "parent": "kalendari",
+    "sources": {
+      "hr": [
+        "docs/user-guide/sastanci_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/sastanci_en.md"
+      ],
+      "de": [
+        "docs/user-guide/sastanci_de.md"
+      ],
+      "es": [
+        "docs/user-guide/sastanci_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/sastanci_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/sastanci_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete",
+    "title": {
+      "hr": "Ankete",
+      "en": "Surveys",
+      "de": "Umfragen",
+      "es": "Encuestas",
+      "fr": "Sondages",
+      "it": "Sondaggi"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-autori",
+    "title": {
+      "hr": "Za sastavljače anketa",
+      "en": "For survey authors",
+      "de": "Für Umfrageautoren",
+      "es": "Para autores de encuestas",
+      "fr": "Pour les auteurs de sondages",
+      "it": "Per gli autori dei sondaggi"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-autori_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-autori_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-autori_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-autori_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-autori_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-autori_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-izrada-objava",
+    "title": {
+      "hr": "1. Kreirajte nacrt",
+      "en": "1. Create a draft",
+      "de": "1. Einen Entwurf erstellen",
+      "es": "1. Crear un borrador",
+      "fr": "1. Créer un brouillon",
+      "it": "1. Crea una bozza"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-izrada-objava_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-izrada-objava_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-izrada-objava_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-izrada-objava_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-izrada-objava_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-izrada-objava_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-pitanja",
+    "title": {
+      "hr": "2. Dodajte uvod i pitanja",
+      "en": "2. Add an introduction and questions",
+      "de": "2. Eine Einleitung und Fragen hinzufügen",
+      "es": "2. Añadir una introducción y preguntas",
+      "fr": "2. Ajouter une introduction et des questions",
+      "it": "2. Aggiungi un'introduzione e domande"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-pitanja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-pitanja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-pitanja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-pitanja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-pitanja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-pitanja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-grananje-prijevodi",
+    "title": {
+      "hr": "Uvjetna pitanja i više jezika",
+      "en": "Conditional questions and languages",
+      "de": "Bedingte Fragen und Sprachen",
+      "es": "Preguntas condicionales e idiomas",
+      "fr": "Questions conditionnelles et langues",
+      "it": "Domande condizionali e lingue"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-grananje-prijevodi_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-grananje-prijevodi_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-grananje-prijevodi_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-grananje-prijevodi_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-grananje-prijevodi_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-grananje-prijevodi_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-pristup-privatnost",
+    "title": {
+      "hr": "3. Odaberite ispitanike i privatnost",
+      "en": "3. Choose participants and privacy",
+      "de": "3. Teilnehmer und Datenschutz festlegen",
+      "es": "3. Elegir participantes y opciones de privacidad",
+      "fr": "3. Choisir les participants et la confidentialité",
+      "it": "3. Scegli i partecipanti e la privacy"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-pristup-privatnost_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-pristup-privatnost_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-pristup-privatnost_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-pristup-privatnost_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-pristup-privatnost_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-pristup-privatnost_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-objava",
+    "title": {
+      "hr": "4. Provjerite i objavite anketu",
+      "en": "4. Check and publish the survey",
+      "de": "4. Die Umfrage prüfen und veröffentlichen",
+      "es": "4. Revisar y publicar la encuesta",
+      "fr": "4. Vérifier et publier le sondage",
+      "it": "4. Controlla e pubblica il sondaggio"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-objava_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-objava_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-objava_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-objava_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-objava_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-objava_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-rezultati",
+    "title": {
+      "hr": "5. Pogledajte rezultate i obavijesti",
+      "en": "5. View results and notifications",
+      "de": "5. Ergebnisse und Benachrichtigungen ansehen",
+      "es": "5. Consultar resultados y notificaciones",
+      "fr": "5. Consulter les résultats et les notifications",
+      "it": "5. Visualizza risultati e notifiche"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-rezultati_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-rezultati_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-rezultati_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-rezultati_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-rezultati_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-rezultati_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-kopiranje-backup",
+    "title": {
+      "hr": "Kopirajte ili zatvorite anketu",
+      "en": "Copy or close a survey",
+      "de": "Eine Umfrage kopieren, schließen oder entfernen",
+      "es": "Copiar, cerrar o eliminar una encuesta",
+      "fr": "Copier, fermer ou supprimer un sondage",
+      "it": "Copia, chiudi o rimuovi un sondaggio"
+    },
+    "parent": "ankete-autori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-kopiranje-backup_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-kopiranje-backup_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-kopiranje-backup_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-kopiranje-backup_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-kopiranje-backup_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-kopiranje-backup_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-ispunjavanje",
+    "title": {
+      "hr": "Za ispitanike — ispunite anketu",
+      "en": "For participants — complete a survey",
+      "de": "Für Teilnehmer – eine Umfrage ausfüllen",
+      "es": "Para participantes: completar una encuesta",
+      "fr": "Pour les participants — répondre à un sondage",
+      "it": "Per i partecipanti: completare un sondaggio"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-ispunjavanje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-ispunjavanje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-ispunjavanje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-ispunjavanje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-ispunjavanje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-ispunjavanje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-administratori",
+    "title": {
+      "hr": "Za administratore",
+      "en": "For administrators",
+      "de": "Für Administratoren",
+      "es": "Para administradores",
+      "fr": "Pour les administrateurs",
+      "it": "Per gli amministratori"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-administratori_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-administratori_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-administratori_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-administratori_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-administratori_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-administratori_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-pocetak",
+    "title": {
+      "hr": "Ovlasti za sastavljanje i objavu",
+      "en": "Authoring and publication permissions",
+      "de": "Berechtigungen zum Erstellen und Veröffentlichen",
+      "es": "Permisos de creación y publicación",
+      "fr": "Droits de création et de publication",
+      "it": "Autorizzazioni di creazione e pubblicazione"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-pocetak_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-pocetak_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-pocetak_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-pocetak_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-pocetak_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-pocetak_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-autentikacija",
+    "title": {
+      "hr": "Vanjska prijava i mapiranje podataka",
+      "en": "External sign-in and attribute mapping",
+      "de": "Externe Anmeldung und Attributzuordnung",
+      "es": "Inicio de sesión externo y asignación de atributos",
+      "fr": "Connexion externe et correspondance des attributs",
+      "it": "Accesso esterno e mappatura degli attributi"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-autentikacija_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-autentikacija_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-autentikacija_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-autentikacija_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-autentikacija_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-autentikacija_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-backup-detalji",
+    "title": {
+      "hr": "Sigurnosne kopije i vraćanje",
+      "en": "Backup and restore",
+      "de": "Sichern und Wiederherstellen",
+      "es": "Copias de seguridad y restauración",
+      "fr": "Sauvegarde et restauration",
+      "it": "Backup e ripristino"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-backup-detalji_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-backup-detalji_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-backup-detalji_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-backup-detalji_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-backup-detalji_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-backup-detalji_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-poslovi-izvjestaja",
+    "title": {
+      "hr": "Dostava obavijesti i izvještaja",
+      "en": "Notification and report delivery",
+      "de": "Benachrichtigungen und Berichte zustellen",
+      "es": "Envío de notificaciones e informes",
+      "fr": "Envoi des notifications et des rapports",
+      "it": "Consegna di notifiche e rapporti"
+    },
+    "parent": "ankete-administratori",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-poslovi-izvjestaja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-developeri",
+    "title": {
+      "hr": "Za developere — API",
+      "en": "For developers — API",
+      "de": "Für Entwickler – API",
+      "es": "Para desarrolladores: API",
+      "fr": "Pour les développeurs — API",
+      "it": "Per gli sviluppatori — API"
+    },
+    "parent": "ankete",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-developeri_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-developeri_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-developeri_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-developeri_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-developeri_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-developeri_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api-php",
+    "title": {
+      "hr": "API — PHP primjeri",
+      "en": "API — PHP examples",
+      "de": "API – PHP-Beispiele",
+      "es": "API: ejemplos en PHP",
+      "fr": "API — exemples PHP",
+      "it": "API — esempi PHP"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api-php_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api-php_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-api-php_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-api-php_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-api-php_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-api-php_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api",
+    "title": {
+      "hr": "API — cURL primjeri",
+      "en": "API — cURL examples",
+      "de": "API – cURL-Beispiele",
+      "es": "API: ejemplos con cURL",
+      "fr": "API — exemples cURL",
+      "it": "API: esempi di cURL"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-api_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-api_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-api_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-api_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api-referenca",
+    "title": {
+      "hr": "API — rute, opsezi i greške",
+      "en": "API — routes, scopes and errors",
+      "de": "API – Routen, Scopes und Fehler",
+      "es": "API: rutas, ámbitos y errores",
+      "fr": "API — routes, portées et erreurs",
+      "it": "API: percorsi, ambiti ed errori"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api-referenca_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api-referenca_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-api-referenca_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-api-referenca_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-api-referenca_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-api-referenca_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-api-primjeri",
+    "title": {
+      "hr": "API — predložak i primjeri",
+      "en": "API — template and examples",
+      "de": "API – Vorlage und Beispiele",
+      "es": "API: plantilla y ejemplos",
+      "fr": "API — modèle et exemples",
+      "it": "API: modello ed esempi"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-api-primjeri_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-api-primjeri_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-api-primjeri_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-api-primjeri_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-api-primjeri_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-api-primjeri_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "ankete-html-sadrzaj",
+    "title": {
+      "hr": "HTML sadržaj i sigurnost",
+      "en": "HTML content and safety",
+      "de": "HTML-Inhalte und Sicherheit",
+      "es": "Contenido HTML y seguridad",
+      "fr": "Contenu HTML et sécurité",
+      "it": "Contenuti HTML e sicurezza"
+    },
+    "parent": "ankete-developeri",
+    "sources": {
+      "hr": [
+        "docs/user-guide/ankete-html-sadrzaj_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/ankete-html-sadrzaj_en.md"
+      ],
+      "de": [
+        "docs/user-guide/ankete-html-sadrzaj_de.md"
+      ],
+      "es": [
+        "docs/user-guide/ankete-html-sadrzaj_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/ankete-html-sadrzaj_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/ankete-html-sadrzaj_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "suradnja",
+    "title": {
+      "hr": "Suradnja na sadržaju",
+      "en": "Working together on content",
+      "de": "Gemeinsam an Inhalten arbeiten",
+      "es": "Colaborar en los contenidos",
+      "fr": "Collaborer sur le contenu",
+      "it": "Lavorare insieme sui contenuti"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/suradnja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/suradnja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/suradnja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/suradnja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/suradnja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/suradnja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "komentari",
+    "title": {
+      "hr": "Pročitajte ili napišite komentar",
+      "en": "Read or write a comment",
+      "de": "Einen Kommentar lesen oder schreiben",
+      "es": "Comentarios",
+      "fr": "Lire ou écrire un commentaire",
+      "it": "Leggi o scrivi un commento"
+    },
+    "parent": "suradnja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/komentari_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/komentari_en.md"
+      ],
+      "de": [
+        "docs/user-guide/komentari_de.md"
+      ],
+      "es": [
+        "docs/user-guide/komentari_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/komentari_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/komentari_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "zadaci",
+    "title": {
+      "hr": "Popisi zadataka na stranici",
+      "en": "Task lists on a page",
+      "de": "Aufgabenlisten auf einer Seite",
+      "es": "Listas de tareas en una página",
+      "fr": "Listes de tâches sur une page",
+      "it": "Elenchi di attività su una pagina"
+    },
+    "parent": "suradnja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/zadaci_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/zadaci_en.md"
+      ],
+      "de": [
+        "docs/user-guide/zadaci_de.md"
+      ],
+      "es": [
+        "docs/user-guide/zadaci_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/zadaci_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/zadaci_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "pracenje-obavijesti",
+    "title": {
+      "hr": "Pratite promjene i pročitajte obavijesti",
+      "en": "Follow changes and read notifications",
+      "de": "Änderungen verfolgen und Benachrichtigungen lesen",
+      "es": "Seguir cambios y leer notificaciones",
+      "fr": "Suivre les modifications et lire les notifications",
+      "it": "Segui le modifiche e leggi le notifiche"
+    },
+    "parent": "suradnja",
+    "sources": {
+      "hr": [
+        "docs/user-guide/pracenje-obavijesti_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/pracenje-obavijesti_en.md"
+      ],
+      "de": [
+        "docs/user-guide/pracenje-obavijesti_de.md"
+      ],
+      "es": [
+        "docs/user-guide/pracenje-obavijesti_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/pracenje-obavijesti_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/pracenje-obavijesti_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "osobni-profil",
+    "title": {
+      "hr": "Prijava i moj profil",
+      "en": "Sign-in and my profile",
+      "de": "Anmeldung und mein Profil",
+      "es": "Inicio de sesión y mi perfil",
+      "fr": "Connexion et profil personnel",
+      "it": "Accesso e profilo personale"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/osobni-profil_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/osobni-profil_en.md"
+      ],
+      "de": [
+        "docs/user-guide/osobni-profil_de.md"
+      ],
+      "es": [
+        "docs/user-guide/osobni-profil_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/osobni-profil_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/osobni-profil_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "pristupacnost",
+    "title": {
+      "hr": "Prilagodite prikaz za lakše čitanje",
+      "en": "Adjust the display for easier reading",
+      "de": "Die Anzeige für leichteres Lesen anpassen",
+      "es": "Ajustar la visualización para facilitar la lectura",
+      "fr": "Adapter l’affichage pour faciliter la lecture",
+      "it": "Adatta la visualizzazione per facilitare la lettura"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/pristupacnost_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/pristupacnost_en.md"
+      ],
+      "de": [
+        "docs/user-guide/pristupacnost_de.md"
+      ],
+      "es": [
+        "docs/user-guide/pristupacnost_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/pristupacnost_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/pristupacnost_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme",
+    "title": {
+      "hr": "Teme — izgled Simbioze",
+      "en": "Themes — Simbioza's appearance",
+      "de": "Designs – das Erscheinungsbild von Simbioza",
+      "es": "Temas: la apariencia de Simbioza",
+      "fr": "Thèmes — l’apparence de Simbioza",
+      "it": "Temi: aspetto di Simbioza"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-pocetak",
+    "title": {
+      "hr": "Odaberite temu ili napravite svoju kopiju",
+      "en": "Choose a theme or make your own copy",
+      "de": "Ein Design auswählen oder eine eigene Kopie erstellen",
+      "es": "Elegir un tema o crear una copia propia",
+      "fr": "Choisir un thème ou créer votre propre copie",
+      "it": "Scegli un tema o crea la tua copia"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-pocetak_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-pocetak_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-pocetak_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-pocetak_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-pocetak_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-pocetak_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-zaglavlje",
+    "title": {
+      "hr": "Složite zaglavlje",
+      "en": "Build the header",
+      "de": "Die Kopfzeile gestalten",
+      "es": "Diseñar la cabecera",
+      "fr": "Composer l’en-tête",
+      "it": "Costruisci l'intestazione"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-zaglavlje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-zaglavlje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-zaglavlje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-zaglavlje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-zaglavlje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-zaglavlje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-navigacija",
+    "title": {
+      "hr": "Podesite izgled navigacije",
+      "en": "Configure navigation appearance",
+      "de": "Das Erscheinungsbild der Navigation festlegen",
+      "es": "Configurar la apariencia de la navegación",
+      "fr": "Configurer l’apparence de la navigation",
+      "it": "Configura l'aspetto della navigazione"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-navigacija_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-navigacija_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-navigacija_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-navigacija_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-navigacija_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-navigacija_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-hero",
+    "title": {
+      "hr": "Uredite hero: naslov, boje i sliku",
+      "en": "Configure the hero: title, colours and image",
+      "de": "Den Hero-Bereich gestalten: Titel, Farben und Bild",
+      "es": "Configurar el elemento principal: título, colores e imagen",
+      "fr": "Configurer le bandeau principal : titre, couleurs et image",
+      "it": "Configura la sezione principale: titolo, colori e immagine"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-hero_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-hero_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-hero_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-hero_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-hero_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-hero_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-sadrzaj-kartice",
+    "title": {
+      "hr": "Podesite sadržaj, naslove i kartice",
+      "en": "Configure content, titles and cards",
+      "de": "Inhalt, Titel und Karten gestalten",
+      "es": "Configurar contenidos, títulos y tarjetas",
+      "fr": "Configurer le contenu, les titres et les cartes",
+      "it": "Configura contenuti, titoli e riquadri"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-sadrzaj-kartice_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-sadrzaj-kartice_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-sadrzaj-kartice_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-sadrzaj-kartice_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-sadrzaj-kartice_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-sadrzaj-kartice_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-boje-komponente",
+    "title": {
+      "hr": "Podesite boje i provjerite elemente",
+      "en": "Set colours and check components",
+      "de": "Farben festlegen und Komponenten prüfen",
+      "es": "Elegir colores y comprobar componentes",
+      "fr": "Régler les couleurs et vérifier les composants",
+      "it": "Imposta i colori e controlla i componenti"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-boje-komponente_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-boje-komponente_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-boje-komponente_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-boje-komponente_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-boje-komponente_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-boje-komponente_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "teme-datoteke",
+    "title": {
+      "hr": "Datoteke teme, uvoz i izvoz",
+      "en": "Theme files, import and export",
+      "de": "Designdateien, Import und Export",
+      "es": "Archivos del tema, importación y exportación",
+      "fr": "Fichiers du thème, importation et exportation",
+      "it": "File del tema, importazione ed esportazione"
+    },
+    "parent": "teme",
+    "sources": {
+      "hr": [
+        "docs/user-guide/teme-datoteke_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/teme-datoteke_en.md"
+      ],
+      "de": [
+        "docs/user-guide/teme-datoteke_de.md"
+      ],
+      "es": [
+        "docs/user-guide/teme-datoteke_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/teme-datoteke_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/teme-datoteke_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "izbornici",
+    "title": {
+      "hr": "Podesite izbornike Simbioze",
+      "en": "Configure Simbioza menus",
+      "de": "Simbioza-Menüs einrichten",
+      "es": "Configurar los menús de Simbioza",
+      "fr": "Configurer les menus de Simbioza",
+      "it": "Configura i menu di Simbioza"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/izbornici_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/izbornici_en.md"
+      ],
+      "de": [
+        "docs/user-guide/izbornici_de.md"
+      ],
+      "es": [
+        "docs/user-guide/izbornici_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/izbornici_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/izbornici_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "izbornici-stavke",
+    "title": {
+      "hr": "Dodajte i rasporedite stavke izbornika",
+      "en": "Add and arrange menu items",
+      "de": "Menüeinträge hinzufügen und anordnen",
+      "es": "Añadir y ordenar elementos del menú",
+      "fr": "Ajouter et organiser les éléments de menu",
+      "it": "Aggiungi e organizza le voci di menu"
+    },
+    "parent": "izbornici",
+    "sources": {
+      "hr": [
+        "docs/user-guide/izbornici-stavke_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/izbornici-stavke_en.md"
+      ],
+      "de": [
+        "docs/user-guide/izbornici-stavke_de.md"
+      ],
+      "es": [
+        "docs/user-guide/izbornici-stavke_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/izbornici-stavke_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/izbornici-stavke_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "izbornici-podrucja",
+    "title": {
+      "hr": "Posebni izbornici za područje ili ekran",
+      "en": "Special menus for a workspace or screen",
+      "de": "Besondere Menüs für einen Arbeitsbereich oder eine Ansicht",
+      "es": "Menús especiales para un espacio de trabajo o una pantalla",
+      "fr": "Menus spécifiques à un espace de travail ou à un écran",
+      "it": "Menu speciali per un'area di lavoro o una schermata"
+    },
+    "parent": "izbornici",
+    "sources": {
+      "hr": [
+        "docs/user-guide/izbornici-podrucja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/izbornici-podrucja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/izbornici-podrucja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/izbornici-podrucja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/izbornici-podrucja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/izbornici-podrucja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "izbornici-vidljivost",
+    "title": {
+      "hr": "Vidljivost izbornika i prava korisnika",
+      "en": "Menu visibility and user permissions",
+      "de": "Menüsichtbarkeit und Benutzerberechtigungen",
+      "es": "Visibilidad de los menús y permisos de los usuarios",
+      "fr": "Visibilité des menus et droits des utilisateurs",
+      "it": "Visibilità del menu e autorizzazioni dell'utente"
+    },
+    "parent": "izbornici",
+    "sources": {
+      "hr": [
+        "docs/user-guide/izbornici-vidljivost_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/izbornici-vidljivost_en.md"
+      ],
+      "de": [
+        "docs/user-guide/izbornici-vidljivost_de.md"
+      ],
+      "es": [
+        "docs/user-guide/izbornici-vidljivost_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/izbornici-vidljivost_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/izbornici-vidljivost_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "prijava-i-korisnici",
+    "title": {
+      "hr": "Prijava i korisnici",
+      "en": "Login and users",
+      "de": "Anmeldung und Benutzer",
+      "es": "Inicio de sesión y usuarios",
+      "fr": "Connexion et utilisateurs",
+      "it": "Accesso e utenti"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/prijava-i-korisnici_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/prijava-i-korisnici_en.md"
+      ],
+      "de": [
+        "docs/user-guide/prijava-i-korisnici_de.md"
+      ],
+      "es": [
+        "docs/user-guide/prijava-i-korisnici_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/prijava-i-korisnici_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/prijava-i-korisnici_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-pregled",
+    "title": {
+      "hr": "Administriranje Simbioze",
+      "en": "Administering Simbioza",
+      "de": "Simbioza verwalten",
+      "es": "Administrar Simbioza",
+      "fr": "Administrer Simbioza",
+      "it": "Amministrazione di Simbioza"
+    },
+    "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-pregled_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-pregled_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-pregled_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-pregled_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-pregled_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-pregled_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-skripte",
+    "title": {
+      "hr": "Vanjske skripte i upute za autore",
+      "en": "External scripts and author instructions",
+      "de": "Externe Skripte und Hinweise für Autoren",
+      "es": "Scripts externos e instrucciones para autores",
+      "fr": "Scripts externes et instructions pour les auteurs",
+      "it": "Script esterni e istruzioni per l'autore"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-skripte_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-skripte_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-skripte_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-skripte_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-skripte_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-skripte_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-dnevnici",
+    "title": {
+      "hr": "Dnevnik aktivnosti i tehnički log",
+      "en": "Activity audit and technical log",
+      "de": "Aktivitätsnachweise und technisches Protokoll",
+      "es": "Auditoría de actividad y registro técnico",
+      "fr": "Journal d’activité et journal technique",
+      "it": "Registro delle attività e registro tecnico"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-dnevnici_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-dnevnici_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-dnevnici_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-dnevnici_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-dnevnici_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-dnevnici_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-jezici",
+    "title": {
+      "hr": "Jezici sučelja",
+      "en": "Interface languages",
+      "de": "Sprachen der Benutzeroberfläche",
+      "es": "Idiomas de la interfaz",
+      "fr": "Langues de l’interface",
+      "it": "Lingue dell'interfaccia"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-jezici_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-jezici_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-jezici_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-jezici_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-jezici_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-jezici_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-podrucja",
+    "title": {
+      "hr": "Administratorske postavke područja",
+      "en": "Administrator settings for workspaces",
+      "de": "Administratoreinstellungen für Arbeitsbereiche",
+      "es": "Configuración administrativa de los espacios de trabajo",
+      "fr": "Paramètres d’administration des espaces de travail",
+      "it": "Impostazioni dell'amministratore per le aree di lavoro"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-podrucja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-podrucja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-podrucja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-podrucja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-podrucja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-podrucja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-kalendari",
+    "title": {
+      "hr": "Administracija kalendara",
+      "en": "Calendar administration",
+      "de": "Kalender verwalten",
+      "es": "Administrar calendarios",
+      "fr": "Administration des calendriers",
+      "it": "Amministrazione del calendario"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-kalendari_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-kalendari_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-kalendari_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-kalendari_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-kalendari_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-kalendari_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-pristupacnost",
+    "title": {
+      "hr": "Pristupačnost",
+      "en": "Accessibility",
+      "de": "Barrierefreiheit",
+      "es": "Accesibilidad",
+      "fr": "Accessibilité",
+      "it": "Accessibilità"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-pristupacnost_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-pristupacnost_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-pristupacnost_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-pristupacnost_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-pristupacnost_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-pristupacnost_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-sigurnosne-kopije",
+    "title": {
+      "hr": "Sigurnosne kopije i vraćanje",
+      "en": "Backups and restoration",
+      "de": "Sicherungen erstellen und wiederherstellen",
+      "es": "Copias de seguridad y restauración",
+      "fr": "Sauvegardes et restauration",
+      "it": "Backup e ripristino"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-sigurnosne-kopije_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-sigurnosne-kopije_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-sigurnosne-kopije_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-sigurnosne-kopije_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-sigurnosne-kopije_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-sigurnosne-kopije_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-e-posta",
+    "title": {
+      "hr": "E-pošta i provjera slanja",
+      "en": "Email and delivery testing",
+      "de": "E-Mail und Zustellung testen",
+      "es": "Correo electrónico y pruebas de envío",
+      "fr": "Courriel et vérification de l’envoi",
+      "it": "Email e verifica dell’invio"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-e-posta_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-e-posta_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-e-posta_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-e-posta_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-e-posta_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-e-posta_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-ankete",
+    "title": {
+      "hr": "Administracija anketa",
+      "en": "Survey administration",
+      "de": "Umfragen verwalten",
+      "es": "Administrar encuestas",
+      "fr": "Administration des sondages",
+      "it": "Amministrazione dei sondaggi"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-ankete_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-ankete_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-ankete_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-ankete_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-ankete_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-ankete_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-korisnici-i-pristup",
+    "title": {
+      "hr": "Korisnici, grupe i administratorski pristup",
+      "en": "Users, groups, and administrator access",
+      "de": "Benutzer, Gruppen und Administratorzugriff",
+      "es": "Usuarios, grupos y acceso de administración",
+      "fr": "Utilisateurs, groupes et accès administrateur",
+      "it": "Utenti, gruppi e accesso amministratore"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-korisnici-i-pristup_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-korisnici-i-pristup_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-korisnici-i-pristup_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-korisnici-i-pristup_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-korisnici-i-pristup_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-korisnici-i-pristup_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-suradnja",
+    "title": {
+      "hr": "Zadaci, komentari i obavijesti",
+      "en": "Tasks, comments, and notifications",
+      "de": "Aufgaben, Kommentare und Benachrichtigungen",
+      "es": "Tareas, comentarios y notificaciones",
+      "fr": "Tâches, commentaires et notifications",
+      "it": "Attività, commenti e notifiche"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-suradnja_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-suradnja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-suradnja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-suradnja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-suradnja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-suradnja_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-podesavanje",
+    "title": {
+      "hr": "Podešavanje, moduli i nadogradnja",
+      "en": "Setup, modules, and upgrades",
+      "de": "Einrichtung, Module und Aktualisierungen",
+      "es": "Configuración inicial, módulos y actualizaciones",
+      "fr": "Configuration, modules et mises à niveau",
+      "it": "Configurazione, moduli e aggiornamenti"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-podesavanje_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-podesavanje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-podesavanje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-podesavanje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-podesavanje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-podesavanje_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-html-editor",
+    "title": {
+      "hr": "Postavke HTML editora",
+      "en": "HTML editor settings",
+      "de": "Einstellungen des HTML-Editors",
+      "es": "Configuración del editor HTML",
+      "fr": "Paramètres de l’éditeur HTML",
+      "it": "Impostazioni dell'editor HTML"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-html-editor_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-html-editor_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-html-editor_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-html-editor_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-html-editor_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-html-editor_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "admin-api",
+    "title": {
+      "hr": "Administracija API ključeva",
+      "en": "API key administration",
+      "de": "API-Schlüssel verwalten",
+      "es": "Administrar claves de API",
+      "fr": "Administration des clés API",
+      "it": "Amministrazione delle chiavi API"
+    },
+    "parent": "admin-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/admin-api_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/admin-api_en.md"
+      ],
+      "de": [
+        "docs/user-guide/admin-api_de.md"
+      ],
+      "es": [
+        "docs/user-guide/admin-api_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/admin-api_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/admin-api_it.md"
       ]
     }
   },
@@ -51,7 +2403,11 @@
     "slug": "instalacija",
     "title": {
       "hr": "Instalacija",
-      "en": "Installation"
+      "en": "Installation",
+      "de": "Eine Simbioza-Installation auswählen",
+      "es": "Elegir una instalación de Simbioza",
+      "fr": "Choisir une installation de Simbioza",
+      "it": "Scegli un'installazione di Simbioza"
     },
     "parent": null,
     "sources": {
@@ -62,6 +2418,54 @@
       "hr": [
         "docs/installation_hr.md",
         "docs/modularity_hr.md"
+      ],
+      "de": [
+        "docs/installation_de.md",
+        "docs/modularity_de.md"
+      ],
+      "es": [
+        "docs/installation_es.md",
+        "docs/modularity_es.md"
+      ],
+      "fr": [
+        "docs/installation_fr.md",
+        "docs/modularity_fr.md"
+      ],
+      "it": [
+        "docs/installation_it.md",
+        "docs/modularity_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "apache-mod-php-instalacija",
+    "title": {
+      "hr": "Apache mod_php instalacija",
+      "en": "Apache mod_php installation",
+      "de": "Simbioza mit Apache mod_php installieren",
+      "es": "Instalar Simbioza con Apache mod_php",
+      "fr": "Installer Simbioza avec Apache mod_php",
+      "it": "Installa Simbioza con Apache mod_php"
+    },
+    "parent": "instalacija",
+    "sources": {
+      "en": [
+        "docs/installation_mod_php_en.md"
+      ],
+      "hr": [
+        "docs/installation_mod_php_hr.md"
+      ],
+      "de": [
+        "docs/installation_mod_php_de.md"
+      ],
+      "es": [
+        "docs/installation_mod_php_es.md"
+      ],
+      "fr": [
+        "docs/installation_mod_php_fr.md"
+      ],
+      "it": [
+        "docs/installation_mod_php_it.md"
       ]
     }
   },
@@ -69,7 +2473,11 @@
     "slug": "php-fpm-instalacija",
     "title": {
       "hr": "PHP-FPM instalacija",
-      "en": "PHP-FPM installation"
+      "en": "PHP-FPM installation",
+      "de": "Simbioza mit herkömmlichem PHP-FPM installieren",
+      "es": "Instalar Simbioza con PHP-FPM convencional",
+      "fr": "Installer Simbioza avec PHP-FPM classique",
+      "it": "Installa Simbioza con PHP-FPM ordinario"
     },
     "parent": "instalacija",
     "sources": {
@@ -80,422 +2488,406 @@
       "hr": [
         "docs/installation_fpm_hr.md",
         "docs/installation_fpm_secured_hr.md"
+      ],
+      "de": [
+        "docs/installation_fpm_de.md",
+        "docs/installation_fpm_secured_de.md"
+      ],
+      "es": [
+        "docs/installation_fpm_es.md",
+        "docs/installation_fpm_secured_es.md"
+      ],
+      "fr": [
+        "docs/installation_fpm_fr.md",
+        "docs/installation_fpm_secured_fr.md"
+      ],
+      "it": [
+        "docs/installation_fpm_it.md",
+        "docs/installation_fpm_secured_it.md"
       ]
     }
   },
   {
-    "slug": "prijava-i-korisnici",
+    "slug": "api-koristenje",
     "title": {
-      "hr": "Prijava i korisnici",
-      "en": "Login and users"
+      "hr": "API — povezivanje s drugim sustavima",
+      "en": "API — connecting other systems",
+      "de": "API – andere Systeme anbinden",
+      "es": "API: conectar otros sistemas",
+      "fr": "API — connecter d’autres systèmes",
+      "it": "API: connessione ad altri sistemi"
     },
     "parent": null,
     "sources": {
       "hr": [
-        "docs/user-guide/prijava-i-korisnici_hr.md"
+        "docs/user-guide/api-koristenje_hr.md"
       ],
       "en": [
-        "docs/user-guide/prijava-i-korisnici_en.md"
+        "docs/user-guide/api-koristenje_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-koristenje_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-koristenje_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-koristenje_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-koristenje_it.md"
       ]
     }
   },
   {
-    "slug": "kalendari",
+    "slug": "api-pocetak",
     "title": {
-      "hr": "Kalendari",
-      "en": "Calendars"
+      "hr": "API — početak i zajednička pravila",
+      "en": "API — getting started and shared rules",
+      "de": "API – Einstieg und gemeinsame Regeln",
+      "es": "API: primeros pasos y reglas comunes",
+      "fr": "API — premiers pas et règles communes",
+      "it": "API: guida introduttiva e regole condivise"
     },
-    "parent": null,
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/kalendari_hr.md"
+        "docs/user-guide/api-pocetak_hr.md"
       ],
       "en": [
-        "docs/user-guide/kalendari_en.md"
+        "docs/user-guide/api-pocetak_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-pocetak_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-pocetak_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-pocetak_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-pocetak_it.md"
       ]
     }
   },
   {
-    "slug": "podrucja",
+    "slug": "api-korisnici-grupe",
     "title": {
-      "hr": "Područja",
-      "en": "Workspaces"
+      "hr": "API — korisnici i grupe",
+      "en": "API — users and groups",
+      "de": "API – Benutzer und Gruppen",
+      "es": "API: usuarios y grupos",
+      "fr": "API — utilisateurs et groupes",
+      "it": "API: utenti e gruppi"
     },
-    "parent": null,
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/podrucja_hr.md"
+        "docs/user-guide/api-korisnici-grupe_hr.md"
       ],
       "en": [
-        "docs/user-guide/podrucja_en.md"
+        "docs/user-guide/api-korisnici-grupe_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-korisnici-grupe_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-korisnici-grupe_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-korisnici-grupe_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-korisnici-grupe_it.md"
       ]
     }
   },
   {
-    "slug": "uredivanje-stranica",
+    "slug": "api-podrucja",
     "title": {
-      "hr": "Uređivanje stranica",
-      "en": "Editing pages"
+      "hr": "API — područja, stablo, ovlasti i teme",
+      "en": "API — workspaces, trees, permissions and themes",
+      "de": "API – Arbeitsbereiche, Seitenbäume, Berechtigungen und Designs",
+      "es": "API: espacios de trabajo, árboles, permisos y temas",
+      "fr": "API — espaces de travail, arborescences, droits et thèmes",
+      "it": "API: aree di lavoro, alberi, autorizzazioni e temi"
     },
-    "parent": null,
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/uredivanje-stranica_hr.md"
+        "docs/user-guide/api-podrucja_hr.md"
       ],
       "en": [
-        "docs/user-guide/uredivanje-stranica_en.md"
+        "docs/user-guide/api-podrucja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-podrucja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-podrucja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-podrucja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-podrucja_it.md"
       ]
     }
   },
   {
-    "slug": "sastanci",
+    "slug": "api-html-stranice",
     "title": {
-      "hr": "Sastanci — korak po korak",
-      "en": "Meetings — step by step"
+      "hr": "API — HTML stranice, nacrti i privitci",
+      "en": "API — HTML pages, drafts and attachments",
+      "de": "API – HTML-Seiten, Entwürfe und Anhänge",
+      "es": "API: páginas HTML, borradores y archivos adjuntos",
+      "fr": "API — pages HTML, brouillons et pièces jointes",
+      "it": "API — pagine HTML, bozze e allegati"
     },
-    "parent": "kalendari",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/sastanci_hr.md"
+        "docs/user-guide/api-html-stranice_hr.md"
       ],
       "en": [
-        "docs/user-guide/sastanci_en.md"
+        "docs/user-guide/api-html-stranice_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-html-stranice_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-html-stranice_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-html-stranice_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-html-stranice_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-autori",
+    "slug": "api-kalendari",
     "title": {
-      "hr": "Za sastavljače anketa",
-      "en": "For survey authors"
+      "hr": "API — kalendari i događaji",
+      "en": "API — calendars and events",
+      "de": "API – Kalender und Termine",
+      "es": "API: calendarios y eventos",
+      "fr": "API — calendriers et événements",
+      "it": "API: calendari ed eventi"
     },
-    "parent": "ankete",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-autori_hr.md"
+        "docs/user-guide/api-kalendari_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-autori_en.md"
+        "docs/user-guide/api-kalendari_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-kalendari_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-kalendari_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-kalendari_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-kalendari_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-izrada-objava",
+    "slug": "api-ankete",
     "title": {
-      "hr": "1. Kreirajte nacrt",
-      "en": "1. Create a draft"
+      "hr": "API — ankete i rezultati",
+      "en": "API — surveys and results",
+      "de": "API – Umfragen und Ergebnisse",
+      "es": "API: encuestas y resultados",
+      "fr": "API — sondages et résultats",
+      "it": "API: sondaggi e risultati"
     },
-    "parent": "ankete-autori",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-izrada-objava_hr.md"
+        "docs/user-guide/api-ankete_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-izrada-objava_en.md"
+        "docs/user-guide/api-ankete_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-ankete_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-ankete_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-ankete_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-ankete_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-pitanja",
+    "slug": "api-zadaci",
     "title": {
-      "hr": "2. Dodajte uvod i pitanja",
-      "en": "2. Add an introduction and questions"
+      "hr": "API — zadaci u sadržaju",
+      "en": "API — tasks in content",
+      "de": "API – Aufgaben in Inhalten",
+      "es": "API: tareas en los contenidos",
+      "fr": "API — tâches dans le contenu",
+      "it": "API: attività nel contenuto"
     },
-    "parent": "ankete-autori",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-pitanja_hr.md"
+        "docs/user-guide/api-zadaci_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-pitanja_en.md"
+        "docs/user-guide/api-zadaci_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-zadaci_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-zadaci_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-zadaci_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-zadaci_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-grananje-prijevodi",
+    "slug": "api-obavijesti-pracenja",
     "title": {
-      "hr": "Uvjetna pitanja i više jezika",
-      "en": "Conditional questions and languages"
+      "hr": "API — obavijesti i osobna praćenja",
+      "en": "API — notifications and personal follows",
+      "de": "API – Benachrichtigungen und persönliche Abonnements",
+      "es": "API: notificaciones y seguimientos personales",
+      "fr": "API — notifications et suivis personnels",
+      "it": "API — notifiche ed elementi seguiti personali"
     },
-    "parent": "ankete-autori",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-grananje-prijevodi_hr.md"
+        "docs/user-guide/api-obavijesti-pracenja_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-grananje-prijevodi_en.md"
+        "docs/user-guide/api-obavijesti-pracenja_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-obavijesti-pracenja_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-obavijesti-pracenja_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-obavijesti-pracenja_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-obavijesti-pracenja_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-pristup-privatnost",
+    "slug": "api-webhookovi",
     "title": {
-      "hr": "3. Odaberite ispitanike i privatnost",
-      "en": "3. Choose participants and privacy"
+      "hr": "API — webhookovi i isporuke",
+      "en": "API — webhooks and deliveries",
+      "de": "API – Webhooks und Zustellungen",
+      "es": "API: webhooks y entregas",
+      "fr": "API — webhooks et envois",
+      "it": "API: webhook e consegne"
     },
-    "parent": "ankete-autori",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-pristup-privatnost_hr.md"
+        "docs/user-guide/api-webhookovi_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-pristup-privatnost_en.md"
+        "docs/user-guide/api-webhookovi_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-webhookovi_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-webhookovi_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-webhookovi_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-webhookovi_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-objava",
+    "slug": "api-audit-pretraga",
     "title": {
-      "hr": "4. Provjerite i objavite anketu",
-      "en": "4. Check and publish the survey"
+      "hr": "API — audit i pretraživanje",
+      "en": "API — audit and search",
+      "de": "API – Audit und Suche",
+      "es": "API: auditoría y búsqueda",
+      "fr": "API — audit et recherche",
+      "it": "API — registro delle attività e ricerca"
     },
-    "parent": "ankete-autori",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-objava_hr.md"
+        "docs/user-guide/api-audit-pretraga_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-objava_en.md"
+        "docs/user-guide/api-audit-pretraga_en.md"
+      ],
+      "de": [
+        "docs/user-guide/api-audit-pretraga_de.md"
+      ],
+      "es": [
+        "docs/user-guide/api-audit-pretraga_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/api-audit-pretraga_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/api-audit-pretraga_it.md"
       ]
     }
   },
   {
-    "slug": "ankete-rezultati",
+    "slug": "api-granice-protokola",
     "title": {
-      "hr": "5. Pogledajte rezultate i obavijesti",
-      "en": "5. View results and notifications"
+      "hr": "API — granice, CalDAV i ICS",
+      "en": "API — boundaries, CalDAV and ICS",
+      "de": "API – Grenzen, CalDAV und ICS",
+      "es": "API: límites, CalDAV e ICS",
+      "fr": "API — limites, CalDAV et ICS",
+      "it": "API — limiti, CalDAV e ICS"
     },
-    "parent": "ankete-autori",
+    "parent": "api-koristenje",
     "sources": {
       "hr": [
-        "docs/user-guide/ankete-rezultati_hr.md"
+        "docs/user-guide/api-granice-protokola_hr.md"
       ],
       "en": [
-        "docs/user-guide/ankete-rezultati_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-kopiranje-backup",
-    "title": {
-      "hr": "Kopirajte ili zatvorite anketu",
-      "en": "Copy or close a survey"
-    },
-    "parent": "ankete-autori",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-kopiranje-backup_hr.md"
+        "docs/user-guide/api-granice-protokola_en.md"
       ],
-      "en": [
-        "docs/user-guide/ankete-kopiranje-backup_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-ispunjavanje",
-    "title": {
-      "hr": "Za ispitanike — ispunite anketu",
-      "en": "For participants — complete a survey"
-    },
-    "parent": "ankete",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-ispunjavanje_hr.md"
+      "de": [
+        "docs/user-guide/api-granice-protokola_de.md"
       ],
-      "en": [
-        "docs/user-guide/ankete-ispunjavanje_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-administratori",
-    "title": {
-      "hr": "Za administratore",
-      "en": "For administrators"
-    },
-    "parent": "ankete",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-administratori_hr.md"
+      "es": [
+        "docs/user-guide/api-granice-protokola_es.md"
       ],
-      "en": [
-        "docs/user-guide/ankete-administratori_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete",
-    "title": {
-      "hr": "Ankete",
-      "en": "Surveys"
-    },
-    "parent": null,
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete_hr.md"
+      "fr": [
+        "docs/user-guide/api-granice-protokola_fr.md"
       ],
-      "en": [
-        "docs/user-guide/ankete_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-pocetak",
-    "title": {
-      "hr": "Ovlasti za sastavljanje i objavu",
-      "en": "Authoring and publication permissions"
-    },
-    "parent": "ankete-administratori",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-pocetak_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-pocetak_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-autentikacija",
-    "title": {
-      "hr": "Vanjska prijava i mapiranje podataka",
-      "en": "External sign-in and attribute mapping"
-    },
-    "parent": "ankete-administratori",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-autentikacija_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-autentikacija_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-backup-detalji",
-    "title": {
-      "hr": "Sigurnosne kopije i vraćanje",
-      "en": "Backup and restore"
-    },
-    "parent": "ankete-administratori",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-backup-detalji_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-backup-detalji_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-poslovi-izvjestaja",
-    "title": {
-      "hr": "Dostava obavijesti i izvještaja",
-      "en": "Notification and report delivery"
-    },
-    "parent": "ankete-administratori",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-poslovi-izvjestaja_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-poslovi-izvjestaja_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-developeri",
-    "title": {
-      "hr": "Za developere — API",
-      "en": "For developers — API"
-    },
-    "parent": "ankete",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-developeri_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-developeri_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-api-php",
-    "title": {
-      "hr": "API — PHP primjeri",
-      "en": "API — PHP examples"
-    },
-    "parent": "ankete-developeri",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-api-php_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-api-php_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-api",
-    "title": {
-      "hr": "API — cURL primjeri",
-      "en": "API — cURL examples"
-    },
-    "parent": "ankete-developeri",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-api_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-api_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-api-referenca",
-    "title": {
-      "hr": "API — rute, opsezi i greške",
-      "en": "API — routes, scopes and errors"
-    },
-    "parent": "ankete-developeri",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-api-referenca_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-api-referenca_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-api-primjeri",
-    "title": {
-      "hr": "API — predložak i primjeri",
-      "en": "API — template and examples"
-    },
-    "parent": "ankete-developeri",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-api-primjeri_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-api-primjeri_en.md"
-      ]
-    }
-  },
-  {
-    "slug": "ankete-html-sadrzaj",
-    "title": {
-      "hr": "HTML sadržaj i sigurnost",
-      "en": "HTML content and safety"
-    },
-    "parent": "ankete-developeri",
-    "sources": {
-      "hr": [
-        "docs/user-guide/ankete-html-sadrzaj_hr.md"
-      ],
-      "en": [
-        "docs/user-guide/ankete-html-sadrzaj_en.md"
+      "it": [
+        "docs/user-guide/api-granice-protokola_it.md"
       ]
     }
   }

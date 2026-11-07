@@ -17,6 +17,12 @@
 
 **Result:** you have a saved draft ready for questions. Saving a draft does not publish it. Look for **All changes saved** as you work.
 
+## Set when participation is available
+
+If you have no deadline, leave **Opens at** and **Closes at** empty under **Basics → Survey schedule**. For a limited collection period, enter the intended date and time. The application time zone is shown beside the fields; you do not set a separate time zone for each survey.
+
+**Result:** a published survey accepts responses during that period. A future opening time does not yet allow participation, and a past closing time stops it. Dates alone do not publish a draft. Check them before submitting for publication, especially when participants are in other time zones.
+
 ## Who can see a draft?
 
 In a Workspace, editors, managers and publishers with the relevant permissions, and administrators, can see a draft. The tree marks it **Draft**; a submitted draft has a review label. An ordinary reader cannot see a new unpublished survey. If a published version already exists, readers continue to see it until the new version is approved.

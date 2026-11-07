@@ -4,6 +4,8 @@ parameters:
 	paths:
 		- tests
 	scanFiles:
+		- scripts/sync_user_guides.php
+		- scripts/sync_installation_guides.php
 		- scripts/audit_module_documentation.php
 		- scripts/audit_bilingual_phpdoc.php
 		- src/Tools/CleanInstallMatrix.php

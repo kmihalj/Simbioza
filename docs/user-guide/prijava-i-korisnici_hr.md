@@ -98,10 +98,14 @@ Grupe okupljaju korisnike i nose skup prava. Administratorska grupa je sistemska
 
 ### Primjer nove grupe
 
-1.  Odaberite **Nova grupa** i unesite jasan naziv i opis.
-2.  Dodijelite samo ovlasti koje članovima zaista trebaju.
-3.  Spremite grupu, zatim u detaljima korisnika dodajte ili uklonite članstvo.
-4.  Za SSO korisnike grupu možete popunjavati i pravilima temeljenim na mapiranom atributu, ako je takvo pravilo konfigurirano u vašoj instalaciji.
+1.  Odaberite **Dodaj grupu** (gumb s plusom), unesite prepoznatljiv **Naziv grupe** i provjerite kućicu **Aktivno**.
+2.  Odaberite **Spremi grupe**. Na ovom se ekranu ne unose opis ni prava na sadržaj.
+3.  U detaljima korisnika dodajte ili uklonite članstvo u grupi.
+4.  Potrebna prava dodijelite toj grupi u postavkama područja, stranice, kalendara ili ankete. Za SSO korisnike članstvo se može određivati i pravilima mapiranog atributa.
+
+**Rezultat:** grupa postoji i može se odabrati pri dodjeli ovlasti. Samo stvaranje grupe ne otvara sadržaj njezinim članovima.
+
+Za privremeno isključivanje nesistemske grupe uklonite kvačicu **Aktivno** i spremite. Za trajno brisanje **ispraznite njezin naziv i odaberite Spremi grupe**. Time se brišu grupa, njezina članstva i pripadajuća pravila automatskog mapiranja; korisnički računi ostaju. Prije toga provjerite gdje ste koristili grupu za pristup sadržaju. Nova grupa istog imena dobiva drugi identitet i ne vraća stara članstva ni dodijeljena prava. Sistemske grupe ovim se postupkom ne brišu.
 
 <figure class="my-4">
 <span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"><img src="images/c9966d0e-296a-44f9-8e2b-2777912133e5.png" class="img-fluid rounded border" alt="Primjer nove grupe" /><span class="figure-caption d-block">Primjer nove grupe</span></span>

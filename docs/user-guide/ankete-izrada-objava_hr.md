@@ -17,6 +17,12 @@
 
 **Rezultat:** postoji spremljeni nacrt, spreman za pitanja. Spremanje nacrta nije objava. Dok ga uređujete, provjeravajte poruku **Sve je spremljeno**.
 
+## Odredite kada se anketa ispunjava
+
+Ako nemate rok, u **Osnovni podaci → Vrijeme održavanja ankete** ostavite **Početak** i **Završetak** prazne. Za vremenski ograničeno prikupljanje unesite željeni datum i sat. Vrijedi vremenska zona aplikacije prikazana uz polja; ne podešavate zasebnu zonu svake ankete.
+
+**Rezultat:** objavljena anketa prima odgovore u zadanom razdoblju. Budući početak još ne otvara ispunjavanje, a prošli završetak ga zatvara. Datumi sami ne objavljuju nacrt. Provjerite ih prije slanja na objavu, osobito ako ispitanici dolaze iz drugih vremenskih zona.
+
 ## Tko vidi nacrt?
 
 U području nacrt vide urednici, upravitelji i objavljivači s odgovarajućim pravima te administrator. U stablu je označen kao **Nacrt**; poslani nacrt ima oznaku pregleda. Obični čitatelj ne vidi novu neobjavljenu anketu. Ako već postoji objavljena verzija, čitatelj i dalje vidi nju dok nova nije odobrena.

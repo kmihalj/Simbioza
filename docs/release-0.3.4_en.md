@@ -1,6 +1,6 @@
 # Simbioza 0.3.4 — secured FPM runtime permissions
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.39](release-0.3.39_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.40](release-0.3.40_en.md).
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.4/docs/release-0.3.4_hr.md)
 

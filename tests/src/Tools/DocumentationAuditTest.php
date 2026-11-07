@@ -22,6 +22,151 @@ final class DocumentationAuditTest extends TestCase
     }
 
     /**
+     * EN: All four extra locales are accepted only for registered application sources;
+     *     other documents and untranslated manual chapters still need only EN/HR pairs.
+     *
+     * HR: Sva četiri dodatna jezika dopuštena su samo za registrirane aplikacijske izvore;
+     *     ostali dokumenti i neprevedena poglavlja i dalje trebaju samo EN/HR parove.
+     */
+    public function testAcceptsOptionalTranslationsOfRegisteredApplicationManuals(): void
+    {
+        $documents = [
+            'docs/reference_en.md',
+            'docs/reference_hr.md',
+            'docs/user-guide/another_en.md',
+            'docs/user-guide/another_hr.md',
+        ];
+        foreach (['en', 'hr', 'de', 'es', 'fr', 'it'] as $locale) {
+            $documents[] = 'docs/user-guide/guide_' . $locale . '.md';
+        }
+
+        $issues = $this->auditDocumentFixture($documents, [
+            'docs/user-guide/guide_en.md',
+            'docs/user-guide/another_en.md',
+        ]);
+        $this->assertSame([], $issues);
+    }
+
+    /**
+     * EN: A registered translation needs its English file; unsupported suffixes and
+     *     translations of generic documents cannot bypass the original pair rule.
+     *
+     * HR: Registrirani prijevod treba englesku datoteku; nepodržani nastavci i prijevodi
+     *     generičkih dokumenata ne mogu zaobići izvorno pravilo jezičnih parova.
+     */
+    public function testRejectsOrphanUnsupportedAndGenericTranslations(): void
+    {
+        $documents = [
+            'docs/reference_en.md',
+            'docs/reference_hr.md',
+            'docs/reference_de.md',
+            'docs/user-guide/guide_en.md',
+            'docs/user-guide/guide_hr.md',
+            'docs/user-guide/guide_pt.md',
+        ];
+        foreach (['de', 'es', 'fr', 'it'] as $locale) {
+            $documents[] = 'docs/user-guide/orphan_' . $locale . '.md';
+        }
+
+        $issues = $this->auditDocumentFixture($documents, [
+            'docs/user-guide/guide_en.md',
+            'docs/user-guide/orphan_en.md',
+        ]);
+        $this->assertCount(6, $issues);
+        $this->assertContains('fixture: legacy mixed or unpaired document reference_de.md', $issues);
+        $this->assertContains('fixture: legacy mixed or unpaired document guide_pt.md', $issues);
+        foreach (['de', 'es', 'fr', 'it'] as $locale) {
+            $this->assertContains(
+                'fixture: missing English source orphan_en.md for orphan_' . $locale . '.md',
+                $issues,
+            );
+        }
+    }
+
+    /**
+     * EN: Registering a manual source never relaxes English/Croatian pairs, and
+     *     a module with a matching English file still cannot add other locales.
+     *
+     * HR: Registriranje izvora ne ublažava englesko-hrvatske parove, a modul ni uz
+     *     odgovarajući engleski dokument ne smije dodavati ostale jezične nastavke.
+     */
+    public function testKeepsEnglishCroatianPairsStrictForManualsAndModules(): void
+    {
+        $issues = $this->auditDocumentFixture([
+            'docs/user-guide/manual_en.md',
+            'docs/generic_en.md',
+            'docs/orphan_hr.md',
+        ], ['docs/user-guide/manual_en.md']);
+        $this->assertContains('fixture: missing manual_hr.md', $issues);
+        $this->assertContains('fixture: missing generic_hr.md', $issues);
+        $this->assertContains('fixture: missing orphan_en.md', $issues);
+        $this->assertContains('fixture: EN/HR document count differs (2/1)', $issues);
+
+        $issues = $this->auditDocumentFixture([
+            'docs/guide_en.md',
+            'docs/guide_hr.md',
+            'docs/guide_it.md',
+        ]);
+        $this->assertSame(['fixture: legacy mixed or unpaired document guide_it.md'], $issues);
+    }
+
+    /**
+     * EN: Audits a disposable tree with the same optional manifest input as the
+     *     application entry point; cleanup removes only this newly created tree.
+     *
+     * HR: Provjerava privremeno stablo s istim neobveznim manifestom kao aplikacijski
+     *     ulaz; čišćenje uklanja samo ovo novostvoreno stablo.
+     *
+     * @param list<string> $documents
+     * @param list<string> $manualEnglishSources
+     * @return list<string>
+     */
+    private function auditDocumentFixture(array $documents, array $manualEnglishSources = []): array
+    {
+        $directory = sys_get_temp_dir() . '/simbioza-locale-docs-' . bin2hex(random_bytes(8));
+        $this->assertTrue(mkdir($directory, 0700));
+        try {
+            foreach (array_merge($documents, ['README.md', 'README_hr.md']) as $document) {
+                $path = $directory . '/' . $document;
+                if (!is_dir(dirname($path))) {
+                    mkdir(dirname($path), 0700, true);
+                }
+
+                file_put_contents($path, "# Documentation\n");
+            }
+
+            $sources = [];
+            if ($manualEnglishSources !== []) {
+                mkdir($directory . '/resources/installation', 0700, true);
+                file_put_contents(
+                    $directory . '/resources/installation/manual-sources.json',
+                    json_encode([['sources' => ['en' => $manualEnglishSources]]], JSON_THROW_ON_ERROR),
+                );
+                $sources = \applicationManualEnglishSources($directory);
+            }
+
+            $issues = [];
+            \auditDocumentationPairs($directory, 'fixture', $issues, $sources);
+
+            return $issues;
+        } finally {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($iterator as $file) {
+                if ($file->isDir()) {
+                    rmdir($file->getPathname());
+                } else {
+                    unlink($file->getPathname());
+                }
+            }
+
+            rmdir($directory);
+        }
+    }
+
+    /**
      * EN: CRLF examples are parsed as separate fences without consuming subsequent prose.
      *
      * HR: CRLF primjeri razdvajaju se prema ogradama bez uključivanja kasnijeg teksta.

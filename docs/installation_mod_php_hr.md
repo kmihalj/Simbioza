@@ -37,11 +37,11 @@ git --version
 ```
 
 PHP mora biti **8.2 ili noviji**, Composer verzije 2, a potrebne PHP ekstenzije
-su `ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
+su `ctype dom fileinfo intl json libxml mbstring openssl pdo session xmlreader zip`.
 Za odabranu bazu treba `pdo_sqlite`, `pdo_mysql` ili `pdo_pgsql`.
 CLI i web PHP moraju imati odgovarajuće verzije i ekstenzije.
 
-## 2. Preuzmite čisto izdanje Simbioze 0.3.39
+## 2. Preuzmite čisto izdanje Simbioze 0.3.40
 
 Odaberite **jedan** direktorij aplikacije. Na Linuxu:
 
@@ -67,7 +67,7 @@ Cijeli blok preuzimanja pokrenite kao obični račun održavatelja:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.39 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.40 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -76,7 +76,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Očekuje se `0.3.39` i `success` uz svaki platformni preduvjet.
+Očekuje se `0.3.40` i `success` uz svaki platformni preduvjet.
 Gitova poruka **detached HEAD** očekivana je pri preuzimanju taga.
 Composer ne pokrećite sa `sudo`, ne kopirajte tuđu konfiguraciju ili bazu,
 ne prenosite `.git/` u aplikaciju i ovdje ne koristite `--no-dev`.
@@ -297,18 +297,19 @@ cd "$SIMBIOZA_APP_ROOT"
 php scripts/installation_packages.php prepare
 ```
 
-Ako želite samo dio modula, primjerice Temu, Kalendar i E-poštu, pripremite
-upravo njih i ostale odznačite u čarobnjaku:
+Ako želite samo dio dodatnih mogućnosti, primjerice Kalendar i E-poštu,
+pripremite upravo njih i ostale opcionalne module odznačite u čarobnjaku:
 
 ```bash
-php scripts/installation_packages.php prepare --modules=theme,calendar,email
+php scripts/installation_packages.php prepare --modules=calendar,email
 php scripts/installation_packages.php status
 ```
 
 Ako ne želite nijedan opcionalni modul, upotrijebite
-`php scripts/installation_packages.php prepare --modules=`. Tada se privremeno
-priprema samo Backup potreban za početne upute, a u čarobnjaku odznačite sve
-opcionalne module.
+`php scripts/installation_packages.php prepare --modules=` i u čarobnjaku
+odznačite sve opcionalne module. **Auth, ORM, Menu, Theme, Backup i Audit**
+obavezni su u svakoj instalaciji: ostaju instalirani i uključeni. Ne navode se
+u argumentu `--modules`, koji prihvaća samo opcionalne module.
 
 Naredba `status` pokazuje koji su paketi stvarno instalirani. Čarobnjak će
 nedostupan paket označiti kao paket koji prvo treba pripremiti u CLI-ju;
@@ -345,9 +346,9 @@ for SIMBIOZA_FILE in database.php env.php installation.php modules.php languages
 done
 ```
 
-Nakon uspješne instalacije pokrenite čišćenje privremenog stanja pripreme.
-Backup ostaje instaliran ako je ostao odabran u čarobnjaku; u suprotnom se
-uklanja samo ako ga je priprema dodala:
+Nakon uspješne instalacije uklonite dovršeni zapis pripreme.
+`cleanup` ne deinstalira pakete niti briše podatke; svih šest obaveznih modula,
+uključujući Backup, ostaje instalirano:
 
 ```bash
 php scripts/installation_packages.php cleanup

@@ -25,6 +25,19 @@ Ovo možete preskočiti za prvu jednostavnu anketu.
 
 **Rezultat:** osoba ne prolazi pitanja koja se na nju ne odnose. Ako promijeni raniji odgovor, odgovori na sada skrivena pitanja brišu se. Isti postupak vrijedi za macOS, Linux i Windows ili bilo koje druge skupine.
 
+## Spojite više uvjeta kada je potrebno
+
+Jedan uvjet dovoljan je za većinu anketa. Ako trebate kombinaciju, u **Kada se prikazuje** upotrijebite **Dodaj uvjet** ili **Dodaj grupu uvjeta**:
+
+- **Svi uvjeti (I)** traži da svaki uvjet vrijedi.
+- **Barem jedan uvjet (ILI)** traži da vrijedi barem jedan.
+
+**Primjer:** dodatno pitanje treba vidjeti osoba koja koristi PlayStation 5 ili Nintendo Switch **i** dala je ocjenu najmanje 4. Najprije u anketu stavite pitanje o konzolama i pitanje ocjene. Na kasnijem dodatnom pitanju odaberite skupinu **Svi uvjeti (I)**. U nju dodajte grupu **Barem jedan uvjet (ILI)** s dva izbora konzole, a uz tu grupu zaseban uvjet da je ranija ocjena **Najmanje / na dan ili nakon** vrijednosti 4.
+
+Odgovarajuće usporedbe ovise o ranijem pitanju: možete provjeriti je li odgovoreno, je li odabran odgovor, sadrži li tekst ili je broj, ocjena, datum odnosno vrijeme prije/poslije zadane vrijednosti. Za matricu odaberite i redak koji uspoređujete.
+
+**Rezultat:** dodatno pitanje pojavljuje se samo uz dogovorenu kombinaciju. Uvjet smije koristiti samo ranija pitanja, ne sebe ni kasnije pitanje. Nakon pomicanja ili uklanjanja pitanja ponovno provjerite uvjete. U probnom ispunjavanju isprobajte i kombinaciju koja treba otvoriti pitanje i onu koja ga treba sakriti.
+
 ## Ponudite drugi jezik samo ako ga trebate
 
 1.  Otvorite **Prijevodi** i dodajte željeni jezik. Nude se samo instalirani i aktivni jezici aplikacije.

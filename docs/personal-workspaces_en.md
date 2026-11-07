@@ -15,23 +15,28 @@ the name or slug.
 
 ## Administrator setup
 
-1. Apply the application migrations:
+After installing the modules and applying migrations, open **Settings → Personal
+Workspaces** (`/settings/personal-workspaces`). The screen has two global options:
 
-   ```bash
-   php vendor/bin/hph orm-migrate:up
-   ```
+- **Automatically create a personal Workspace on first sign-in** is enabled by
+  default. A missing personal workspace is created at an active user's next
+  successful sign-in; enabling the option does not run bulk creation for all
+  existing accounts.
+- **Allow users to create a personal Workspace** is disabled by default and is
+  available only while automatic creation is off. Users without a personal
+  workspace then see **Create my personal Workspace** under **My profile →
+  Following and notifications**.
 
-2. Open **Settings → Workspaces → Personal Workspaces**.
-3. Keep **Automatically create a personal Workspace at first sign-in** enabled if
-   new users should receive one automatically.
-4. Use **Create personal Workspaces for existing users** once when introducing the
-   feature to an existing installation.
+Select **Save**. With both options off, these paths do not create new personal
+workspaces. Existing workspaces are retained.
 
-The table on the same screen provides a per-user exception and a manual
-**Create now** action. Disabling automatic creation does not delete an existing
-Workspace. A soft-deleted personal Workspace stays mapped to its user and can be
-restored through the regular deleted-Workspace administration; the next login
-does not silently create a replacement.
+**Created personal Workspaces** is a read-only list of existing workspaces and
+links. There is no bulk creation, per-user exception or **Create now** action.
+The legacy `simbioza_user_personal_workspace_policies` table remains in the
+migration schema for compatibility; the current service and form do not apply
+its policies. A soft-deleted personal workspace remains mapped to its user and
+is restored under **Workspace settings → Deleted workspaces**; another sign-in
+does not create a replacement.
 
 ## Access rules
 
@@ -41,7 +46,9 @@ does not silently create a replacement.
 - The Workspace is created with `restricted` visibility.
 - Other users and groups receive no implicit ACL rows. The mapped user or an
   administrator can grant them the usual Workspace permissions later.
-- A guest cannot open or discover the Workspace through the normal Workspace list.
+- Initially a guest cannot open or discover the Workspace through the normal
+  Workspace list; any later public exception follows the ordinary workspace
+  or page permission controls.
 
 Auth publishes a neutral successful-sign-in event. Simbioza User listens for
 that event, so Auth remains independent and continues to work when Workspace or
@@ -56,7 +63,8 @@ mapping and automatically grants that mapped user the complete ACL.
 
 ## User profile and API
 
-After creation, **My profile → Following and notifications** contains a direct
+If self-creation is enabled, a user without a workspace may create it in their
+profile. After creation, **My profile → Following and notifications** contains a direct
 link to **My personal Workspace**. An authenticated API key with `workspace:read`
 can read only its own mapping through:
 
@@ -69,9 +77,9 @@ The endpoint is read-only and never creates a space.
 ## Backup and restore
 
 Workspace backup includes the personal-space mapping when the selected
-Workspace is personal. The **Users** component preserves per-user creation
-policies and mappings, while **Settings** preserves the global automatic-
-creation rule. A full-site backup contains all three parts.
+Workspace is personal. The **Users** component preserves supported user data and mappings, while
+**Settings** preserves the global creation settings. Legacy stored per-user
+policies are not an active form or service capability. A full-site backup contains all three parts.
 
 During a copy import, an existing personal-Workspace mapping wins because one user
 can have only one personal Workspace. The imported copy remains an ordinary

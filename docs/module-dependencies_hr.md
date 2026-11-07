@@ -110,3 +110,25 @@ aliase, a CI označenih izdanja provjerava stabilna ograničenja. JavaScript ala
 koriste `package-lock.json` u Gitu i `npm ci`. Vidi
 [end-to-end testiranje](end-to-end-testing_hr.md) i
 [održavanje dokumentacije](documentation-quality_hr.md).
+
+## Korištenje generičkih modula u vlastitom projektu
+
+Svaka poveznica otvara početnički vodič u repozitoriju modula, s potpunim minimalnim PHP projektom i izvršivim primjerima. Projekti izravno učitavaju HeartPhrame i ne zahtijevaju Simbiozu. Sam framework održava se zasebno.
+
+| Modul | Vodič | Izdanje |
+| --- | --- | --- |
+| Accessibility | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-accessibility/-/blob/main/docs/how_to_hr.md) | `0.3.3` |
+| API | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-api/-/blob/main/docs/how_to_hr.md) | `0.3.5` |
+| Audit | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-audit/-/blob/main/docs/how_to_hr.md) | `0.3.4` |
+| Auth | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-auth/-/blob/main/docs/how_to_hr.md) | `0.3.4` |
+| Backup | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-backup/-/blob/main/docs/how_to_hr.md) | `0.3.6` |
+| Calendar | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-calendar/-/blob/main/docs/how_to_hr.md) | `0.3.5` |
+| Comment | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-comment/-/blob/main/docs/how_to_hr.md) | `0.3.5` |
+| HTML Editor | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/how_to_hr.md) | `0.3.18` |
+| Email | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/main/docs/how_to_hr.md) | `0.3.7` |
+| Menu | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-menu/-/blob/main/docs/how_to_hr.md) | `0.3.6` |
+| Notification | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-notification/-/blob/main/docs/how_to_hr.md) | `0.3.4` |
+| ORM | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-orm/-/blob/main/docs/how_to_hr.md) | `0.3.3` |
+| Survey | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-survey/-/blob/main/docs/how_to_hr.md) | `0.3.7` |
+| Task | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-task/-/blob/main/docs/how_to_hr.md) | `0.3.5` |
+| Theme | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-theme/-/blob/main/docs/how_to_hr.md) | `0.3.14` |

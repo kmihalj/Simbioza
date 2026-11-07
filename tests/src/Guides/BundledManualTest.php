@@ -6,6 +6,7 @@ namespace Tests\Guides;
 
 use App\Guides\BundledManual;
 use App\Update\BundledAssetsUpdater;
+use App\Update\BundledGuideIndex;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -20,16 +21,20 @@ use ZipArchive;
  */
 #[CoversClass(BundledManual::class)]
 #[UsesClass(BundledAssetsUpdater::class)]
+#[UsesClass(BundledGuideIndex::class)]
 final class BundledManualTest extends TestCase
 {
-    public function testPublishedChaptersAndScreenshotsAreAvailableInBothGuideLanguages(): void
+    public function testPublishedChaptersAndScreenshotsAreAvailableInEveryGuideLanguage(): void
     {
         $manual = new BundledManual(new Config(new Helper(), [], dirname(__DIR__, 3)));
-        foreach (['hr', 'en'] as $locale) {
+        foreach (BundledGuideIndex::SUPPORTED_LOCALES as $locale) {
             $pages = $manual->pages($locale);
             $slugs = array_column($pages, 'slug');
-            $this->assertCount(31, $pages);
+            $this->assertCount(count(BundledAssetsUpdater::guidePages(dirname(__DIR__, 3))), $pages);
             $this->assertSame($slugs, array_values(array_unique($slugs)));
+            $index = BundledGuideIndex::load(dirname(__DIR__, 3));
+            $this->assertNotNull($index);
+            $definitions = array_column($index, null, 'slug');
             foreach (['simbioza', 'instalacija', 'ankete', 'ankete-api-php', 'ankete-ispunjavanje'] as $slug) {
                 $this->assertContains($slug, $slugs, $locale);
             }
@@ -38,6 +43,7 @@ final class BundledManualTest extends TestCase
             foreach ($pages as $page) {
                 $this->assertNotSame('', $page['title']);
                 $this->assertNotSame('', $page['html']);
+                $this->assertSame($definitions[$page['slug']]['parent'], $page['parent'], $page['slug']);
                 if ($page['parent'] !== null) {
                     $this->assertContains($page['parent'], $slugs);
                 }
@@ -67,9 +73,9 @@ final class BundledManualTest extends TestCase
         $root = dirname(__DIR__, 3);
         $manual = new BundledManual(new Config(new Helper(), [], $root));
         $pages = [];
-        foreach (['hr', 'en'] as $locale) {
+        foreach (BundledGuideIndex::SUPPORTED_LOCALES as $locale) {
             $pages[$locale] = array_column($manual->pages($locale), null, 'slug');
-            $this->assertCount(31, $pages[$locale]);
+            $this->assertCount(count(BundledAssetsUpdater::guidePages($root)), $pages[$locale]);
             $this->assertArrayNotHasKey('html-editor-u-obrascu', $pages[$locale]);
             $this->assertArrayNotHasKey('razvojne-integracije', $pages[$locale]);
             $this->assertArrayHasKey('ankete-developeri', $pages[$locale]);
@@ -88,8 +94,11 @@ final class BundledManualTest extends TestCase
                 $this->assertSame($package['slug'], $transfer[0]['slug']);
                 $this->assertFalse($transfer[0]['permissions_included']);
                 $versions = $this->packageRows($zip, 'editor-html-workspace/versions');
-                $this->assertCount(2, $versions);
-                $this->assertCount(2, array_unique(array_column($versions, 'version_number')));
+                $this->assertCount(count(BundledGuideIndex::SUPPORTED_LOCALES), $versions);
+                $this->assertCount(
+                    count(BundledGuideIndex::SUPPORTED_LOCALES),
+                    array_unique(array_column($versions, 'version_number')),
+                );
                 foreach ($versions as $version) {
                     $this->assertSame($transfer[0]['document_key'], $version['document_key']);
                     $this->assertTrue((bool)$version['is_published']);
@@ -138,5 +147,89 @@ final class BundledManualTest extends TestCase
         $this->assertNull($manual->asset('../../config/env.php', 'hr'));
         $this->assertNull($manual->asset('00000000-0000-0000-0000-000000000000', 'hr'));
         $this->assertSame([], $manual->pages('not-a-guide-language'));
+    }
+
+    /**
+     * EN: API examples retain their native result URLs while real links and media use
+     *     the standalone route and current chapter language under an installation prefix.
+     *
+     * HR: API primjeri čuvaju izvorne URL-ove rezultata, a stvarne poveznice i mediji koriste
+     *     samostalnu rutu i trenutačni jezik poglavlja uz prefiks instalacije.
+     */
+    public function testRewritesOnlyGuideUrlAttributesAndPreservesCodeInEveryLanguage(): void
+    {
+        $guide = '/workspace/korisnicke-upute/ankete?lang=en#start';
+        $uuid = 'c346cf06-9762-49b3-9113-a5bbb540a78a';
+        $asset = '/editor-html/asset/' . $uuid;
+        $code = '<pre><code class="language-json">' . "{\n  \"url\": \"" . $guide . "\",\n"
+        . '  "asset": "' . $asset . '"' . "\n}</code></pre>"
+        . '<code><a href="' . $guide . '">Literal markup</a></code>'
+        . '<pre>href="' . $guide . '" src="' . $asset . '"</pre>'
+        . '<code>&lt;img src=&quot;' . $asset . '&quot;&gt;</code>';
+        $html = $code . '<a href = "' . $guide . '">Guide</a>'
+        . "<img src='" . $asset . "?v=3#preview'>"
+        . '<video POSTER=' . $asset . '#poster></video>'
+        . '<a href="' . $asset . '?download=1&amp;lang=old#file">Download</a>'
+        . '<script src="' . $asset . '">{"example":"' . $guide . '"}</script>';
+
+        foreach (BundledGuideIndex::SUPPORTED_LOCALES as $locale) {
+            $rewritten = BundledManual::html($html, '/subdir', $locale);
+            $this->assertStringContainsString($code, $rewritten, $locale);
+            $this->assertStringContainsString(
+                '<a href = "/subdir/guides/ankete?lang=en#start">',
+                $rewritten,
+                $locale,
+            );
+            $this->assertStringContainsString(
+                "<img src='/subdir/guides/assets/" . $uuid . '?v=3&amp;lang=' . $locale . "#preview'>",
+                $rewritten,
+                $locale,
+            );
+            $this->assertStringContainsString(
+                '<video POSTER=/subdir/guides/assets/' . $uuid . '?lang=' . $locale . '#poster>',
+                $rewritten,
+                $locale,
+            );
+            $this->assertStringContainsString(
+                '/subdir/guides/assets/' . $uuid . '?download=1&amp;lang=' . $locale . '#file',
+                $rewritten,
+                $locale,
+            );
+            $this->assertStringContainsString(
+                '<script src="/subdir/guides/assets/' . $uuid . '?lang=' . $locale . '">'
+                    . '{"example":"' . $guide . '"}</script>',
+                $rewritten,
+                $locale,
+            );
+            $this->assertSame($rewritten, BundledManual::html($rewritten, '/subdir', $locale), $locale);
+        }
+    }
+
+    /**
+     * EN: Native-looking paths inside external URLs, non-URL attributes, comments
+     *     and raw script/style contents are data and must keep their exact bytes.
+     *
+     * HR: Putanje nalik izvornima u vanjskim URL-ovima, drugim atributima, komentarima
+     *     i sadržaju script/style elemenata jesu podaci i čuvaju točno iste bajtove.
+     */
+    public function testPreservesExternalUrlsFragmentsAndAttributeLikeText(): void
+    {
+        $guide = '/workspace/korisnicke-upute/ankete';
+        $asset = '/editor-html/asset/c346cf06-9762-49b3-9113-a5bbb540a78a';
+        $html = '<a href="https://example.test' . $guide . '?a=1&amp;b=2#external">External</a>'
+        . '<img src="https://example.test' . $asset . '#image">'
+        . '<a href="//example.test' . $guide . '">Network path</a>'
+        . '<a href="#start">Fragment</a><a href="relative/page#start">Relative</a>'
+        . '<span data-href="' . $guide . '" title="href=\'' . $guide . '\'">Text</span>'
+        . '<!-- <a href="' . $guide . '">Comment</a> -->'
+        . '<script type="application/json">{"url":"' . $guide . '"}</script>'
+        . '<style>.sample::after { content: \'<img src="' . $asset . '">\'; }</style>'
+        . '<a href="' . $asset . '-not-an-asset">Other route</a>';
+
+        $this->assertSame($html, BundledManual::html($html, '/subdir', 'fr'));
+        $this->assertSame(
+            '<a href="/guides/ankete">Guide</a>',
+            BundledManual::html('<a href="' . $guide . '">Guide</a>', '', 'hr'),
+        );
     }
 }

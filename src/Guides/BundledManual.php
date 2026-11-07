@@ -143,24 +143,91 @@ final readonly class BundledManual
     }
 
     /**
-     * EN: Rewrites only the known native-guide URLs; external links and fragments remain intact.
+     * EN: Rewrites native-guide URL attributes without changing prose, code or external URLs.
+     * Preformatted content, comments and raw script/style contents retain their original bytes.
      *
-     * HR: Prepisuje samo poznate poveznice izvornih uputa; vanjske poveznice i sidra ostaju netaknuti.
+     * HR: Prepisuje URL atribute izvornih uputa bez izmjene teksta, koda i vanjskih URL-ova.
+     * Preformatirani sadržaj, komentari te sadržaj script/style elemenata zadržavaju izvorne bajtove.
      */
     public static function html(string $html, string $basePath, string $locale): string
     {
-        $html = str_replace(
-            '/workspace/korisnicke-upute/',
-            $basePath . '/guides/',
-            $html,
-        );
+        $basePath = rtrim($basePath, '/');
+        $attributes = '(?:[^<>"\x27]|"[^"]*"|\x27[^\x27]*\x27)*';
 
         return preg_replace_callback(
-            '~\/editor-html/asset/([a-f0-9-]{36})~',
-            static fn(array $match): string => $basePath . '/guides/assets/' . $match[1]
-                . '?lang=' . rawurlencode($locale),
+            '~(<(pre|code|script|style)\b' . $attributes . '>)(.*?)(</\2\s*>)|<!--.*?-->'
+            . '|<[a-z][a-z0-9:-]*\b' . $attributes . '>~is',
+            static function (array $tag) use ($basePath, $locale): string {
+                if (str_starts_with($tag[0], '<!--')) {
+                    return $tag[0];
+                }
+
+                $element = $tag[0];
+                $suffix = '';
+                if (isset($tag[1], $tag[2], $tag[3], $tag[4])) {
+                    if (in_array(strtolower($tag[2]), ['pre', 'code'], true)) {
+                        return $tag[0];
+                    }
+
+                    $element = $tag[1];
+                    $suffix = $tag[3] . $tag[4];
+                }
+
+                $rewritten = preg_replace_callback(
+                    '~(\s+)([a-z_:][a-z0-9_.:-]*)(\s*=\s*)'
+                    . '("[^"]*"|\x27[^\x27]*\x27|[^\s"\x27=<>`]+)~i',
+                    static function (array $attribute) use ($basePath, $locale): string {
+                        if (!in_array(strtolower($attribute[2]), ['href', 'src', 'poster'], true)) {
+                            return $attribute[0];
+                        }
+
+                        $value = $attribute[4];
+                        $quote = in_array($value[0], ['"', "'"], true) ? $value[0] : '';
+                        $url = $quote === '' ? $value : substr($value, 1, -1);
+                        $rewritten = self::guideUrl($url, $basePath, $locale);
+
+                        return $attribute[1] . $attribute[2] . $attribute[3] . $quote . $rewritten . $quote;
+                    },
+                    $element,
+                ) ?? $element;
+
+                return $rewritten . $suffix;
+            },
             $html,
         ) ?? $html;
+    }
+
+    /**
+     * EN: Resolves only canonical local guide paths; asset query parameters and fragments survive.
+     *
+     * HR: Razrješava samo kanonske lokalne putanje uputa; upiti i sidra privitaka ostaju očuvani.
+     */
+    private static function guideUrl(string $url, string $basePath, string $locale): string
+    {
+        $prefix = '/workspace/korisnicke-upute/';
+        if (str_starts_with($url, $prefix)) {
+            return $basePath . '/guides/' . substr($url, strlen($prefix));
+        }
+
+        if (preg_match('~\A/editor-html/asset/([a-f0-9-]{36})(\?[^#]*)?(#.*)?\z~D', $url, $match) !== 1) {
+            return $url;
+        }
+
+        $query = $match[2] ?? '';
+        $language = rawurlencode($locale);
+        $count = 0;
+        $query = preg_replace_callback(
+            '~((?:\?|&(?:amp;)?)lang=)[^&#]*~',
+            static fn(array $parameter): string => $parameter[1] . $language,
+            $query,
+            -1,
+            $count,
+        ) ?? $query;
+        if ($count === 0) {
+            $query = ($query === '' || $query === '?' ? '?' : $query . '&amp;') . 'lang=' . $language;
+        }
+
+        return $basePath . '/guides/assets/' . $match[1] . $query . ($match[3] ?? '');
     }
 
     /**

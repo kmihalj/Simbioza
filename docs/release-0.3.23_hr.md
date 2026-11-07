@@ -1,6 +1,6 @@
 # Simbioza 0.3.23 — pristupačnost i performanse anketa
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.39](release-0.3.39_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.40](release-0.3.40_hr.md).
 
 [Engleska verzija](release-0.3.23_en.md)
 

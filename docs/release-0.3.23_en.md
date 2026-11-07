@@ -1,6 +1,6 @@
 # Simbioza 0.3.23 — accessibility and Survey performance
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.39](release-0.3.39_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.40](release-0.3.40_en.md).
 
 [Croatian version](release-0.3.23_hr.md)
 

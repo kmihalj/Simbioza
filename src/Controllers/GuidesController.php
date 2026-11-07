@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Guides\BundledManual;
+use App\Update\BundledGuideIndex;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Http\ResponseFactory;
 use HeartPhrame\Localization\TranslatorInterface;
@@ -111,10 +112,10 @@ final readonly class GuidesController
      */
     private function locale(ServerRequestInterface $request): string
     {
-        $supported = $this->config->get('app.supported_locales', ['hr', 'en']);
+        $supported = $this->config->get('app.localization.supported_locales', ['hr', 'en']);
         $supported = is_array($supported) ? array_filter($supported, is_string(...)) : [];
 
-        $available = array_values(array_intersect($supported, ['hr', 'en']));
+        $available = array_values(array_intersect($supported, BundledGuideIndex::SUPPORTED_LOCALES));
         $requested = $request->getQueryParams()['lang'] ?? $this->translator->getLocale();
 
         return is_string($requested) && in_array($requested, $available, true)

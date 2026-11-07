@@ -37,11 +37,11 @@ git --version
 ```
 
 PHP must be **8.2 or newer**, Composer must be version 2, and PHP needs
-`ctype dom fileinfo json libxml mbstring openssl pdo session xmlreader zip`.
+`ctype dom fileinfo intl json libxml mbstring openssl pdo session xmlreader zip`.
 Use `pdo_sqlite`, `pdo_mysql` or `pdo_pgsql` for your chosen database.
 CLI PHP and the web PHP handler must have matching versions and extensions.
 
-## 2. Download a clean Simbioza 0.3.39 release
+## 2. Download a clean Simbioza 0.3.40 release
 
 Choose **one** application directory. On Linux:
 
@@ -67,7 +67,7 @@ Run the complete download block as your normal maintainer account:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.39 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.40 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -76,7 +76,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Expect `0.3.39` and `success` for every platform requirement.
+Expect `0.3.40` and `success` for every platform requirement.
 Git's **detached HEAD** notice is normal when checking out a release tag.
 Do not run Composer with `sudo`, copy another site's configuration or database,
 include `.git/` in the deployed application, or use `--no-dev` here.
@@ -305,18 +305,19 @@ cd "$SIMBIOZA_APP_ROOT"
 php scripts/installation_packages.php prepare
 ```
 
-For a smaller set, such as Theme, Calendar, and E-mail, prepare only those
-modules and deselect the others in the wizard:
+For a smaller set of additional features, such as Calendar and E-mail, prepare
+those modules and deselect the other optional modules in the wizard:
 
 ```bash
-php scripts/installation_packages.php prepare --modules=theme,calendar,email
+php scripts/installation_packages.php prepare --modules=calendar,email
 php scripts/installation_packages.php status
 ```
 
 To install no optional modules, use
-`php scripts/installation_packages.php prepare --modules=`. This temporarily
-prepares only Backup for the starter guides; deselect every optional module
-in the wizard.
+`php scripts/installation_packages.php prepare --modules=` and deselect every
+optional module in the wizard. **Auth, ORM, Menu, Theme, Backup, and Audit**
+are required in every installation and remain installed and enabled. Do not
+list them in `--modules`, which accepts only optional modules.
 
 The `status` command shows which packages are actually installed. The wizard
 marks a missing package for CLI preparation; reload the page afterwards. Do
@@ -355,9 +356,9 @@ for SIMBIOZA_FILE in database.php env.php installation.php modules.php languages
 done
 ```
 
-After successful installation, clean up the temporary preparation state.
-Backup remains installed when selected in the wizard; otherwise cleanup removes
-it only if preparation added it:
+After successful installation, remove the completed preparation record.
+`cleanup` does not uninstall packages or delete data. All six required modules,
+including Backup, remain installed:
 
 ```bash
 php scripts/installation_packages.php cleanup

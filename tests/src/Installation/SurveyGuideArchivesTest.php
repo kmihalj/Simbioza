@@ -8,6 +8,7 @@ use AaiEduHr\HeartPhrameModuleBackup\Service\BackupArchiveReader;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupFilesystem;
 use App\Update\BundledAssetsUpdater;
+use App\Update\BundledGuideIndex;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -32,7 +33,7 @@ final class SurveyGuideArchivesTest extends TestCase
             JSON_THROW_ON_ERROR,
         );
         $this->assertCount(21, $definitions);
-        $this->assertCount(31, BundledAssetsUpdater::guidePages($root));
+        $this->assertCount(count(BundledGuideIndex::load($root) ?? []), BundledAssetsUpdater::guidePages($root));
         $directory = sys_get_temp_dir() . '/survey-guide-test-' . bin2hex(random_bytes(8));
         $filesystem = new BackupFilesystem();
         $composer = $this->createStub(ComposerBridge::class);
@@ -72,10 +73,12 @@ final class SurveyGuideArchivesTest extends TestCase
                     $this->assertSame('document', $pages[0]['node_type']);
                     $sourceKeys[] = $pages[0]['document_key'];
                     $versions = iterator_to_array($reader->records('editor-html-workspace', 'versions'));
-                    $this->assertCount(2, $versions);
+                    $this->assertCount(count(BundledGuideIndex::SUPPORTED_LOCALES), $versions);
                     $languages = array_column($versions, 'language_code');
                     sort($languages);
-                    $this->assertSame(['en', 'hr'], $languages);
+                    $expectedLanguages = BundledGuideIndex::SUPPORTED_LOCALES;
+                    sort($expectedLanguages);
+                    $this->assertSame($expectedLanguages, $languages);
                     $publishedNumbers = [];
                     foreach ($reader->records('page-transfer', 'workflows') as $workflow) {
                         $publishedNumbers[$workflow['language_code']] = $workflow['published_version_number'];
@@ -92,9 +95,16 @@ final class SurveyGuideArchivesTest extends TestCase
                     $assets = [];
                     foreach ($reader->records('editor-html-workspace', 'assets') as $asset) {
                         $assets[$asset['uuid']] = true;
-                        $this->assertSame('image/png', $asset['mime_type']);
-                        $this->assertMatchesRegularExpression('/^(hr|en)-[a-z-]+\.png$/', $asset['original_name']);
-                        $this->assertFileExists($reader->blobPath($asset['blob']['sha256']));
+                        $this->assertContains($asset['mime_type'], ['image/png', 'image/jpeg']);
+                        $this->assertMatchesRegularExpression(
+                            '/\A[a-z0-9][a-z0-9.-]*\.(?:png|jpe?g)\z/iD',
+                            $asset['original_name'],
+                        );
+                        $blobPath = $reader->blobPath($asset['blob']['sha256']);
+                        $this->assertFileExists($blobPath);
+                        $image = getimagesize($blobPath);
+                        $this->assertIsArray($image);
+                        $this->assertSame($asset['mime_type'], $image['mime']);
                     }
 
                     $currentVersions = [];

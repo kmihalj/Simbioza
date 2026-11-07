@@ -2,7 +2,7 @@
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.14/docs/release-0.3.14_en.md)
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.39](release-0.3.39_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.40](release-0.3.40_hr.md).
 > i [Simbiozu 0.3.15](release-0.3.15_hr.md) za aktualne upute.
 
 Ovo izdanje poboljšava ekran nadogradnje i uključuje objavljeni **Email 0.3.2**

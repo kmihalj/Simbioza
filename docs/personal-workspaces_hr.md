@@ -15,23 +15,27 @@ sačuvani, a stabilno mapiranje u bazi ne ovisi o nazivu ni slugu.
 
 ## Administratorsko postavljanje
 
-1. Primijenite migracije aplikacije:
+Nakon instalacije modulâ i primjene migracija otvorite **Postavke → Osobna
+područja** (`/settings/personal-workspaces`). Ekran ima dvije globalne mogućnosti:
 
-   ```bash
-   php vendor/bin/hph orm-migrate:up
-   ```
+- **Automatski izradi osobno područje pri prvoj prijavi** zadano je uključeno.
+  Nedostajuće osobno područje nastaje pri sljedećoj uspješnoj prijavi aktivnog
+  korisnika; uključivanje ne pokreće masovnu izradu za sve postojeće račune.
+- **Omogući korisnicima izradu osobnog područja** zadano je isključeno. Dostupno
+  je samo kada je automatska izrada isključena. Korisniku bez osobnog područja
+  tada se u **Moj profil → Praćenje i obavijesti** pojavljuje **Izradi moje osobno
+  područje**.
 
-2. Otvorite **Postavke → Područja → Osobna područja**.
-3. Ostavite uključeno **Automatski izradi osobno područje pri prvoj prijavi**
-   ako ga novi korisnici trebaju dobiti automatski.
-4. Pri uvođenju mogućnosti u postojeću instalaciju jednom pokrenite
-   **Izradi osobna područja postojećim korisnicima**.
+Odaberite **Spremi**. Ako su obje mogućnosti isključene, tim se putovima ne
+izrađuju nova osobna područja. Postojeća područja ostaju sačuvana.
 
-Tablica na istom ekranu sadrži iznimku za pojedinog korisnika i ručnu radnju
-**Izradi sada**. Isključivanje automatske izrade ne briše postojeće područje.
-Soft-obrisano osobno područje ostaje povezano s mapiranim korisnikom i može se
-vratiti kroz uobičajenu administraciju obrisanih područja; sljedeća prijava ne
-stvara potajno novu zamjenu.
+Tablica **Izrađena osobna područja** služi samo pregledu izrađenih područja i
+poveznica na njih. Nema masovne izrade, korisničkih iznimaka ni radnje **Izradi
+sada**. Zastarjela tablica `simbioza_user_personal_workspace_policies` ostaje u
+migracijskoj shemi radi kompatibilnosti; aktualni servis i obrazac ne primjenjuju
+njezina pravila. Meko obrisano osobno područje ostaje povezano s korisnikom i
+vraća se kroz **Postavke područja → Obrisana područja**; sljedeća prijava ne
+izrađuje zamjenu.
 
 ## Pravila pristupa
 
@@ -41,7 +45,9 @@ stvara potajno novu zamjenu.
 - Područje se izrađuje s ograničenom (`restricted`) vidljivošću.
 - Drugi korisnici i grupe ne dobivaju implicitne ACL retke. Taj korisnik ili
   administrator mogu im naknadno dodijeliti uobičajena prava područja.
-- Gost ne može otvoriti područje niti ga pronaći u uobičajenom popisu područja.
+- Početno gost nema pristup području ni njegov prikaz na uobičajenom popisu;
+  eventualne kasnije javne iznimke postavljaju se kroz uobičajena prava područja
+  ili stranice.
 
 Auth objavljuje neutralni događaj uspješne prijave, a Simbioza User ga sluša.
 Auth zato ostaje neovisan i radi kada Workspace ili Simbioza User nisu
@@ -56,7 +62,8 @@ mapiranje na korisnika kojemu se taj puni ACL automatski dodjeljuje.
 
 ## Profil korisnika i API
 
-Nakon izrade, **Moj profil → Praćenje i obavijesti** sadrži izravnu poveznicu
+Ako je samostalna izrada dopuštena, korisnik bez područja može ga izraditi u
+svojem profilu. Nakon izrade, **Moj profil → Praćenje i obavijesti** sadrži izravnu poveznicu
 **Moje osobno područje**. Autenticirani API ključ sa scopeom `workspace:read`
 može pročitati samo vlastito mapiranje:
 
@@ -69,8 +76,9 @@ Endpoint služi samo za čitanje i nikada ne izrađuje područje.
 ## Backup i vraćanje
 
 Backup područja uključuje mapiranje kada je odabrano područje osobno. Poslovna
-cjelina **Korisnici** čuva korisničke iznimke i mapiranja, a **Postavke** čuvaju
-globalno pravilo automatske izrade. Backup cijelog sitea sadrži sva tri dijela.
+cjelina **Korisnici** čuva podržane korisničke podatke i mapiranja, a **Postavke**
+čuvaju globalne postavke izrade. Zastarjela pohranjena korisnička pravila nisu
+aktivna mogućnost obrasca ni servisa. Backup cijelog sitea sadrži sva tri dijela.
 
 Pri copy importu postojeće mapiranje osobnog područja ima prednost jer jedan
 korisnik može imati samo jedno osobno područje. Uvezena kopija ostaje obično

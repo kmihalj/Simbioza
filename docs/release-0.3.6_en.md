@@ -1,6 +1,6 @@
 # Simbioza 0.3.6 — verified secured-FPM installation
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.39](release-0.3.39_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.40](release-0.3.40_en.md).
 
 > Historical release note. For current installation instructions, use the [installation guide](installation_en.md).
 

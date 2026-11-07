@@ -8,6 +8,7 @@ use AaiEduHr\HeartPhrameModuleBackup\ModuleBackup;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupArchiveReader;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupFilesystem;
+use App\Update\BundledAssetsUpdater;
 use FilesystemIterator;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\Config;
@@ -76,7 +77,7 @@ final class BundledGuideArchivesTest extends TestCase
         fclose($pipes[1]);
         fclose($pipes[2]);
         $this->assertSame(0, proc_close($process), $output);
-        $this->assertSame(5, substr_count($output, 'EN/HR sources verified.'));
+        $this->assertSame(5, substr_count($output, 'translated sources verified.'));
     }
 
     /**
@@ -330,7 +331,11 @@ final class BundledGuideArchivesTest extends TestCase
         $applicationRoot = dirname(__DIR__, 3);
         $archives = glob($applicationRoot . '/resources/installation/workspace/*.zip');
         $this->assertIsArray($archives);
-        $this->assertCount(11, $archives);
+        $rootPackages = array_filter(
+            BundledAssetsUpdater::guidePages($applicationRoot),
+            static fn(array $page): bool => !str_starts_with($page['file'], 'surveys/'),
+        );
+        $this->assertCount(count($rootPackages) + 1, $archives);
         $this->assertFileDoesNotExist($applicationRoot . '/resources/installation/workspace/razvojne-integracije.zip');
         $this->assertFileDoesNotExist($applicationRoot . '/resources/installation/workspace/html-editor-u-obrascu.zip');
         $temporary = sys_get_temp_dir() . '/simbioza-bundled-guide-test-' . bin2hex(random_bytes(8));

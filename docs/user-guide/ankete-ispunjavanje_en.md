@@ -48,13 +48,18 @@ Check your answers on the final review. If they are correct, choose **Submit ans
 
 ## If you cannot access a survey
 
-**Wrong domain:** sign in with an account from an institution allowed for this survey. **Not on the invitation list:** use an account containing the invited email address. If your account supplies several addresses, one match is enough. If unsure, contact the person who sent you the survey.
+**Wrong domain:** sign in with an account from an institution allowed for this survey. **Not on the invitation list:** use an account whose invited email address is verified by the sign-in provider. An address you merely typed into a profile is not proof of an invitation. If your account supplies several addresses, one match is enough. If unsure, contact the person who sent you the survey.
 
 **Private or unavailable survey:** a link alone does not grant access. Check your account or ask the organizer for permission. Other private pages and answers are not displayed.
 
 <figure>
 <img src="images/a53e8144-4206-4508-a3b9-50285dba5cf5.png" style="max-width: 100%; height: auto;" alt="An unavailable survey explains the problem and offers a safe return without revealing private content." />
 <figcaption aria-hidden="true">An unavailable survey explains the problem and offers a safe return without revealing private content.</figcaption>
+</figure>
+
+<figure class="my-4">
+<img src="images/survey-review-05-en.jpg" class="img-fluid rounded border" alt="Survey participation refused by the invitation list" />
+<figcaption>The signed-in account has no matching verified address. Signing in alone does not open the questions or allow a submission.</figcaption>
 </figure>
 
 ## If something goes wrong

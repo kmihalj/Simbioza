@@ -13,7 +13,7 @@ Simbioza povezuje stranice, pretraživi Wiki, kalendare i sastanke, ankete te ti
 | Instalirati samo dio funkcionalnosti ili proširiti postojeći site | [Modularne instalacije](modularity_hr.md) |
 | Održavati, nadograditi ili sigurnosno kopirati instalaciju | [Održavanje i rješavanje problema](troubleshooting_hr.md) |
 | Ugraditi HTML editor u polje vlastite aplikacije | [HTML editor u polju obrasca](html-editor-forms_hr.md) |
-| Povezati drugi sustav kroz API | [API ugovor](api-v1-contract_hr.md) |
+| Povezati drugi sustav kroz API | [Potpuni API priručnik s primjerima](user-guide/api-koristenje_hr.md) |
 | Prilagoditi izgled | [Kolekcija tema](theme-collection_hr.md) i [svijetla/tamna galerija](theme-gallery_hr.md) |
 
 ## Instalirajte i održavajte
@@ -33,13 +33,15 @@ Simbioza povezuje stranice, pretraživi Wiki, kalendare i sastanke, ankete te ti
 - [Osobna područja](personal-workspaces_hr.md) i [osobni izgled](personal-appearance_hr.md).
 - [Teme, uvoz i brisanje](theme-collection_hr.md), [kreativne teme](creative-themes_hr.md), [svih 26 pregleda](theme-gallery_hr.md) i [vizualni identitet](branding_hr.md).
 
-Instalirano područje **Korisničke upute** sadrži praktične korake za prijavu, stranice, kalendare, sastanke i ankete. Bez Wikija stavka **Upute** prikazuje ista objavljena poglavlja kao HTML. Priručnik nudi prijevode koji postoje i instalirani su; instaliranje dodatnog jezika sučelja ne prevodi tekst uputa.
+Priručnik ima **90 poglavlja na hrvatskom, engleskom, njemačkom, španjolskom, francuskom i talijanskom**, s odvojenim postupcima za čitatelje i autore, administratore te razvojne programere. Otvorite [stranice i uređivač](user-guide/uredivanje-stranica_hr.md), [područja](user-guide/podrucja_hr.md), [kalendare](user-guide/kalendari_hr.md), [ankete](user-guide/ankete_hr.md), [teme](user-guide/teme_hr.md), [izbornike](user-guide/izbornici_hr.md) ili [administriranje](user-guide/admin-pregled_hr.md). [API priručnik](user-guide/api-koristenje_hr.md) obrađuje 123 konkretne operacije, s primjerima zahtjeva, odgovora i potrebnih ovlasti.
+
+S Wikijem se poglavlja nalaze u području **Korisničke upute**. Bez Wikija stavka **Upute** prikazuje isti sadržaj kao HTML s navigacijom. Priručnik nudi prijevode koji postoje i instalirani su; instaliranje dodatnog jezika sučelja ne prevodi tekst uputa.
 
 ## Razvijajte i povezujte
 
 - [Ugradite HTML editor u polje obrasca](html-editor-forms_hr.md).
 - [Struktura projekta](project-structure_hr.md), [uobičajeni tijekovi rada](common-workflows_hr.md) i [registracija modula](modules_hr.md).
-- [API v1 ugovor](api-v1-contract_hr.md), [zajednički servisi](common-services_hr.md) i [životni ciklus zahtjeva](request-lifecycle_hr.md).
+- [Potpuni API priručnik: cURL/PHP, ovlasti i stvarni odgovori](user-guide/api-koristenje_hr.md), [sažeti API v1 ugovor](api-v1-contract_hr.md), [zajednički servisi](common-services_hr.md) i [životni ciklus zahtjeva](request-lifecycle_hr.md).
 - [Rute](routes_hr.md), [middleware](middleware_hr.md), [prikazi](views_hr.md) i [sesije](sessions_hr.md).
 - [Šifriranje](encryption_hr.md) i [dispečer događaja](event-dispatcher_hr.md).
 - [Provjere dokumentacije i primjera](documentation-quality_hr.md) te [end-to-end provjere](end-to-end-testing_hr.md).

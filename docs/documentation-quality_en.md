@@ -6,19 +6,30 @@ an upstream dependency; these maintenance tools do not change its source.
 
 ## Source of the user manual
 
-The chapter registry is `resources/installation/manual-sources.json`. Most
-editable chapters are `docs/user-guide/*_en.md` and `*_hr.md`; shared overview,
+The chapter registry is `resources/installation/manual-sources.json`: currently
+90 chapters in Croatian, English, German, Spanish, French and Italian, including themes, menus, separate
+administrator procedures, and the complete API manual for 123 concrete operations.
+Check the chapter count and hierarchy against that manifest rather than an old
+fixed chapter list. Editable chapters use separate `docs/user-guide/*_<locale>.md` files; shared overview,
 installation and gallery sources remain under `docs/`. Referenced public assets
 are recorded in `manual-assets.json`, with screenshots under
-`docs/user-guide/images/`. Keep English and Croatian separate.
-Use the corresponding interface language in every screenshot, and verify that
-the image actually shows the described action and result. Examples must remain
+`docs/user-guide/images/`. Keep every language separate.
+Croatian and English screenshots use their matching interface language. German,
+Spanish, French and Italian reuse the English-interface screenshots, with a clear
+notice and translated captions. Verify that each image shows the described action and result. Examples must remain
 portable: no links to development surveys, private workspaces or local files.
 
 The same chapters are packaged as the **User guides** Workspace for Wiki
 installations. Without Wiki, the **Guides** menu renders that bundled content
 as read-only HTML with chapter navigation. Do not maintain a second manual for
 those smaller installations or edit generated package records by hand.
+
+`BundledGuideIndex` validates this same manifest for the generator and updater:
+unique slugs, known parents, safe sources, and a hierarchy without cycles.
+Parents are processed before children. Updates may reconcile the parents of
+managed chapters while preserving UUIDs, existing order, and ACLs; repeated
+execution must remain idempotent. Existing import-receipt and recovery-reference
+keys stay stable.
 
 For a new chapter, add both language sources and its placement to the source
 registry; register new public images with their checksums in the asset registry.

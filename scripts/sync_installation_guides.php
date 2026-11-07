@@ -8,6 +8,7 @@ use AaiEduHr\HeartPhrameModuleBackup\Service\BackupConfig;
 use AaiEduHr\HeartPhrameModuleBackup\Service\BackupFilesystem;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupProviderMetadata;
 use AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope;
+use App\Update\BundledGuideIndex;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -33,7 +34,7 @@ use HeartPhrame\Helper\Helper;
  */
 function installationGuideSources(string $slug, string $locale): array
 {
-    if (!in_array($locale, ['en', 'hr'], true)) {
+    if (!in_array($locale, BundledGuideIndex::SUPPORTED_LOCALES, true)) {
         throw new RuntimeException('Unsupported bundled installation language.');
     }
 
@@ -46,6 +47,24 @@ function installationGuideSources(string $slug, string $locale): array
     };
 
     return array_map(static fn(string $name): string => $name . '_' . $locale . '.md', $names);
+}
+
+/**
+ * EN: Uses shipped translations, independently of the languages installed on the build host.
+ *
+ * HR: Koristi isporučene prijevode, neovisno o jezicima instaliranima na razvojnom računalu.
+ *
+ * @return list<string>
+ */
+function installationGuideLocales(string $root, string $slug): array
+{
+    foreach (BundledGuideIndex::load($root) ?? [] as $page) {
+        if ($page['slug'] === $slug) {
+            return array_keys($page['sources']);
+        }
+    }
+
+    return ['hr', 'en'];
 }
 
 /**
@@ -69,6 +88,46 @@ function installationGuideSourceHash(string $root, string $slug, string $locale)
 }
 
 /**
+ * EN: Gives generated guide tables readable theme-aware spacing without changing escaped code examples.
+ *
+ * HR: Daje generiranim tablicama uputa čitljive razmake prema temi, bez mijenjanja escapiranih primjera koda.
+ */
+function styleGuideTables(string $html): string
+{
+    $styled = preg_replace_callback(
+        '~<table(?=[\s>])(?:[^>"\']|"[^"]*"|\'[^\']*\')*>~i',
+        static function (array $match): string {
+            $tag = $match[0];
+            $required = ['table', 'table-bordered', 'align-middle'];
+            if (
+                preg_match(
+                    '~(?<![\w:-])class\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))~is',
+                    $tag,
+                    $attribute,
+                    PREG_OFFSET_CAPTURE,
+                )
+            ) {
+                $value = ($attribute[1][0] ?? '') ?: (($attribute[2][0] ?? '') ?: ($attribute[3][0] ?? ''));
+                $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $classes = preg_split('/\s+/', trim($value), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                $classes = array_values(array_unique([...$classes, ...$required]));
+                $replacement = 'class="' . htmlspecialchars(implode(' ', $classes), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                . '"';
+                return substr_replace($tag, $replacement, $attribute[0][1], strlen($attribute[0][0]));
+            }
+
+            return substr($tag, 0, -1) . ' class="' . implode(' ', $required) . '">';
+        },
+        $html,
+    );
+    if (!is_string($styled)) {
+        throw new RuntimeException('Unable to format public guide tables.');
+    }
+
+    return $styled;
+}
+
+/**
  * EN: Renders maintained Markdown and maps local guide links to portable application routes.
  *
  * HR: Renderira održavani Markdown i povezuje lokalne upute s prenosivim aplikacijskim rutama.
@@ -78,11 +137,20 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
     $hash = installationGuideSourceHash($root, $slug, $locale);
     $html = '<section data-simbioza-docs-sha256="' . $hash . '">' . PHP_EOL;
     if ($slug === 'php-fpm-instalacija') {
-        $html .= $locale === 'en'
-        ? '<p>Choose one complete walkthrough: <a href="#ordinary-fpm">Ordinary FPM</a> or '
-        . '<a href="#secured-fpm">Secured FPM</a>. Each starts from scratch.</p>' . PHP_EOL
-        : '<p>Odaberite jedan cjelovit postupak: <a href="#ordinary-fpm">Obični FPM</a> ili '
-        . '<a href="#secured-fpm">Secured FPM</a>. Svaki kreće od početka.</p>' . PHP_EOL;
+        $html .= match ($locale) {
+            'hr' => '<p>Odaberite jedan cjelovit postupak: <a href="#ordinary-fpm">Obični FPM</a> ili '
+            . '<a href="#secured-fpm">Secured FPM</a>. Svaki kreće od početka.</p>',
+            'de' => '<p>Wählen Sie eine vollständige Anleitung: <a href="#ordinary-fpm">Standard-FPM</a> oder '
+            . '<a href="#secured-fpm">Secured FPM</a>. Beide beginnen mit einer Neuinstallation.</p>',
+            'es' => '<p>Elija un procedimiento completo: <a href="#ordinary-fpm">FPM estándar</a> o '
+            . '<a href="#secured-fpm">Secured FPM</a>. Ambos comienzan desde cero.</p>',
+            'fr' => '<p>Choisissez une procédure complète : <a href="#ordinary-fpm">FPM standard</a> ou '
+            . '<a href="#secured-fpm">Secured FPM</a>. Chacune commence par une nouvelle installation.</p>',
+            'it' => '<p>Scegli una procedura completa: <a href="#ordinary-fpm">FPM standard</a> o '
+            . '<a href="#secured-fpm">Secured FPM</a>. Entrambe partono da una nuova installazione.</p>',
+            default => '<p>Choose one complete walkthrough: <a href="#ordinary-fpm">Ordinary FPM</a> or '
+            . '<a href="#secured-fpm">Secured FPM</a>. Each starts from scratch.</p>',
+        } . PHP_EOL;
     }
 
     foreach (installationGuideSources($slug, $locale) as $name) {
@@ -107,9 +175,21 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
             throw new RuntimeException('Pandoc failed for ' . $name . ': ' . $error);
         }
 
+        // EN: Prefix compatibility anchors too, so the ordinary and secured FPM walkthroughs cannot collide.
+        //
+        // HR: Prefiksira i kompatibilna sidra kako se obični i secured FPM postupci ne bi preklapali.
+        $rendered = preg_replace_callback(
+            '~<a id="([^"]+)"></a>~',
+            static fn(array $match): string => '<a id="' . $id . '-' . $match[1] . '"></a>',
+            $rendered,
+        );
+        if (!is_string($rendered)) {
+            throw new RuntimeException('Unable to namespace installation guide anchors.');
+        }
+
         $rendered = preg_replace_callback('/href="([^"]+)"/', static function (array $match): string {
             $href = html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $pattern = '/\A(installation(?:_mod_php|_fpm(?:_secured)?)?)_(en|hr)\.md(?:#.*)?\z/D';
+            $pattern = '/\A(installation(?:_mod_php|_fpm(?:_secured)?)?)_(en|hr|de|es|fr|it)\.md(?:#.*)?\z/D';
             if (preg_match($pattern, $href, $target)) {
                 $page = match ($target[1]) {
                     'installation_mod_php' => 'apache-mod-php-instalacija',
@@ -146,7 +226,7 @@ function renderInstallationGuide(string $root, string $slug, string $locale): st
             throw new RuntimeException('Unable to map theme gallery images.');
         }
 
-        $html .= '<section id="' . $id . '">' . PHP_EOL . $rendered . '</section>' . PHP_EOL;
+        $html .= '<section id="' . $id . '">' . PHP_EOL . styleGuideTables($rendered) . '</section>' . PHP_EOL;
     }
 
     return $html . '</section>' . PHP_EOL;
@@ -190,11 +270,16 @@ function syncInstallationGuides(string $root, bool $apply): void
         'staging_dir' => $temporary . '/staging', 'archive_dir' => $temporary . '/archives',
     ]]), $composer, $root . '/vendor/aaieduhr/heartphrame-module-backup');
     $slugs = ['simbioza', 'instalacija', 'apache-mod-php-instalacija', 'php-fpm-instalacija'];
+    $locales = [];
+    foreach ($slugs as $slug) {
+        $locales[$slug] = installationGuideLocales($root, $slug);
+    }
+
     try {
         $rendered = [];
         if ($apply) {
             foreach ($slugs as $slug) {
-                foreach (['en', 'hr'] as $locale) {
+                foreach ($locales[$slug] as $locale) {
                     $rendered[$slug][$locale] = renderInstallationGuide($root, $slug, $locale);
                 }
             }
@@ -237,7 +322,7 @@ function syncInstallationGuides(string $root, bool $apply): void
                                     $locale = $record['language_code'] ?? '';
                                     if (
                                         ($key === $slug || str_starts_with($key, $slug . '--'))
-                                        && in_array($locale, ['en', 'hr'], true)
+                                        && in_array($locale, $locales[$slug], true)
                                     ) {
                                         $expected = installationGuideSourceHash($root, $slug, $locale);
                                         if ($apply) {
@@ -265,7 +350,7 @@ function syncInstallationGuides(string $root, bool $apply): void
                 }
 
                 foreach ($archiveName === 'korisnicke-upute' ? $slugs : [$archiveName] as $slug) {
-                    foreach (['en', 'hr'] as $locale) {
+                    foreach ($locales[$slug] as $locale) {
                         if (!isset($seen[$slug][$locale])) {
                             throw new RuntimeException(
                                 'Missing installation record: ' . $archiveName . '/' . $slug . '/' . $locale,
@@ -287,7 +372,7 @@ function syncInstallationGuides(string $root, bool $apply): void
                     $prepared[$archive] = $rebuilt;
                 }
 
-                echo $archiveName . ': EN/HR sources verified.' . PHP_EOL;
+                echo $archiveName . ': translated sources verified.' . PHP_EOL;
             } finally {
                 $reader->close();
             }

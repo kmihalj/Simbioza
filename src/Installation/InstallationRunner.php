@@ -22,6 +22,7 @@ use App\Localization\LanguagePackManager;
 use App\Localization\LanguageRepository;
 use App\Localization\RepositoryLanguageManager;
 use App\Module\ModuleCatalog;
+use App\Update\BundledGuideIndex;
 use HeartPhrame\App;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -427,21 +428,21 @@ final readonly class InstallationRunner
     }
 
     /**
-     * EN: On a fresh install, keeps only selected guides; third-party locales retain EN and HR as temporary fallback.
+     * EN: On a fresh install, keeps selected guide translations and an English fallback for unsupported locales.
      *
-     * HR: Na svježoj instalaciji zadržava samo odabrane upute; za treće jezike čuva EN i HR kao privremeni fallback.
+     * HR: Na svježoj instalaciji čuva odabrane prijevode uputa i engleski fallback za nepodržane jezike.
      *
      * @param list<string> $selected
      */
     private function retainSelectedGuideLocales(Database $database, array $selected): void
     {
-        $wanted = array_values(array_intersect(['en', 'hr'], $selected));
-        if (array_diff($selected, ['en', 'hr']) !== []) {
-            $wanted = ['en', 'hr'];
+        $wanted = array_values(array_intersect($selected, BundledGuideIndex::SUPPORTED_LOCALES));
+        if (array_diff($selected, BundledGuideIndex::SUPPORTED_LOCALES) !== []) {
+            $wanted = array_values(array_unique([...$wanted, 'en']));
         }
 
-        if ($wanted === ['en', 'hr'] || $wanted === ['hr', 'en']) {
-            return;
+        if ($wanted === []) {
+            $wanted = ['en'];
         }
 
         $preferred = $wanted[0] ?? 'en';

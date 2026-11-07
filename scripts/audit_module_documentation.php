@@ -3,9 +3,11 @@
 /**
  * EN: Verifies that README files list Composer dependencies early and that
  *     every bilingual module has complete EN/HR documentation pairs.
+ *     Registered application manuals may also have DE/ES/FR/IT translations.
  *
  * HR: Provjerava da README datoteke rano navode Composer ovisnosti te da svaki
  *     dvojezični modul ima potpun par EN/HR dokumenata.
+ *     Registrirane aplikacijske upute mogu imati i DE/ES/FR/IT prijevode.
  */
 
 declare(strict_types=1);
@@ -71,16 +73,59 @@ function documentedModuleRoot(string $applicationRoot, string $module): string
 }
 
 /**
+ * EN: Reads the application's registered English manual sources. Additional
+ *     translations are optional and do not expand the module documentation policy.
+ *
+ * HR: Čita registrirane engleske izvore aplikacijskih uputa. Dodatni prijevodi
+ *     nisu obvezni i ne proširuju jezična pravila dokumentacije modula.
+ *
+ * @return list<string>
+ */
+function applicationManualEnglishSources(string $applicationRoot): array
+{
+    $manifest = json_decode(
+        documentationText($applicationRoot . '/resources/installation/manual-sources.json'),
+        true,
+        512,
+        JSON_THROW_ON_ERROR,
+    );
+    if (!is_array($manifest)) {
+        throw new RuntimeException('Invalid application manual source manifest.');
+    }
+
+    $sources = [];
+    foreach ($manifest as $chapter) {
+        if (!is_array($chapter) || !is_array($chapter['sources']['en'] ?? null)) {
+            continue;
+        }
+        foreach ($chapter['sources']['en'] as $source) {
+            if (is_string($source) && str_starts_with($source, 'docs/') && str_ends_with($source, '_en.md')) {
+                $sources[] = $source;
+            }
+        }
+    }
+
+    return array_values(array_unique($sources));
+}
+
+/**
  * EN: Verifies complete language pairs, rejects legacy mixed-language names,
- *     and confirms that relative Markdown links target existing files.
+ *     and confirms that relative Markdown links target existing files. Only
+ *     registered application manuals may have optional DE/ES/FR/IT translations.
  *
  * HR: Provjerava potpune jezične parove, uklanja stare miješane nazive i
- *     potvrđuje da relativne Markdown poveznice vode na postojeće datoteke.
+ *     potvrđuje da relativne Markdown poveznice vode na postojeće datoteke. Samo
+ *     registrirane aplikacijske upute smiju imati neobvezne DE/ES/FR/IT prijevode.
  *
  * @param list<string> $issues
+ * @param list<string> $manualEnglishSources
  */
-function auditDocumentationPairs(string $root, string $label, array &$issues): void
-{
+function auditDocumentationPairs(
+    string $root,
+    string $label,
+    array &$issues,
+    array $manualEnglishSources = [],
+): void {
     $applicationRelease = realpath($root) === realpath(dirname(__DIR__));
     $documentationRoot = $root . '/docs';
     $documents = [];
@@ -117,11 +162,28 @@ function auditDocumentationPairs(string $root, string $label, array &$issues): v
         );
     }
 
+    $manualEnglishPaths = [];
+    foreach ($manualEnglishSources as $source) {
+        $manualEnglishPaths[$root . '/' . $source] = true;
+    }
+
     $documents = array_merge($documents, [$root . '/README.md', $root . '/README_hr.md']);
     foreach ($documents as $document) {
         $basename = basename($document);
         if (!in_array($basename, ['README.md', 'README_hr.md'], true) && !preg_match('/_(?:en|hr)\.md$/', $basename)) {
-            $issues[] = $label . ': legacy mixed or unpaired document ' . $basename;
+            $englishSource = substr($document, 0, -6) . '_en.md';
+            if (preg_match('/_(?:de|es|fr|it)\.md$/', $basename) && isset($manualEnglishPaths[$englishSource])) {
+                if (!is_file($englishSource)) {
+                    $issues[] = sprintf(
+                        '%s: missing English source %s for %s',
+                        $label,
+                        basename($englishSource),
+                        $basename,
+                    );
+                }
+            } else {
+                $issues[] = $label . ': legacy mixed or unpaired document ' . $basename;
+            }
         }
 
         $text = documentationText($document);
@@ -281,7 +343,12 @@ function runModuleDocumentationAudit(): int
 {
     $applicationRoot = dirname(__DIR__);
     $issues = [];
-    auditDocumentationPairs($applicationRoot, 'HFClean', $issues);
+    auditDocumentationPairs(
+        $applicationRoot,
+        'HFClean',
+        $issues,
+        applicationManualEnglishSources($applicationRoot),
+    );
     foreach (glob($applicationRoot . '/config/*.json.dist') ?: [] as $example) {
         auditJsonStartingExample(documentationText($example), 'HFClean/config/' . basename($example), $issues);
     }

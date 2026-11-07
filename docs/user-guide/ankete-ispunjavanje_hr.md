@@ -48,13 +48,18 @@ Na završnom pregledu provjerite odgovore. Ako su točni, odaberite **Predaj odg
 
 ## Ako nemate pristup
 
-**Pogrešna domena:** prijavite se računom ustanove koja je dopuštena za anketu. **Niste na popisu pozvanih:** koristite račun koji sadrži pozvanu e-mail adresu. Ako račun ima više adresa, dovoljno je podudaranje jedne od njih. Ako niste sigurni, javite se osobi koja vam je poslala anketu.
+**Pogrešna domena:** prijavite se računom ustanove koja je dopuštena za anketu. **Niste na popisu pozvanih:** koristite račun s pozvanom e-mail adresom koju je potvrdio sustav prijave. Adresa koju ste samo upisali u profil nije dokaz pozivnice. Ako račun ima više adresa, dovoljno je podudaranje jedne od njih. Ako niste sigurni, javite se osobi koja vam je poslala anketu.
 
 **Privatna ili nedostupna anketa:** sama poveznica ne daje pristup. Provjerite račun ili zatražite dopuštenje od sastavljača. Druge privatne stranice i odgovori ne prikazuju se.
 
 <figure>
 <img src="images/490af12b-92c2-454e-a472-cd966e325bb8.png" style="max-width: 100%; height: auto;" alt="Nedostupna anketa daje objašnjenje i siguran povratak, bez otkrivanja privatnog sadržaja." />
 <figcaption aria-hidden="true">Nedostupna anketa daje objašnjenje i siguran povratak, bez otkrivanja privatnog sadržaja.</figcaption>
+</figure>
+
+<figure class="my-4">
+<img src="images/survey-review-05-hr.jpg" class="img-fluid rounded border" alt="Odbijanje ispunjavanja zbog popisa pozvanih" />
+<figcaption>Poruka objašnjava da prijavljeni račun nema odgovarajuću potvrđenu adresu. Pitanja i predaja nisu otvoreni samom prijavom.</figcaption>
 </figure>
 
 ## Ako zapne

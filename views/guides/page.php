@@ -40,9 +40,11 @@ $navigation = $renderChapters('');
 $position = array_search($page['slug'], array_column($ordered, 'slug'), true);
 $previous = $position !== false && $position > 0 ? $ordered[$position - 1] : null;
 $next = $position !== false ? $ordered[$position + 1] ?? null : null;
-$supported = $this->config->get('app.supported_locales', ['hr', 'en']);
+$supported = $this->config->get('app.localization.supported_locales', ['hr', 'en']);
 $supported = is_array($supported) ? array_filter($supported, is_string(...)) : [];
-$languages = array_intersect(['hr', 'en'], $supported);
+$languages = array_intersect(\App\Update\BundledGuideIndex::SUPPORTED_LOCALES, $supported);
+$languageNames = ['hr' => 'Hrvatski', 'en' => 'English', 'de' => 'Deutsch',
+    'es' => 'Español', 'fr' => 'Français', 'it' => 'Italiano'];
 ?>
 <link rel="stylesheet" href="<?= $this->escape($this->urlGenerator->getBasePath() . '/guide-assets/manual.css') ?>">
 <div class="row g-4">
@@ -72,7 +74,7 @@ $languages = array_intersect(['hr', 'en'], $supported);
                     <?php foreach ($languages as $language) : ?>
                         <li><a class="dropdown-item d-flex align-items-center gap-2<?= $language === $locale ? ' active' : '' ?>" hreflang="<?= $this->escape($language) ?>" href="<?= $this->escape($this->urlGenerator->getPathFor('guides.page', ['slug' => $page['slug']], ['lang' => $language])) ?>">
                             <img class="simbioza-manual-flag" src="<?= $this->escape($this->urlGenerator->getPathFor('menu.assets.flag', ['file' => $language . '.svg'])) ?>" alt="">
-                            <span><?= $language === 'hr' ? 'Hrvatski' : 'English' ?></span>
+                            <span><?= $this->escape($languageNames[$language] ?? strtoupper($language)) ?></span>
                         </a></li>
                     <?php endforeach; ?>
                     </ul>

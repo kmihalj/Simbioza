@@ -95,10 +95,14 @@ Groups collect users and carry permissions. The Administrator group is a protect
 
 System and example groups in the English interface.\
 
-1.  Select **New group** and enter a clear name and description.
-2.  Assign only the permissions members actually need.
-3.  Save the group, then add or remove membership from the user detail screen.
-4.  Where supported by the installation, SSO users can also be assigned through a rule based on a mapped attribute.
+1.  Choose **Add group** (the plus button), enter a recognisable **Group name**, and check **Active**.
+2.  Choose **Save groups**. This screen does not contain a description or content permissions.
+3.  Add or remove group membership from each user's details.
+4.  Grant the group the required permissions in the settings of a workspace, page, calendar, or survey. SSO membership can also follow rules based on a mapped attribute.
+
+**Result:** the group exists and can be selected when assigning permissions. Creating it alone does not open content to its members.
+
+To disable a non-system group temporarily, clear **Active** and save. To delete it permanently, **empty its name and choose Save groups**. This deletes the group, its memberships, and its automatic mapping rules; user accounts remain. First check where the group has been used for content access. A newly created group with the same name has a different identity and does not recover the old memberships or permissions. System groups cannot be deleted this way.
 
 <figure class="my-4">
 <span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"> <img src="images/dae802d6-9f51-47a4-8f9f-769903f624a7.png" class="img-fluid rounded border" alt="Example group before saving" /> <span class="figure-caption d-block">Example group before saving</span> </span>

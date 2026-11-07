@@ -25,6 +25,19 @@ You can skip this page when making your first simple survey.
 
 **Result:** participants do not answer irrelevant questions. If an earlier answer changes, answers in newly hidden questions are cleared. The same method works for macOS, Linux and Windows, or any other groups.
 
+## Combine conditions when needed
+
+One condition is enough for most surveys. For a combination, use **Add condition** or **Add condition group** under **When to show this**:
+
+- **All conditions (AND)** requires every condition to match.
+- **At least one condition (OR)** requires at least one match.
+
+**Example:** show a follow-up question to someone who uses PlayStation 5 or Nintendo Switch **and** gave a rating of at least 4. Put the console question and rating question earlier in the survey. On the later follow-up, choose **All conditions (AND)**. Add an **At least one condition (OR)** group containing the two console choices, and alongside that group add a condition requiring the earlier rating to be at least 4.
+
+Available comparisons depend on the earlier question: whether it was answered, whether a choice was selected, whether text contains a value, or whether a number, rating, date or time is above/below a boundary. For a matrix, also select the row to compare.
+
+**Result:** the follow-up appears only for the intended combination. A condition may use earlier questions only, not itself or a later question. Recheck conditions after moving or removing questions. In trial participation, test both a combination that should show the question and one that should hide it.
+
 ## Offer another language only when needed
 
 1.  Open **Translations** and add the language. Only installed and active application languages are available.

@@ -217,6 +217,10 @@ final readonly class BundledAssetsUpdater
                 }
             }
 
+            if ($this->reconcileGuideHierarchy($root, $workspaceId) > 0) {
+                $actions[] = 'Bundled-guide hierarchy updated; page identities, permissions and order preserved.';
+            }
+
             if ($this->repairGuideLinks($root, $basePath) > 0) {
                 $actions[] = 'Bundled-guide links repaired; page identities, permissions and theme settings preserved.';
             }
@@ -292,11 +296,85 @@ final readonly class BundledAssetsUpdater
             }
         }
 
+        if ($this->reconcileGuideHierarchy($root, BackupValue::integer($workspace['id'], 'workspace.id')) > 0) {
+            $actions[] = 'Bundled-guide hierarchy updated; page identities, permissions and order preserved.';
+        }
+
         if ($this->repairGuideLinks($root, $basePath) > 0) {
             $actions[] = 'Bundled-guide links repaired; page identities, permissions and theme settings preserved.';
         }
 
         return $actions;
+    }
+
+    /**
+     * EN: Page replacement preserves placement by design; only this maintained manual follows its shipped hierarchy.
+     *
+     * HR: Zamjena stranice namjerno čuva položaj; samo održavani priručnik slijedi isporučenu hijerarhiju.
+     */
+    private function reconcileGuideHierarchy(string $root, int $workspaceId): int
+    {
+        if (BundledGuideIndex::load($root) === null) {
+            return 0;
+        }
+
+        // EN: Read fresh rows because direct parent updates must not reuse the request tree cache.
+        //
+        // HR: Čita svježe retke jer izravna promjena roditelja ne smije koristiti request cache stabla.
+        $nodes = $this->database->table('workspace_nodes')->where('workspace_id', '=', $workspaceId)
+            ->where('is_enabled', '=', true)->get();
+        $changes = BundledGuideIndex::hierarchyChanges($nodes, self::guidePages($root));
+        if ($changes !== []) {
+            $this->database->transaction(static function (Database $database) use ($changes, $workspaceId): void {
+                foreach ($changes as $change) {
+                    $database->table('workspace_nodes')->where('workspace_id', '=', $workspaceId)
+                        ->where('id', '=', $change['id'])->update(['parent_id' => $change['parent_id']]);
+                }
+            });
+        }
+
+        return count($changes);
+    }
+
+    /**
+     * EN: Uses the complete public index while preserving historical receipt and recovery keys.
+     *
+     * HR: Koristi potpuni javni manifest uz očuvanje starih ključeva potvrde i oporavka.
+     *
+     * @return array<string,array{file:string,slug:string,parent:?string,recovery:string,message:string}>
+     */
+    public static function guidePages(string $root): array
+    {
+        $index = BundledGuideIndex::load($root);
+        if ($index === null) {
+            return self::legacyGuidePages($root);
+        }
+
+        $legacy = [];
+        foreach (self::GUIDE_PAGES as $key => $definition) {
+            $legacy[$definition['slug']] = ['key' => $key, 'definition' => $definition];
+        }
+
+        $pages = [];
+        foreach ($index as $page) {
+            $slug = $page['slug'];
+            $key = $legacy[$slug]['key'] ?? $slug . '_sha256';
+            $survey = str_starts_with($slug, 'ankete');
+            $definition = $legacy[$slug]['definition'] ?? [
+                'file' => ($survey ? 'surveys/' : '') . $slug . '.zip',
+                'slug' => $slug,
+                'recovery' => ($survey ? 'previous_survey_guide_' : 'previous_guide_') . $slug,
+                'message' => 'Bilingual guide updated; existing page permissions preserved.',
+            ];
+            $definition['parent'] = $page['parent'];
+            if (isset($pages[$key])) {
+                throw new RuntimeException('Bundled manual receipt keys collide: ' . $key);
+            }
+
+            $pages[$key] = $definition;
+        }
+
+        return $pages;
     }
 
     /**
@@ -306,7 +384,7 @@ final readonly class BundledAssetsUpdater
      *
      * @return array<string,array{file:string,slug:string,parent:?string,recovery:string,message:string}>
      */
-    public static function guidePages(string $root): array
+    private static function legacyGuidePages(string $root): array
     {
         $pages = self::GUIDE_PAGES;
         $path = $root . '/resources/installation/survey-guides.json';

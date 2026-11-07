@@ -803,12 +803,20 @@ final class InstallationTest extends TestCase
             ->get();
         $this->assertSame([
             'simbioza',
-            'instalacija',
-            'prijava-i-korisnici',
-            'kalendari',
-            'podrucja',
             'uredivanje-stranica',
+            'samostalne-html-stranice',
+            'podrucja',
+            'kalendari',
             'ankete',
+            'suradnja',
+            'osobni-profil',
+            'pristupacnost',
+            'teme',
+            'izbornici',
+            'prijava-i-korisnici',
+            'admin-pregled',
+            'instalacija',
+            'api-koristenje',
         ], array_column($rootNodes, 'slug'));
         $translatedTitles = [];
         foreach ($rootNodes as $node) {
@@ -1118,9 +1126,17 @@ PHP);
             ->where('id', '=', $confluencePage['id'])->first();
         $this->assertIsArray($updatedConfluencePage);
         $this->assertSame(
-            array_diff_key($confluencePage, ['updated_at' => true]),
-            array_diff_key($updatedConfluencePage, ['updated_at' => true]),
+            array_diff_key($confluencePage, ['updated_at' => true, 'title_translations' => true]),
+            array_diff_key($updatedConfluencePage, ['updated_at' => true, 'title_translations' => true]),
         );
+        $confluenceTitles = json_decode((string)$updatedConfluencePage['title_translations'], true);
+        $this->assertIsArray($confluenceTitles);
+        foreach (\App\Update\BundledGuideIndex::SUPPORTED_LOCALES as $locale) {
+            $this->assertArrayHasKey($locale, $confluenceTitles);
+        }
+
+        $this->assertSame('Confluence import', $confluenceTitles['hr']);
+        $this->assertSame('Confluence import', $confluenceTitles['en']);
         $otherNodesAfter = array_values(array_filter(
             $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->get(),
             static fn(array $node): bool => !in_array((int)$node['id'], $managedPageIds, true),
@@ -1142,14 +1158,16 @@ PHP);
         foreach ($surveyNodesBefore as $id => $before) {
             $after = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)->where('id', '=', $id)->first();
             $this->assertIsArray($after);
-            // EN: A package refresh may choose its translated source title and update its timestamp.
+            // EN: A package refresh may add translated titles and update its selected title and timestamp.
             //
-            // HR: Osvježenje paketa može odabrati prevedeni izvorni naslov i promijeniti vrijeme izmjene.
+            // HR: Osvježenje paketa može dodati prijevode, odabrati naslov i promijeniti vrijeme izmjene.
             $this->assertSame(
-                array_diff_key($before, ['title' => true, 'updated_at' => true]),
-                array_diff_key($after, ['title' => true, 'updated_at' => true]),
+                array_diff_key($before, ['title' => true, 'title_translations' => true, 'updated_at' => true]),
+                array_diff_key($after, ['title' => true, 'title_translations' => true, 'updated_at' => true]),
             );
             $titles = json_decode((string)$after['title_translations'], true, 512, JSON_THROW_ON_ERROR);
+            $oldTitles = json_decode((string)$before['title_translations'], true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame($oldTitles, array_intersect_key($titles, $oldTitles));
             $this->assertContains($after['title'], array_values($titles));
         }
 
@@ -1159,7 +1177,10 @@ PHP);
             ->where('document_id', '=', $otherDocumentKey)->get());
         $workflows = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODE_WORKFLOWS)
             ->where('node_id', '=', $meetingPage['id'])->get();
-        $this->assertSame(['published', 'published'], array_column($workflows, 'status'));
+        $this->assertSame(
+            array_fill(0, count(\App\Update\BundledGuideIndex::SUPPORTED_LOCALES), 'published'),
+            array_column($workflows, 'status'),
+        );
         $meetingDocument = $database->table(ModuleEditorHtml::TABLE_DOCUMENTS)
             ->where('document_key', '=', $meetingPage['document_key'])->first();
         $this->assertIsArray($meetingDocument);
@@ -1195,12 +1216,15 @@ PHP);
 
         $this->assertSame('none', $meetingDocument['attachment_visibility']);
 
-        // EN: The video is transferred locally with correctly rebased URLs in both guide locales.
+        // EN: The video is transferred locally with correctly rebased URLs in every guide locale.
         //
-        // HR: Video se prenosi lokalno, s ispravnim putanjama u HR i EN uputi.
+        // HR: Video se prenosi lokalno s ispravnim putanjama na svim jezicima uputa.
         $confluenceVersions = $database->table(ModuleEditorHtml::TABLE_DOCUMENT_VERSIONS)
             ->where('document_id', '=', $confluenceDocument['id'])->get();
-        $this->assertSame(['hr', 'en'], array_column($confluenceVersions, 'language_code'));
+        $this->assertSame(
+            \App\Update\BundledGuideIndex::SUPPORTED_LOCALES,
+            array_column($confluenceVersions, 'language_code'),
+        );
         $confluenceAssets = array_column($database->table(ModuleEditorHtml::TABLE_ASSETS)
             ->where('document_id', '=', $confluenceDocument['id'])->get(), null, 'uuid');
         foreach ($confluenceVersions as $version) {
@@ -1588,9 +1612,9 @@ PHP);
     }
 
     /**
-     * EN: A single-locale install does not retain the unnecessary second guide version.
+     * EN: A single-locale install does not retain unselected guide translations.
      *
-     * HR: Jednojezična instalacija ne zadržava nepotrebnu drugu verziju uputa.
+     * HR: Jednojezična instalacija ne zadržava neodabrane prijevode uputa.
      */
     public function testSingleLocaleInstallationImportsOnlySelectedGuideLanguage(): void
     {

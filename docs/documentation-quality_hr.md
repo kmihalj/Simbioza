@@ -6,19 +6,30 @@ ovi alati za održavanje ne mijenjaju njegov izvorni kod.
 
 ## Izvor korisničkih uputa
 
-Registar poglavlja jest `resources/installation/manual-sources.json`. Većina
-izvora nalazi se u `docs/user-guide/*_en.md` i `*_hr.md`; zajednički pregled,
+Registar poglavlja jest `resources/installation/manual-sources.json`: trenutačno
+90 poglavlja na hrvatskom, engleskom, njemačkom, španjolskom, francuskom i talijanskom, uključujući teme, izbornike, zasebne
+administratorske postupke i potpuni API priručnik za 123 konkretne operacije.
+Broj poglavlja i njihovo stablo provjeravajte prema manifestu, ne prema starom
+fiksnom popisu. Izvori su odvojeni po jeziku u `docs/user-guide/*_<locale>.md`; zajednički pregled,
 instalacija i galerija ostaju u `docs/`. Javni privitci s provjerama integriteta
 zapisani su u `manual-assets.json`, a slike su u `docs/user-guide/images/`.
-Engleski i hrvatski ostaju odvojeni. Na slici
-koristite odgovarajući jezik sučelja i provjerite prikazuje li slika opisanu
-radnju i rezultat. Primjeri moraju biti prenosivi: bez poveznica na razvojne
+Svaki jezik ostaje odvojen. Hrvatski i engleski koriste snimke odgovarajućeg
+sučelja. Njemački, španjolski, francuski i talijanski koriste postojeće snimke
+engleskog sučelja, uz jasnu napomenu i prevedene opise. Provjerite prikazuje li
+slika opisanu radnju i rezultat. Primjeri moraju biti prenosivi: bez poveznica na razvojne
 ankete, privatna područja ili lokalne datoteke.
 
 Ista se poglavlja pakiraju kao područje **Korisničke upute** za Wiki
 instalacije. Bez Wikija stavka **Upute** prikazuje isti ugrađeni sadržaj kao HTML
 s navigacijom po poglavljima. Za manje instalacije ne održava se drugi priručnik
 niti se ručno uređuju generirani zapisi paketa.
+
+`BundledGuideIndex` provjerava taj isti manifest za generator i updater:
+jedinstvene oznake, poznate roditelje, sigurne izvore i stablo bez ciklusa.
+Roditelji se obrađuju prije djece. Nadogradnja smije uskladiti roditelja samo
+upravljanih poglavlja, uz očuvanje UUID-a, postojećeg redoslijeda i ACL-a;
+ponovljeni poziv mora ostati idempotentan. Postojeći ključevi potvrda uvoza i
+referenci oporavka ostaju stabilni.
 
 Za novo poglavlje registrirajte oba jezika i njegov smještaj; nove javne slike
 dodajte u registar privitaka s njihovim sažecima. Generiranje traži instalirane
