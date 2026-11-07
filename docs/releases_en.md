@@ -2,9 +2,9 @@
 
 These notes describe the changes in each published 0.3.x release. For current installation, configuration and usage, start from the [documentation index](index_en.md). Development plans and one-off acceptance journals are not product documentation.
 
-The current published application version is **0.3.40**; each module has its own version. The complete remote release history is available on [GitHub Releases](https://github.com/kmihalj/Simbioza/releases).
+The current published application version is **0.3.41**; each module has its own version. The complete remote release history is available on [GitHub Releases](https://github.com/kmihalj/Simbioza/releases).
 
-- [0.3.40](release-0.3.40_en.md)
+- [0.3.41](release-0.3.41_en.md)
 - [0.3.36](release-0.3.36_en.md)
 - [0.3.35](release-0.3.35_en.md)
 - [0.3.33](release-0.3.33_en.md)

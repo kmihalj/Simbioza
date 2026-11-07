@@ -523,7 +523,11 @@ final class MenuThemeConfigurationTest extends TestCase
             /** @return array<string,mixed> */
             public function getRootPackage(): array
             {
-                return ['install_path' => $this->root];
+                return [
+                    'name' => 'example/isolated-host', 'pretty_version' => '1.0.0',
+                    'version' => '1.0.0.0', 'reference' => null, 'type' => 'project',
+                    'install_path' => $this->root, 'aliases' => [], 'dev' => true,
+                ];
             }
         };
         return new BackupConfig($config, $composer, dirname(__DIR__, 3) . '/vendor/aaieduhr/heartphrame-module-backup');

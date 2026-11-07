@@ -1,6 +1,6 @@
 # Simbioza 0.3.11 — prenosive poveznice uputa i povrat na isti site
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.40](release-0.3.40_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.41](release-0.3.41_hr.md).
 
 [Engleska verzija](https://github.com/kmihalj/Simbioza/blob/0.3.11/docs/release-0.3.11_en.md)
 

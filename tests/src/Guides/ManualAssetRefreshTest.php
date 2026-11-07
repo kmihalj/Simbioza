@@ -36,7 +36,6 @@ final class ManualAssetRefreshTest extends TestCase
                 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6m9sAAAAASUVORK5CYII=',
                 true,
             );
-            $this->assertIsString($bytes);
             file_put_contents($path, $bytes);
             $uuid = '12345678-1234-4123-a123-123456789abc';
             $asset = ['file' => 'screenshot.png', 'sha256' => hash('sha256', $bytes)];

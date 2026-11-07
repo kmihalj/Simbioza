@@ -41,7 +41,7 @@ PHP debe ser **8.2 o posterior**, Composer debe ser la versión 2 y PHP necesita
 
 <a id="2-download-a-clean-simbioza-0339-release"></a>
 
-## 2. Descargue una versión limpia Simbioza 0.3.40
+## 2. Descargue una versión limpia Simbioza 0.3.41
 
 Elija **un** directorio de aplicaciones. En Linux:
 
@@ -63,7 +63,7 @@ Ejecute el bloque de descarga completo como su cuenta de mantenimiento normal:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.40 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.41 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -72,7 +72,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Espere `0.3.40` y `success` para cada requisito de plataforma. El aviso **detached HEAD** de Git es normal cuando se revisa una etiqueta de lanzamiento. No ejecute Composer con `sudo`, no copie la configuración o base de datos de otro sitio, no incluya `.git/` en la aplicación implementada ni use `--no-dev` aquí. La versión 0.3.0 es una base de instalación nueva, no una actualización de 0.2.x.
+Espere `0.3.41` y `success` para cada requisito de plataforma. El aviso **detached HEAD** de Git es normal cuando se revisa una etiqueta de lanzamiento. No ejecute Composer con `sudo`, no copie la configuración o base de datos de otro sitio, no incluya `.git/` en la aplicación implementada ni use `--no-dev` aquí. La versión 0.3.0 es una base de instalación nueva, no una actualización de 0.2.x.
 
 La raíz de configuración predeterminada es `config/` (`HPH_CONFIG_PATH`), con un subdirectorio para cada módulo. Los archivos persistentes pertenecen a `data/`. El servidor web solo expondrá `public/`. Mantenga las rutas predeterminadas para esta primera instalación; Las capas de configuración externas son una opción avanzada, no un requisito previo.
 

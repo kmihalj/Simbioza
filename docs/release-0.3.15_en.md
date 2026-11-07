@@ -1,6 +1,6 @@
 # Simbioza 0.3.15 — automatic and custom button text colors
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.40](release-0.3.40_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.41](release-0.3.41_en.md).
 
 [Croatian version](https://github.com/kmihalj/Simbioza/blob/0.3.15/docs/release-0.3.15_hr.md)
 

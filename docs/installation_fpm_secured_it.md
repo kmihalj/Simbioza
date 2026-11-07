@@ -43,7 +43,7 @@ PHP deve essere **8.2 o successivo**, Composer deve essere la versione 2 e PHP n
 
 <a id="2-download-a-clean-simbioza-0339-release"></a>
 
-## 2. Scaricare una versione pulita di Simbioza 0.3.40
+## 2. Scaricare una versione pulita di Simbioza 0.3.41
 
 Scegli **una** directory dell'applicazione. Su Linux:
 
@@ -65,7 +65,7 @@ Esegui il blocco di download completo come normale account manutentore:
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.40 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.41 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -74,7 +74,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Aspettatevi `0.3.40` e `success` per ogni requisito della piattaforma. L'avviso **detached HEAD** di Git è normale quando si effettua il checkout di un tag di rilascio. Non eseguire Composer con `sudo`, copiare la configurazione o il database di un altro sito, includere `.git/` nell'applicazione distribuita o utilizzare `--no-dev` qui. La versione 0.3.0 è una base di nuova installazione, non un aggiornamento da 0.2.x.
+Aspettatevi `0.3.41` e `success` per ogni requisito della piattaforma. L'avviso **detached HEAD** di Git è normale quando si effettua il checkout di un tag di rilascio. Non eseguire Composer con `sudo`, copiare la configurazione o il database di un altro sito, includere `.git/` nell'applicazione distribuita o utilizzare `--no-dev` qui. La versione 0.3.0 è una base di nuova installazione, non un aggiornamento da 0.2.x.
 
 La root di configurazione predefinita è `config/` (`HPH_CONFIG_PATH`), con una sottodirectory per ciascun modulo. I file persistenti appartengono a `data/`. Solo `public/` verrà esposto dal server web. Mantieni i percorsi predefiniti per questa prima installazione; i livelli di configurazione esterna sono un'opzione avanzata, non un prerequisito.
 

@@ -2,7 +2,7 @@
 
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.15/docs/release-0.3.15_en.md)
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.40](release-0.3.40_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.41](release-0.3.41_hr.md).
 > i [Simbiozu 0.3.16](release-0.3.16_hr.md) za aktualne upute.
 
 Ovo izdanje uključuje **Theme 0.3.2**. HTML Editor, Menu i Email ostaju

@@ -1,6 +1,6 @@
 # Simbioza 0.3.33 — dvanaest tema i čitljivi opisi stranica
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.40](release-0.3.40_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.41](release-0.3.41_hr.md).
 
 [Engleska verzija](release-0.3.33_en.md)
 

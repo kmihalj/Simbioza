@@ -66,7 +66,11 @@ try {
          */
         public function getRootPackage(): array
         {
-            return ['install_path' => $this->root];
+            return [
+                'name' => 'example/isolated-host', 'pretty_version' => '1.0.0',
+                'version' => '1.0.0.0', 'reference' => null, 'type' => 'project',
+                'install_path' => $this->root, 'aliases' => [], 'dev' => true,
+            ];
         }
     };
     $backup = new BackupConfig(new Config(new Helper(), ['backup' => [
