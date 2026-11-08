@@ -27,6 +27,7 @@ use App\Setup\SetupDiagnostics;
 use App\Setup\SetupGateway;
 use App\Setup\SetupRequestStore;
 use App\Update\BundledUpgradeCommandManager;
+use App\Work\MyWorkCursor;
 use HeartPhrame\Alert\AlertHandler;
 use HeartPhrame\Authn\ArrayAuthnHandler;
 use HeartPhrame\Authn\AuthnHandlerInterface;
@@ -60,6 +61,17 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 $services = [
+    // EN: Bind the real session explicitly; the optional test clock is never autowired as a Closure.
+    //
+    // HR: Izričito veži stvarnu sjednicu; neobvezni testni sat ne razrješava se automatski kao Closure.
+    MyWorkCursor::class => static function (ContainerInterface $container): MyWorkCursor {
+        $session = $container->get(SessionInterface::class);
+        if (!$session instanceof SessionInterface) {
+            throw new RuntimeException('My Work session is unavailable.');
+        }
+
+        return new MyWorkCursor($session);
+    },
     ScriptPolicyMiddleware::class => static function (ContainerInterface $container): ScriptPolicyMiddleware {
         $view = $container->get(View::class);
         $config = $container->get(ConfigInterface::class);

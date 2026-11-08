@@ -1,14 +1,5 @@
 [
   {
-    "id": "aai",
-    "label": {
-      "hr": "AAI",
-      "en": "AAI"
-    },
-    "light": "aai-light.webp",
-    "dark": "aai-dark.webp"
-  },
-  {
     "id": "simbioza-atelje",
     "label": {
       "hr": "Atelje",
@@ -98,15 +89,6 @@
     },
     "light": "simbioza-ucionica-light.webp",
     "dark": "simbioza-ucionica-dark.webp"
-  },
-  {
-    "id": "dabar",
-    "label": {
-      "hr": "Dabar",
-      "en": "Dabar"
-    },
-    "light": "dabar-light.webp",
-    "dark": "dabar-dark.webp"
   },
   {
     "id": "simbioza-espresso",
@@ -295,15 +277,6 @@
     },
     "light": "simbioza-orbit-light.webp",
     "dark": "simbioza-orbit-dark.webp"
-  },
-  {
-    "id": "srce-sup",
-    "label": {
-      "hr": "Srce - sup",
-      "en": "Srce - sup"
-    },
-    "light": "srce-sup-light.webp",
-    "dark": "srce-sup-dark.webp"
   },
   {
     "id": "simbioza-stadion",

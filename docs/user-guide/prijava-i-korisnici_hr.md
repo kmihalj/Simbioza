@@ -92,7 +92,7 @@ Otvorite **Atributi korisnika**. Model obično već sadrži e-mail, ime i prezim
 Grupe okupljaju korisnike i nose skup prava. Administratorska grupa je sistemska i ne treba je koristiti kao običnu poslovnu grupu. Za odjele, projekte ili uloge izradite zasebne grupe s najmanjim potrebnim skupom prava.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"><img src="images/dd47fbf2-b7c2-4765-b141-7e3fcdf61c8e.png" class="img-fluid rounded border" alt="Popis sistemskih grupa" /><span class="figure-caption d-block">Popis sistemskih grupa</span></span>
+<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"><img src="assets/group-list_hr.jpg" class="img-fluid rounded border" alt="Popis sistemskih grupa" /><span class="figure-caption d-block">Popis sistemskih grupa</span></span>
 <figcaption>Sistemske grupe na čistoj instalaciji.</figcaption>
 </figure>
 
@@ -105,11 +105,11 @@ Grupe okupljaju korisnike i nose skup prava. Administratorska grupa je sistemska
 
 **Rezultat:** grupa postoji i može se odabrati pri dodjeli ovlasti. Samo stvaranje grupe ne otvara sadržaj njezinim članovima.
 
-Za privremeno isključivanje nesistemske grupe uklonite kvačicu **Aktivno** i spremite. Za trajno brisanje **ispraznite njezin naziv i odaberite Spremi grupe**. Time se brišu grupa, njezina članstva i pripadajuća pravila automatskog mapiranja; korisnički računi ostaju. Prije toga provjerite gdje ste koristili grupu za pristup sadržaju. Nova grupa istog imena dobiva drugi identitet i ne vraća stara članstva ni dodijeljena prava. Sistemske grupe ovim se postupkom ne brišu.
+Za privremeno isključivanje nesistemske grupe uklonite kvačicu **Aktivno** i spremite. Za trajno brisanje odaberite **Obriši grupu**. Na posebnom ekranu provjerite naziv grupe i prikazane posljedice za članstva i pravila mapiranja, zatim odaberite **Potvrdi brisanje** ili odustanite. Korisnički računi ostaju. Prazan naziv više ne briše grupu. Prije potvrde provjerite gdje se grupa koristi za pristup sadržaju. Nova grupa istog imena dobiva drugi identitet i ne vraća stara članstva ni ovlasti. Sistemske grupe ne mogu se obrisati.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"><img src="images/c9966d0e-296a-44f9-8e2b-2777912133e5.png" class="img-fluid rounded border" alt="Primjer nove grupe" /><span class="figure-caption d-block">Primjer nove grupe</span></span>
-<figcaption>Primjer dokumentacijske grupe prije spremanja.</figcaption>
+<img src="assets/group-deletion_hr.jpg" class="img-fluid rounded border" alt="Prije potvrde provjerite naziv grupe i posljedice. Odustani vraća popis bez brisanja." />
+<figcaption>Prije potvrde provjerite naziv grupe i posljedice. Odustani vraća popis bez brisanja.</figcaption>
 </figure>
 
 <a id="korisnici"></a>

@@ -292,6 +292,60 @@ function configureE2eApplication(string $projectDirectory): void
         JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
     ) . PHP_EOL);
 
+    // EN: Use only checksummed public presets in the disposable application,
+    //     even when the development installation retains private or edited themes.
+    //
+    // HR: Izdvojena aplikacija koristi samo provjerene javne predloške,
+    //     i kada razvojna instalacija čuva privatne ili uređene teme.
+    $themeDirectory = dirname(__DIR__) . '/resources/installation/theme';
+    $themeManifest = json_decode(
+        (string)file_get_contents($themeDirectory . '/collection.json'),
+        true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+    if (!is_array($themeManifest) || ($themeManifest['version'] ?? null) !== 1) {
+        throw new RuntimeException('E2E public theme manifest is invalid.');
+    }
+
+    $publicThemes = [];
+    foreach ($themeManifest['themes'] ?? [] as $entry) {
+        $id = $entry['id'] ?? null;
+        if (!is_string($id) || preg_match('/\A[a-z0-9][a-z0-9._-]*\z/D', $id) !== 1 || isset($publicThemes[$id])) {
+            throw new RuntimeException('E2E public theme identity is invalid.');
+        }
+
+        $archivePath = $themeDirectory . '/' . $id . '.zip';
+        if (!is_string($entry['sha256'] ?? null) || hash_file('sha256', $archivePath) !== $entry['sha256']) {
+            throw new RuntimeException('E2E public theme checksum differs: ' . $id);
+        }
+
+        $archive = new \ZipArchive();
+        if ($archive->open($archivePath) !== true) {
+            throw new RuntimeException('E2E public theme archive is unavailable: ' . $id);
+        }
+
+        try {
+            $theme = json_decode((string)$archive->getFromName('theme.json'), true, flags: JSON_THROW_ON_ERROR);
+            if (!is_array($theme) || ($theme['id'] ?? null) !== $id) {
+                throw new RuntimeException('E2E public theme archive has a different identity: ' . $id);
+            }
+
+            $publicThemes[$id] = $theme;
+        } finally {
+            $archive->close();
+        }
+    }
+
+    if (
+        $publicThemes === [] || file_put_contents(
+            $projectDirectory . '/config/theme/themes.json',
+            json_encode(array_values($publicThemes), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)
+            . PHP_EOL,
+        ) === false
+    ) {
+        throw new RuntimeException('E2E public themes could not be configured.');
+    }
+
     $themeSettingsPath = $projectDirectory . '/config/theme/settings.json';
     $themeSettingsJson = file_get_contents($themeSettingsPath);
     if ($themeSettingsJson === false) {
@@ -493,11 +547,15 @@ function awaitE2eServer($server, string $baseUrl): void
 {
     $context = stream_context_create([
         'http' => [
-            'timeout' => 0.5,
+            // EN: Instrumented all-module requests may exceed half a second on a cold local runtime.
+            //
+            // HR: Instrumentirani zahtjevi svih modula mogu trajati dulje od pola sekunde pri hladnom pokretanju.
+            'timeout' => 2.0,
             'ignore_errors' => true,
         ],
     ]);
-    for ($attempt = 0; $attempt < 100; ++$attempt) {
+    $deadline = microtime(true) + 30.0;
+    while (microtime(true) < $deadline) {
         $status = proc_get_status($server);
         if (!$status['running']) {
             throw new RuntimeException('The E2E HTTP server stopped before becoming ready.');
@@ -511,7 +569,7 @@ function awaitE2eServer($server, string $baseUrl): void
         usleep(100_000);
     }
 
-    throw new RuntimeException('The E2E HTTP server did not become ready within ten seconds.');
+    throw new RuntimeException('The E2E HTTP server did not become ready within thirty seconds.');
 }
 
 /**

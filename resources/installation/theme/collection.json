@@ -2,14 +2,6 @@
     "version": 1,
     "themes": [
         {
-            "id": "aai",
-            "sha256": "ed677e915a7667752c4881244486b1e771b08d6b7af80cfec08a83b3f24057d1"
-        },
-        {
-            "id": "dabar",
-            "sha256": "5c64f386446878cac3f9cc1e01697f55a3d61dd75d4e2596d86e5ba089c37169"
-        },
-        {
             "id": "simbioza-atelje",
             "sha256": "c9a8dfe8c0a3e1446353a82c899a51d982c859e19ca3556da9fb24b0a0be12d9"
         },
@@ -96,10 +88,6 @@
         {
             "id": "simbioza",
             "sha256": "d97450d9ded82a52e686c21ed73ecf268cda35fa9acca8821337dca260ff9a88"
-        },
-        {
-            "id": "srce-sup",
-            "sha256": "463a72b27fb57d9098dd50f87875e7d6dff1cb9f4eac55af39a070f7612f500c"
         },
         {
             "id": "standard",

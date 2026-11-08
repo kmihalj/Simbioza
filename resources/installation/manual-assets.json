@@ -12,6 +12,11 @@
         "file": "docs/user-guide/images/01405cc4-5b0e-44f8-b484-e7c7b563113f.png",
         "sha256": "c727283e8cc34c846acaa4d27d377b748990726300fef98e5c03980248b704f1"
     },
+    "01871f45-096f-53be-a683-544670e7ed80": {
+        "file": "docs/user-guide/assets/group-deletion_en.jpg",
+        "sha256": "a6749c0ec21cb06b976a25639e392901d09678879dc3d0fd96c346c04e062ed8",
+        "original_name": "group-deletion_en.jpg"
+    },
     "01c95905-a5d6-4676-af58-5fbb48ac3812": {
         "file": "docs/user-guide/images/01c95905-a5d6-4676-af58-5fbb48ac3812.png",
         "sha256": "3da744cc0eb51b86fb7a99c239226147088625a2be82df6c27ad521ef6c56bbd"
@@ -86,6 +91,11 @@
         "sha256": "323755a7a5eb86e9f20b9daab8bdd89bc00efeffd5383b7ff53c51e3843673c0",
         "original_name": "admin-guide-03-hr.jpg"
     },
+    "06d0ae89-f4b2-5dae-9ac3-c8d92cff7d1c": {
+        "file": "docs/user-guide/assets/profile-menu_en.jpg",
+        "sha256": "badc05a4bed82a962a8487b9d35090cfa8e575bc4464af392c970bc9c7594abf",
+        "original_name": "profile-menu_en.jpg"
+    },
     "07a29aa4-79e9-5eee-9b15-4e262487e54a": {
         "file": "docs/user-guide/images/admin-guide-21b-hr.jpg",
         "sha256": "9b9b33a67819d049a21dea465a192774a5d3287d6fe37065f8b470931cdf70f2",
@@ -144,7 +154,7 @@
     },
     "0bad7906-0b2a-5350-9fe4-50b9b409334a": {
         "file": "docs/images/theme-gallery/overview-light-hr.webp",
-        "sha256": "4337a54a30b78ed757dda1c87717f807c427721d59ba5e9dbd7f44798140d8a5",
+        "sha256": "94206c2d241cca6874a0fb6fc5f91da1ff63b9e4006d9e63dcbb0d6379684788",
         "original_name": "overview-light-hr.webp"
     },
     "0c3b8928-1587-4071-b847-2d66589c6c03": {
@@ -233,6 +243,11 @@
         "file": "docs/user-guide/images/12c871d9-5263-4a65-93f0-43ed0980d549.png",
         "sha256": "0f89bcc2f191cb970e080af695510fa1e7e516e08357cb0e3b7cbcf289a305f8"
     },
+    "13d7f32f-5f14-5a0b-a45b-b0917e3c15bf": {
+        "file": "docs/user-guide/assets/my-work_hr.jpg",
+        "sha256": "07c379736e8c639de9deb9e367b12323c162078b98f7e0e774dd7d0cdb1f35ce",
+        "original_name": "my-work_hr.jpg"
+    },
     "13e4f234-b415-4181-8fb9-99a0cb554c3a": {
         "file": "docs/user-guide/images/13e4f234-b415-4181-8fb9-99a0cb554c3a.jpg",
         "sha256": "3e5ba4e1d6bc15742de3fac6facfa843f68a5535088d8c5e995e817f47bfd940"
@@ -295,7 +310,7 @@
     },
     "19ae5804-9d0e-57c4-b25b-3bc697bc08a6": {
         "file": "docs/images/theme-gallery/overview-dark-hr.webp",
-        "sha256": "356342a825ff1ee9f1b0a12b8930a4ed9688bfb8d3b4951262fe8b69abb31c07",
+        "sha256": "4b6ceee708ed7d1e25d84fc765203ff8f771c1a7da07da856862dc22721335ad",
         "original_name": "overview-dark-hr.webp"
     },
     "1a2b871b-7bb1-4b58-83aa-2b975263f754": {
@@ -430,6 +445,11 @@
         "file": "docs/user-guide/images/page-edit-02-hr.jpg",
         "sha256": "2aa7057cedbbf601b1bc107fb1ca73ebe8fc5ddcf747b5c6c7e7be8d4fd6d316",
         "original_name": "page-edit-02-hr.jpg"
+    },
+    "27166311-a317-53ae-9b74-05bbab187cbf": {
+        "file": "docs/user-guide/assets/my-work_en.jpg",
+        "sha256": "99afb28341b07a5f17f7c2e915306dcd30976c271956f77387e159faf0451ad0",
+        "original_name": "my-work_en.jpg"
     },
     "27c27c97-1869-5201-b061-70dae37211ce": {
         "file": "docs/user-guide/images/admin-guide-13-en.jpg",
@@ -956,6 +976,11 @@
         "sha256": "a5a2912678e72544a380b324f498340125022660912e141013bf194ebe6ace3b",
         "original_name": "page-edit-03-hr.jpg"
     },
+    "4e78e453-3332-563a-8a02-9cdba3551872": {
+        "file": "docs/user-guide/assets/search-filters_hr.jpg",
+        "sha256": "85803a3c5f9abb0af687aed31a4a7b7f3b6745001e522c2a84e62bf6892a81df",
+        "original_name": "search-filters_hr.jpg"
+    },
     "4ed16762-77ed-4168-b2cc-3501623c2c99": {
         "file": "docs/user-guide/images/4ed16762-77ed-4168-b2cc-3501623c2c99.png",
         "sha256": "21fc57555bad1e89ea3b0828fe4dc64ed02f330dd277dc0c19a740d86f729916"
@@ -1263,6 +1288,11 @@
         "sha256": "5a34fca866730cc2fdbbadcdfa276c347b39e212cd15583af25346e88c384c7c",
         "original_name": "theme-guide-26-hr.jpg"
     },
+    "6c6af1e5-c696-574c-99d2-ba329928623e": {
+        "file": "docs/user-guide/assets/group-list_en.jpg",
+        "sha256": "c26f6c4f6f910f16fb3685497353e19588a56b3dfbbb7c4c4e616c266cb33bce",
+        "original_name": "group-list_en.jpg"
+    },
     "6c7a7ab7-642e-5297-a5bf-83a9e427d3fc": {
         "file": "docs/user-guide/images/admin-guide-05-hr.jpg",
         "sha256": "d28c704a6a03cb50d44810d8bf2cbe84734c740971056012d802d2577e236c89",
@@ -1329,6 +1359,11 @@
     "72b251f1-3f3c-45b8-b4f9-5361467390cc": {
         "file": "docs/user-guide/images/72b251f1-3f3c-45b8-b4f9-5361467390cc.png",
         "sha256": "6c9a9b01fadf08562c7f995f189104e9abfe462553cac92a677a14fdca6c22d1"
+    },
+    "72f84644-7d9f-575a-a029-45aff10887a2": {
+        "file": "docs/user-guide/assets/group-list_hr.jpg",
+        "sha256": "c847ae046224f329241088d16ab8cf9e2bfe4fb5975bf3c73f2677640d452a13",
+        "original_name": "group-list_hr.jpg"
     },
     "740d9159-05e8-4025-995d-ad5f752281bf": {
         "file": "docs/user-guide/images/740d9159-05e8-4025-995d-ad5f752281bf.png",
@@ -1627,7 +1662,7 @@
     },
     "8f35b8ee-95b4-51c7-829f-b1cddf318674": {
         "file": "docs/images/theme-gallery/overview-light-en.webp",
-        "sha256": "9d1abbb4a70538b183ca8e30a9233a9cce425511211dd03e694808c1b1e5766f",
+        "sha256": "c852d37ca29fd8d4e30ea60423378feb3185ce959a7eedd01b2ac36604cfa6c9",
         "original_name": "overview-light-en.webp"
     },
     "8f8f839d-d00d-5302-a3c7-37f3c47b2c43": {
@@ -2000,6 +2035,11 @@
         "sha256": "c130d0373a3b6f3fa64ea8e4b065bd47bda8e75533a81868944b5451605c135d",
         "original_name": "theme-guide-17-hr.jpg"
     },
+    "b983a324-34ed-5cb8-866d-7d875a10ebe7": {
+        "file": "docs/user-guide/assets/search-filters_en.jpg",
+        "sha256": "c49b689d260ac5b9c3d062a5de1e91e5ca91d5188cee8d68ccb7f791cfb44751",
+        "original_name": "search-filters_en.jpg"
+    },
     "ba5b7cce-78d6-4ad3-9602-6720d6b22568": {
         "file": "docs/user-guide/images/ba5b7cce-78d6-4ad3-9602-6720d6b22568.jpg",
         "sha256": "e4a3d381d29309b9e26073ad883352423aac45911fc1c381999a5ca8058c1934"
@@ -2306,6 +2346,11 @@
     "d22cbf5d-fe2f-4de0-ab31-16947a8445aa": {
         "file": "docs/user-guide/images/d22cbf5d-fe2f-4de0-ab31-16947a8445aa.png",
         "sha256": "0b22fed7c45fbbe2f1481ddc15175f179ae11960aebc079a76e5c0740ca04e3d"
+    },
+    "d2f0bd56-12e6-59f8-8fef-d01ca8631442": {
+        "file": "docs/user-guide/assets/profile-menu_hr.jpg",
+        "sha256": "df640db73adfbb6e28d2abd8a6fd2c2a6237df1045f311e82181fa3e7857a40b",
+        "original_name": "profile-menu_hr.jpg"
     },
     "d33dc6ed-ec34-4a5f-b54b-94354364bd31": {
         "file": "docs/user-guide/images/d33dc6ed-ec34-4a5f-b54b-94354364bd31.png",
@@ -2667,6 +2712,11 @@
         "sha256": "d55172fd00a2b6424ccee4679685fabc999d450562cfd1bc019e6fa367a4fa06",
         "original_name": "theme-guide-35-hr.jpg"
     },
+    "f03e8323-6e05-5a1d-8329-b681bb8684ab": {
+        "file": "docs/user-guide/assets/group-deletion_hr.jpg",
+        "sha256": "51bd431c67c182dc289f0ae394a6f56c4fef20d08dff890a04948912ef2685db",
+        "original_name": "group-deletion_hr.jpg"
+    },
     "f03eead0-03a8-4da3-bf93-df4d11d0d747": {
         "file": "docs/user-guide/images/f03eead0-03a8-4da3-bf93-df4d11d0d747.png",
         "sha256": "fbbb718205dc67ad5eac533fe76904de3875a2255ce8777ca598fc19c974611a"
@@ -2691,7 +2741,7 @@
     },
     "f19afa55-fe36-51de-8f0b-b067d3bab44a": {
         "file": "docs/images/theme-gallery/overview-dark-en.webp",
-        "sha256": "3c465a80332db81150be95a3672da57ccab1b43c72fac3bd1bace4fa59986aa8",
+        "sha256": "b5e4fdda5e0df5ef8b45342a5bb91e6372a47ecf090643fe2bb03d121ad74d79",
         "original_name": "overview-dark-en.webp"
     },
     "f1ea79f6-6612-4b72-bb14-29ff71f2a9d8": {

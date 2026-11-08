@@ -2,7 +2,7 @@
 
 [Hrvatska verzija](creative-themes_hr.md)
 
-These eight themes are part of Simbioza’s [complete 26-theme collection](theme-collection_en.md), alongside the twelve modern/retro styles and six established themes. The [gallery](theme-gallery_en.md) shows every theme in both appearances.
+These eight themes are part of Simbioza’s [complete 23-theme collection](theme-collection_en.md), alongside the twelve modern/retro styles and three established themes. The [gallery](theme-gallery_en.md) shows every theme in both appearances.
 Each has light and dark palettes and five separate hero gradient stops. Layout,
 colours, fonts, artwork, cards and shadows remain editable in Theme settings.
 

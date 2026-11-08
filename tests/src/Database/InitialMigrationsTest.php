@@ -15,6 +15,7 @@ use AaiEduHr\HeartPhrameModuleEmail\ModuleEmail;
 use AaiEduHr\HeartPhrameModuleNotification\ModuleNotification;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Schema\SchemaBuilder;
+use AaiEduHr\HeartPhrameModuleSurvey\Storage\SurveyAuthorActivitySchema;
 use AaiEduHr\HeartPhrameModuleSurvey\Storage\SurveyPerformanceSchema;
 use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use AaiEduHr\SimbiozaModuleConfluenceImport\ModuleSimbiozaConfluenceImport;
@@ -116,7 +117,14 @@ final class InitialMigrationsTest extends TestCase
         $migrationFiles = glob(dirname(__DIR__, 3) . '/database/migrations/*.php');
         $this->assertIsArray($migrationFiles);
         sort($migrationFiles);
-        $this->assertCount(26, $migrationFiles, 'Every current application migration must be covered.');
+        $this->assertCount(27, $migrationFiles, 'Every current application migration must be covered.');
+        $activityMigration = '20261107000100_install_survey_author_activity_schema';
+        $activityMigrationPath = dirname(__DIR__, 3) . '/database/migrations/' . $activityMigration . '.php';
+        $this->assertContains($activityMigrationPath, $migrationFiles);
+        $this->assertInstanceOf(SurveyAuthorActivitySchema::class, require $activityMigrationPath);
+        $surveyModule = (new ModuleCatalog())->definitions()['survey'];
+        $this->assertContains($activityMigration, $surveyModule['migrations']);
+        $this->assertContains('survey_author_activity', $surveyModule['tables']);
 
         foreach ($migrationFiles as $migrationFile) {
             // EN: Fresh installs stamp application-only data relocation without executing it.
@@ -129,6 +137,8 @@ final class InitialMigrationsTest extends TestCase
 
         $surveySchema = new SchemaBuilder($this->database);
         $this->assertTrue($surveySchema->hasIndex('survey_grants', SurveyPerformanceSchema::indexName()));
+        $this->assertTrue($surveySchema->hasColumns('survey_author_activity', ['survey_uuid', 'user_id', 'last_at']));
+        $this->assertTrue($surveySchema->hasIndex('survey_author_activity', SurveyAuthorActivitySchema::indexName()));
         foreach ((new ModuleCatalog())->definitions()['survey']['tables'] as $table) {
             $this->assertTrue($surveySchema->hasTable($table), 'Missing Survey table: ' . $table);
             $this->assertSame([], $this->database->table($table)->get(), 'Survey fixtures must not be seeded.');

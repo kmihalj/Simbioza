@@ -58,11 +58,13 @@ HeartPhrame e i suoi moduli possono anche costituire la base di un'applicazione 
 
 ## Un aspetto per la propria comunità
 
-Simbioza include **26 temi pronti all'uso**, ciascuno con aspetto chiaro e scuro. Selezionarne uno in **Impostazioni → Tema → Tema attivo**. È possibile personalizzare colori, immagini, altezza della sezione principale, schede, ombre, navigazione e caratteri. La scelta del tema non cambia contenuti o autorizzazioni.
+Simbioza include **23 temi pronti all'uso**, ciascuno con aspetto chiaro e scuro. Selezionarne uno in **Impostazioni → Tema → Tema attivo**. È possibile personalizzare colori, immagini, altezza della sezione principale, schede, ombre, navigazione e caratteri. La scelta del tema non cambia contenuti o autorizzazioni.
 
 A partire dalla versione 0.3.36, gli aggiornamenti aggiungono una sola volta i temi inclusi mancanti. I temi esistenti e la selezione attiva vengono mantenuti. Eliminando un tema aggiuntivo, gli aggiornamenti successivi non lo ripristinano. La registrazione dell'importazione viene conservata nella configurazione Theme e inclusa nel backup e nel ripristino del sito. È comunque possibile importare nuovamente un tema a mano dal suo ZIP.
 
-[Scaricare la raccolta ZIP di tutti i 26 temi](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+I temi specifici delle istituzioni non fanno più parte della raccolta pubblica. Una pulizia una tantum durante l’aggiornamento rimuove solo le copie non modificate registrate come incluse; i temi modificati e quelli espressamente protetti dalla configurazione locale vengono conservati. Se era attivo un tema rimosso, il sito usa Simbioza oppure Standard quando Simbioza non è disponibile.
+
+[Scaricare la raccolta ZIP di tutti i 23 temi](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Estrarre la raccolta, quindi selezionare un singolo ZIP da `themes/` in **Importa tema completo**. La raccolta contiene anche una galleria consultabile senza connessione. Non caricare l'intera raccolta come un unico tema.
 

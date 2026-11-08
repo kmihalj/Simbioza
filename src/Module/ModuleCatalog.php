@@ -162,10 +162,12 @@ final readonly class ModuleCatalog
                     '20261026000100_install_survey_result_audience_schema',
                     '20261026000300_install_survey_backup_schema',
                     '20261029000000_install_survey_performance_schema',
+                    '20261107000100_install_survey_author_activity_schema',
                 ],
                 [
                     'survey_surveys', 'survey_revisions', 'survey_pages', 'survey_blocks',
                     'survey_questions', 'survey_choices', 'survey_translations', 'survey_rules',
+                    'survey_author_activity',
                     'survey_assets', 'survey_placements', 'survey_grants', 'survey_admission_profiles',
                     'survey_admission_rules', 'survey_participant_sessions', 'survey_completions',
                     'survey_public_attempts', 'survey_responses', 'survey_response_answers',

@@ -108,7 +108,7 @@ Dieses Handbuch führt einen Administrator durch alle Anmeldeeinstellungen, Benu
 
 Gruppen sammeln Benutzer und übertragen Berechtigungen. Die Administratorgruppe ist eine geschützte Systemgruppe und sollte nicht als normale Unternehmensgruppe verwendet werden. Erstellen Sie separate Gruppen mit den geringsten Rechten für Abteilungen, Projekte oder Rollen.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="images/7b5e6453-1378-4ce6-b042-693585e7829d.png" class="figure-img img-fluid rounded mb-1" alt="Liste der System- und Beispielgruppen mit Verwaltungsaktionen." /><span class="figure-caption d-block">Gruppen</span></span>
+<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="assets/group-list_en.jpg" class="figure-img img-fluid rounded mb-1" alt="Liste der System- und Beispielgruppen mit Verwaltungsaktionen." /><span class="figure-caption d-block">Gruppen</span></span>
 
 System- und Beispielgruppen in der englischen Benutzeroberfläche.\
 
@@ -119,11 +119,11 @@ System- und Beispielgruppen in der englischen Benutzeroberfläche.\
 
 **Ergebnis:** Die Gruppe existiert und kann beim Zuweisen von Berechtigungen ausgewählt werden. Durch die alleinige Erstellung werden keine Inhalte für die Mitglieder geöffnet.
 
-Um eine Nicht-Systemgruppe vorübergehend zu deaktivieren, deaktivieren Sie **Aktiv** und speichern Sie. Um es dauerhaft zu löschen, **leeren Sie seinen Namen und wählen Sie Gruppen speichern**. Dadurch werden die Gruppe, ihre Mitgliedschaften und ihre automatischen Zuordnungsregeln gelöscht. Benutzerkonten bleiben bestehen. Überprüfen Sie zunächst, wo die Gruppe für den Inhaltszugriff verwendet wurde. Eine neu erstellte Gruppe mit demselben Namen hat eine andere Identität und stellt die alten Mitgliedschaften oder Berechtigungen nicht wieder her. Systemgruppen können auf diese Weise nicht gelöscht werden.
+Um eine Nicht-Systemgruppe vorübergehend zu deaktivieren, deaktivieren Sie **Aktiv** und speichern Sie. Zum dauerhaften Löschen wählen Sie **Gruppe löschen**. Prüfen Sie auf der separaten Bestätigungsseite den Gruppennamen und die angezeigten Folgen für Mitgliedschaften und Zuordnungsregeln. Bestätigen Sie anschließend die Löschung oder brechen Sie ab. Benutzerkonten bleiben bestehen. Ein leerer Name löscht keine Gruppe mehr. Prüfen Sie vorher, wo die Gruppe den Zugriff auf Inhalte ermöglicht. Eine neue Gruppe gleichen Namens erhält eine andere Identität und stellt frühere Mitgliedschaften oder Rechte nicht wieder her. Systemgruppen können nicht gelöscht werden.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"> <img src="images/dae802d6-9f51-47a4-8f9f-769903f624a7.png" class="img-fluid rounded border" alt="Beispielgruppe vor dem Speichern" /> <span class="figure-caption d-block">Beispielgruppe vor dem Speichern</span> </span>
-<figcaption>Eine Dokumentationsgruppe vor dem Speichern; Beschriftungen folgen der aktuell ausgewählten Site-Sprache.</figcaption>
+<img src="assets/group-deletion_en.jpg" class="img-fluid rounded border" alt="Prüfen Sie den Gruppennamen und die Folgen vor der Bestätigung. Abbrechen führt ohne Löschung zur Liste zurück." />
+<figcaption>Prüfen Sie den Gruppennamen und die Folgen vor der Bestätigung. Abbrechen führt ohne Löschung zur Liste zurück.</figcaption>
 </figure>
 
 <a id="users"></a>

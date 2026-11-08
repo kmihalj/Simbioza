@@ -2,7 +2,7 @@
 
 [English version](creative-themes_en.md)
 
-Ovih osam tema dio je [potpune kolekcije od 26 tema Simbioze](theme-collection_hr.md), uz dvanaest modernih/retro stilova i šest ranije dostupnih tema. [Galerija](theme-gallery_hr.md) prikazuje svaku temu u oba izgleda. Svaka ima
+Ovih osam tema dio je [potpune kolekcije Simbioze s 23 teme](theme-collection_hr.md), uz dvanaest modernih/retro stilova i tri ranije dostupne teme. [Galerija](theme-gallery_hr.md) prikazuje svaku temu u oba izgleda. Svaka ima
 svijetlu i tamnu paletu te pet zasebnih boja hero prijelaza. Raspored, boje,
 fontove, ilustracije, kartice i sjene možete naknadno uređivati u postavkama teme.
 

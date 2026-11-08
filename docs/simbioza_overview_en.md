@@ -45,11 +45,13 @@ HeartPhrame and its modules can also provide the foundation for a custom applica
 
 ## A look for your community
 
-Simbioza includes **26 ready-made themes**, each with light and dark appearances. Select one under **Settings → Theme → Active theme**. Customize colours, images, hero height, cards, shadows, navigation and typography. Choosing a theme does not change content or permissions.
+Simbioza includes **23 ready-made themes**, each with light and dark appearances. Select one under **Settings → Theme → Active theme**. Customize colours, images, hero height, cards, shadows, navigation and typography. Choosing a theme does not change content or permissions.
 
 Starting with release 0.3.36, upgrades add missing bundled themes once. Existing themes and the active selection are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
 
-[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Institution-specific presets are no longer included in the public collection. A one-time upgrade cleanup retires only unchanged copies recorded as bundled; edited themes and explicit local preservation choices remain. If a retired theme was active, the site uses Simbioza, or Standard when Simbioza is unavailable.
+
+[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Extract the collection, then select an individual ZIP from `themes/` in **Import complete theme**. The collection also contains a gallery that opens offline. Do not upload the whole collection as a single theme.
 

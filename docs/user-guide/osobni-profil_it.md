@@ -7,6 +7,26 @@
 
 **Obiettivo:** utilizza il tuo account e modifica i dati personali senza modificare l'intera installazione.
 
+## Cosa puoi fare nel menu dell’account
+
+Dopo l’accesso, fai clic sul **tuo nome** nell’intestazione. Il menu offre solo le voci disponibili per il tuo account in questa installazione.
+
+| Voce | Funzione |
+| --- | --- |
+| **Notifiche** | Apre le tue notifiche. Il numero accanto alla voce indica le notifiche non lette. |
+| **Il mio profilo** | Modificare i dati personali consentiti e accedere alla sicurezza e alle impostazioni personali. |
+| **Il mio lavoro** | [Lavoro recente, le tue bozze e contenuti da revisionare](moj-rad_it.md), secondo le tue autorizzazioni attuali. |
+| **Il mio spazio di lavoro** | Apre il tuo spazio di lavoro personale esistente, se disponibile. |
+| **Cambia password** | Modificare o impostare la tua password locale di Simbioza. |
+| **Esci** | Termina la tua sessione in Simbioza. |
+
+La sezione **Amministrazione**, con il collegamento **Impostazioni**, e l’interruttore **Amministratore** sono destinati agli utenti con le relative autorizzazioni amministrative. Non assegnano questi diritti agli utenti ordinari. Se l’interruttore è disponibile, consente di attivare o disattivare autorizzazioni amministrative temporanee seguendo la procedura mostrata sullo schermo.
+
+<figure class="my-4">
+<img src="assets/profile-menu_en.jpg" class="img-fluid rounded border" alt="Menu dell’account di un utente che ha effettuato l’accesso" />
+<figcaption>Le voci del menu dipendono dalle tue autorizzazioni e dalle funzionalità attive.</figcaption>
+</figure>
+
 <a id="sign-in-and-out"></a>
 
 ## Accedere e uscire
@@ -52,7 +72,7 @@ Le sezioni disponibili dipendono dai moduli abilitati:
 - Un selettore di home page personale offre pagine pubblicate a cui puoi accedere, dove l'amministratore consente la selezione personale.
 - **Aspetto** può offrire Automatico, Chiaro, Scuro e Sistema. Una politica di luce o oscurità forzata a livello globale ha la precedenza, quindi la selezione personale potrebbe essere assente.
 - **La mia area di lavoro personale** apre il tuo spazio; se l'autocreazione è abilitata, utilizza l'azione di creazione offerta.
-- **Segui e notifiche** controlla [cosa segui e come ti arrivano le modifiche](pracenje-obavijesti_it.md).
+- **Seguiti e notifiche** controlla [cosa segui e come ti arrivano le modifiche](pracenje-obavijesti_it.md).
 
 L'aspetto personale non sovrascrive il tema di tutti. Per testo più grande e altra assistenza personale, vedere [Accessibilità](pristupacnost_it.md).
 

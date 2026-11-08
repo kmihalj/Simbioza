@@ -108,7 +108,7 @@ Abra **Atributos de usuario**. El modelo normalmente incluye correo electrónico
 
 Los grupos recopilan usuarios y otorgan permisos. El grupo Administrador es un grupo de sistema protegido y no debe utilizarse como un grupo empresarial normal. Cree grupos separados con privilegios mínimos para departamentos, proyectos o roles.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="images/7b5e6453-1378-4ce6-b042-693585e7829d.png" class="figure-img img-fluid rounded mb-1" alt="Listado de sistemas y grupos de ejemplo con acciones de gestión." /><span class="figure-caption d-block">Grupos</span></span>
+<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="assets/group-list_en.jpg" class="figure-img img-fluid rounded mb-1" alt="Listado de sistemas y grupos de ejemplo con acciones de gestión." /><span class="figure-caption d-block">Grupos</span></span>
 
 Sistema y grupos de ejemplo en la interfaz en inglés.\
 
@@ -119,11 +119,11 @@ Sistema y grupos de ejemplo en la interfaz en inglés.\
 
 **Resultado:** el grupo existe y se puede seleccionar al asignar permisos. Crearlo por sí solo no abre contenido a sus miembros.
 
-Para deshabilitar temporalmente un grupo que no pertenece al sistema, borre **Activo** y guarde. Para eliminarlo permanentemente, **vacíe su nombre y elija Guardar grupos**. Esto elimina el grupo, sus membresías y sus reglas de asignación automática; Las cuentas de usuario permanecen. Primero verifique dónde se ha utilizado el grupo para acceder al contenido. Un grupo recién creado con el mismo nombre tiene una identidad diferente y no recupera las membresías ni los permisos anteriores. Los grupos del sistema no se pueden eliminar de esta manera.
+Para desactivar temporalmente un grupo que no sea del sistema, desmarque **Activo** y guarde. Para eliminarlo definitivamente, elija **Eliminar grupo**. En la pantalla de confirmación, compruebe el nombre y las consecuencias indicadas para las membresías y las reglas de asignación; después confirme la eliminación o cancele. Las cuentas de usuario se conservan. Un nombre vacío ya no elimina un grupo. Antes de confirmar, compruebe dónde se usa el grupo para acceder al contenido. Un grupo nuevo con el mismo nombre tiene otra identidad y no recupera las membresías ni los permisos anteriores. Los grupos del sistema no se pueden eliminar.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"> <img src="images/dae802d6-9f51-47a4-8f9f-769903f624a7.png" class="img-fluid rounded border" alt="Grupo de ejemplo antes de guardar" /> <span class="figure-caption d-block">Grupo de ejemplo antes de guardar</span> </span>
-<figcaption>Un grupo de documentación antes de guardar; Las etiquetas siguen el idioma del sitio seleccionado actualmente.</figcaption>
+<img src="assets/group-deletion_en.jpg" class="img-fluid rounded border" alt="Compruebe el nombre y las consecuencias antes de confirmar. Cancelar vuelve a la lista sin eliminar nada." />
+<figcaption>Compruebe el nombre y las consecuencias antes de confirmar. Cancelar vuelve a la lista sin eliminar nada.</figcaption>
 </figure>
 
 <a id="users"></a>

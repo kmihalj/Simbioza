@@ -63,7 +63,7 @@ $languageNames = ['hr' => 'Hrvatski', 'en' => 'English', 'de' => 'Deutsch',
                 <nav class="mt-3" aria-label="<?= $this->escape(__('Sadržaj uputa')) ?>"><?= $navigation ?></nav>
             </details>
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                <a href="<?= $this->escape($this->urlGenerator->getPathFor('guides.index')) ?>"><?= $this->escape(__('Korisničke upute')) ?></a>
+                <a href="<?= $this->escape($this->urlGenerator->getPathFor('guides.index', [], ['lang' => $locale])) ?>"><?= $this->escape(__('Korisničke upute')) ?></a>
                 <?php if (count($languages) > 1) : ?>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<?= $this->escape(__('Jezik')) ?>">

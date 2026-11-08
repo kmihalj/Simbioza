@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use AaiEduHr\HeartPhrameModuleAuth\Middleware\RequireAuthenticatedUserMiddleware;
 use App\Controllers\ContentHubController;
 use App\Controllers\GuidesController;
 use App\Controllers\HomeController;
+use App\Controllers\MyWorkController;
 use App\Controllers\SetupController;
 use App\Module\OptionalModuleRoutes;
 use HeartPhrame\CodeBook\HttpMethodsEnum;
@@ -14,6 +16,7 @@ use HeartPhrame\Routing\Route;
 $routes = [
     // Array format: [method, path, handler, name, [middleware]]
     ['GET', '/', HomeController::class . '@index', 'home', [SampleMiddleware::class]],
+    ['GET', '/my-work', MyWorkController::class . '@index', 'work.index', [RequireAuthenticatedUserMiddleware::class]],
     ['GET', '/guides', GuidesController::class . '@index', 'guides.index', []],
     ['GET', '/guides/assets/{uuid}', GuidesController::class . '@asset', 'guides.asset', []],
     ['GET', '/guides/{slug}', GuidesController::class . '@page', 'guides.page', []],

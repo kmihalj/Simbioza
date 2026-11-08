@@ -852,7 +852,18 @@ final class InstallationTest extends TestCase
         $this->assertIsString($themesJson);
         $themes = json_decode($themesJson, true, 512, JSON_THROW_ON_ERROR);
         $this->assertIsArray($themes);
-        $this->assertCount(26, $themes);
+        $this->assertCount(23, $themes);
+        $collection = json_decode(
+            (string)file_get_contents($root . '/resources/installation/theme/collection.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        $this->assertIsArray($collection);
+        $this->assertIsArray($collection['themes']);
+        $expectedThemeIds = array_column($collection['themes'], 'id');
+        $this->assertCount(23, $expectedThemeIds);
+        $this->assertEqualsCanonicalizing($expectedThemeIds, array_column($themes, 'id'));
         $themesById = array_column($themes, null, 'id');
         $this->assertArrayHasKey('simbioza', $themesById);
         $installedTheme = $themesById['simbioza'];
@@ -863,10 +874,12 @@ final class InstallationTest extends TestCase
             scandir($root . '/data/themes') ?: [],
             static fn(string $entry): bool => !str_starts_with($entry, '.'),
         ));
-        $this->assertContains('simbioza', $themeDirectories);
-        $this->assertContains('simbioza-stadion', $themeDirectories);
-        $this->assertContains('aai', $themeDirectories);
-        $this->assertContains('dabar', $themeDirectories);
+        $this->assertEqualsCanonicalizing($expectedThemeIds, $themeDirectories);
+        foreach (['aai', 'dabar', 'srce-sup'] as $retiredTheme) {
+            $this->assertArrayNotHasKey($retiredTheme, $themesById);
+            $this->assertNotContains($retiredTheme, $themeDirectories);
+            $this->assertFileDoesNotExist($root . '/resources/installation/theme/' . $retiredTheme . '.zip');
+        }
 
         // EN: A real existing-install update preserves user themes, guide
         //     identity and ACL, and does not reimport an unchanged package.

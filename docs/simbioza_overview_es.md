@@ -58,11 +58,13 @@ HeartPhrame y sus módulos también pueden proporcionar la base para una aplicac
 
 ## Una mirada para su comunidad
 
-Simbioza incluye **26 temas ya preparados**, cada uno con apariencias claras y oscuras. Seleccione uno en **Configuración → Tema → Tema activo**. Personalice colores, imágenes, altura del elemento principal, tarjetas, sombras, navegación y tipografía. Elegir un tema no cambia el contenido ni los permisos.
+Simbioza incluye **23 temas ya preparados**, cada uno con apariencias claras y oscuras. Seleccione uno en **Configuración → Tema → Tema activo**. Personalice colores, imágenes, altura del elemento principal, tarjetas, sombras, navegación y tipografía. Elegir un tema no cambia el contenido ni los permisos.
 
 A partir de la versión 0.3.36, las actualizaciones agregan los temas incluidos que faltan una vez. Se conservan los temas existentes y la selección activa. Eliminar un tema adicional evita que actualizaciones posteriores lo restauren. El recibo de importación se almacena en la configuración del tema y se incluye en la copia de seguridad/restauración del sitio. Aún puede volver a importar un tema manualmente desde su ZIP.
 
-[Descargue la colección ZIP de los 26 temas](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Los temas específicos de instituciones ya no forman parte de la colección pública. Una limpieza única durante la actualización retira solo las copias sin modificar registradas como incluidas; se conservan los temas editados y los protegidos expresamente mediante una configuración local. Si estaba activo un tema retirado, el sitio usa Simbioza o Standard cuando Simbioza no está disponible.
+
+[Descargue la colección ZIP de los 23 temas](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Extraiga la colección, luego seleccione un ZIP individual de `themes/` en **Importar tema completo**. La colección también contiene una galería que se abre sin conexión. No subas toda la colección como un solo tema.
 

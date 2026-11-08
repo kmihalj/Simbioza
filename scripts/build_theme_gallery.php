@@ -77,8 +77,21 @@ foreach ($themes->themes() as $theme) {
     echo $id . PHP_EOL;
 }
 
-if (count($catalog) !== 26) {
-    throw new RuntimeException('Expected all 26 release themes.');
+$collection = json_decode(
+    (string)file_get_contents($root . '/resources/installation/theme/collection.json'),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+$expectedIds = array_column($collection['themes'], 'id');
+$actualIds = array_column($catalog, 'id');
+sort($expectedIds);
+sort($actualIds);
+if ($actualIds !== $expectedIds) {
+    throw new RuntimeException('The preview catalog must match the current release theme collection.');
 }
 
-file_put_contents($out . '/catalog.json', json_encode($catalog, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL);
+file_put_contents($out . '/catalog.json', json_encode(
+    $catalog,
+    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+) . PHP_EOL);

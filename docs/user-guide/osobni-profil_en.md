@@ -2,12 +2,32 @@
 
 **Goal:** use your own account and adjust personal details without changing the whole installation.
 
+## What you can do in the account menu
+
+After signing in, click **your name** in the header. The menu offers only items available to your account and this installation.
+
+| Item | Purpose |
+| --- | --- |
+| **Notifications** | Opens your notifications. The number beside the item indicates unread notifications. |
+| **My profile** | Edit permitted personal details and access security and personal settings. |
+| **My work** | [Recent work, your drafts and content to review](moj-rad_en.md), according to your current permissions. |
+| **My Workspace** | Opens an existing personal workspace, where available. |
+| **Change password** | Change or set your local Simbioza password. |
+| **Log out** | Ends your sign-in to Simbioza. |
+
+The **Administration** section with its **Settings** link and the **Administrator** switch are intended for users with the relevant administrator permissions. They do not grant these rights to ordinary users. If the switch is offered, use it to enable or disable temporary administrator permissions through the process shown on screen.
+
+<figure class="my-4">
+<img src="assets/profile-menu_en.jpg" class="img-fluid rounded border" alt="Account menu for a signed-in user" />
+<figcaption>The account menu depends on your permissions and the enabled features.</figcaption>
+</figure>
+
 ## Sign in and out
 
 1. Choose **Sign in** in the account menu or follow the sign-in action on a protected page.
 2. For a local account, enter your **Login identifier** and password. The identifier is not necessarily an email address; use the value assigned to you.
 3. For an external account, select the offered provider and complete its sign-in. Contact the administrator if the expected provider is absent.
-4. On return, check the displayed name. Finish with **Sign out** on a shared computer.
+4. On return, check the displayed name. Finish with **Log out** on a shared computer.
 
 If **Register a new local user account** is offered, you may complete registration. The administrator controls its availability and fields. Entering an email address does not itself verify ownership of that address.
 

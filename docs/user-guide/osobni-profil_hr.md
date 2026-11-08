@@ -2,6 +2,26 @@
 
 **Cilj:** koristiti vlastiti račun i prilagoditi osobne podatke bez mijenjanja postavki cijele Simbioze.
 
+## Što možete u osobnom izborniku
+
+Nakon prijave kliknite **svoje ime** u zaglavlju. Izbornik nudi samo stavke dostupne vašem računu i ovoj instalaciji.
+
+| Stavka | Čemu služi |
+| --- | --- |
+| **Obavijesti** | Otvara vaše obavijesti. Broj uz stavku označava nepročitane obavijesti. |
+| **Moj profil** | Uređivanje dopuštenih osobnih podataka te pristup sigurnosti i osobnim postavkama. |
+| **Moj rad** | [Nedavni rad, vlastiti nacrti i sadržaj za pregled](moj-rad_hr.md), prema vašim trenutačnim ovlastima. |
+| **Moje područje** | Otvara već postojeće osobno područje, ako vam je dostupno. |
+| **Promjena lozinke** | Promjena ili postavljanje lokalne lozinke Simbioze. |
+| **Odjava** | Završava vašu prijavu u Simbiozu. |
+
+Odjeljak **Administracija** s poveznicom **Postavke** i prekidač **Administrator** namijenjeni su korisnicima s odgovarajućim administratorskim ovlastima. Običnom korisniku ne dodjeljuju takva prava. Ako vam je prekidač ponuđen, njime uključujete ili isključujete privremene administratorske ovlasti prema postupku prikazanom na zaslonu.
+
+<figure class="my-4">
+<img src="assets/profile-menu_hr.jpg" class="img-fluid rounded border" alt="Osobni izbornik prijavljenog korisnika" />
+<figcaption>Ponuda u osobnom izborniku ovisi o vašim ovlastima i uključenim mogućnostima.</figcaption>
+</figure>
+
 ## Prijavite se i odjavite
 
 1. U korisničkom izborniku odaberite **Prijava** ili otvorite ponuđenu prijavu sa zaštićene stranice.

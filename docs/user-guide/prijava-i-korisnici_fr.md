@@ -108,7 +108,7 @@ Le **Mapping** connecte un champ de modèle Simbioza au nom d'attribut exact ren
 
 Les groupes collectent des utilisateurs et disposent d'autorisations. Le groupe Administrateur est un groupe système protégé et ne doit pas être utilisé comme un groupe professionnel normal. Créez des groupes de moindre privilège distincts pour les départements, les projets ou les rôles.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="images/7b5e6453-1378-4ce6-b042-693585e7829d.png" class="figure-img img-fluid rounded mb-1" alt="Liste des groupes de systèmes et d'exemples avec des actions de gestion." /><span class="figure-caption d-block">Groupes</span></span>
+<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="assets/group-list_en.jpg" class="figure-img img-fluid rounded mb-1" alt="Liste des groupes de systèmes et d'exemples avec des actions de gestion." /><span class="figure-caption d-block">Groupes</span></span>
 
 Groupes système et exemples dans l'interface anglaise.\
 
@@ -119,11 +119,11 @@ Groupes système et exemples dans l'interface anglaise.\
 
 **Résultat :** le groupe existe et peut être sélectionné lors de l'attribution des autorisations. Le créer à lui seul n’ouvre pas le contenu à ses membres.
 
-Pour désactiver temporairement un groupe non système, désactivez **Actif** et enregistrez. Pour le supprimer définitivement, **videz son nom et choisissez Enregistrer les groupes**. Cela supprime le groupe, ses adhésions et ses règles de mappage automatique ; les comptes d'utilisateurs restent. Vérifiez d’abord où le groupe a été utilisé pour accéder au contenu. Un groupe nouvellement créé portant le même nom a une identité différente et ne récupère pas les anciennes adhésions ou autorisations. Les groupes système ne peuvent pas être supprimés de cette façon.
+Pour désactiver temporairement un groupe non système, décochez **Actif** et enregistrez. Pour le supprimer définitivement, choisissez **Supprimer le groupe**. Sur la page de confirmation, vérifiez son nom et les conséquences affichées pour les appartenances et les règles de mappage, puis confirmez la suppression ou annulez. Les comptes utilisateurs sont conservés. Un nom vide ne supprime plus un groupe. Avant de confirmer, vérifiez où le groupe donne accès au contenu. Un nouveau groupe de même nom possède une autre identité et ne récupère ni les anciennes appartenances ni les autorisations. Les groupes système ne peuvent pas être supprimés.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"> <img src="images/dae802d6-9f51-47a4-8f9f-769903f624a7.png" class="img-fluid rounded border" alt="Exemple de groupe avant de sauvegarder" /> <span class="figure-caption d-block">Exemple de groupe avant de sauvegarder</span> </span>
-<figcaption>Un groupe de documentation avant la sauvegarde ; les étiquettes suivent la langue du site actuellement sélectionnée.</figcaption>
+<img src="assets/group-deletion_en.jpg" class="img-fluid rounded border" alt="Vérifiez le nom et les conséquences avant de confirmer. Annuler revient à la liste sans suppression." />
+<figcaption>Vérifiez le nom et les conséquences avant de confirmer. Annuler revient à la liste sans suppression.</figcaption>
 </figure>
 
 <a id="users"></a>

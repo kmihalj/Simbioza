@@ -108,7 +108,7 @@ La **Mappatura** collega un campo del modello Simbioza al nome esatto dell'attri
 
 I gruppi raccolgono gli utenti e portano le autorizzazioni. Il gruppo Amministratore è un gruppo di sistema protetto e non deve essere utilizzato come un normale gruppo aziendale. Crea gruppi separati con privilegi minimi per dipartimenti, progetti o ruoli.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="images/7b5e6453-1378-4ce6-b042-693585e7829d.png" class="figure-img img-fluid rounded mb-1" alt="Elenco dei gruppi di sistema e di esempio con azioni di gestione." /><span class="figure-caption d-block">Gruppi</span></span>
+<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="assets/group-list_en.jpg" class="figure-img img-fluid rounded mb-1" alt="Elenco dei gruppi di sistema e di esempio con azioni di gestione." /><span class="figure-caption d-block">Gruppi</span></span>
 
 Gruppi di sistema e di esempio nell'interfaccia inglese.\
 
@@ -119,11 +119,11 @@ Gruppi di sistema e di esempio nell'interfaccia inglese.\
 
 **Risultato:** il gruppo esiste e può essere selezionato durante l'assegnazione delle autorizzazioni. Crearlo da solo non apre il contenuto ai suoi membri.
 
-Per disattivare temporaneamente un gruppo non di sistema, deseleziona **Attivo** e salva. Per eliminarlo definitivamente, **svuota il suo nome e scegli Salva gruppi**. Ciò elimina il gruppo, le sue appartenenze e le sue regole di mappatura automatica; gli account utente rimangono. Innanzitutto controlla dove è stato utilizzato il gruppo per l'accesso ai contenuti. Un gruppo appena creato con lo stesso nome ha un'identità diversa e non ripristina le appartenenze o le autorizzazioni precedenti. I gruppi di sistema non possono essere eliminati in questo modo.
+Per disattivare temporaneamente un gruppo non di sistema, deseleziona **Attivo** e salva. Per eliminarlo definitivamente, scegli **Elimina gruppo**. Nella schermata di conferma controlla il nome e le conseguenze indicate per le appartenenze e le regole di mappatura, quindi conferma l’eliminazione oppure annulla. Gli account utente rimangono. Un nome vuoto non elimina più un gruppo. Prima di confermare, verifica dove il gruppo consente l’accesso ai contenuti. Un nuovo gruppo con lo stesso nome ha un’altra identità e non ripristina le appartenenze o le autorizzazioni precedenti. I gruppi di sistema non possono essere eliminati.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"> <img src="images/dae802d6-9f51-47a4-8f9f-769903f624a7.png" class="img-fluid rounded border" alt="Gruppo di esempio prima del salvataggio" /> <span class="figure-caption d-block">Gruppo di esempio prima del salvataggio</span> </span>
-<figcaption>Un gruppo di documentazione prima del salvataggio; le etichette seguono la lingua del sito attualmente selezionata.</figcaption>
+<img src="assets/group-deletion_en.jpg" class="img-fluid rounded border" alt="Controlla il nome e le conseguenze prima di confermare. Annulla torna all’elenco senza eliminare nulla." />
+<figcaption>Controlla il nome e le conseguenze prima di confermare. Annulla torna all’elenco senza eliminare nulla.</figcaption>
 </figure>
 
 <a id="users"></a>

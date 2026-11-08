@@ -7,6 +7,26 @@
 
 **Objectif :** utilisez votre propre compte et ajustez vos informations personnelles sans modifier l'ensemble de l'installation.
 
+## Que pouvez-vous faire dans le menu du compte ?
+
+Après la connexion, cliquez sur **votre nom** dans l’en-tête. Le menu propose uniquement les entrées accessibles à votre compte dans cette installation.
+
+| Entrée | Fonction |
+| --- | --- |
+| **Notifications** | Ouvre vos notifications. Le nombre à côté de l’entrée indique les notifications non lues. |
+| **Mon profil** | Modifier les données personnelles autorisées et accéder à la sécurité et aux paramètres personnels. |
+| **Mon travail** | [Travail récent, vos brouillons et contenus à réviser](moj-rad_fr.md), selon vos autorisations actuelles. |
+| **Mon espace de travail** | Ouvre votre espace personnel existant, s’il est disponible. |
+| **Modifier le mot de passe** | Modifier ou définir votre mot de passe local Simbioza. |
+| **Se déconnecter** | Met fin à votre connexion à Simbioza. |
+
+La section **Administration**, avec son lien **Paramètres**, et le commutateur **Administrateur** sont destinés aux personnes disposant des autorisations administratives correspondantes. Ils n’accordent pas ces droits aux utilisateurs ordinaires. Si le commutateur est proposé, il permet d’activer ou de désactiver des autorisations administratives temporaires selon la procédure affichée à l’écran.
+
+<figure class="my-4">
+<img src="assets/profile-menu_en.jpg" class="img-fluid rounded border" alt="Menu du compte d’une personne connectée" />
+<figcaption>Les entrées du menu dépendent de vos autorisations et des fonctionnalités activées.</figcaption>
+</figure>
+
 <a id="sign-in-and-out"></a>
 
 ## Connectez-vous et déconnectez-vous

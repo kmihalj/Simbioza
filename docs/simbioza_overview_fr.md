@@ -58,11 +58,13 @@ HeartPhrame et ses modules peuvent également servir de base à une application 
 
 ## Une apparence pour votre communauté
 
-Simbioza comprend **26 thèmes prêts à l’emploi**, chacun avec une apparence claire et sombre. Sélectionnez-en un dans **Paramètres → Thème → Thème actif**. Personnalisez les couleurs, les images, la hauteur du bandeau principal, les cartes, les ombres, la navigation et la typographie. Le choix d’un thème ne modifie ni le contenu ni les droits d’accès.
+Simbioza comprend **23 thèmes prêts à l’emploi**, chacun avec une apparence claire et sombre. Sélectionnez-en un dans **Paramètres → Thème → Thème actif**. Personnalisez les couleurs, les images, la hauteur du bandeau principal, les cartes, les ombres, la navigation et la typographie. Le choix d’un thème ne modifie ni le contenu ni les droits d’accès.
 
 À partir de la version 0.3.36, les mises à niveau ajoutent une seule fois les thèmes fournis qui manquent. Les thèmes existants et la sélection active sont conservés. La suppression d’un thème supplémentaire empêche les mises à niveau ultérieures de le restaurer. Le reçu d’importation est conservé dans la configuration du module Theme et inclus dans la sauvegarde et la restauration du site. Vous pouvez toujours réimporter un thème manuellement à partir de son ZIP.
 
-[Télécharger la collection ZIP des 26 thèmes](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Les thèmes propres à une institution ne font plus partie de la collection publique. Un nettoyage unique lors de la mise à jour retire uniquement les copies inchangées identifiées comme fournies ; les thèmes modifiés et ceux explicitement protégés par une configuration locale sont conservés. Si un thème retiré était actif, le site utilise Simbioza ou Standard lorsque Simbioza n’est pas disponible.
+
+[Télécharger la collection ZIP des 23 thèmes](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Extrayez la collection, puis sélectionnez un ZIP individuel dans `themes/`, sous **Importer un thème complet**. La collection contient également une galerie consultable hors connexion. Ne téléversez pas toute la collection comme un seul thème.
 

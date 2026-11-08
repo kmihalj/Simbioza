@@ -157,6 +157,11 @@ final readonly class BundledThemeCollection
             $this->writeReceipt($receipt, $seen);
         }
 
+        $retired = (new BundledThemeRetirement($this->themes))->apply(dirname($manifestPath, 4), $seen);
+        if ($retired !== $seen) {
+            $this->writeReceipt($receipt, $retired);
+        }
+
         return $count;
     }
 

@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use AaiEduHr\HeartPhrameModuleAuth\Account\AuthAccountNavigationRegistry;
 use AaiEduHr\HeartPhrameModuleMenu\Service\MenuConfigRepository;
 use App\Navigation\StandaloneContentPresence;
+use App\Work\MyWorkNavigation;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\View\View;
 use Psr\Container\ContainerInterface;
@@ -49,6 +51,17 @@ return [
         /** @var View $view */
         $view = $container->get(View::class);
         $view->addGlobal('key', 'value');
+
+        // EN: Personal authoring navigation is an Auth extension, never a global homepage replacement.
+        //
+        // HR: Osobna autorska navigacija proširuje Auth, nikada ne zamjenjuje globalnu naslovnicu.
+        if ($container->has(AuthAccountNavigationRegistry::class)) {
+            $navigation = $container->get(AuthAccountNavigationRegistry::class);
+            $personalWork = $container->get(MyWorkNavigation::class);
+            if ($navigation instanceof AuthAccountNavigationRegistry && $personalWork instanceof MyWorkNavigation) {
+                $navigation->register($personalWork);
+            }
+        }
 
         // EN: Focused products have the same bundled public manual without adding Wiki or Editor.
         // Native Wiki installations keep their dedicated guide Workspace instead.

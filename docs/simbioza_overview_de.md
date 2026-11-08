@@ -58,11 +58,13 @@ HeartPhrame und seine Module können auch als Grundlage einer eigenen Anwendung 
 
 ## Ein Erscheinungsbild für Ihre Gemeinschaft
 
-Simbioza enthält **26 vorgefertigte Designs**, jedes mit hellem und dunklem Erscheinungsbild. Wählen Sie eines unter **Einstellungen → Design → Aktives Design** aus. Passen Sie Farben, Bilder, Höhe des Hero-Bereichs, Karten, Schatten, Navigation und Typografie an. Durch die Auswahl eines Designs werden weder Inhalte noch Berechtigungen geändert.
+Simbioza enthält **23 vorgefertigte Designs**, jedes mit hellem und dunklem Erscheinungsbild. Wählen Sie eines unter **Einstellungen → Design → Aktives Design** aus. Passen Sie Farben, Bilder, Höhe des Hero-Bereichs, Karten, Schatten, Navigation und Typografie an. Durch die Auswahl eines Designs werden weder Inhalte noch Berechtigungen geändert.
 
 Ab Version 0.3.36 werden durch Upgrades einmalig fehlende gebündelte Designs hinzugefügt. Bestehende Designs und die aktive Auswahl bleiben erhalten. Das Löschen eines zusätzlichen Designs verhindert, dass es bei späteren Upgrades wiederhergestellt wird. Der Importbeleg wird in der Design-Konfiguration gespeichert und in die Site-Sicherung/Wiederherstellung einbezogen. Sie können ein Design weiterhin manuell aus seinem ZIP erneut importieren.
 
-[Laden Sie die ZIP-Sammlung aller 26 Designs herunter](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Institutionsspezifische Vorlagen sind nicht mehr in der öffentlichen Sammlung enthalten. Eine einmalige Bereinigung beim Upgrade entfernt nur unveränderte, als mitgeliefert erfasste Kopien; bearbeitete Designs und ausdrücklich lokal geschützte Designs bleiben erhalten. War ein entferntes Design aktiv, verwendet die Website Simbioza oder Standard, falls Simbioza nicht verfügbar ist.
+
+[Laden Sie die ZIP-Sammlung aller 23 Designs herunter](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Extrahieren Sie die Sammlung und wählen Sie dann unter **Komplettes Design importieren** ein einzelnes ZIP aus `themes/` aus. Die Sammlung enthält auch eine Galerie, die offline geöffnet werden kann. Laden Sie nicht die gesamte Sammlung als einzelnes Design hoch.
 

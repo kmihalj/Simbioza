@@ -1386,6 +1386,8 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
 
 **Corps/Champs pris en charge :** `mode_policy`, `theme`. L'exemple ci-dessous utilise des valeurs vérifiées ; les conditions et les règles de remplacement de liste sont décrites au début du chapitre.
 
+Les exemples suivants utilisent le thème public Simbioza et supposent que l’espace de travail hérite de ce thème. Les réponses illustrent le contrat de l’API ; la liste des fichiers et l’identifiant de la requête dépendent de l’installation.
+
 ```sh
 curl --globoff --silent --show-error \
   --request PATCH \
@@ -1393,17 +1395,17 @@ curl --globoff --silent --show-error \
   --header "Content-Type: application/json" \
   --data-raw '{
   "theme": {
-    "id": "aai",
+    "id": "simbioza",
     "label": {
-      "hr": "AAI",
-      "en": "AAI"
+      "hr": "Simbioza",
+      "en": "Simbioza"
     },
-    "font_family": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
-    "menu_font_family": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "font_family": "Aptos, \"Segoe UI\", system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    "menu_font_family": "Aptos, \"Segoe UI\", system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
     "menu_font_size": "1rem",
-    "menu_font_weight": "500",
+    "menu_font_weight": "600",
     "menu_font_style": "normal",
-    "system": false,
+    "system": true,
     "components": {
       "skip_link": true,
       "header": {
@@ -1413,22 +1415,37 @@ curl --globoff --silent --show-error \
         "height_px": 72,
         "items": [
           {
-            "id": "aai-logo",
+            "id": "header-1",
             "type": "logo",
             "position": "start",
             "text": [],
-            "href": "https://www.aaiedu.hr/",
-            "src_light": "@theme-assets/aai/logo-aaieduhr-light.svg",
-            "src_dark": "@theme-assets/aai/logo-aaieduhr-dark.svg",
+            "href": "@app",
+            "src_light": "@theme-assets/simbioza/icon-adriatic-light.png",
+            "src_dark": "@theme-assets/simbioza/icon-adriatic-dark.png",
             "alt": {
-              "hr": "AAI@EduHr",
-              "en": "AAI@EduHr"
+              "hr": "Simbioza znak",
+              "en": "Simbioza mark"
             },
-            "height": 50,
-            "new_tab": true
+            "height": 48,
+            "new_tab": false
           },
           {
-            "id": "language",
+            "id": "header-2",
+            "type": "text",
+            "position": "start",
+            "text": {
+              "hr": "Simbioza",
+              "en": "Simbioza"
+            },
+            "href": "",
+            "src_light": "",
+            "src_dark": "",
+            "alt": [],
+            "height": 44,
+            "new_tab": false
+          },
+          {
+            "id": "header-3",
             "type": "language",
             "position": "end",
             "text": [],
@@ -1440,7 +1457,7 @@ curl --globoff --silent --show-error \
             "new_tab": false
           },
           {
-            "id": "account",
+            "id": "header-4",
             "type": "account",
             "position": "end",
             "text": [],
@@ -1450,26 +1467,10 @@ curl --globoff --silent --show-error \
             "alt": [],
             "height": 44,
             "new_tab": false
-          },
-          {
-            "id": "srce-logo",
-            "type": "logo",
-            "position": "end",
-            "text": [],
-            "href": "https://www.srce.unizg.hr/",
-            "src_light": "@theme-assets/aai/logo-srce-light.svg",
-            "src_dark": "@theme-assets/aai/logo-srce-dark.svg",
-            "alt": {
-              "hr": "Sveučilišni računski centar Srce",
-              "en": "University Computing Centre Srce"
-            },
-            "height": 50,
-            "new_tab": true
           }
         ]
       },
       "navigation": {
-        "text_shadow": "none",
         "placement": "standalone",
         "container": "fluid",
         "height_px": 56,
@@ -1490,8 +1491,6 @@ curl --globoff --silent --show-error \
         "mark_external_links": true
       },
       "hero": {
-        "title_text_shadow": "none",
-        "supporting_text_shadow": "none",
         "home_enabled": true,
         "inner_enabled": true,
         "container": "fluid",
@@ -1502,13 +1501,13 @@ curl --globoff --silent --show-error \
         "content_padding_top_px": 0,
         "content_padding_bottom_px": 0,
         "visual_enabled": true,
-        "visual_src_light": "@theme-assets/aai/hero-aai-banner.svg",
-        "visual_src_dark": "@theme-assets/aai/hero-aai-banner.svg",
+        "visual_src_light": "@theme-assets/simbioza/hero-adriatic-light.svg",
+        "visual_src_dark": "@theme-assets/simbioza/hero-adriatic-dark.svg",
         "visual_alt": [],
         "visual_decorative": true,
-        "visual_allow_overflow": true,
-        "visual_width_px": 650,
-        "visual_max_height_px": 320,
+        "visual_allow_overflow": false,
+        "visual_width_px": 560,
+        "visual_max_height_px": 0,
         "visual_top_px": -48,
         "visual_right_px": 24,
         "visual_rotation_deg": 0,
@@ -1536,65 +1535,59 @@ curl --globoff --silent --show-error \
     },
     "light": {
       "colors": {
-        "body_bg": "#F3F4F7",
-        "body_text": "#212529",
-        "muted_text": "#66737D",
+        "body_bg": "#FFF8EE",
+        "body_text": "#123F4B",
+        "muted_text": "#547078",
         "surface_bg": "#FFFFFF",
-        "surface_text": "#212529",
-        "border": "#D8DCE3",
-        "link": "#1094E3",
-        "primary": "#0095DA",
-        "secondary": "#003567",
-        "success": "#198754",
-        "warning": "#E39717",
-        "danger": "#D51F36",
-        "info": "#4EC0AD",
+        "surface_text": "#123F4B",
+        "border": "#D9E3DF",
+        "link": "#A83F2E",
+        "primary": "#0E6268",
+        "secondary": "#C7543A",
+        "success": "#287A68",
+        "warning": "#D39B2F",
+        "danger": "#B93636",
+        "info": "#27979A",
         "document_action_bg": "#FFFFFF",
-        "document_action_text": "#006FA8",
-        "document_action_border": "#DEE2E6",
-        "document_action_hover_bg": "#0095DA",
-        "document_action_hover_text": "#FFFFFF",
-        "document_action_active_bg": "#003567",
-        "document_action_active_text": "#FFFFFF",
-        "primary_text": "auto",
-        "secondary_text": "auto",
-        "success_text": "auto",
-        "warning_text": "auto",
-        "danger_text": "auto",
-        "info_text": "auto",
+        "document_action_text": "#C7543A",
+        "document_action_border": "#D9E3DF",
+        "document_action_hover_bg": "#C7543A",
+        "document_action_hover_text": "#FFF8EE",
+        "document_action_active_bg": "#0E6268",
+        "document_action_active_text": "#FFF8EE",
         "card_bg": "#FFFFFF",
-        "card_text": "#212529",
-        "card_border": "#DEE2E6",
-        "card_accent": "#0095DA",
-        "card_shadow": "#000000",
+        "card_text": "#123F4B",
+        "card_border": "#D9E3DF",
+        "card_accent": "#FF8064",
+        "card_shadow": "#071F27",
         "title_card_bg": "#FFFFFF",
-        "title_card_text": "#212529",
-        "title_card_border": "#DEE2E6",
-        "title_card_accent": "#0095DA",
+        "title_card_text": "#123F4B",
+        "title_card_border": "#D9E3DF",
+        "title_card_accent": "#FF8064",
         "content_card_bg": "#FFFFFF",
-        "content_card_text": "#212529",
-        "content_card_border": "#DEE2E6",
-        "content_card_accent": "#0095DA",
+        "content_card_text": "#123F4B",
+        "content_card_border": "#D9E3DF",
+        "content_card_accent": "#FF8064",
         "sidebar_card_bg": "#FFFFFF",
-        "sidebar_card_text": "#212529",
-        "sidebar_card_border": "#DEE2E6",
-        "sidebar_card_accent": "#4EC0AD",
-        "title_supporting_text": "#6C757D",
-        "hero_gradient_1": "#003567",
-        "hero_gradient_2": "#084678",
-        "hero_gradient_3": "#13588B",
-        "hero_gradient_4": "#1F5EA0",
-        "hero_gradient_5": "#1F8CA0",
-        "hero_text": "#FFFFFF",
-        "hero_title": "#FFFFFF",
-        "hero_subtitle": "#E5F6FD",
-        "hero_muted": "#BDEAFF",
-        "table_header_bg": "#F8F9FA",
-        "table_header_text": "#000000",
+        "sidebar_card_text": "#123F4B",
+        "sidebar_card_border": "#D9E3DF",
+        "sidebar_card_accent": "#E9B84A",
+        "title_supporting_text": "#276E82",
+        "hero_gradient_1": "#25408F",
+        "hero_gradient_2": "#2872A0",
+        "hero_gradient_3": "#2F9EAA",
+        "hero_gradient_4": "#3CB4AD",
+        "hero_gradient_5": "#4CC0AD",
+        "hero_text": "#FFF8EE",
+        "hero_title": "#FFF8EE",
+        "hero_subtitle": "#D9F2EE",
+        "hero_muted": "#B7D8D5",
+        "table_header_bg": "#EAF3F0",
+        "table_header_text": "#123F4B",
         "table_row_bg": "#FFFFFF",
-        "table_row_text": "#212529",
-        "table_row_alt_bg": "#F2F2F2",
-        "table_border": "#DEE2E6",
+        "table_row_text": "#123F4B",
+        "table_row_alt_bg": "#F5F7F4",
+        "table_border": "#D9E3DF",
         "alert_primary_bg": "#CFE2FF",
         "alert_primary_text": "#084298",
         "alert_primary_border": "#B6D4FE",
@@ -1610,28 +1603,28 @@ curl --globoff --silent --show-error \
         "alert_info_bg": "#CFF4FC",
         "alert_info_text": "#055160",
         "alert_info_border": "#B6EFFB",
-        "badge_bg": "#0095DA",
-        "badge_text": "#FFFFFF",
-        "tag_bg": "#E5F6FD",
-        "tag_text": "#003567",
-        "nav_default_bg": "#003567",
-        "nav_default_text": "#7AD4FD",
-        "nav_border": "#4EC0AD",
-        "nav_active_bg": "#1F5EA0",
+        "badge_bg": "#123F4B",
+        "badge_text": "#FFF8EE",
+        "tag_bg": "#EAF3F0",
+        "tag_text": "#123F4B",
+        "nav_default_bg": "#071F27",
+        "nav_default_text": "#FFF8EE",
+        "nav_border": "#72D4C8",
+        "nav_active_bg": "#071F27",
         "nav_active_text": "#FFFFFF",
-        "nav_active_accent": "#7AD4FD",
-        "nav_hover_bg": "#174E7E",
-        "left_menu_hover_bg": "#E5F6FD",
-        "left_menu_hover_text": "#003567",
-        "left_menu_active_bg": "#0095DA",
+        "nav_active_accent": "#E9B84A",
+        "nav_hover_bg": "#0D424B",
+        "left_menu_hover_bg": "#EAF3F0",
+        "left_menu_hover_text": "#123F4B",
+        "left_menu_active_bg": "#0E6268",
         "left_menu_active_text": "#FFFFFF",
-        "special_left_menu_accent": "#D51F36",
+        "special_left_menu_accent": "#FF8064",
         "pagination_bg": "#FFFFFF",
-        "pagination_text": "#0079B8",
-        "pagination_active_bg": "#0095DA",
+        "pagination_text": "#0E6268",
+        "pagination_active_bg": "#0E6268",
         "pagination_active_text": "#FFFFFF",
-        "breadcrumb_text": "#66737D",
-        "breadcrumb_link": "#0079B8",
+        "breadcrumb_text": "#547078",
+        "breadcrumb_link": "#0E6268",
         "editor_tab_bg": "#F8F9FA",
         "editor_tab_text": "#495057",
         "editor_tab_border": "#DEE2E6",
@@ -1645,89 +1638,89 @@ curl --globoff --silent --show-error \
         "editor_accordion_header_text": "#212529",
         "editor_accordion_body_bg": "#FFFFFF",
         "editor_accordion_body_text": "#212529",
-        "focus_ring": "#0095DA",
-        "disabled_bg": "#E9ECEF",
-        "disabled_text": "#6C757D",
-        "valid": "#198754",
-        "invalid": "#DC3545",
-        "code_bg": "#F8F9FA",
-        "code_text": "#D63384",
-        "blockquote_border": "#0095DA",
-        "callout_bg": "#EAF8FC",
-        "callout_text": "#003567",
-        "callout_border": "#8DD6E8",
-        "navbar_gradient_1": "#003567",
-        "navbar_gradient_2": "#084678",
-        "navbar_gradient_3": "#13588B",
-        "navbar_gradient_4": "#1F5EA0",
-        "navbar_gradient_5": "#1F8CA0",
-        "navbar_text": "#7AD4FD",
-        "navbar_link": "#7AD4FD",
+        "focus_ring": "#FF8064",
+        "disabled_bg": "#E7ECE9",
+        "disabled_text": "#667C81",
+        "valid": "#287A68",
+        "invalid": "#B93636",
+        "code_bg": "#EEF4F1",
+        "code_text": "#8B3653",
+        "blockquote_border": "#72D4C8",
+        "callout_bg": "#EAF3F0",
+        "callout_text": "#123F4B",
+        "callout_border": "#72D4C8",
+        "navbar_gradient_1": "#25408F",
+        "navbar_gradient_2": "#2872A0",
+        "navbar_gradient_3": "#2F9EAA",
+        "navbar_gradient_4": "#3CB4AD",
+        "navbar_gradient_5": "#4CC0AD",
+        "navbar_text": "#FFF8EE",
+        "navbar_link": "#FFF8EE",
         "navbar_active": "#FFFFFF",
-        "navbar_active_bg": "#003567"
+        "navbar_active_bg": "#0D424B",
+        "primary_text": "auto",
+        "secondary_text": "#FFFFFF",
+        "success_text": "auto",
+        "warning_text": "auto",
+        "danger_text": "auto",
+        "info_text": "auto"
       }
     },
     "dark": {
       "colors": {
-        "body_bg": "#0C141C",
-        "body_text": "#E8F2F7",
-        "muted_text": "#A 8BBC6",
-        "surface_bg": "#14212C",
-        "surface_text": "#E8F2F7",
-        "border": "#385064",
-        "link": "#65C7F0",
-        "primary": "#22A9E0",
-        "secondary": "#4E8FC7",
-        "success": "#198754",
-        "warning": "#F0AD32",
-        "danger": "#EF667A",
-        "info": "#64D3C3",
-        "document_action_bg": "#14212C",
-        "document_action_text": "#65C7F0",
-        "document_action_border": "#385064",
-        "document_action_hover_bg": "#22A9E0",
-        "document_action_hover_text": "#0C141C",
-        "document_action_active_bg": "#64D3C3",
-        "document_action_active_text": "#0C141C",
-        "primary_text": "auto",
-        "secondary_text": "auto",
-        "success_text": "auto",
-        "warning_text": "auto",
-        "danger_text": "auto",
-        "info_text": "auto",
-        "card_bg": "#182835",
-        "card_text": "#E8F2F7",
-        "card_border": "#385064",
-        "card_accent": "#22A9E0",
+        "body_bg": "#071F27",
+        "body_text": "#E7F3F0",
+        "muted_text": "#A9C5C3",
+        "surface_bg": "#0B2A32",
+        "surface_text": "#E7F3F0",
+        "border": "#31515A",
+        "link": "#8AE1D7",
+        "primary": "#45AFA6",
+        "secondary": "#FF8064",
+        "success": "#62C6A8",
+        "warning": "#E9B84A",
+        "danger": "#F07979",
+        "info": "#72D4C8",
+        "document_action_bg": "#0B2A32",
+        "document_action_text": "#FF8064",
+        "document_action_border": "#31515A",
+        "document_action_hover_bg": "#FF8064",
+        "document_action_hover_text": "#071F27",
+        "document_action_active_bg": "#45AFA6",
+        "document_action_active_text": "#071F27",
+        "card_bg": "#0B2A32",
+        "card_text": "#E7F3F0",
+        "card_border": "#31515A",
+        "card_accent": "#FF8064",
         "card_shadow": "#000000",
-        "title_card_bg": "#14212C",
-        "title_card_text": "#E8F2F7",
-        "title_card_border": "#385064",
-        "title_card_accent": "#22A9E0",
-        "content_card_bg": "#14212C",
-        "content_card_text": "#E8F2F7",
-        "content_card_border": "#385064",
-        "content_card_accent": "#22A9E0",
-        "sidebar_card_bg": "#182835",
-        "sidebar_card_text": "#E8F2F7",
-        "sidebar_card_border": "#385064",
-        "sidebar_card_accent": "#64D3C3",
-        "title_supporting_text": "#6C757D",
-        "hero_gradient_1": "#001D38",
-        "hero_gradient_2": "#062B4E",
-        "hero_gradient_3": "#0D3A5F",
-        "hero_gradient_4": "#15496F",
-        "hero_gradient_5": "#155F70",
-        "hero_text": "#FFFFFF",
-        "hero_title": "#FFFFFF",
-        "hero_subtitle": "#D9F4FF",
-        "hero_muted": "#AED7E7",
-        "table_header_bg": "#1D3444",
-        "table_header_text": "#F5FBFE",
-        "table_row_bg": "#14212C",
-        "table_row_text": "#E8F2F7",
-        "table_row_alt_bg": "#192B39",
-        "table_border": "#385064",
+        "title_card_bg": "#0B2A32",
+        "title_card_text": "#E7F3F0",
+        "title_card_border": "#31515A",
+        "title_card_accent": "#FF8064",
+        "content_card_bg": "#0B2A32",
+        "content_card_text": "#E7F3F0",
+        "content_card_border": "#31515A",
+        "content_card_accent": "#FF8064",
+        "sidebar_card_bg": "#0B2A32",
+        "sidebar_card_text": "#E7F3F0",
+        "sidebar_card_border": "#31515A",
+        "sidebar_card_accent": "#E9B84A",
+        "title_supporting_text": "#A9C5C3",
+        "hero_gradient_1": "#25408F",
+        "hero_gradient_2": "#2872A0",
+        "hero_gradient_3": "#2F9EAA",
+        "hero_gradient_4": "#3CB4AD",
+        "hero_gradient_5": "#4CC0AD",
+        "hero_text": "#FFF8EE",
+        "hero_title": "#FFF8EE",
+        "hero_subtitle": "#D9F2EE",
+        "hero_muted": "#B7D8D5",
+        "table_header_bg": "#113A43",
+        "table_header_text": "#F7FBFA",
+        "table_row_bg": "#0B2A32",
+        "table_row_text": "#E7F3F0",
+        "table_row_alt_bg": "#102F37",
+        "table_border": "#31515A",
         "alert_primary_bg": "#031633",
         "alert_primary_text": "#6EA8FE",
         "alert_primary_border": "#084298",
@@ -1743,28 +1736,28 @@ curl --globoff --silent --show-error \
         "alert_info_bg": "#032830",
         "alert_info_text": "#6EDFF6",
         "alert_info_border": "#055160",
-        "badge_bg": "#22A9E0",
-        "badge_text": "#08131B",
-        "tag_bg": "#1D3444",
-        "tag_text": "#D9F4FF",
-        "nav_default_bg": "#001D38",
-        "nav_default_text": "#92DAF7",
-        "nav_border": "#2E708B",
-        "nav_active_bg": "#15496F",
+        "badge_bg": "#E9B84A",
+        "badge_text": "#071F27",
+        "tag_bg": "#153A42",
+        "tag_text": "#E7F3F0",
+        "nav_default_bg": "#071F27",
+        "nav_default_text": "#FFF8EE",
+        "nav_border": "#31515A",
+        "nav_active_bg": "#0D424B",
         "nav_active_text": "#FFFFFF",
-        "nav_active_accent": "#65C7F0",
-        "nav_hover_bg": "#0D3A5F",
-        "left_menu_hover_bg": "#1D3444",
+        "nav_active_accent": "#E9B84A",
+        "nav_hover_bg": "#0D424B",
+        "left_menu_hover_bg": "#153A42",
         "left_menu_hover_text": "#FFFFFF",
-        "left_menu_active_bg": "#22A9E0",
-        "left_menu_active_text": "#08131B",
-        "special_left_menu_accent": "#EF667A",
-        "pagination_bg": "#14212C",
-        "pagination_text": "#65C7F0",
-        "pagination_active_bg": "#22A9E0",
-        "pagination_active_text": "#08131B",
-        "breadcrumb_text": "#A 8BBC6",
-        "breadcrumb_link": "#65C7F0",
+        "left_menu_active_bg": "#45AFA6",
+        "left_menu_active_text": "#071F27",
+        "special_left_menu_accent": "#FF8064",
+        "pagination_bg": "#0B2A32",
+        "pagination_text": "#8AE1D7",
+        "pagination_active_bg": "#45AFA6",
+        "pagination_active_text": "#071F27",
+        "breadcrumb_text": "#A9C5C3",
+        "breadcrumb_link": "#8AE1D7",
         "editor_tab_bg": "#212529",
         "editor_tab_text": "#ADB5BD",
         "editor_tab_border": "#495057",
@@ -1778,26 +1771,32 @@ curl --globoff --silent --show-error \
         "editor_accordion_header_text": "#DEE2E6",
         "editor_accordion_body_bg": "#2B3035",
         "editor_accordion_body_text": "#DEE2E6",
-        "focus_ring": "#65C7F0",
-        "disabled_bg": "#22323E",
-        "disabled_text": "#879AA5",
-        "valid": "#75B798",
-        "invalid": "#EA868F",
-        "code_bg": "#1A2C3A",
-        "code_text": "#8AD8F5",
-        "blockquote_border": "#22A9E0",
-        "callout_bg": "#1A2C3A",
-        "callout_text": "#E8F2F7",
-        "callout_border": "#385064",
-        "navbar_gradient_1": "#001D38",
-        "navbar_gradient_2": "#062B4E",
-        "navbar_gradient_3": "#0D3A5F",
-        "navbar_gradient_4": "#15496F",
-        "navbar_gradient_5": "#155F70",
-        "navbar_text": "#92DAF7",
-        "navbar_link": "#92DAF7",
+        "focus_ring": "#FF8064",
+        "disabled_bg": "#183941",
+        "disabled_text": "#8DA4A5",
+        "valid": "#62C6A8",
+        "invalid": "#F07979",
+        "code_bg": "#102F37",
+        "code_text": "#FF9F89",
+        "blockquote_border": "#72D4C8",
+        "callout_bg": "#102F37",
+        "callout_text": "#E7F3F0",
+        "callout_border": "#31515A",
+        "navbar_gradient_1": "#25408F",
+        "navbar_gradient_2": "#2872A0",
+        "navbar_gradient_3": "#2F9EAA",
+        "navbar_gradient_4": "#3CB4AD",
+        "navbar_gradient_5": "#4CC0AD",
+        "navbar_text": "#FFF8EE",
+        "navbar_link": "#FFF8EE",
         "navbar_active": "#FFFFFF",
-        "navbar_active_bg": "#0D3A5F"
+        "navbar_active_bg": "#0D424B",
+        "primary_text": "auto",
+        "secondary_text": "auto",
+        "success_text": "auto",
+        "warning_text": "auto",
+        "danger_text": "auto",
+        "info_text": "auto"
       }
     }
   },
@@ -1806,7 +1805,7 @@ curl --globoff --silent --show-error \
   "$BASE_URL/api/v1/workspaces/api-ogledno-podrucje/theme" | jq '{data: {workspace_id: .data.workspace_id, settings: .data.settings, selected_theme: (.data.selected_theme | {id,label}), assets: [.data.assets[] | {file,role,used}], can_export: .data.can_export}, meta, links}'
 ```
 
-Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` affiché.
+Exemple de réponse : **HTTP 200**.
 
 ```json
 {
@@ -1820,33 +1819,28 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
     "selected_theme": {
       "id": "workspace-4",
       "label": {
-        "hr": "AAI – Ogledno API područje",
-        "en": "AAI – Ogledno API područje"
+        "hr": "Simbioza – Ogledno API područje",
+        "en": "Simbioza – Ogledno API područje"
       }
     },
     "assets": [
       {
-        "file": "hero-aai-banner.svg",
+        "file": "hero-adriatic-dark.svg",
         "role": "hero",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-dark.svg",
+        "file": "hero-adriatic-light.svg",
+        "role": "hero",
+        "used": true
+      },
+      {
+        "file": "icon-adriatic-dark.png",
         "role": "other",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-light.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-dark.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-light.svg",
+        "file": "icon-adriatic-light.png",
         "role": "other",
         "used": true
       }
@@ -1885,7 +1879,7 @@ curl --globoff --silent --show-error \
   "$BASE_URL/api/v1/workspaces/api-ogledno-podrucje/theme/assets" | jq '{data: {workspace_id: .data.workspace_id, settings: .data.settings, selected_theme: (.data.selected_theme | {id,label}), assets: [.data.assets[] | {file,role,used}], can_export: .data.can_export}, meta, links}'
 ```
 
-Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` affiché.
+Exemple de réponse : **HTTP 200**.
 
 ```json
 {
@@ -1899,13 +1893,18 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
     "selected_theme": {
       "id": "workspace-4",
       "label": {
-        "hr": "AAI – Ogledno API područje",
-        "en": "AAI – Ogledno API područje"
+        "hr": "Simbioza – Ogledno API područje",
+        "en": "Simbioza – Ogledno API područje"
       }
     },
     "assets": [
       {
-        "file": "hero-aai-banner.svg",
+        "file": "hero-adriatic-dark.svg",
+        "role": "hero",
+        "used": true
+      },
+      {
+        "file": "hero-adriatic-light.svg",
         "role": "hero",
         "used": true
       },
@@ -1915,22 +1914,12 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
         "used": false
       },
       {
-        "file": "logo-aaieduhr-dark.svg",
+        "file": "icon-adriatic-dark.png",
         "role": "other",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-light.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-dark.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-light.svg",
+        "file": "icon-adriatic-light.png",
         "role": "other",
         "used": true
       }
@@ -1967,7 +1956,7 @@ curl --globoff --silent --show-error \
   "$BASE_URL/api/v1/workspaces/api-ogledno-podrucje/theme/assets/api-circle.svg" | jq '{data: {workspace_id: .data.workspace_id, settings: .data.settings, selected_theme: (.data.selected_theme | {id,label}), assets: [.data.assets[] | {file,role,used}], can_export: .data.can_export}, meta, links}'
 ```
 
-Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` affiché.
+Exemple de réponse : **HTTP 200**.
 
 ```json
 {
@@ -1976,38 +1965,33 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
     "settings": {
       "enabled": true,
       "active_theme": "workspace-4",
-      "mode_policy": "auto"
+      "mode_policy": "light"
     },
     "selected_theme": {
       "id": "workspace-4",
       "label": {
-        "hr": "AAI – Ogledno API područje",
-        "en": "AAI – Ogledno API područje"
+        "hr": "Simbioza – Ogledno API područje",
+        "en": "Simbioza – Ogledno API područje"
       }
     },
     "assets": [
       {
-        "file": "hero-aai-banner.svg",
+        "file": "hero-adriatic-dark.svg",
         "role": "hero",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-dark.svg",
+        "file": "hero-adriatic-light.svg",
+        "role": "hero",
+        "used": true
+      },
+      {
+        "file": "icon-adriatic-dark.png",
         "role": "other",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-light.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-dark.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-light.svg",
+        "file": "icon-adriatic-light.png",
         "role": "other",
         "used": true
       }
@@ -2042,20 +2026,19 @@ curl --globoff --silent --show-error \
   --request GET \
   --header "Authorization: Bearer $SIMBIOZA_API_KEY" \
   --dump-header response-headers.txt \
-  --output response.zip \
+  --output api-workspace-theme.zip \
   "$BASE_URL/api/v1/workspaces/api-ogledno-podrucje/theme/export"
 ```
 
-Réponse réelle : **HTTP 200**.
+Exemple de réponse : **HTTP 200**.
 
 ```text
 cache-control: private, no-store
 content-type: application/zip
 content-disposition: attachment; filename="workspace-theme-api-ogledno-podrucje.zip"
-content-length: 27051
 ```
 
-Le fichier est enregistré sous `response.*`. Le contenu vérifié comporte 27 051 octets ; ne le décodez pas comme JSON.
+Le ZIP est enregistré sous `api-workspace-theme.zip` et peut être utilisé dans l’exemple d’importation suivant. Sa taille dépend du contenu ; ne le décodez pas comme du JSON.
 
 **Erreurs vérifiées pour cette opération :** 401, 403. Voir [règles partagées](api-pocetak_fr.md) pour connaître la signification des états et les réponses aux problèmes.
 
@@ -2080,7 +2063,7 @@ curl --globoff --silent --show-error \
   "$BASE_URL/api/v1/workspaces/api-ogledno-podrucje/theme/import" | jq '{data: {workspace_id: .data.workspace_id, settings: .data.settings, selected_theme: (.data.selected_theme | {id,label}), assets: [.data.assets[] | {file,role,used}], can_export: .data.can_export}, meta, links}'
 ```
 
-Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` affiché.
+Exemple de réponse : **HTTP 200**.
 
 ```json
 {
@@ -2094,38 +2077,28 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
     "selected_theme": {
       "id": "workspace-4",
       "label": {
-        "hr": "AAI – Ogledno API područje",
-        "en": "AAI – Ogledno API područje"
+        "hr": "Simbioza – Ogledno API područje",
+        "en": "Simbioza – Ogledno API područje"
       }
     },
     "assets": [
       {
-        "file": "hero-aai-banner.svg",
+        "file": "hero-adriatic-dark.svg",
         "role": "hero",
         "used": true
       },
       {
-        "file": "api-circle.svg",
-        "role": "other",
-        "used": false
+        "file": "hero-adriatic-light.svg",
+        "role": "hero",
+        "used": true
       },
       {
-        "file": "logo-aaieduhr-dark.svg",
+        "file": "icon-adriatic-dark.png",
         "role": "other",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-light.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-dark.svg",
-        "role": "other",
-        "used": true
-      },
-      {
-        "file": "logo-srce-light.svg",
+        "file": "icon-adriatic-light.png",
         "role": "other",
         "used": true
       }
@@ -2161,13 +2134,13 @@ curl --globoff --silent --show-error \
   --header "Authorization: Bearer $SIMBIOZA_API_KEY" \
   --header "Content-Type: application/json" \
   --data-raw '{
-  "theme_id": "aai",
+  "theme_id": "simbioza",
   "mode_policy": "auto"
 }' \
   "$BASE_URL/api/v1/workspaces/api-ogledno-podrucje/theme/selection" | jq '{data: {workspace_id: .data.workspace_id, settings: .data.settings, selected_theme: (.data.selected_theme | {id,label}), assets: [.data.assets[] | {file,role,used}], can_export: .data.can_export}, meta, links}'
 ```
 
-Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` affiché.
+Exemple de réponse : **HTTP 200**.
 
 ```json
 {
@@ -2175,41 +2148,136 @@ Réponse réelle : **HTTP 200**. Il s'agit de la sortie réelle du filtre `jq` 
     "workspace_id": 4,
     "settings": {
       "enabled": true,
-      "active_theme": "aai",
+      "active_theme": "simbioza",
       "mode_policy": "auto"
     },
     "selected_theme": {
-      "id": "aai",
+      "id": "simbioza",
       "label": {
-        "hr": "AAI",
-        "en": "AAI"
+        "hr": "Simbioza",
+        "en": "Simbioza"
       }
     },
     "assets": [
       {
-        "file": "hero-aai-banner.svg",
+        "file": "hero-adriatic-dark.png",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-adriatic-dark.svg",
         "role": "hero",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-dark.svg",
-        "role": "logo",
+        "file": "hero-adriatic-light.png",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-adriatic-light.svg",
+        "role": "hero",
         "used": true
       },
       {
-        "file": "logo-aaieduhr-light.svg",
-        "role": "logo",
+        "file": "hero-botanical-dark.png",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-botanical-dark.svg",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-botanical-light.png",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-botanical-light.svg",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-natural-dark.png",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-natural-dark.svg",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-natural-light.png",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "hero-natural-light.svg",
+        "role": "hero",
+        "used": false
+      },
+      {
+        "file": "icon-adriatic-dark.png",
+        "role": "icon",
         "used": true
       },
       {
-        "file": "logo-srce-dark.svg",
-        "role": "logo",
+        "file": "icon-adriatic-dark.svg",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-adriatic-light.png",
+        "role": "icon",
         "used": true
       },
       {
-        "file": "logo-srce-light.svg",
-        "role": "logo",
-        "used": true
+        "file": "icon-adriatic-light.svg",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-botanical-dark.png",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-botanical-dark.svg",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-botanical-light.png",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-botanical-light.svg",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-natural-dark.png",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-natural-dark.svg",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-natural-light.png",
+        "role": "icon",
+        "used": false
+      },
+      {
+        "file": "icon-natural-light.svg",
+        "role": "icon",
+        "used": false
       }
     ],
     "can_export": false

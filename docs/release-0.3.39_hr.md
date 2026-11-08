@@ -1,6 +1,6 @@
 # Simbioza 0.3.39 — pouzdano HTML uređivanje i aktualna dokumentacija
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.44](release-0.3.44_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.45](release-0.3.45_hr.md).
 
 HTML polja obrasca sada čuvaju sav podržani sadržaj editora kroz primjenu, spremanje, ponovno učitavanje i uređivanje. To uključuje kartice, stupce, obavijesti, tablice, tabove, padajuće blokove, slike, video, sigurne ugradnje, grafikone, vremenske planove i kanonske integracijske reference. Izvor koji se uređuje sprema se odvojeno od njegova prikaza. Otvaranje editora ne mijenja postojeće razmake medija, izgled tablica ni boje zaglavlja; privremene autorske radnje ne spremaju se kao sadržaj stranice.
 

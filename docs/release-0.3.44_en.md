@@ -1,5 +1,7 @@
 # Simbioza 0.3.44 — images stay within HTML content
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
+
 Images now fit within the HTML content container, including large images imported from Markdown and images with a fixed pixel width. A width of **100%** uses the available space inside that container. The correction preserves the image's proportions, smaller chosen widths, links and captions; it does not crop the image or enlarge small images.
 
 ## Consistent behaviour across views

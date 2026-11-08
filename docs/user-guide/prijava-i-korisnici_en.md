@@ -91,7 +91,7 @@ Open **User attributes** . The model normally includes e-mail, first name, and l
 
 Groups collect users and carry permissions. The Administrator group is a protected system group and should not be used as a normal business group. Create separate least-privilege groups for departments, projects, or roles.
 
-<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="images/7b5e6453-1378-4ce6-b042-693585e7829d.png" class="figure-img img-fluid rounded mb-1" alt="List of system and example groups with management actions." /><span class="figure-caption d-block">Groups</span></span>
+<span class="figure editor-html-media-figure editor-html-media-image d-inline-block align-top me-2 mb-2 w-100"><img src="assets/group-list_en.jpg" class="figure-img img-fluid rounded mb-1" alt="List of system and example groups with management actions." /><span class="figure-caption d-block">Groups</span></span>
 
 System and example groups in the English interface.\
 
@@ -102,11 +102,11 @@ System and example groups in the English interface.\
 
 **Result:** the group exists and can be selected when assigning permissions. Creating it alone does not open content to its members.
 
-To disable a non-system group temporarily, clear **Active** and save. To delete it permanently, **empty its name and choose Save groups**. This deletes the group, its memberships, and its automatic mapping rules; user accounts remain. First check where the group has been used for content access. A newly created group with the same name has a different identity and does not recover the old memberships or permissions. System groups cannot be deleted this way.
+To disable a non-system group temporarily, clear **Active** and save. To delete it permanently, choose **Delete group**. On the separate confirmation screen, check the group name and the displayed effects on memberships and mapping rules, then choose **Confirm deletion** or cancel. User accounts remain. An empty name no longer deletes a group. Before confirming, check where the group is used for content access. A new group with the same name has a different identity and does not recover previous memberships or permissions. System groups cannot be deleted.
 
 <figure class="my-4">
-<span class="figure editor-html-media-figure d-inline-block align-top me-2 mb-2 editor-html-media-image w-100"> <img src="images/dae802d6-9f51-47a4-8f9f-769903f624a7.png" class="img-fluid rounded border" alt="Example group before saving" /> <span class="figure-caption d-block">Example group before saving</span> </span>
-<figcaption>A documentation group before saving; labels follow the currently selected site language.</figcaption>
+<img src="assets/group-deletion_en.jpg" class="img-fluid rounded border" alt="Check the group name and consequences before confirming. Cancel returns to the list without deleting anything." />
+<figcaption>Check the group name and consequences before confirming. Cancel returns to the list without deleting anything.</figcaption>
 </figure>
 
 <a id="users"></a>

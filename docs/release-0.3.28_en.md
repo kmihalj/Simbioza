@@ -1,6 +1,6 @@
 # Simbioza 0.3.28 — controlled page scripts and translated help
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.44](release-0.3.44_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
 
 [Croatian version](release-0.3.28_hr.md)
 

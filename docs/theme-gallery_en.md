@@ -1,10 +1,12 @@
 # Simbioza theme gallery
 
-Simbioza includes **26 ready-made themes**, each with light and dark appearances. Select one under **Settings → Theme → Active theme**. Customize colours, images, hero height, cards, shadows, navigation and typography. Choosing a theme does not change content or permissions.
+Simbioza includes **23 ready-made themes**, each with light and dark appearances. Select one under **Settings → Theme → Active theme**. Customize colours, images, hero height, cards, shadows, navigation and typography. Choosing a theme does not change content or permissions.
 
-Starting with release 0.3.36, upgrades add missing bundled themes once. Existing themes and the active selection are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
+Starting with release 0.3.36, upgrades add missing bundled themes once. Administrator theme changes and local preservation choices are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
 
-[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Institution-specific presets are no longer included in the public collection. A one-time upgrade cleanup retires only unchanged copies recorded as bundled; edited themes and explicit local preservation choices remain. If a retired theme was active, the site uses Simbioza, or Standard when Simbioza is unavailable.
+
+[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Extract the collection, then select an individual ZIP from `themes/` in **Import complete theme**. The collection also contains a gallery that opens offline. Do not upload the whole collection as a single theme.
 
@@ -12,7 +14,6 @@ Previews show the actual CSS, layout and artwork from the Theme module’s nativ
 
 | Theme | Light appearance | Dark appearance |
 | --- | --- | --- |
-| AAI | [![AAI · light](images/theme-gallery/aai-light-en.webp)](images/theme-gallery/aai-light-en.webp) | [![AAI · dark](images/theme-gallery/aai-dark-en.webp)](images/theme-gallery/aai-dark-en.webp) |
 | Atelier | [![Atelier · light](images/theme-gallery/simbioza-atelje-light-en.webp)](images/theme-gallery/simbioza-atelje-light-en.webp) | [![Atelier · dark](images/theme-gallery/simbioza-atelje-dark-en.webp)](images/theme-gallery/simbioza-atelje-dark-en.webp) |
 | Aurora | [![Aurora · light](images/theme-gallery/simbioza-aurora-light-en.webp)](images/theme-gallery/simbioza-aurora-light-en.webp) | [![Aurora · dark](images/theme-gallery/simbioza-aurora-dark-en.webp)](images/theme-gallery/simbioza-aurora-dark-en.webp) |
 | Blueprint | [![Blueprint · light](images/theme-gallery/simbioza-blueprint-light-en.webp)](images/theme-gallery/simbioza-blueprint-light-en.webp) | [![Blueprint · dark](images/theme-gallery/simbioza-blueprint-dark-en.webp)](images/theme-gallery/simbioza-blueprint-dark-en.webp) |
@@ -20,7 +21,6 @@ Previews show the actual CSS, layout and artwork from the Theme module’s nativ
 | Cassette Sunset | [![Cassette Sunset · light](images/theme-gallery/simbioza-cassette-light-en.webp)](images/theme-gallery/simbioza-cassette-light-en.webp) | [![Cassette Sunset · dark](images/theme-gallery/simbioza-cassette-dark-en.webp)](images/theme-gallery/simbioza-cassette-dark-en.webp) |
 | Cinema Club | [![Cinema Club · light](images/theme-gallery/simbioza-kinoteka-light-en.webp)](images/theme-gallery/simbioza-kinoteka-light-en.webp) | [![Cinema Club · dark](images/theme-gallery/simbioza-kinoteka-dark-en.webp)](images/theme-gallery/simbioza-kinoteka-dark-en.webp) |
 | Classroom | [![Classroom · light](images/theme-gallery/simbioza-ucionica-light-en.webp)](images/theme-gallery/simbioza-ucionica-light-en.webp) | [![Classroom · dark](images/theme-gallery/simbioza-ucionica-dark-en.webp)](images/theme-gallery/simbioza-ucionica-dark-en.webp) |
-| Dabar | [![Dabar · light](images/theme-gallery/dabar-light-en.webp)](images/theme-gallery/dabar-light-en.webp) | [![Dabar · dark](images/theme-gallery/dabar-dark-en.webp)](images/theme-gallery/dabar-dark-en.webp) |
 | Espresso | [![Espresso · light](images/theme-gallery/simbioza-espresso-light-en.webp)](images/theme-gallery/simbioza-espresso-light-en.webp) | [![Espresso · dark](images/theme-gallery/simbioza-espresso-dark-en.webp)](images/theme-gallery/simbioza-espresso-dark-en.webp) |
 | Festival | [![Festival · light](images/theme-gallery/simbioza-festival-light-en.webp)](images/theme-gallery/simbioza-festival-light-en.webp) | [![Festival · dark](images/theme-gallery/simbioza-festival-dark-en.webp)](images/theme-gallery/simbioza-festival-dark-en.webp) |
 | Folio | [![Folio · light](images/theme-gallery/simbioza-folio-light-en.webp)](images/theme-gallery/simbioza-folio-light-en.webp) | [![Folio · dark](images/theme-gallery/simbioza-folio-dark-en.webp)](images/theme-gallery/simbioza-folio-dark-en.webp) |
@@ -34,7 +34,6 @@ Previews show the actual CSS, layout and artwork from the Theme module’s nativ
 | Sakura | [![Sakura · light](images/theme-gallery/simbioza-sakura-light-en.webp)](images/theme-gallery/simbioza-sakura-light-en.webp) | [![Sakura · dark](images/theme-gallery/simbioza-sakura-dark-en.webp)](images/theme-gallery/simbioza-sakura-dark-en.webp) |
 | Simbioza | [![Simbioza · light](images/theme-gallery/simbioza-light-en.webp)](images/theme-gallery/simbioza-light-en.webp) | [![Simbioza · dark](images/theme-gallery/simbioza-dark-en.webp)](images/theme-gallery/simbioza-dark-en.webp) |
 | Simbioza Orbit | [![Simbioza Orbit · light](images/theme-gallery/simbioza-orbit-light-en.webp)](images/theme-gallery/simbioza-orbit-light-en.webp) | [![Simbioza Orbit · dark](images/theme-gallery/simbioza-orbit-dark-en.webp)](images/theme-gallery/simbioza-orbit-dark-en.webp) |
-| Srce - sup | [![Srce - sup · light](images/theme-gallery/srce-sup-light-en.webp)](images/theme-gallery/srce-sup-light-en.webp) | [![Srce - sup · dark](images/theme-gallery/srce-sup-dark-en.webp)](images/theme-gallery/srce-sup-dark-en.webp) |
 | Stadium | [![Stadium · light](images/theme-gallery/simbioza-stadion-light-en.webp)](images/theme-gallery/simbioza-stadion-light-en.webp) | [![Stadium · dark](images/theme-gallery/simbioza-stadion-dark-en.webp)](images/theme-gallery/simbioza-stadion-dark-en.webp) |
 | Standard | [![Standard · light](images/theme-gallery/standard-light-en.webp)](images/theme-gallery/standard-light-en.webp) | [![Standard · dark](images/theme-gallery/standard-dark-en.webp)](images/theme-gallery/standard-dark-en.webp) |
 | Terminal 84 | [![Terminal 84 · light](images/theme-gallery/simbioza-terminal-84-light-en.webp)](images/theme-gallery/simbioza-terminal-84-light-en.webp) | [![Terminal 84 · dark](images/theme-gallery/simbioza-terminal-84-dark-en.webp)](images/theme-gallery/simbioza-terminal-84-dark-en.webp) |

@@ -7,6 +7,26 @@
 
 **Ziel:** Verwenden Sie Ihr eigenes Konto und passen Sie persönliche Daten an, ohne die gesamte Installation zu ändern.
 
+## Möglichkeiten im Kontomenü
+
+Klicken Sie nach der Anmeldung auf **Ihren Namen** in der Kopfzeile. Das Menü zeigt nur Einträge an, die Ihrem Konto in dieser Installation zur Verfügung stehen.
+
+| Eintrag | Zweck |
+| --- | --- |
+| **Benachrichtigungen** | Öffnet Ihre Benachrichtigungen. Die Zahl am Eintrag zeigt ungelesene Benachrichtigungen an. |
+| **Mein Profil** | Erlaubte persönliche Daten bearbeiten sowie Sicherheits- und persönliche Einstellungen öffnen. |
+| **Meine Arbeit** | [Zuletzt bearbeitete Inhalte, Ihre Entwürfe und Inhalte zur Prüfung](moj-rad_de.md), entsprechend Ihren aktuellen Berechtigungen. |
+| **Mein Arbeitsbereich** | Öffnet Ihren bestehenden persönlichen Arbeitsbereich, sofern verfügbar. |
+| **Passwort ändern** | Ihr lokales Simbioza-Passwort ändern oder festlegen. |
+| **Abmelden** | Beendet Ihre Anmeldung bei Simbioza. |
+
+Der Abschnitt **Verwaltung** mit dem Link **Einstellungen** und der Schalter **Administrator** sind für Personen mit entsprechenden Administrationsrechten bestimmt. Sie gewähren gewöhnlichen Benutzern keine solchen Rechte. Wenn der Schalter angeboten wird, können berechtigte Personen damit vorübergehende Administrationsrechte über den angezeigten Ablauf aktivieren oder deaktivieren.
+
+<figure class="my-4">
+<img src="assets/profile-menu_en.jpg" class="img-fluid rounded border" alt="Kontomenü einer angemeldeten Person" />
+<figcaption>Die Einträge im Kontomenü hängen von Ihren Berechtigungen und den aktivierten Funktionen ab.</figcaption>
+</figure>
+
 <a id="sign-in-and-out"></a>
 
 ## An- und abmelden

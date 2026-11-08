@@ -28,10 +28,38 @@
 | Espacio de trabajo | Busca todos los espacios de trabajo visibles o seleccionados. Ingrese una consulta al elegir dos o más espacios de trabajo. |
 | Autor | Encuentra una persona ofrecida; sin realizar una consulta, puede enumerar las páginas que crearon o modificaron por última vez. |
 | Publicado desde/hasta | Limita las fechas de publicación en lugar del horario de visita. Una fecha de inicio por sí sola termina hoy; una fecha de finalización por sí sola incluye publicaciones anteriores. |
+| Etiqueta | Seleccione una etiqueta de página existente. |
+| Propiedad / Valor de la propiedad | Seleccione una propiedad y, si lo desea, su valor exacto. Sin valor, se incluyen todas las páginas que tengan esa propiedad. |
+| Estado de publicación | Limite las páginas publicadas por un estado disponible. Los borradores de cambios y la revisión solo están disponibles para los editores autorizados. |
 | Encabezados de columna | La clasificación de tablas ofrecida cambia el orden, como título, autor o publicación. |
 | Páginas de resultados | Abre más resultados manteniendo los filtros. |
 
 Combinación de criterios: más filtros pueden producir menos coincidencias. La búsqueda incrustada en una página puede apuntar deliberadamente a espacios de trabajo seleccionados y no se expande automáticamente a toda la instalación.
+
+## Etiquetas, propiedades y estado de publicación
+
+1. Abra **Etiqueta** y escriba parte del nombre para encontrar una etiqueta existente. Seleccione una opción de la lista.
+2. Para los datos estructurados, abra **Propiedad**. Seleccione una propiedad y, si necesita precisar el resultado, **Valor de la propiedad**. El valor debe coincidir exactamente con el seleccionado; no se busca un fragmento de su texto.
+3. Si lo necesita, seleccione **Estado de publicación** y pulse **Buscar**. Cada criterio añadido limita los resultados: una página debe cumplir todos los filtros seleccionados.
+
+Las opciones se cargan al abrir el selector o darle el foco con el teclado. Se muestran como máximo 25 opciones a la vez; escriba una parte más precisa del nombre o seleccione **Carga más**. Solo se ofrecen valores de páginas que puede ver en los espacios de trabajo seleccionados. Cambiar la propiedad borra su valor previamente seleccionado.
+
+Puede dejar vacío el término de búsqueda cuando una etiqueta, una propiedad o un estado limiten la lista. El término sigue siendo obligatorio al seleccionar expresamente dos o más espacios de trabajo. Estos filtros devuelven páginas con los metadatos correspondientes.
+
+<figure class="my-4">
+<img src="assets/search-filters_en.jpg" class="img-fluid rounded border" alt="Búsqueda con selectores de etiqueta, propiedad, valor y estado y filtros activos" />
+<figcaption>Combine los filtros disponibles. Las selecciones sobre los resultados indican qué limita la lista.</figcaption>
+</figure>
+
+### Cambiar o quitar un filtro
+
+Cada selección aparece sobre los resultados en una etiqueta con el botón **×**. Quite un filtro o seleccione **Borrar filtros** para quitar todas las selecciones; se conservan el término de búsqueda y el idioma. Quitar una propiedad también quita su valor. La ordenación y el cambio de página conservan los filtros. Puede guardar o compartir la dirección de búsqueda; quien la reciba solo verá el contenido permitido por sus propios permisos.
+
+### ¿Qué significan los estados?
+
+Para quien lee, **Publicado** incluye las páginas publicadas accesibles aunque un editor esté preparando cambios. **Borrador de cambios** y **Cambios en revisión** solo devuelven resultados a quien pueda editar, publicar o administrar esa página. Estos estados describen cambios en una página ya publicada.
+
+Incluso con un filtro de estado se buscan el título y el texto de la **versión publicada**, no el texto del borrador. Se excluyen las páginas nunca publicadas y las archivadas. Para encontrar sus borradores y el contenido pendiente de revisión, abra **Mi trabajo** en el menú personal. Si no hay resultados, revise los filtros y sus permisos: los recuentos y los valores ofrecidos no revelan páginas ocultas.
 
 <a id="a-phrase-or-several-required-words"></a>
 

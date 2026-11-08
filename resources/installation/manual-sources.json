@@ -1472,6 +1472,38 @@
     }
   },
   {
+    "slug": "moj-rad",
+    "title": {
+      "hr": "Moj rad — nedavni sadržaji, nacrti i pregled",
+      "en": "My work — recent content, drafts and review",
+      "de": "Meine Arbeit — letzte Inhalte, Entwürfe und Prüfung",
+      "es": "Mi trabajo — contenido reciente, borradores y revisión",
+      "fr": "Mon travail — contenus récents, brouillons et validation",
+      "it": "Il mio lavoro — contenuti recenti, bozze e revisione"
+    },
+    "parent": "osobni-profil",
+    "sources": {
+      "hr": [
+        "docs/user-guide/moj-rad_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/moj-rad_en.md"
+      ],
+      "de": [
+        "docs/user-guide/moj-rad_de.md"
+      ],
+      "es": [
+        "docs/user-guide/moj-rad_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/moj-rad_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/moj-rad_it.md"
+      ]
+    }
+  },
+  {
     "slug": "pristupacnost",
     "title": {
       "hr": "Prilagodite prikaz za lakše čitanje",

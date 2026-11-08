@@ -7,6 +7,26 @@
 
 **Objetivo:** usar su propia cuenta y ajustar los datos personales sin cambiar toda la instalación.
 
+## Qué puede hacer en el menú de la cuenta
+
+Tras iniciar sesión, haga clic en **su nombre** en la cabecera. El menú solo ofrece las opciones disponibles para su cuenta en esta instalación.
+
+| Opción | Función |
+| --- | --- |
+| **Notificaciones** | Abre sus notificaciones. El número junto a la opción indica las notificaciones no leídas. |
+| **Mi perfil** | Editar los datos personales permitidos y acceder a la seguridad y los ajustes personales. |
+| **Mi trabajo** | [Trabajo reciente, sus borradores y contenido pendiente de revisión](moj-rad_es.md), según sus permisos actuales. |
+| **Mi espacio de trabajo** | Abre su espacio de trabajo personal ya existente, si está disponible. |
+| **Cambiar contraseña** | Cambiar o establecer su contraseña local de Simbioza. |
+| **Cerrar sesión** | Finaliza su sesión en Simbioza. |
+
+La sección **Administración**, con el enlace **Ajustes**, y el interruptor **Administrador** están destinados a quienes tienen los permisos administrativos correspondientes. No conceden estos derechos a los usuarios comunes. Si dispone del interruptor, permite activar o desactivar permisos administrativos temporales mediante el proceso que se muestra en pantalla.
+
+<figure class="my-4">
+<img src="assets/profile-menu_en.jpg" class="img-fluid rounded border" alt="Menú de la cuenta de una persona que ha iniciado sesión" />
+<figcaption>Las opciones del menú dependen de sus permisos y de las funciones activadas.</figcaption>
+</figure>
+
 <a id="sign-in-and-out"></a>
 
 ## Iniciar y cerrar sesión

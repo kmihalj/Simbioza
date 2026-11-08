@@ -1,0 +1,43 @@
+{
+    "version": 1,
+    "themes": [
+        {
+            "id": "aai",
+            "theme_sha256": [
+                "a3d709b6a34cf39a7b776b6494731a8aa111a539cce324127cb9a18911632eee",
+                "e9674b18f4c553d8d72f3506c5b811481600f913660027c02c03ea1deb42d2b8"
+            ],
+            "files": {
+                "assets/hero-aai-banner.svg": "b105e905afc65ef6b3be515f19763b7e2e1e3fb4223e5124f528b7bac7b11fcf",
+                "assets/logo-aaieduhr-dark.svg": "ff7e1248cca5c632088fc86f3759bc1b0f664c0d55a2dfa229984ce3cc138917",
+                "assets/logo-aaieduhr-light.svg": "001b091d6efbdce0bb8d2361ed7d72c1463bde85e402ac176e8e465f0c41501c",
+                "assets/logo-srce-dark.svg": "a784eda7775feae8c68cbf1f73cc9b2c7ac42f1b84ed58ecf39249b3a86e418e",
+                "assets/logo-srce-light.svg": "f788312beeb2d0a26d8b43334929ed9800cf2ebc159153255fb87bc60542bfc1",
+                "theme-assets.json": "594322af2a5a7efe2bdf028e20bc33f33c9e811a05aad141b5cf8b15edb8f9b0"
+            }
+        },
+        {
+            "id": "dabar",
+            "theme_sha256": [
+                "23932a1c54d2f5c70c89ebf9295d2b9a4028746767cd1fd7abbff6a937ac05bf",
+                "b1708e38f0511eb2f3a3394aadbc493619ee810110b6838428ea546710c3ab8b"
+            ],
+            "files": {
+                "assets/hero-dabar-povecalo.svg": "bd01881e02a839b1e7c14b8159f5d2ff894810258eafb12107e832c6d4383b10",
+                "assets/logo-dabar-dark.svg": "1f88f120ffdf90d4b907e1d0e1df06c2a8c90fee7b2b42269bd56db365cb3ea5",
+                "assets/logo-dabar-light.svg": "f4a1420b5c363796f7269fc6a22994a6fe618bd70cb1149cbe47f94244afdf56",
+                "assets/logo-srce-55-dark.svg": "b53f636a8dae428fdc7dddc2144483c943d1ee6822ff8b761df602fd3b182ff4",
+                "assets/logo-srce-55-light.svg": "1a65ffb941a9d117785a73f0211b6351a586e273e4cdc7254b9cba91df964571",
+                "theme-assets.json": "f5a19255c06fd94607024d0039d19dddee941afd1a83dc7a8a87602e89de48aa"
+            }
+        },
+        {
+            "id": "srce-sup",
+            "theme_sha256": [
+                "5652a6c7dcd2a9f3192bf08fd3f01daf8a1887cffdfc5c6261d9875a01c19094",
+                "76370b0e7299f98c2008040f4a1bdde29f5cb3995ee2af2358063ade1a84d36e"
+            ],
+            "files": {}
+        }
+    ]
+}

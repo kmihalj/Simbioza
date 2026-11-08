@@ -770,7 +770,14 @@ test.describe('module browser surfaces', () => {
     const themeIds = await page.locator('#active_theme option').evaluateAll(
       (options) => options.map((option) => option.value).filter((value) => value !== ''),
     );
-    expect(themeIds).toEqual(expect.arrayContaining(['aai', 'dabar', 'simbioza', 'srce-sup', 'standard']));
+    const project = process.env.HPH_E2E_PROJECT;
+    expect(project).toBeTruthy();
+    const publicCollection = JSON.parse(readFileSync(
+      join(project, 'resources/installation/theme/collection.json'), 'utf8',
+    ));
+    const publicThemeIds = publicCollection.themes.map((theme) => theme.id).sort();
+    expect(publicThemeIds).toHaveLength(23);
+    expect([...themeIds].sort()).toEqual(publicThemeIds);
     test.setTimeout(90_000 + themeIds.length * 20_000);
     try {
       for (const themeId of themeIds) {
@@ -994,53 +1001,64 @@ test.describe('module browser surfaces', () => {
     }
   });
 
-  test('AAI hero artwork remains complete below sticky navigation', async ({ page }) => {
+  test('Public hero artwork remains complete below sticky navigation with negative offsets', async ({ page }) => {
+    const project = process.env.HPH_E2E_PROJECT;
+    expect(project).toBeTruthy();
+    const themesPath = join(project, 'config/theme/themes.json');
+    const originalThemes = readFileSync(themesPath, 'utf8');
+    const themes = JSON.parse(originalThemes);
+    const target = themes.find((theme) => theme.id === 'simbioza-blueprint');
+    expect(target).toBeTruthy();
+    // EN: Synthetic edge settings exercise sticky navigation and overflowing artwork without a private preset.
+    // HR: Sintetičke rubne postavke provjeravaju ljepljivi meni i ukras izvan hero okvira bez privatnog predloška.
+    target.components.navigation.sticky = true;
+    target.components.navigation.placement = 'standalone';
+    Object.assign(target.components.hero, {
+      inner_enabled: true, visual_enabled: true, visual_allow_overflow: true,
+      visual_width_px: 650, visual_max_height_px: 320, visual_top_px: -64, visual_right_px: 24,
+    });
     await login(page, adminLogin, adminPassword);
     await page.setViewportSize({ width: 1600, height: 1000 });
-    await page.goto('/settings/theme?theme=aai');
-
-    const activeTheme = page.locator('#active_theme');
-    const originalTheme = await activeTheme.inputValue();
-    if (originalTheme !== 'aai') {
-      await activeTheme.selectOption('aai');
+    await page.goto('/settings/theme?theme=simbioza-blueprint');
+    const originalTheme = await page.locator('#active_theme').inputValue();
+    try {
+      writeFileSync(themesPath, JSON.stringify(themes));
+      await page.locator('#active_theme').selectOption('simbioza-blueprint');
       await Promise.all([
-        page.waitForLoadState('networkidle'),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
         page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
       ]);
-    }
-
-    await page.goto('/about');
-    const geometry = await page.evaluate(() => {
-      const navigation = document.querySelector('.hph-primary-navigation');
-      const image = document.querySelector('.hph-hero__visual img');
-      if (!(navigation instanceof HTMLElement) || !(image instanceof HTMLImageElement)) {
-        return null;
-      }
-
-      const navigationRect = navigation.getBoundingClientRect();
-      const imageRect = image.getBoundingClientRect();
-
-      return {
-        navigationBottom: navigationRect.bottom,
-        navigationPosition: getComputedStyle(navigation).position,
-        imageTop: imageRect.top,
-        imageNaturalWidth: image.naturalWidth,
-        documentWidth: document.documentElement.scrollWidth,
-        viewportWidth: window.innerWidth,
-      };
-    });
-
-    expect(geometry).not.toBeNull();
-    expect(geometry.navigationPosition).toBe('sticky');
-    expect(geometry.imageNaturalWidth).toBeGreaterThan(0);
-    expect(geometry.imageTop).toBeGreaterThanOrEqual(geometry.navigationBottom - 1);
-    expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
-
-    if (originalTheme !== 'aai') {
-      await page.goto('/settings/theme?theme=aai');
+      await page.goto('/about');
+      const geometry = await page.evaluate(() => {
+        const navigation = document.querySelector('.hph-primary-navigation');
+        const image = document.querySelector('.hph-hero__visual img');
+        if (!(navigation instanceof HTMLElement) || !(image instanceof HTMLImageElement)) {
+          return null;
+        }
+        const navigationRect = navigation.getBoundingClientRect();
+        const imageRect = image.getBoundingClientRect();
+        return {
+          navigationBottom: navigationRect.bottom,
+          navigationPosition: getComputedStyle(navigation).position,
+          imageTop: imageRect.top,
+          imageHeight: imageRect.height,
+          imageNaturalWidth: image.naturalWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: window.innerWidth,
+        };
+      });
+      expect(geometry).not.toBeNull();
+      expect(geometry.navigationPosition).toBe('sticky');
+      expect(geometry.imageNaturalWidth).toBeGreaterThan(0);
+      expect(geometry.imageTop).toBeGreaterThanOrEqual(geometry.navigationBottom - 1);
+      expect(geometry.imageHeight).toBeLessThanOrEqual(320);
+      expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+    } finally {
+      writeFileSync(themesPath, originalThemes);
+      await page.goto('/settings/theme?theme=simbioza-blueprint');
       await page.locator('#active_theme').selectOption(originalTheme);
       await Promise.all([
-        page.waitForLoadState('networkidle'),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
         page.getByRole('button', { name: /Save site theme|Spremi temu site-a/i }).click(),
       ]);
     }
@@ -1128,7 +1146,7 @@ test.describe('module browser surfaces', () => {
       ]);
     };
     try {
-      for (const theme of ['simbioza', 'srce-sup', 'standard']) {
+      for (const theme of ['simbioza', 'simbioza-cassette', 'standard']) {
         await saveTheme(theme);
         for (const width of [1440, 390]) {
           await page.setViewportSize({ width, height: 1000 });

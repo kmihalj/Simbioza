@@ -2,9 +2,9 @@
 
 [Hrvatska verzija](theme-collection_hr.md)
 
-Simbioza includes **26 independent themes**, each with light and dark appearances. They use native Theme settings: colours, system fonts, navigation, hero, cards, borders and shadows. All settings remain editable in the interface. Choosing a theme changes presentation, not content or access permissions.
+Simbioza includes **23 independent themes**, each with light and dark appearances. They use native Theme settings: colours, system fonts, navigation, hero, cards, borders and shadows. All settings remain editable in the interface. Choosing a theme changes presentation, not content or access permissions.
 
-The complete collection combines six established themes (AAI, Dabar, Simbioza, Simbioza Orbit, Srce - sup and Standard), the twelve styles listed below and [eight themes for sport, education and creative communities](creative-themes_en.md). See the [complete gallery](theme-gallery_en.md) for all 26 themes and both appearances.
+The complete collection combines three established themes (Simbioza, Simbioza Orbit and Standard), the twelve styles listed below and [eight themes for sport, education and creative communities](creative-themes_en.md). See the [complete gallery](theme-gallery_en.md) for all 23 themes and both appearances.
 
 ## Twelve editorial, modern and retro styles
 
@@ -29,11 +29,13 @@ Open **Settings → Theme**, choose its name in **Active theme**, and save the s
 
 ## Importing into another installation
 
-[Download the ZIP collection of all 26 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Institution-specific presets are no longer included in the public collection. A one-time upgrade cleanup retires only unchanged copies recorded as bundled; edited themes and explicit local preservation choices remain. If a retired theme was active, the site uses Simbioza, or Standard when Simbioza is unavailable.
 
-Starting with release 0.3.36, upgrades add missing bundled themes once. Existing themes and the active selection are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
+[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
-Each ZIP in `resources/installation/theme/<theme-id>.zip` is a complete export of one theme; all 26 IDs are listed in `resources/installation/theme/collection.json`. Under **Settings → Theme**, open **Import complete theme**, select the appropriate ZIP and import it. Then select it as the active theme. Do not upload the entire collection ZIP into the single-theme form; extract an individual package first.
+Starting with release 0.3.36, upgrades add missing bundled themes once. Administrator theme changes and local preservation choices are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
+
+Each ZIP in `resources/installation/theme/<theme-id>.zip` is a complete export of one theme; all 23 IDs are listed in `resources/installation/theme/collection.json`. Under **Settings → Theme**, open **Import complete theme**, select the appropriate ZIP and import it. Then select it as the active theme. Do not upload the entire collection ZIP into the single-theme form; extract an individual package first.
 
 Packages include both palettes, layout and the assets used by that theme, with checksums. The themes load no remote fonts, scripts or images. The Simbioza mark remains the original application mark; decorative vector illustrations were created specifically for this collection.
 
@@ -43,8 +45,8 @@ The gallery shows the actual Theme export with consistent sample content. The na
 
 ## Maintainer sources
 
-The twelve source configurations are in `resources/theme-collection/catalog.json`; the eight creative configurations have their own [source guide](creative-themes_en.md). The authoritative installation set is the 26 checked packages and `resources/installation/theme/collection.json`.
+The twelve source configurations are in `resources/theme-collection/catalog.json`; the eight creative configurations have their own [source guide](creative-themes_en.md). The authoritative installation set is the 23 checked packages and `resources/installation/theme/collection.json`.
 
 `python3 scripts/generate_theme_collection.py --output output/theme-sources` regenerates the twelve source definitions and artwork in a separate directory. It requires the Theme package and the local Simbioza mark inputs used by the generator. It does not install themes or change the active configuration. Regeneration is a maintainer task, not an installation or upgrade step. Review generated output before replacing prepared packages.
 
-[Complete gallery of all 26 themes](theme-gallery_en.md).
+[Complete gallery of all 23 themes](theme-gallery_en.md).

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   apiHeaders,
@@ -20,246 +20,269 @@ test.describe('complete Backup workflow', () => {
     const project = process.env.HPH_E2E_PROJECT;
     expect(project).toBeTruthy();
     const applicationSource = await readFile(join(project, 'config/app.php'), 'utf8');
-
-    await login(page, adminLogin, adminPassword);
-    const response = await page.goto('/settings/backups');
-    expect(response?.status()).toBe(200);
-    await expect(page.getByRole('heading', { name: /Backup (i vraćanje|and restore)/i })).toBeVisible();
-
-    /*
-     * EN: The UI exposes complete business components and intentionally hides
-     *     internal technical providers. A full-site backup includes every
-     *     component automatically, so their checkboxes are informational and
-     *     must remain disabled.
-     *
-     * HR: Sučelje prikazuje potpune poslovne cjeline, a interne tehničke
-     *     providere namjerno ne izlaže korisniku. Kod potpunog backupa cjeline
-     *     su informativne i automatski uključene pa njihove kvačice moraju biti
-     *     onemogućene.
-     */
-    const componentCheckboxes = page.locator('#backup-create-form input[name="components[]"]');
-    await expect(componentCheckboxes).toHaveCount(7);
-    expect(await componentCheckboxes.evaluateAll((checkboxes) => (
-      checkboxes.map((checkbox) => checkbox.value)
-    ))).toEqual(['users', 'workspaces', 'themes', 'settings', 'calendars', 'audit', 'surveys']);
-    await expect(componentCheckboxes.first()).toBeDisabled();
-
-    /*
-     * EN: Create and restore form one vertical accordion. Opening restore
-     *     closes create, and reopening create returns the form for this flow.
-     *
-     * HR: Izrada i vraćanje su jedan vertikalni accordion. Otvaranje vraćanja
-     *     zatvara izradu, a ponovno otvaranje izrade vraća obrazac za nastavak.
-     */
-    const createAccordion = page.locator('.backup-accordion').nth(0);
-    const restoreAccordion = page.locator('.backup-accordion').nth(1);
-    await expect(createAccordion).toHaveAttribute('open', '');
-    await expect(restoreAccordion).not.toHaveAttribute('open', '');
-    await restoreAccordion.locator(':scope > summary').click();
-    await expect(createAccordion).not.toHaveAttribute('open', '');
-    await expect(restoreAccordion).toHaveAttribute('open', '');
-    // EN: Missing archives start no job; the error remains available while reading.
-    //
-    // HR: Pogreška bez arhiva ne pokreće posao; poruka ne nestaje tijekom čitanja.
-    await page.locator('#backup-upload').focus();
-    await page.locator('#backup-upload').press('Enter');
-    await expect(page.locator('#backup-toast')).toContainText(/Choose a backup archive|Odaberite backup arhiv/i);
-    await expect(page.locator('#backup-upload')).toBeFocused();
-    await page.waitForTimeout(6500);
-    await expect(page.locator('#backup-toast')).toBeVisible();
-    await page.locator('#backup-toast button').focus();
-    await page.locator('#backup-toast button').press('Enter');
-    await expect(page.locator('#backup-upload')).toBeFocused();
-    await createAccordion.locator(':scope > summary').click();
-    await expect(createAccordion).toHaveAttribute('open', '');
-    await expect(restoreAccordion).not.toHaveAttribute('open', '');
-
-    await page.locator('#backup-create-form input[name="label"]').fill('e2e-full-site');
-    await page.locator('#backup-create-form input[name="passphrase"]').fill(passphrase);
-
-    const downloadPromise = page.waitForEvent('download');
-    await page.locator('#backup-create-form button[type="submit"]').click();
-    const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/\.zip$/i);
-    /*
-     * EN: Playwright's internal path lacks the original `.zip` suffix while a
-     *     real user download has it. Save under the suggested name so the test
-     *     exercises the same filename validation as the browser workflow.
-     *
-     * HR: Interna Playwright putanja nema izvorni `.zip` sufiks, dok stvarni
-     *     korisnički download ima. Spremamo ga pod predloženim nazivom kako bi
-     *     test vjerno prošao istu validaciju naziva kao preglednik.
-     */
-    const archivePath = testInfo.outputPath(download.suggestedFilename());
-    await download.saveAs(archivePath);
-    await expect(page.locator('#backup-toast')).toContainText(
-      /Backup je izrađen i preuzet|Backup created and downloaded/i,
-    );
-    const latestJob = page.locator('#backup-jobs-body tr').first();
-    await expect(latestJob).toBeVisible();
-    const deleteJobButton = latestJob.locator('[data-backup-delete]');
-    await deleteJobButton.focus();
-    await page.waitForTimeout(5500);
-    await expect(deleteJobButton).toBeFocused();
-    await expect(latestJob.locator('[data-backup-download]')).toHaveCount(0);
-    await expect(latestJob.locator('td').first()).toHaveText(
-      /(?:[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)|\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/,
-    );
-    const jobsResponse = await page.request.get('/settings/backups/jobs', {
-      headers: { Accept: 'application/json' },
+    const themesPath = join(project, 'config/theme/themes.json');
+    const originalThemes = await readFile(themesPath, 'utf8');
+    const themes = JSON.parse(originalThemes);
+    const backupTheme = themes.find((theme) => theme.id === 'simbioza-blueprint');
+    expect(backupTheme).toBeTruthy();
+    // EN: A public theme receives synthetic edge values only inside this isolated backup fixture.
+    // HR: Javna tema dobiva sintetičke rubne vrijednosti samo u ovom izdvojenom testu sigurnosne kopije.
+    Object.assign(backupTheme.components.hero, {
+      visual_width_px: 650, visual_max_height_px: 320, visual_top_px: -64,
+      visual_right_px: 24, visual_allow_overflow: true,
     });
-    expect(jobsResponse.status()).toBe(200);
-    const jobsPayload = await jobsResponse.json();
-    expect(jobsPayload.jobs[0].download_available).toBe(false);
-    const secondDownload = await page.request.get(
-      `/settings/backups/download?job=${encodeURIComponent(jobsPayload.jobs[0].uuid)}`,
-    );
-    expect(secondDownload.status()).toBe(404);
-    /*
-     * EN: Switch the interface language through the same locale route used by
-     *     the header selector. The `lang` parameter belongs to content language
-     *     and must not control the administration UI date format.
-     *
-     * HR: Jezik sučelja mijenja se istom lokalizacijskom rutom koju koristi
-     *     izbornik u zaglavlju. Parametar `lang` pripada jeziku sadržaja i ne
-     *     smije utjecati na format datuma administracijskog sučelja.
-     */
-    await page.goto(`/locale/hr?next=${encodeURIComponent('/settings/backups')}`);
-    const hrJobs = await (await page.request.get('/settings/backups/jobs')).json();
-    expect(hrJobs.timezone).toBe('Europe/Zagreb');
-    expect(hrJobs.jobs[0].created_at_display).toMatch(
-      /^\d{1,2}\. [\p{L}.]+ \d{4}\. \d{2}:\d{2}:\d{2}$/u,
-    );
-    await page.goto(`/locale/en?next=${encodeURIComponent('/settings/backups')}`);
-    const enJobs = await (await page.request.get('/settings/backups/jobs')).json();
-    expect(enJobs.jobs[0].created_at_display).toMatch(
-      /^[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)$/,
-    );
+    await writeFile(themesPath, JSON.stringify(themes));
 
-    /*
-     * EN: Create remains open after the download, so open the restore
-     *     accordion before interacting with its upload controls. This keeps
-     *     the test aligned with the real user flow.
-     *
-     * HR: Izrada je nakon preuzimanja i dalje otvorena, stoga prije rada s
-     *     uploadom otvaramo accordion za vraćanje. Time test slijedi isti
-     *     korisnički tijek kao stvarno sučelje.
-     */
-    await restoreAccordion.locator(':scope > summary').click();
-    await expect(createAccordion).not.toHaveAttribute('open', '');
-    await expect(restoreAccordion).toHaveAttribute('open', '');
-
-    await page.locator('#backup-file').setInputFiles(archivePath);
-    await page.locator('#backup-passphrase').fill(passphrase);
-    await page.locator('#backup-upload').click();
-    await expect(page.locator('#backup-preflight')).toBeEnabled({ timeout: 60_000 });
-    await expect(page.locator('#backup-upload-progress').locator('..')).toHaveAttribute('aria-valuenow', '100');
-    await expect(page.locator('#backup-result')).toContainText('providers');
-
-    await page.locator('#backup-conflict').selectOption('replace');
-    await page.locator('#backup-maintenance').check();
-    await page.locator('#backup-preflight').click();
-    await expect(page.locator('#backup-result')).toContainText('"errors": []', { timeout: 60_000 });
-    await expect(page.locator('#backup-restore')).toBeEnabled();
-
-    // EN: Delay the post-restore job response: success must wait for its session cookie.
-    //
-    // HR: Odgodi job odgovor nakon restorea: uspjeh mora pričekati njegov sesijski cookie.
-    let restoreResponseSeen = false;
-    let postRestoreJobsSettled = false;
-    page.on('response', (response) => {
-      if (new URL(response.url()).pathname === '/settings/backups/restore' && response.ok()) {
-        restoreResponseSeen = true;
-      }
-    });
-    await page.route('**/settings/backups/jobs', async (route) => {
-      const afterRestore = restoreResponseSeen;
-      const response = await route.fetch();
-      if (afterRestore) await new Promise((resolve) => setTimeout(resolve, 750));
-      await route.fulfill({ response });
-      if (afterRestore) postRestoreJobsSettled = true;
-    });
-    page.once('dialog', (dialog) => dialog.accept());
-    await page.locator('#backup-restore').click();
-    await expect(page.locator('#backup-result')).toContainText('"restored": true', { timeout: 90_000 });
-    expect(postRestoreJobsSettled).toBe(true);
-    await expect(page.locator('#backup-result')).toContainText('"uploaded_archive_deleted": true');
-    await expect(page.locator('#backup-result')).toContainText('safety_snapshot');
-    await expect(page.locator('#backup-toast')).toContainText(
-      /Vraćanje je dovršeno|Restore completed/i,
-    );
-    await page.unrouteAll({ behavior: 'wait' });
-
-    /*
-     * EN: Themes are a filesystem-backed backup component. After a real restore,
-     *     verify the new hero-artwork properties as well as the theme itself.
-     *
-     * HR: Tema je datotečna backup cjelina. Nakon stvarnog vraćanja provjeravamo
-     *     i nova svojstva hero ukrasa, a ne samo prisutnost teme.
-     */
-    await login(page, adminLogin, adminPassword);
-    await page.goto('/settings/theme?theme=dabar');
-    const themeEditor = page.locator('#theme-editor-form');
-    await themeEditor.locator('[data-theme-section-id="hero"] > summary').click();
-    await expect(themeEditor.locator('[data-theme-hero-visual-width]')).toHaveValue('650');
-    await expect(themeEditor.locator('[data-theme-hero-visual-max-height]')).toHaveValue('320');
-    await expect(themeEditor.locator('[data-theme-hero-visual-top]')).toHaveValue('-64');
-    await expect(themeEditor.locator('[data-theme-hero-visual-right]')).toHaveValue('24');
-    await expect(themeEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
-
-    /*
-     * EN: Data restoration must not flatten the dynamic bootstrap. Both GUI
-     *     and CLI must still genuinely unload and reload an optional module.
-     *     Theme is required in Simbioza and must remain enabled throughout.
-     *
-     * HR: Povrat podataka ne smije pretvoriti dinamički bootstrap u statički.
-     *     GUI i CLI moraju stvarno isključiti te ponovno učitati opcionalni modul.
-     *     Tema je obavezna u Simbiozi i cijelo vrijeme ostaje uključena.
-     */
-    expect(await readFile(join(project, 'config/app.php'), 'utf8')).toBe(applicationSource);
-    const cliModule = (action) => execFileSync('php', ['vendor/bin/hph', 'modules', action, 'calendar'], {
-      cwd: project,
-      env: { ...process.env, HPH_APP_PATH: project, HPH_CONFIG_PATH: join(project, 'config') },
-    });
     try {
-      await page.goto('/settings/setup');
-      const calendarForm = (action) => page.locator('form')
-        .filter({ has: page.locator('input[name="module"][value="calendar"]') })
-        .filter({ has: page.locator(`input[name="action"][value="${action}"]`) });
-      await expect(page.locator('form').filter({
-        has: page.locator('input[name="module"][value="theme"]'),
-      }).filter({ has: page.locator('input[name="action"][value="disable"]') })).toHaveCount(0);
-      await Promise.all([
-        page.waitForResponse((response) => response.request().method() === 'POST'
-          && new URL(response.url()).pathname === '/settings/setup'),
-        calendarForm('disable').getByRole('button').click(),
-      ]);
-      await page.goto('/settings/setup');
+      await login(page, adminLogin, adminPassword);
+      const response = await page.goto('/settings/backups');
+      expect(response?.status()).toBe(200);
+      await expect(page.getByRole('heading', { name: /Backup (i vraćanje|and restore)/i })).toBeVisible();
+
+      /*
+       * EN: The UI exposes complete business components and intentionally hides
+       *     internal technical providers. A full-site backup includes every
+       *     component automatically, so their checkboxes are informational and
+       *     must remain disabled.
+       *
+       * HR: Sučelje prikazuje potpune poslovne cjeline, a interne tehničke
+       *     providere namjerno ne izlaže korisniku. Kod potpunog backupa cjeline
+       *     su informativne i automatski uključene pa njihove kvačice moraju biti
+       *     onemogućene.
+       */
+      const componentCheckboxes = page.locator('#backup-create-form input[name="components[]"]');
+      await expect(componentCheckboxes).toHaveCount(7);
+      expect(await componentCheckboxes.evaluateAll((checkboxes) => (
+        checkboxes.map((checkbox) => checkbox.value)
+      ))).toEqual(['users', 'workspaces', 'themes', 'settings', 'calendars', 'audit', 'surveys']);
+      await expect(componentCheckboxes.first()).toBeDisabled();
+
+      /*
+       * EN: Create and restore form one vertical accordion. Opening restore
+       *     closes create, and reopening create returns the form for this flow.
+       *
+       * HR: Izrada i vraćanje su jedan vertikalni accordion. Otvaranje vraćanja
+       *     zatvara izradu, a ponovno otvaranje izrade vraća obrazac za nastavak.
+       */
+      const createAccordion = page.locator('.backup-accordion').nth(0);
+      const restoreAccordion = page.locator('.backup-accordion').nth(1);
+      await expect(createAccordion).toHaveAttribute('open', '');
+      await expect(restoreAccordion).not.toHaveAttribute('open', '');
+      await restoreAccordion.locator(':scope > summary').click();
+      await expect(createAccordion).not.toHaveAttribute('open', '');
+      await expect(restoreAccordion).toHaveAttribute('open', '');
+      // EN: Missing archives start no job; the error remains available while reading.
+      //
+      // HR: Pogreška bez arhiva ne pokreće posao; poruka ne nestaje tijekom čitanja.
+      await page.locator('#backup-upload').focus();
+      await page.locator('#backup-upload').press('Enter');
+      await expect(page.locator('#backup-toast')).toContainText(/Choose a backup archive|Odaberite backup arhiv/i);
+      await expect(page.locator('#backup-upload')).toBeFocused();
+      await page.waitForTimeout(6500);
+      await expect(page.locator('#backup-toast')).toBeVisible();
+      await page.locator('#backup-toast button').focus();
+      await page.locator('#backup-toast button').press('Enter');
+      await expect(page.locator('#backup-upload')).toBeFocused();
+      await createAccordion.locator(':scope > summary').click();
+      await expect(createAccordion).toHaveAttribute('open', '');
+      await expect(restoreAccordion).not.toHaveAttribute('open', '');
+
+      await page.locator('#backup-create-form input[name="label"]').fill('e2e-full-site');
+      await page.locator('#backup-create-form input[name="passphrase"]').fill(passphrase);
+
+      const downloadPromise = page.waitForEvent('download');
+      await page.locator('#backup-create-form button[type="submit"]').click();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toMatch(/\.zip$/i);
+      /*
+       * EN: Playwright's internal path lacks the original `.zip` suffix while a
+       *     real user download has it. Save under the suggested name so the test
+       *     exercises the same filename validation as the browser workflow.
+       *
+       * HR: Interna Playwright putanja nema izvorni `.zip` sufiks, dok stvarni
+       *     korisnički download ima. Spremamo ga pod predloženim nazivom kako bi
+       *     test vjerno prošao istu validaciju naziva kao preglednik.
+       */
+      const archivePath = testInfo.outputPath(download.suggestedFilename());
+      await download.saveAs(archivePath);
+      // EN: Change the live fixture after export so the later GUI checks prove actual restoration.
+      // HR: Nakon izvoza mijenjamo testnu temu kako bi kasnije GUI provjere dokazale stvarno vraćanje.
+      backupTheme.components.hero.visual_top_px = 72;
+      backupTheme.components.hero.visual_allow_overflow = false;
+      await writeFile(themesPath, JSON.stringify(themes));
+      expect(JSON.parse(await readFile(themesPath, 'utf8'))
+        .find((theme) => theme.id === 'simbioza-blueprint').components.hero.visual_top_px).toBe(72);
+      await expect(page.locator('#backup-toast')).toContainText(
+        /Backup je izrađen i preuzet|Backup created and downloaded/i,
+      );
+      const latestJob = page.locator('#backup-jobs-body tr').first();
+      await expect(latestJob).toBeVisible();
+      const deleteJobButton = latestJob.locator('[data-backup-delete]');
+      await deleteJobButton.focus();
+      await page.waitForTimeout(5500);
+      await expect(deleteJobButton).toBeFocused();
+      await expect(latestJob.locator('[data-backup-download]')).toHaveCount(0);
+      await expect(latestJob.locator('td').first()).toHaveText(
+        /(?:[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)|\d{1,2}\. \d{1,2}\. \d{4}\. \d{2}:\d{2}:\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/,
+      );
+      const jobsResponse = await page.request.get('/settings/backups/jobs', {
+        headers: { Accept: 'application/json' },
+      });
+      expect(jobsResponse.status()).toBe(200);
+      const jobsPayload = await jobsResponse.json();
+      expect(jobsPayload.jobs[0].download_available).toBe(false);
+      const secondDownload = await page.request.get(
+        `/settings/backups/download?job=${encodeURIComponent(jobsPayload.jobs[0].uuid)}`,
+      );
+      expect(secondDownload.status()).toBe(404);
+      /*
+       * EN: Switch the interface language through the same locale route used by
+       *     the header selector. The `lang` parameter belongs to content language
+       *     and must not control the administration UI date format.
+       *
+       * HR: Jezik sučelja mijenja se istom lokalizacijskom rutom koju koristi
+       *     izbornik u zaglavlju. Parametar `lang` pripada jeziku sadržaja i ne
+       *     smije utjecati na format datuma administracijskog sučelja.
+       */
+      await page.goto(`/locale/hr?next=${encodeURIComponent('/settings/backups')}`);
+      const hrJobs = await (await page.request.get('/settings/backups/jobs')).json();
+      expect(hrJobs.timezone).toBe('Europe/Zagreb');
+      expect(hrJobs.jobs[0].created_at_display).toMatch(
+        /^\d{1,2}\. [\p{L}.]+ \d{4}\. \d{2}:\d{2}:\d{2}$/u,
+      );
+      await page.goto(`/locale/en?next=${encodeURIComponent('/settings/backups')}`);
+      const enJobs = await (await page.request.get('/settings/backups/jobs')).json();
+      expect(enJobs.jobs[0].created_at_display).toMatch(
+        /^[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2}\s?(?:AM|PM)$/,
+      );
+
+      /*
+       * EN: Create remains open after the download, so open the restore
+       *     accordion before interacting with its upload controls. This keeps
+       *     the test aligned with the real user flow.
+       *
+       * HR: Izrada je nakon preuzimanja i dalje otvorena, stoga prije rada s
+       *     uploadom otvaramo accordion za vraćanje. Time test slijedi isti
+       *     korisnički tijek kao stvarno sučelje.
+       */
+      await restoreAccordion.locator(':scope > summary').click();
+      await expect(createAccordion).not.toHaveAttribute('open', '');
+      await expect(restoreAccordion).toHaveAttribute('open', '');
+
+      await page.locator('#backup-file').setInputFiles(archivePath);
+      await page.locator('#backup-passphrase').fill(passphrase);
+      await page.locator('#backup-upload').click();
+      await expect(page.locator('#backup-preflight')).toBeEnabled({ timeout: 60_000 });
+      await expect(page.locator('#backup-upload-progress').locator('..')).toHaveAttribute('aria-valuenow', '100');
+      await expect(page.locator('#backup-result')).toContainText('providers');
+
+      await page.locator('#backup-conflict').selectOption('replace');
+      await page.locator('#backup-maintenance').check();
+      await page.locator('#backup-preflight').click();
+      await expect(page.locator('#backup-result')).toContainText('"errors": []', { timeout: 60_000 });
+      await expect(page.locator('#backup-restore')).toBeEnabled();
+
+      // EN: Delay the post-restore job response: success must wait for its session cookie.
+      //
+      // HR: Odgodi job odgovor nakon restorea: uspjeh mora pričekati njegov sesijski cookie.
+      let restoreResponseSeen = false;
+      let postRestoreJobsSettled = false;
+      page.on('response', (response) => {
+        if (new URL(response.url()).pathname === '/settings/backups/restore' && response.ok()) {
+          restoreResponseSeen = true;
+        }
+      });
+      await page.route('**/settings/backups/jobs', async (route) => {
+        const afterRestore = restoreResponseSeen;
+        const response = await route.fetch();
+        if (afterRestore) await new Promise((resolve) => setTimeout(resolve, 750));
+        await route.fulfill({ response });
+        if (afterRestore) postRestoreJobsSettled = true;
+      });
+      page.once('dialog', (dialog) => dialog.accept());
+      await page.locator('#backup-restore').click();
+      await expect(page.locator('#backup-result')).toContainText('"restored": true', { timeout: 90_000 });
+      expect(postRestoreJobsSettled).toBe(true);
+      await expect(page.locator('#backup-result')).toContainText('"uploaded_archive_deleted": true');
+      await expect(page.locator('#backup-result')).toContainText('safety_snapshot');
+      await expect(page.locator('#backup-toast')).toContainText(
+        /Vraćanje je dovršeno|Restore completed/i,
+      );
+      await page.unrouteAll({ behavior: 'wait' });
+
+      /*
+       * EN: Themes are a filesystem-backed backup component. After a real restore,
+       *     verify the new hero-artwork properties as well as the theme itself.
+       *
+       * HR: Tema je datotečna backup cjelina. Nakon stvarnog vraćanja provjeravamo
+       *     i nova svojstva hero ukrasa, a ne samo prisutnost teme.
+       */
+      await login(page, adminLogin, adminPassword);
+      await page.goto('/settings/theme?theme=simbioza-blueprint');
+      const themeEditor = page.locator('#theme-editor-form');
+      await themeEditor.locator('[data-theme-section-id="hero"] > summary').click();
+      await expect(themeEditor.locator('[data-theme-hero-visual-width]')).toHaveValue('650');
+      await expect(themeEditor.locator('[data-theme-hero-visual-max-height]')).toHaveValue('320');
+      await expect(themeEditor.locator('[data-theme-hero-visual-top]')).toHaveValue('-64');
+      await expect(themeEditor.locator('[data-theme-hero-visual-right]')).toHaveValue('24');
+      await expect(themeEditor.locator('[data-theme-hero-visual-allow-overflow]')).toBeChecked();
+
+      /*
+       * EN: Data restoration must not flatten the dynamic bootstrap. Both GUI
+       *     and CLI must still genuinely unload and reload an optional module.
+       *     Theme is required in Simbioza and must remain enabled throughout.
+       *
+       * HR: Povrat podataka ne smije pretvoriti dinamički bootstrap u statički.
+       *     GUI i CLI moraju stvarno isključiti te ponovno učitati opcionalni modul.
+       *     Tema je obavezna u Simbiozi i cijelo vrijeme ostaje uključena.
+       */
+      expect(await readFile(join(project, 'config/app.php'), 'utf8')).toBe(applicationSource);
+      const cliModule = (action) => execFileSync('php', ['vendor/bin/hph', 'modules', action, 'calendar'], {
+        cwd: project,
+        env: { ...process.env, HPH_APP_PATH: project, HPH_CONFIG_PATH: join(project, 'config') },
+      });
+      try {
+        await page.goto('/settings/setup');
+        const calendarForm = (action) => page.locator('form')
+          .filter({ has: page.locator('input[name="module"][value="calendar"]') })
+          .filter({ has: page.locator(`input[name="action"][value="${action}"]`) });
+        await expect(page.locator('form').filter({
+          has: page.locator('input[name="module"][value="theme"]'),
+        }).filter({ has: page.locator('input[name="action"][value="disable"]') })).toHaveCount(0);
+        await Promise.all([
+          page.waitForResponse((response) => response.request().method() === 'POST'
+            && new URL(response.url()).pathname === '/settings/setup'),
+          calendarForm('disable').getByRole('button').click(),
+        ]);
+        await page.goto('/settings/setup');
+        await expect(page.locator('.hph-site-header')).toBeVisible();
+        await expect(page.locator('a[href$="/settings/calendar"]')).toHaveCount(0);
+        await expect(calendarForm('enable').getByRole('button')).toBeVisible();
+        await Promise.all([
+          page.waitForResponse((response) => response.request().method() === 'POST'
+            && new URL(response.url()).pathname === '/settings/setup'),
+          calendarForm('enable').getByRole('button').click(),
+        ]);
+        await page.goto('/settings/setup');
+        await expect(page.locator('.hph-site-header')).toBeVisible();
+        await expect(page.locator('a[href$="/settings/calendar"]').first()).toBeVisible();
+        cliModule('disable');
+        expect((await page.request.get('/calendars')).status()).toBe(404);
+        await page.goto('/settings/setup');
+        await expect(page.locator('.hph-site-header')).toBeVisible();
+        const skip = page.getByRole('link', { name: /Skip to main content|Prijeđi na glavni sadržaj/i });
+        await page.keyboard.press('Tab');
+        await expect(skip).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(page.locator('#main-content')).toBeFocused();
+      } finally {
+        cliModule('enable');
+      }
+      await page.goto('/calendars');
       await expect(page.locator('.hph-site-header')).toBeVisible();
-      await expect(page.locator('a[href$="/settings/calendar"]')).toHaveCount(0);
-      await expect(calendarForm('enable').getByRole('button')).toBeVisible();
-      await Promise.all([
-        page.waitForResponse((response) => response.request().method() === 'POST'
-          && new URL(response.url()).pathname === '/settings/setup'),
-        calendarForm('enable').getByRole('button').click(),
-      ]);
-      await page.goto('/settings/setup');
-      await expect(page.locator('.hph-site-header')).toBeVisible();
-      await expect(page.locator('a[href$="/settings/calendar"]').first()).toBeVisible();
-      cliModule('disable');
-      expect((await page.request.get('/calendars')).status()).toBe(404);
-      await page.goto('/settings/setup');
-      await expect(page.locator('.hph-site-header')).toBeVisible();
-      const skip = page.getByRole('link', { name: /Skip to main content|Prijeđi na glavni sadržaj/i });
-      await page.keyboard.press('Tab');
-      await expect(skip).toBeFocused();
-      await page.keyboard.press('Enter');
-      await expect(page.locator('#main-content')).toBeFocused();
     } finally {
-      cliModule('enable');
+      await writeFile(themesPath, originalThemes);
     }
-    await page.goto('/calendars');
-    await expect(page.locator('.hph-site-header')).toBeVisible();
   });
 
   test('administrator copies one complete Workspace and rebuilds its search index', async ({ page }, testInfo) => {

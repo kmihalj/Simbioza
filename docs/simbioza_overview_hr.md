@@ -45,11 +45,13 @@ HeartPhrame i njegovi moduli mogu poslužiti i kao temelj prilagođene aplikacij
 
 ## Izgled po mjeri vaše zajednice
 
-Simbioza uključuje **26 gotovih tema**, svaku sa svijetlim i tamnim izgledom. Odaberite temu u **Postavke → Tema → Aktivna tema**. Boje, slike, visinu hero elementa, kartice, sjene, navigaciju i tipografiju možete dodatno prilagoditi. Odabir teme ne mijenja sadržaj ni ovlasti.
+Simbioza uključuje **23 gotove teme**, svaku sa svijetlim i tamnim izgledom. Odaberite temu u **Postavke → Tema → Aktivna tema**. Boje, slike, visinu hero elementa, kartice, sjene, navigaciju i tipografiju možete dodatno prilagoditi. Odabir teme ne mijenja sadržaj ni ovlasti.
 
 Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. Postojeće teme i aktivni odabir ostaju sačuvani. Nakon što izbrišete dodatnu temu, sljedeće je nadogradnje neće vratiti. Evidencija uvoza nalazi se u konfiguraciji Tema i uključena je u backup/restore sitea. Temu možete ponovno ručno uvesti iz ZIP-a.
 
-[Preuzmi ZIP kolekciju svih 26 tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.44/Simbioza-0.3.44-themes.zip)
+Institucijski preseti više nisu dio javne kolekcije. Jednokratno čišćenje pri nadogradnji povlači samo neizmijenjene primjerke evidentirane kao isporučene; uređene teme i izričiti lokalni odabiri čuvanja ostaju. Ako je povučena tema bila aktivna, site koristi Simbiozu, odnosno Standardnu temu kada Simbioza nije dostupna.
+
+[Preuzmi ZIP kolekciju sve 23 teme](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
 
 Raspakirajte kolekciju, pa u obrascu **Uvezi cijelu temu** odaberite pojedinačni ZIP iz direktorija `themes/`. Kolekcija sadrži i galeriju koju možete otvoriti bez interneta. Nemojte cijelu kolekciju učitati kao jednu temu.
 
