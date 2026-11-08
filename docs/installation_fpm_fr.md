@@ -41,7 +41,7 @@ PHP doit être **8.2 ou version ultérieure**, Composer doit être la version 2 
 
 <a id="2-download-a-clean-simbioza-0339-release"></a>
 
-## 2. Téléchargez une nouvelle version Simbioza 0.3.45
+## 2. Téléchargez une nouvelle version Simbioza 0.3.46
 
 Choisissez **un** répertoire d'application. Sous Linux :
 
@@ -63,7 +63,7 @@ Exécutez le bloc de téléchargement complet en tant que compte de responsable 
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.45 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.46 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -72,7 +72,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Attendez-vous à `0.3.45` et `success` pour chaque exigence de plate-forme. La notification **détachée HEAD** de Git est normale lors de l'extraction d'une balise de version. N'exécutez pas Composer avec `sudo`, ne copiez pas la configuration ou la base de données d'un autre site, n'incluez pas `.git/` dans l'application déployée ou n'utilisez pas `--no-dev` ici. La version 0.3.0 est une base de référence pour une nouvelle installation, et non une mise à niveau à partir de la version 0.2.x.
+Attendez-vous à `0.3.46` et `success` pour chaque exigence de plate-forme. La notification **détachée HEAD** de Git est normale lors de l'extraction d'une balise de version. N'exécutez pas Composer avec `sudo`, ne copiez pas la configuration ou la base de données d'un autre site, n'incluez pas `.git/` dans l'application déployée ou n'utilisez pas `--no-dev` ici. La version 0.3.0 est une base de référence pour une nouvelle installation, et non une mise à niveau à partir de la version 0.2.x.
 
 La racine de configuration par défaut est `config/` (`HPH_CONFIG_PATH`), avec un sous-répertoire pour chaque module. Les fichiers persistants appartiennent sous `data/`. Seul `public/` sera exposé par le serveur Web. Conservez les chemins par défaut pour cette première installation ; les couches de configuration externes sont une option avancée et non une condition préalable.
 

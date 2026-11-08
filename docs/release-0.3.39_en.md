@@ -1,6 +1,6 @@
 # Simbioza 0.3.39 — reliable HTML editing and current documentation
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.46](release-0.3.46_en.md).
 
 HTML form fields now preserve the complete supported editor content through Apply, Save, reload and re-editing. This includes cards, columns, alerts, tables, tabs, expandable blocks, images, video, safe embeds, charts, timelines and canonical integration references. The stored editable source is kept separate from its rendered preview. Existing media spacing, table appearance and header colours remain unchanged when the editor opens; temporary author actions are not saved as page content.
 

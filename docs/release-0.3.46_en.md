@@ -1,4 +1,4 @@
-# Simbioza 0.3.45 — personal work and clearer content navigation
+# Simbioza 0.3.46 — personal work and clearer content navigation
 
 ## Return to your work
 
@@ -17,7 +17,9 @@ The user guide includes a new **My work** chapter beneath **Sign in and my profi
 
 The distributable collection contains **23 themes**. Three installation-specific themes, `aai`, `dabar` and `srce-sup`, are no longer bundled or shown in the public galleries. Upgrade cleanup retires unchanged copies installed from the old collection once; customized or independently installed copies remain. If an unchanged retired theme was active, the installation falls back to Simbioza while retaining its appearance mode and enabled setting. Explicit later imports are respected.
 
-Download the [theme collection](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip) or browse the [gallery](theme-gallery_en.md).
+Release checks validate the canonical theme packages independently of any installation-specific theme library.
+
+Download the [theme collection](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip) or browse the [gallery](theme-gallery_en.md).
 
 ## Upgrade
 

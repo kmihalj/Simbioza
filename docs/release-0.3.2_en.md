@@ -1,6 +1,6 @@
 # Simbioza 0.3.2 — fresh secured-FPM setup
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.46](release-0.3.46_en.md).
 
 [Croatian version](release-0.3.2_hr.md)
 

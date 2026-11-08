@@ -1,6 +1,6 @@
 # Simbioza 0.3.19 — clearer Survey settings and inherited application URLs
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.46](release-0.3.46_en.md).
 
 [Croatian version](release-0.3.19_hr.md)
 

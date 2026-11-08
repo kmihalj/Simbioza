@@ -64,7 +64,7 @@ Simbioza comprend **23 thèmes prêts à l’emploi**, chacun avec une apparence
 
 Les thèmes propres à une institution ne font plus partie de la collection publique. Un nettoyage unique lors de la mise à jour retire uniquement les copies inchangées identifiées comme fournies ; les thèmes modifiés et ceux explicitement protégés par une configuration locale sont conservés. Si un thème retiré était actif, le site utilise Simbioza ou Standard lorsque Simbioza n’est pas disponible.
 
-[Télécharger la collection ZIP des 23 thèmes](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
+[Télécharger la collection ZIP des 23 thèmes](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip)
 
 Extrayez la collection, puis sélectionnez un ZIP individuel dans `themes/`, sous **Importer un thème complet**. La collection contient également une galerie consultable hors connexion. Ne téléversez pas toute la collection comme un seul thème.
 

@@ -1,4 +1,4 @@
-# Simbioza 0.3.45 — moj rad i preglednije upravljanje sadržajem
+# Simbioza 0.3.46 — moj rad i preglednije upravljanje sadržajem
 
 ## Vratite se svojem radu
 
@@ -17,7 +17,9 @@ U korisničke upute dodano je poglavlje **Moj rad** ispod **Prijava i moj profil
 
 Distribuirana kolekcija sadrži **23 teme**. Tri teme pojedinih instalacija, `aai`, `dabar` i `srce-sup`, više nisu uključene u paket ni javne galerije. Nadogradnja jednokratno uklanja neizmijenjene primjerke instalirane iz stare kolekcije; prilagođeni ili samostalno instalirani primjerci ostaju. Ako je povučena neizmijenjena tema bila aktivna, instalacija prelazi na Simbiozu uz očuvanje načina prikaza i uključenosti teme. Naknadni izričiti uvoz poštuje se.
 
-Preuzmite [kolekciju tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip) ili pregledajte [galeriju](theme-gallery_hr.md).
+Provjere izdanja provjeravaju tvorničke pakete tema neovisno o privatnoj zbirci pojedine instalacije.
+
+Preuzmite [kolekciju tema](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip) ili pregledajte [galeriju](theme-gallery_hr.md).
 
 ## Nadogradnja
 

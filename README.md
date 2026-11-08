@@ -146,7 +146,7 @@ A correctly configured secured FPM installation also offers GUI updates. Ordinar
 
 The supported application line is 0.3.x. A site on 0.2.x needs a fresh installation; its old Simbioza backup is not an upgrade path. Normal 0.3.x updates preserve your selected optional modules, content and settings. New optional modules become available for explicit installation.
 
-The current container image is `ghcr.io/kmihalj/simbioza:0.3.45`. Configure persistent data and secrets using the [Docker guide](docs/docker_en.md); review [release 0.3.45](docs/release-0.3.45_en.md) before upgrading.
+The current container image is `ghcr.io/kmihalj/simbioza:0.3.46`. Configure persistent data and secrets using the [Docker guide](docs/docker_en.md); review [release 0.3.46](docs/release-0.3.46_en.md) before upgrading.
 
 ## Use the modules in your own application
 

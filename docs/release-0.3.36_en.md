@@ -1,6 +1,6 @@
 # Simbioza 0.3.36 — all themes, galleries and durable theme choices
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.46](release-0.3.46_en.md).
 
 This release includes all **26 themes**, including Orbit, the first twelve-theme collection and eight creative themes for sport, schools, preschools, film, art and communities. Every theme has light and dark appearances. Theme module: **0.3.12**. Framework remains **0.0.25**, unchanged.
 

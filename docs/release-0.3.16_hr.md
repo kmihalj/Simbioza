@@ -2,7 +2,7 @@
 
 [English version](https://github.com/kmihalj/Simbioza/blob/0.3.16/docs/release-0.3.16_en.md)
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.45](release-0.3.45_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.46](release-0.3.46_hr.md).
 > i [Simbiozu 0.3.17](release-0.3.17_hr.md) za aktualne upute.
 
 Izdanje uključuje **Audit 0.3.1** i **Email 0.3.3**. HTML Editor/Menu/Theme ostaju

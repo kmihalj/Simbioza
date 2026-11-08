@@ -31,7 +31,7 @@ Otvorite **Postavke → Tema**, u polju **Aktivna tema** odaberite naziv i sprem
 
 Institucijski preseti više nisu dio javne kolekcije. Jednokratno čišćenje pri nadogradnji povlači samo neizmijenjene primjerke evidentirane kao isporučene; uređene teme i izričiti lokalni odabiri čuvanja ostaju. Ako je povučena tema bila aktivna, site koristi Simbiozu, odnosno Standardnu temu kada Simbioza nije dostupna.
 
-[Preuzmi ZIP kolekciju sve 23 teme](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
+[Preuzmi ZIP kolekciju sve 23 teme](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip)
 
 Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. Administratorske prilagodbe i lokalni odabiri čuvanja tema ostaju sačuvani. Nakon što izbrišete dodatnu temu, sljedeće je nadogradnje neće vratiti. Evidencija uvoza nalazi se u konfiguraciji Tema i uključena je u backup/restore sitea. Temu možete ponovno ručno uvesti iz ZIP-a.
 

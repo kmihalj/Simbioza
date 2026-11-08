@@ -7,7 +7,7 @@
 
 [Versión croata](installation_hr.md)
 
-Estas guías instalan Simbioza **0.3.45**. Consulte [versiones y dependencias del módulo](module-dependencies_en.md) para conocer el inventario de paquetes actual. El marco sigue siendo **0.0.25**. La línea base 0.3.x comienza con un nuevo directorio de aplicación, configuración y base de datos. No se admite una actualización desde 0.2.x ni la reutilización de sus copias de seguridad Simbioza.
+Estas guías instalan Simbioza **0.3.46**. Consulte [versiones y dependencias del módulo](module-dependencies_en.md) para conocer el inventario de paquetes actual. El marco sigue siendo **0.0.25**. La línea base 0.3.x comienza con un nuevo directorio de aplicación, configuración y base de datos. No se admite una actualización desde 0.2.x ni la reutilización de sus copias de seguridad Simbioza.
 
 Elija **una guía completa** a continuación. Cada uno comienza en una terminal de administrador, instala/verifica las herramientas del host, descarga la versión, prepara la base de datos y los permisos, configura el servidor web, ejecuta el asistente y verifica el primer inicio de sesión. No utilice esta descripción general como un paso de instalación adicional.
 

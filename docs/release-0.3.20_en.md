@@ -1,6 +1,6 @@
 # Simbioza 0.3.20 — the complete application, with modular flexibility
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.45](release-0.3.45_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.46](release-0.3.46_en.md).
 
 [Croatian version](release-0.3.20_hr.md)
 

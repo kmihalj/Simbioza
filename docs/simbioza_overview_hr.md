@@ -51,7 +51,7 @@ Nadogradnja od izdanja 0.3.36 dodaje nedostajuće priložene teme samo jednom. P
 
 Institucijski preseti više nisu dio javne kolekcije. Jednokratno čišćenje pri nadogradnji povlači samo neizmijenjene primjerke evidentirane kao isporučene; uređene teme i izričiti lokalni odabiri čuvanja ostaju. Ako je povučena tema bila aktivna, site koristi Simbiozu, odnosno Standardnu temu kada Simbioza nije dostupna.
 
-[Preuzmi ZIP kolekciju sve 23 teme](https://github.com/kmihalj/Simbioza/releases/download/0.3.45/Simbioza-0.3.45-themes.zip)
+[Preuzmi ZIP kolekciju sve 23 teme](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip)
 
 Raspakirajte kolekciju, pa u obrascu **Uvezi cijelu temu** odaberite pojedinačni ZIP iz direktorija `themes/`. Kolekcija sadrži i galeriju koju možete otvoriti bez interneta. Nemojte cijelu kolekciju učitati kao jednu temu.
 

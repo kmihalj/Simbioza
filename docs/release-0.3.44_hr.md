@@ -1,6 +1,6 @@
 # Simbioza 0.3.44 — slike ostaju unutar HTML sadržaja
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.45](release-0.3.45_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.46](release-0.3.46_hr.md).
 
 Slike sada stanu u okvir HTML sadržaja, uključujući velike slike uvezene iz Markdowna i slike s fiksnom širinom u pikselima. Širina **100%** koristi raspoloživi prostor unutar tog okvira. Popravak čuva omjer slike, manje odabrane širine, poveznice i potpise; ne reže sliku niti povećava male slike.
 
