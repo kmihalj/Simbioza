@@ -230,6 +230,7 @@ final class E2eApplicationConfigurationTest extends TestCase
         foreach (['aai', 'dabar', 'srce-sup'] as $privateId) {
             $this->assertDirectoryDoesNotExist($this->root . '/data/themes/' . $privateId);
         }
+
         $this->assertFileExists($this->root . '/data/themes/simbioza-blueprint/assets/hero-light.svg');
     }
 
@@ -257,10 +258,10 @@ final class E2eApplicationConfigurationTest extends TestCase
         try {
             \HFClean\Tools\configureE2eApplication($this->root);
             $this->fail('Custom theme storage must be rejected before import.');
-        } catch (\RuntimeException $exception) {
+        } catch (\RuntimeException $runtimeException) {
             $this->assertSame(
                 'E2E theme storage must remain inside the disposable project.',
-                $exception->getMessage(),
+                $runtimeException->getMessage(),
             );
         }
 
