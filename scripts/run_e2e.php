@@ -30,7 +30,12 @@ use AaiEduHr\HeartPhrameModuleApi\Service\ApiScopeRegistry;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthApiKeyService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthSettingsService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
+use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeArchiveService;
+use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeAssetLibrary;
+use AaiEduHr\HeartPhrameModuleTheme\Service\ThemeConfigRepository;
 use HeartPhrame\App;
+use HeartPhrame\Config\Config;
+use HeartPhrame\Helper\Helper;
 use PDO;
 use RuntimeException;
 use Throwable;
@@ -181,6 +186,7 @@ function assertEmptyE2eNetworkDatabase(string $database): void
  */
 function configureE2eApplication(string $projectDirectory): void
 {
+    $projectDirectory = assertSafeE2eProject($projectDirectory, sys_get_temp_dir());
     $configPath = $projectDirectory . '/config/app.php';
     $configSource = file_get_contents($configPath);
     if (!is_string($configSource)) {
@@ -297,7 +303,9 @@ function configureE2eApplication(string $projectDirectory): void
     //
     // HR: Izdvojena aplikacija koristi samo provjerene javne predloške,
     //     i kada razvojna instalacija čuva privatne ili uređene teme.
-    $themeDirectory = dirname(__DIR__) . '/resources/installation/theme';
+    $themeDirectory = is_file($projectDirectory . '/resources/installation/theme/collection.json')
+    ? $projectDirectory . '/resources/installation/theme'
+    : dirname(__DIR__) . '/resources/installation/theme';
     $themeManifest = json_decode(
         (string)file_get_contents($themeDirectory . '/collection.json'),
         true,
@@ -344,6 +352,55 @@ function configureE2eApplication(string $projectDirectory): void
         ) === false
     ) {
         throw new RuntimeException('E2E public themes could not be configured.');
+    }
+
+    // EN: Exercise the real complete importer, not development-site files that a clean checkout does not contain.
+    //     Pin every configuration layer to the disposable project and restore the caller's environment afterward.
+    //
+    // HR: Koristimo stvarni potpuni uvoz umjesto razvojnih datoteka kojih nema u čistom izvornom paketu.
+    //     Sve konfiguracijske slojeve vežemo uz izdvojeni projekt, a zatim vraćamo prethodno okruženje.
+    $themeStore = $projectDirectory . '/data/themes';
+    if (is_link($projectDirectory . '/data') || is_link($themeStore)) {
+        throw new RuntimeException('E2E theme storage must not be a symbolic link.');
+    }
+
+    $themeEnvironment = [
+        'HPH_CONFIG_PATH' => getenv('HPH_CONFIG_PATH'),
+        'HPH_CONFIG_OVERRIDE_PATHS' => getenv('HPH_CONFIG_OVERRIDE_PATHS'),
+    ];
+    putenv('HPH_CONFIG_PATH=' . $projectDirectory . '/config');
+    putenv('HPH_CONFIG_OVERRIDE_PATHS');
+    try {
+        $themeRepository = new ThemeConfigRepository(
+            new Config(new Helper(), [], $projectDirectory),
+            dirname(__DIR__) . '/vendor/aaieduhr/heartphrame-module-theme',
+        );
+        // EN: Reject custom storage before deleting or importing any theme files.
+        //     The configured path and its existing parent must remain exactly inside this fixture.
+        //
+        // HR: Odbijamo prilagođenu pohranu prije brisanja ili uvoza bilo koje datoteke teme.
+        //     Podešena putanja i postojeći nadređeni direktorij moraju ostati točno unutar ovog projekta.
+        if (
+            $themeRepository->themesDirectoryPath(false) !== $themeStore
+            || (is_dir(dirname($themeStore)) && realpath(dirname($themeStore)) !== dirname($themeStore))
+        ) {
+            throw new RuntimeException('E2E theme storage must remain inside the disposable project.');
+        }
+
+        if (is_dir($themeStore)) {
+            removeMatrixDirectory($themeStore, $projectDirectory);
+        }
+
+        $themeImporter = new ThemeArchiveService($themeRepository, new ThemeAssetLibrary($themeRepository));
+        foreach (array_keys($publicThemes) as $id) {
+            if ($themeImporter->importFile($themeDirectory . '/' . $id . '.zip', true, true) !== $id) {
+                throw new RuntimeException('E2E public theme import returned a different identity: ' . $id);
+            }
+        }
+    } finally {
+        foreach ($themeEnvironment as $name => $value) {
+            putenv($value === false ? $name : $name . '=' . $value);
+        }
     }
 
     $themeSettingsPath = $projectDirectory . '/config/theme/settings.json';
