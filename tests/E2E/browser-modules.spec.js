@@ -1016,6 +1016,7 @@ test.describe('module browser surfaces', () => {
     Object.assign(target.components.hero, {
       inner_enabled: true, visual_enabled: true, visual_allow_overflow: true,
       visual_width_px: 650, visual_max_height_px: 320, visual_top_px: -64, visual_right_px: 24,
+      content_padding_top_px: 80,
     });
     await login(page, adminLogin, adminPassword);
     await page.setViewportSize({ width: 1600, height: 1000 });
@@ -1053,6 +1054,36 @@ test.describe('module browser surfaces', () => {
       expect(geometry.imageTop).toBeGreaterThanOrEqual(geometry.navigationBottom - 1);
       expect(geometry.imageHeight).toBeLessThanOrEqual(320);
       expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+
+      // EN: Deliberate overlap must not cover the navigation's actual pointer targets.
+      // HR: Namjerno zadiranje ukrasa ne smije prekriti stvarna mjesta klika u navigaciji.
+      const menuTargets = await page.evaluate(() => {
+        const visual = document.querySelector('.hph-hero__visual');
+        const navigation = document.querySelector('.hph-primary-navigation');
+        if (!(visual instanceof HTMLElement) || !(navigation instanceof HTMLElement)) return null;
+        visual.style.setProperty('--hph-hero-visual-top', '-144px');
+        const artwork = visual.getBoundingClientRect();
+        const targets = [...navigation.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])')]
+          .map((element) => {
+            const box = element.getBoundingClientRect();
+            const x = box.left + box.width / 2;
+            const y = box.top + box.height / 2;
+            const hit = document.elementFromPoint(x, y);
+            return {
+              visible: box.width > 0 && box.height > 0,
+              overlapping: x >= artwork.left && x <= artwork.right && y >= artwork.top && y <= artwork.bottom,
+              reachable: hit === element || element.contains(hit),
+            };
+          }).filter((target) => target.visible);
+        return { targets, overlapping: targets.filter((target) => target.overlapping).length };
+      });
+      expect(menuTargets).not.toBeNull();
+      expect(menuTargets.targets.length).toBeGreaterThan(0);
+      expect(menuTargets.overlapping).toBeGreaterThan(0);
+      for (const menuTarget of menuTargets.targets) expect(menuTarget.reachable).toBe(true);
+      const search = page.getByRole('searchbox', { name: /Search workspaces|Pretraži područja/i });
+      await search.click();
+      await expect(search).toBeFocused();
     } finally {
       writeFileSync(themesPath, originalThemes);
       await page.goto('/settings/theme?theme=simbioza-blueprint');
@@ -1152,7 +1183,17 @@ test.describe('module browser surfaces', () => {
           await page.setViewportSize({ width, height: 1000 });
           for (const route of ['/', '/calendars', '/workspaces', '/settings/theme']) {
             await page.goto(route, { waitUntil: 'domcontentloaded' });
-            const descriptions = page.locator('[data-hph-support-surface]');
+            const plainHome = theme === 'standard' && route === '/';
+            const descriptions = plainHome
+              ? page.locator('[data-simbioza-home] > .card-body > p.lead').first()
+              : page.locator('[data-hph-support-surface]');
+            if (plainHome) {
+              // EN: Without a hero the original lead stays in its card; test its real foreground, not a hero marker.
+              // HR: Bez hero elementa izvorni opis ostaje u kartici; provjeravamo stvarnu boju, a ne hero oznaku.
+              await expect(page.locator('[data-hph-hero]')).toHaveCount(0);
+              await expect(descriptions).not.toHaveAttribute('data-hph-support-surface', /.+/);
+              expect(await descriptions.evaluate((element) => Boolean(element.closest('.card')))).toBe(true);
+            }
             await expect(descriptions.first(), `${theme} ${width} ${route}`).toBeVisible();
             for (const mode of ['light', 'dark']) {
               await page.evaluate((value) => { document.documentElement.dataset.hphTheme = value; }, mode);
@@ -1809,12 +1850,17 @@ test.describe('module browser surfaces', () => {
     const userDropdown = page.locator('li.nav-item.dropdown').filter({ hasText: creator.name });
     await userDropdown.locator(':scope > [data-bs-toggle="dropdown"]').click();
     const profileMenuItem = userDropdown.getByRole('link', { name: /My profile|Moj profil/i });
+    const myWorkMenuItem = userDropdown.getByRole('link', { name: /^(?:My work|Moj rad)$/i });
     const workspaceMenuItem = userDropdown.getByRole('link', { name: /My Workspace|Moje područje/i });
     await expect(profileMenuItem).toBeVisible();
+    await expect(myWorkMenuItem).toBeVisible();
+    await expect(myWorkMenuItem).toHaveAttribute('href', '/my-work');
     await expect(workspaceMenuItem).toBeVisible();
     await expect(workspaceMenuItem).toHaveAttribute('href', personalPath);
     const personalMenuOrder = await userDropdown.locator('a.dropdown-item').allTextContents();
     expect(personalMenuOrder.indexOf((await profileMenuItem.textContent()).trim()) + 1)
+      .toBe(personalMenuOrder.indexOf((await myWorkMenuItem.textContent()).trim()));
+    expect(personalMenuOrder.indexOf((await myWorkMenuItem.textContent()).trim()) + 1)
       .toBe(personalMenuOrder.indexOf((await workspaceMenuItem.textContent()).trim()));
 
     await page.goto('/auth/logout');
