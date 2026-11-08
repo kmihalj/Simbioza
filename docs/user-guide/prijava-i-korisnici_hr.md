@@ -10,21 +10,21 @@ Ove upute vode administratora kroz sve postavke prijave, korisničke atribute, g
 
 ## Sadržaj
 
-1.  [Postavke prijave](#1-postavke-prijave)
-2.  [Atributi korisnika](#2-atributi-korisnika)
-3.  [Grupe](#3-grupe)
-4.  [Korisnici i lokalni računi](#4-korisnici-i-lokalni-računi)
-5.  [Lokalna prijava i registracija](#5-lokalna-prijava-i-registracija)
-6.  [Preuzimanje korisnika](#6-preuzimanje-korisnika)
-7.  [API ključevi](#7-api-ključevi)
-8.  [Zajednički postupak za SSO](#8-zajednički-postupak-za-sso-profile)
-9.  [SAML](#9-saml)
-10. [SAML proxy](#10-saml-proxy-i-podprofili)
-11. [CAS](#11-cas)
-12. [OIDC](#12-oidc)
-13. [OAuth2](#13-oauth2)
-14. [Osobni profil: sigurnost i pristup](#14-osobni-profil-sigurnost-i-pristup)
-15. [Provjera i sigurnosne preporuke](#15-završna-provjera-i-sigurnosne-preporuke)
+1.  [Postavke prijave](#postavke-prijave)
+2.  [Atributi korisnika](#atributi)
+3.  [Grupe](#grupe)
+4.  [Korisnici i lokalni računi](#korisnici)
+5.  [Lokalna prijava i registracija](#lokalna-prijava)
+6.  [Preuzimanje korisnika](#preuzimanje)
+7.  [API ključevi](#api-kljucevi)
+8.  [Zajednički postupak za SSO](#sso)
+9.  [SAML](#saml)
+10. [SAML proxy](#saml-proxy)
+11. [CAS](#cas)
+12. [OIDC](#oidc)
+13. [OAuth2](#oauth2)
+14. [Osobni profil: sigurnost i pristup](#osobni-profil)
+15. [Provjera i sigurnosne preporuke](#provjera)
 
 <a id="postavke-prijave"></a>
 

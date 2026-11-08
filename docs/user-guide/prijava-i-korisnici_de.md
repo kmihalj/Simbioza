@@ -17,21 +17,21 @@ Dieses Handbuch führt einen Administrator durch alle Anmeldeeinstellungen, Benu
 
 ## Inhalt
 
-1.  [Anmeldeeinstellungen](#1-login-settings)
-2.  [Benutzerattribute](#2-user-attributes)
-3.  [Gruppen](#3-groups)
-4.  [Benutzer und lokale Konten](#4-users-and-local-accounts)
-5.  [Lokale Anmeldung und Registrierung](#5-local-login-and-registration)
-6.  [Identitätswechsel](#6-impersonation)
-7.  [API Schlüssel](#7-api-keys)
-8.  [Allgemeiner SSO-Workflow](#8-common-sso-workflow)
-9.  [SAML](#9-saml)
-10. [SAML-Proxy](#10-saml-proxy-and-child-profiles)
-11. [CAS](#11-cas)
-12. [OIDC](#12-oidc)
-13. [OAuth2](#13-oauth2)
-14. [Persönliches Profil: Sicherheit und Zugang](#14-personal-profile-security-and-access)
-15. [Verifizierungs- und Sicherheitscheckliste](#15-verification-and-security-checklist)
+1.  [Anmeldeeinstellungen](#login-settings)
+2.  [Benutzerattribute](#attributes)
+3.  [Gruppen](#groups)
+4.  [Benutzer und lokale Konten](#users)
+5.  [Lokale Anmeldung und Registrierung](#local-login)
+6.  [Identitätswechsel](#impersonation)
+7.  [API Schlüssel](#api-keys)
+8.  [Allgemeiner SSO-Workflow](#sso)
+9.  [SAML](#saml)
+10. [SAML-Proxy](#saml-proxy)
+11. [CAS](#cas)
+12. [OIDC](#oidc)
+13. [OAuth2](#oauth2)
+14. [Persönliches Profil: Sicherheit und Zugang](#personal-profile)
+15. [Verifizierungs- und Sicherheitscheckliste](#verification)
 
 <a id="login-settings"></a>
 

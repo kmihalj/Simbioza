@@ -31,7 +31,7 @@ Open **Settings → Theme**, choose its name in **Active theme**, and save the s
 
 Institution-specific presets are no longer included in the public collection. A one-time upgrade cleanup retires only unchanged copies recorded as bundled; edited themes and explicit local preservation choices remain. If a retired theme was active, the site uses Simbioza, or Standard when Simbioza is unavailable.
 
-[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip)
+[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.47/Simbioza-0.3.47-themes.zip)
 
 Starting with release 0.3.36, upgrades add missing bundled themes once. Administrator theme changes and local preservation choices are preserved. Deleting an additional theme prevents later upgrades from restoring it. The import receipt is stored in Theme configuration and included in site backup/restore. You can still reimport a theme manually from its ZIP.
 

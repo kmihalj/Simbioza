@@ -41,7 +41,7 @@ PHP muss **8.2 oder neuer** sein, Composer muss Version 2 sein und PHP benötigt
 
 <a id="2-download-a-clean-simbioza-0339-release"></a>
 
-## 2. Laden Sie eine saubere Version Simbioza 0.3.46 herunter
+## 2. Laden Sie eine saubere Version Simbioza 0.3.47 herunter
 
 Wählen Sie **ein** Anwendungsverzeichnis. Unter Linux:
 
@@ -63,7 +63,7 @@ Führen Sie den vollständigen Download-Block als Ihr normales Betreuerkonto aus
 test ! -e "$SIMBIOZA_APP_ROOT" && test ! -L "$SIMBIOZA_APP_ROOT" &&
 sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 0755 "$SIMBIOZA_APP_ROOT" &&
 SIMBIOZA_FETCH_DIR="$(mktemp -d)" &&
-git clone --depth 1 --branch 0.3.46 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
+git clone --depth 1 --branch 0.3.47 https://github.com/kmihalj/Simbioza.git "$SIMBIOZA_FETCH_DIR/source" &&
 rsync -a --exclude=.git/ "$SIMBIOZA_FETCH_DIR/source/" "$SIMBIOZA_APP_ROOT/" &&
 cd "$SIMBIOZA_APP_ROOT" &&
 head -n 1 VERSION &&
@@ -72,7 +72,7 @@ composer check-platform-reqs &&
 mkdir -p data/cache data/logs data/sessions data/setup-requests data/tmp
 ```
 
-Erwarten Sie `0.3.46` und `success` für jede Plattformanforderung. Der Git-Hinweis **detached HEAD** ist beim Auschecken eines Release-Tags normal. Führen Sie Composer nicht mit `sudo` aus, kopieren Sie nicht die Konfiguration oder Datenbank einer anderen Site, schließen Sie `.git/` nicht in die bereitgestellte Anwendung ein und verwenden Sie `--no-dev` hier nicht. Bei Version 0.3.0 handelt es sich um eine Neuinstallationsbasislinie, nicht um ein Upgrade von 0.2.x.
+Erwarten Sie `0.3.47` und `success` für jede Plattformanforderung. Der Git-Hinweis **detached HEAD** ist beim Auschecken eines Release-Tags normal. Führen Sie Composer nicht mit `sudo` aus, kopieren Sie nicht die Konfiguration oder Datenbank einer anderen Site, schließen Sie `.git/` nicht in die bereitgestellte Anwendung ein und verwenden Sie `--no-dev` hier nicht. Bei Version 0.3.0 handelt es sich um eine Neuinstallationsbasislinie, nicht um ein Upgrade von 0.2.x.
 
 Das Standardkonfigurationsstammverzeichnis ist `config/` (`HPH_CONFIG_PATH`), mit einem Unterverzeichnis für jedes Modul. Persistente Dateien gehören unter `data/`. Nur `public/` wird vom Webserver verfügbar gemacht. Behalten Sie die Standardpfade für diese erste Installation bei; Externe Konfigurationsebenen sind eine erweiterte Option und keine Voraussetzung.
 

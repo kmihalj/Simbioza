@@ -10,21 +10,21 @@ This guide takes an administrator through every login setting, user attribute, g
 
 ## Contents
 
-1.  [Login settings](#1-login-settings)
-2.  [User attributes](#2-user-attributes)
-3.  [Groups](#3-groups)
-4.  [Users and local accounts](#4-users-and-local-accounts)
-5.  [Local login and registration](#5-local-login-and-registration)
-6.  [Impersonation](#6-impersonation)
-7.  [API keys](#7-api-keys)
-8.  [Common SSO workflow](#8-common-sso-workflow)
-9.  [SAML](#9-saml)
-10. [SAML proxy](#10-saml-proxy-and-child-profiles)
-11. [CAS](#11-cas)
-12. [OIDC](#12-oidc)
-13. [OAuth2](#13-oauth2)
-14. [Personal profile: security and access](#14-personal-profile-security-and-access)
-15. [Verification and security checklist](#15-verification-and-security-checklist)
+1.  [Login settings](#login-settings)
+2.  [User attributes](#attributes)
+3.  [Groups](#groups)
+4.  [Users and local accounts](#users)
+5.  [Local login and registration](#local-login)
+6.  [Impersonation](#impersonation)
+7.  [API keys](#api-keys)
+8.  [Common SSO workflow](#sso)
+9.  [SAML](#saml)
+10. [SAML proxy](#saml-proxy)
+11. [CAS](#cas)
+12. [OIDC](#oidc)
+13. [OAuth2](#oauth2)
+14. [Personal profile: security and access](#personal-profile)
+15. [Verification and security checklist](#verification)
 
 <a id="login-settings"></a>
 

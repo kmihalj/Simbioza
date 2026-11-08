@@ -1,5 +1,7 @@
 # Simbioza 0.3.46 — personal work and clearer content navigation
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.47](release-0.3.47_en.md).
+
 ## Return to your work
 
 The account menu now includes **My work**, with separate views for recent contributions, drafts and content awaiting your publication review. Workspace pages, standalone HTML pages and surveys have independent, bounded lists. Every request checks current permissions; past authorship does not restore revoked access. Survey collaborators' successful edits and review actions are recorded with their own timestamps, without changing ownership or linking survey respondents to this authoring history.

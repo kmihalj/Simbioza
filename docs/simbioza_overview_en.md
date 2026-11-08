@@ -51,7 +51,7 @@ Starting with release 0.3.36, upgrades add missing bundled themes once. Existing
 
 Institution-specific presets are no longer included in the public collection. A one-time upgrade cleanup retires only unchanged copies recorded as bundled; edited themes and explicit local preservation choices remain. If a retired theme was active, the site uses Simbioza, or Standard when Simbioza is unavailable.
 
-[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip)
+[Download the ZIP collection of all 23 themes](https://github.com/kmihalj/Simbioza/releases/download/0.3.47/Simbioza-0.3.47-themes.zip)
 
 Extract the collection, then select an individual ZIP from `themes/` in **Import complete theme**. The collection also contains a gallery that opens offline. Do not upload the whole collection as a single theme.
 

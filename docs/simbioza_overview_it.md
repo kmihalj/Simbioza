@@ -64,7 +64,7 @@ A partire dalla versione 0.3.36, gli aggiornamenti aggiungono una sola volta i t
 
 I temi specifici delle istituzioni non fanno più parte della raccolta pubblica. Una pulizia una tantum durante l’aggiornamento rimuove solo le copie non modificate registrate come incluse; i temi modificati e quelli espressamente protetti dalla configurazione locale vengono conservati. Se era attivo un tema rimosso, il sito usa Simbioza oppure Standard quando Simbioza non è disponibile.
 
-[Scaricare la raccolta ZIP di tutti i 23 temi](https://github.com/kmihalj/Simbioza/releases/download/0.3.46/Simbioza-0.3.46-themes.zip)
+[Scaricare la raccolta ZIP di tutti i 23 temi](https://github.com/kmihalj/Simbioza/releases/download/0.3.47/Simbioza-0.3.47-themes.zip)
 
 Estrarre la raccolta, quindi selezionare un singolo ZIP da `themes/` in **Importa tema completo**. La raccolta contiene anche una galleria consultabile senza connessione. Non caricare l'intera raccolta come un unico tema.
 

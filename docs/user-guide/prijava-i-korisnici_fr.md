@@ -17,21 +17,21 @@ Ce guide présente à l'administrateur tous les paramètres de connexion, attrib
 
 ## Contenu
 
-1.  [Paramètres de connexion](#1-login-settings)
-2.  [Attributs utilisateur](#2-user-attributes)
-3.  [Groupes](#3-groups)
-4.  [Utilisateurs et comptes locaux](#4-users-and-local-accounts)
-5.  [Connexion et enregistrement locaux](#5-local-login-and-registration)
-6.  [Usurpation d'identité](#6-impersonation)
-7.  [Touches API](#7-api-keys)
-8.  [Flux de travail SSO commun](#8-common-sso-workflow)
-9.  [SAML](#9-saml)
-10. [SAML proxy](#10-saml-proxy-and-child-profiles)
-11. [CAS](#11-cas)
-12. [OIDC](#12-oidc)
-13. [OAuth2](#13-oauth2)
-14. [Profil personnel : sécurité et accès](#14-personal-profile-security-and-access)
-15. [Liste de contrôle de vérification et de sécurité](#15-verification-and-security-checklist)
+1.  [Paramètres de connexion](#login-settings)
+2.  [Attributs utilisateur](#attributes)
+3.  [Groupes](#groups)
+4.  [Utilisateurs et comptes locaux](#users)
+5.  [Connexion et enregistrement locaux](#local-login)
+6.  [Usurpation d'identité](#impersonation)
+7.  [Touches API](#api-keys)
+8.  [Flux de travail SSO commun](#sso)
+9.  [SAML](#saml)
+10. [SAML proxy](#saml-proxy)
+11. [CAS](#cas)
+12. [OIDC](#oidc)
+13. [OAuth2](#oauth2)
+14. [Profil personnel : sécurité et accès](#personal-profile)
+15. [Liste de contrôle de vérification et de sécurité](#verification)
 
 <a id="login-settings"></a>
 

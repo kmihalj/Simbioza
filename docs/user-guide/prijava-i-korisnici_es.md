@@ -17,21 +17,21 @@ Esta guía guía al administrador a través de cada configuración de inicio de 
 
 ## Contenido
 
-1.  [Configuración de inicio de sesión](#1-login-settings)
-2.  [Atributos de usuario](#2-user-attributes)
-3.  [Grupos](#3-groups)
-4.  [Usuarios y cuentas locales](#4-users-and-local-accounts)
-5.  [Inicio de sesión y registro local](#5-local-login-and-registration)
-6.  [Suplantación](#6-impersonation)
-7.  [clave de APIs](#7-api-keys)
-8.  [Flujo de trabajo común SSO](#8-common-sso-workflow)
-9.  [SAML](#9-saml)
-10. [SAML proxy](#10-saml-proxy-and-child-profiles)
-11. [CAS](#11-cas)
-12. [OIDC](#12-oidc)
-13. [OAuth2](#13-oauth2)
-14. [Perfil personal: seguridad y acceso](#14-personal-profile-security-and-access)
-15. [Lista de verificación y seguridad](#15-verification-and-security-checklist)
+1.  [Configuración de inicio de sesión](#login-settings)
+2.  [Atributos de usuario](#attributes)
+3.  [Grupos](#groups)
+4.  [Usuarios y cuentas locales](#users)
+5.  [Inicio de sesión y registro local](#local-login)
+6.  [Suplantación](#impersonation)
+7.  [clave de APIs](#api-keys)
+8.  [Flujo de trabajo común SSO](#sso)
+9.  [SAML](#saml)
+10. [SAML proxy](#saml-proxy)
+11. [CAS](#cas)
+12. [OIDC](#oidc)
+13. [OAuth2](#oauth2)
+14. [Perfil personal: seguridad y acceso](#personal-profile)
+15. [Lista de verificación y seguridad](#verification)
 
 <a id="login-settings"></a>
 

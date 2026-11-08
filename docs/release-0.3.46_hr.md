@@ -1,5 +1,7 @@
 # Simbioza 0.3.46 — moj rad i preglednije upravljanje sadržajem
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.47](release-0.3.47_hr.md).
+
 ## Vratite se svojem radu
 
 Osobni izbornik sada sadrži **Moj rad**, sa zasebnim pregledima nedavnih doprinosa, nacrta i sadržaja koji čeka vaš pregled prije objave. Stranice u područjima, samostalne HTML stranice i ankete imaju vlastite ograničene popise. Svaki zahtjev provjerava trenutačne ovlasti; prethodno autorstvo ne vraća opozvan pristup. Uspješne izmjene i pregledi suradnika na anketama bilježe se s vlastitim vremenom, bez promjene vlasništva i bez povezivanja ispitanika s tom autorskom evidencijom.
