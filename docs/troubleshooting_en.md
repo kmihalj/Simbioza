@@ -57,6 +57,16 @@ failure requires finding the missing token/session boundary. Bearer API routes
 have their own authentication policy; a browser session does not authorize an
 API request. See the [API contract](api-v1-contract_en.md).
 
+## Workspace HTML export stops downloading
+
+If an export stops after the download starts, compare the received bytes with
+the ZIP size in the response and check the web PHP, server and proxy logs for
+the request. If retrying the download produces HTTP 403 and the application
+logs an invalid CSRF token, reopen the export form before submitting it again.
+The Workspace guide covers the applicable time limits and how to verify the
+downloaded ZIP.
+[Troubleshooting large exports](https://github.com/kmihalj/simbioza-module-workspace/blob/0.3.8/docs/index_en.md#troubleshooting-large-exports).
+
 ## HTML Editor, scripts or appearance
 
 For a form field, compare asset loading, the editor's form synchronization and

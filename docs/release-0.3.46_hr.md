@@ -1,6 +1,6 @@
 # Simbioza 0.3.46 — moj rad i preglednije upravljanje sadržajem
 
-> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.47](release-0.3.47_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.48](release-0.3.48_hr.md).
 
 ## Vratite se svojem radu
 

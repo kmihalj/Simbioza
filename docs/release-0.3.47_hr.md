@@ -1,5 +1,7 @@
 # Simbioza 0.3.47 — ispravna navigacija u uputama
 
+> Povijesna bilješka izdanja. Pogledajte [aktualne upute za instalaciju](installation_hr.md) i [Simbiozu 0.3.48](release-0.3.48_hr.md).
+
 ## Poveznice sadržaja korisničkih uputa
 
 Sadržaj upute **Prijava i korisnici** sada ispravno otvara odabrani odjeljak. Svih **90 poveznica sadržaja** na hrvatskom, engleskom, njemačkom, španjolskom, francuskom i talijanskom koristi postojeće stalne oznake odjeljaka, uključujući odjeljke čiji naslovi sadrže brojeve ili slova s dijakritičkim znakovima.

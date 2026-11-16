@@ -160,7 +160,7 @@
                 "aaieduhr/heartphrame-module-task": "^0.3.5",
                 "aaieduhr/simbioza-module-confluence-import": "^0.3.3",
                 "aaieduhr/simbioza-module-user": "^0.3.6",
-                "aaieduhr/simbioza-module-workspace": "^0.3.6",
+                "aaieduhr/simbioza-module-workspace": "^0.3.8",
                 "aaieduhr/simbioza-module-workspace-search": "^0.3.4"
             },
             "development-tools": {

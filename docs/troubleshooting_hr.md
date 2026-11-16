@@ -56,6 +56,16 @@ pogreške traži pronalazak izgubljenog tokena/sesije. Bearer API rute imaju
 vlastitu autentikaciju; sesija preglednika ne daje pristup API-ju.
 Vidi [API ugovor](api-v1-contract_hr.md).
 
+## Prekida se preuzimanje HTML izvoza područja
+
+Ako se izvoz prekine nakon početka preuzimanja, usporedite primljeni broj
+bajtova s veličinom ZIP-a iz odgovora i za taj zahtjev pregledajte zapise web
+PHP-a, poslužitelja i proxyja. Ako preglednik pri ponavljanju dobije HTTP 403,
+a aplikacija zabilježi nevažeći CSRF token, ponovno otvorite obrazac za izvoz
+pa ga pošaljite. Vodič Workspace modula opisuje vremenska ograničenja i
+provjeru preuzetog ZIP-a.
+[Rješavanje problema s velikim izvozom](https://github.com/kmihalj/simbioza-module-workspace/blob/0.3.8/docs/index_hr.md#rje%C5%A1avanje-problema-s-velikim-izvozom).
+
 ## HTML Editor, skripte ili izgled
 
 Za polje obrasca usporedite učitavanje datoteka, sinkronizaciju editora s formom

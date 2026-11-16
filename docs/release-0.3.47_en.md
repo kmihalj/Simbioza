@@ -1,5 +1,7 @@
 # Simbioza 0.3.47 — reliable guide navigation
 
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.48](release-0.3.48_en.md).
+
 ## Contents links in the user guide
 
 The table of contents in **Login and users** now opens the selected section correctly. All **90 contents links** across Croatian, English, German, Spanish, French and Italian use the existing stable section anchors, including sections whose headings contain numbers or accented characters.

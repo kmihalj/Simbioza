@@ -1,6 +1,6 @@
 # Simbioza 0.3.46 — personal work and clearer content navigation
 
-> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.47](release-0.3.47_en.md).
+> Historical release notes. See the [current installation guide](installation_en.md) and [Simbioza 0.3.48](release-0.3.48_en.md).
 
 ## Return to your work
 
