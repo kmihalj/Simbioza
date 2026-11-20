@@ -6,6 +6,7 @@ declare(strict_types=1);
 //
 // HR: Paketni prijevodi aplikacije; instalirani paketi žive u data/languages/catalogs/.
 return [
+  'MD Editor' => 'MD Editor',
   'Otvori' => 'Otvori',
   'Prethodna stranica' => 'Prethodna stranica',
   'Sljedeća stranica' => 'Sljedeća stranica',

@@ -1,4 +1,4 @@
-# Editar páginas
+# HTML Editor
 
 <a id="editing-pages"></a>
 

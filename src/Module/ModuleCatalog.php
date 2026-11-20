@@ -101,6 +101,15 @@ final readonly class ModuleCatalog
                     '20260625174127_install_editor_html_module_schema',
                 ],
             ),
+            'editor-md' => $this->definition(
+                'aaieduhr/heartphrame-module-editor-md',
+                'MD Editor',
+                'MD Editor',
+                optional: true,
+                dependencies: ['auth'],
+                migrations: ['20261118000100_install_editor_md_module_schema'],
+                tables: ['editor_md_documents', 'editor_md_versions', 'editor_md_assets'],
+            ),
             'task' => $this->definition(
                 'aaieduhr/heartphrame-module-task',
                 'Zadaci',

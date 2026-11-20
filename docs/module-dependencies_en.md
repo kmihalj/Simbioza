@@ -50,6 +50,7 @@ API routes, events or Backup providers without becoming dependencies of the core
 | API | Framework, Auth, ORM | Backup, Menu, Notification, Theme |
 | Calendar | Framework, Auth, ORM | Backup, API, HTML Editor, Menu, Notification, Theme, Workspace |
 | HTML Editor | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | Backup, Menu, Theme, Calendar, Workspace, Task, Comment, API |
+| MD Editor | Framework, Auth, ORM, `ext-dom`, `ext-fileinfo`, `ext-mbstring`, `ext-zip` | Backup, Menu, Theme, Workspace, Comment, API |
 | Email | Framework, Auth, ORM | Audit, Backup |
 | Notification | Framework, Auth, ORM | Backup, API, Email |
 | Survey | `ext-json`, `ext-dom`, `ext-mbstring`, `ext-pdo`, `ext-openssl`, Framework, ORM, Auth, HTML Editor | Workspace, API, Backup, Theme, Menu, Notification, Email, Audit |
@@ -125,7 +126,8 @@ Each link opens the module-owned beginner guide, with a complete minimal PHP pro
 | Backup | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-backup/-/blob/main/docs/how_to_en.md) | `0.3.6` |
 | Calendar | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-calendar/-/blob/main/docs/how_to_en.md) | `0.3.5` |
 | Comment | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-comment/-/blob/main/docs/how_to_en.md) | `0.3.5` |
-| HTML Editor | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/how_to_en.md) | `0.3.19` |
+| HTML Editor | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor/-/blob/main/docs/how_to_en.md) | `0.3.21` |
+| MD Editor | [Installation](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-md-editor/-/blob/0.3.0/docs/installation_en.md) | `0.3.0` |
 | Email | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-email/-/blob/main/docs/how_to_en.md) | `0.3.7` |
 | Menu | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-menu/-/blob/main/docs/how_to_en.md) | `0.3.6` |
 | Notification | [How-to](https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-notification/-/blob/main/docs/how_to_en.md) | `0.3.4` |

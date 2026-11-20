@@ -283,6 +283,11 @@
         "sha256": "5bb0c06509fcc7faf96782f0f18e0b19612a78f6da137592084df82f4ff05d2e",
         "original_name": "calendar-05-hr.jpg"
     },
+    "16eda46b-9468-5ca9-b315-d7cf8e243c31": {
+        "file": "docs/user-guide/images/md-editor-visual-hr.jpg",
+        "sha256": "48d0e7e41afe83b97c3b143eabd31d14aa4eb607b956a5df979c5d1b3b49964f",
+        "original_name": "md-editor-visual-hr.jpg"
+    },
     "17b2889e-97f8-597d-96a7-bc41f0131eb1": {
         "file": "docs/user-guide/images/menu-guide-08-en.jpg",
         "sha256": "70237f0296980d6e62cc9e841f41e5b43a7280fb47553d7a433147b288383e79",
@@ -562,6 +567,11 @@
     "300f076e-dbc4-4f09-8c3d-2ba44d50229b": {
         "file": "docs/user-guide/images/300f076e-dbc4-4f09-8c3d-2ba44d50229b.png",
         "sha256": "0cacc5985f3afdac66e5a6699893e64d5b2005cc74d62a58c9936d3e43ce5941"
+    },
+    "301c3d48-0f88-5d52-a451-4b6627f00b76": {
+        "file": "docs/user-guide/images/md-editor-workspace-en.jpg",
+        "sha256": "f8356dddf6fd18e6efbd8523a502d51488e9d51893f78488c0f4d6fea3be5fb0",
+        "original_name": "md-editor-workspace-en.jpg"
     },
     "30b06cdc-c758-4fec-9b88-86db42d016dd": {
         "file": "docs/user-guide/images/30b06cdc-c758-4fec-9b88-86db42d016dd.png",
@@ -1083,6 +1093,11 @@
         "sha256": "86820164ec0f14dd606aadcb43d4d21f4d4c30ac1221cadef4fed54eceed60b2",
         "original_name": "user-accessibility-reading-en.jpg"
     },
+    "55d67edd-a9cb-5df4-bc7c-2b07ad0ff2dc": {
+        "file": "docs/user-guide/images/md-editor-attachments-hr.jpg",
+        "sha256": "b996e1dae87e897cb35f237a65f2b2a6a15aef73c025b74a274e900225ebf38a",
+        "original_name": "md-editor-attachments-hr.jpg"
+    },
     "563d105c-43e6-5962-8882-3f37b27dabb1": {
         "file": "docs/user-guide/images/theme-guide-09-hr.jpg",
         "sha256": "1320d9547d197071bbd4dfa0abd496ff73d5385bcd456831be4655937aa2ac1c",
@@ -1146,6 +1161,11 @@
         "file": "docs/user-guide/images/5981d7fa-cc7e-44e9-a1f5-45c0b601f682.png",
         "sha256": "cc1a9deb6cd4a3b83b4492d86753663f6a73df2164a5442d199b3478fb817eaf"
     },
+    "59e58ea6-72d3-5ea1-bd30-77b8c0f0b754": {
+        "file": "docs/user-guide/images/md-editor-create-en.jpg",
+        "sha256": "9835fa362f47260ea38696d21f816176743ed0690ec5f5c1d2e78a0c09945052",
+        "original_name": "md-editor-create-en.jpg"
+    },
     "5a2692e0-9af5-5e14-b2e8-af7e72877a09": {
         "file": "docs/user-guide/images/admin-guide-12-hr.jpg",
         "sha256": "4c8f42be92dff3605eb1b50bd59b89da95b9268bb89261c0525e8d8ff08c3f52",
@@ -1159,9 +1179,19 @@
         "file": "docs/user-guide/images/5ad6b69e-b673-405e-baea-f3ba5f059030.png",
         "sha256": "4a019d47653f9012ab92872ecf89870922f10eaf26b5d142c9e23d13660c8bad"
     },
+    "5b29287d-400e-562e-a2bf-49787451f3db": {
+        "file": "docs/user-guide/images/md-editor-create-hr.jpg",
+        "sha256": "972cb71e225fc2050f02047a40d5d8638dc6f2e52caae9abad7ec7d404ccc898",
+        "original_name": "md-editor-create-hr.jpg"
+    },
     "5b3d6291-7bcd-43b5-b976-bf5eeee6ab55": {
         "file": "docs/user-guide/images/5b3d6291-7bcd-43b5-b976-bf5eeee6ab55.jpg",
         "sha256": "7fb4c2db801a277531ea3d5a60fc8112121cb2372d3950a45a6c8097e2949885"
+    },
+    "5cdfa651-53e7-5885-a02a-d8c8c209ca95": {
+        "file": "docs/user-guide/images/md-editor-workspace-hr.jpg",
+        "sha256": "9c068926abd56edb31712d5c416cb66aed48d2b5c30caed3aa2ea690e63eb5ed",
+        "original_name": "md-editor-workspace-hr.jpg"
     },
     "5d035424-cc31-56b9-8cc4-3f4927a3273f": {
         "file": "docs/user-guide/images/menu-guide-07-en.jpg",
@@ -1430,6 +1460,11 @@
         "file": "docs/user-guide/images/user-notifications-hr.jpg",
         "sha256": "d00728501e8b9b7772bf81e8efc152c75483430802cb149389320128008e4ade",
         "original_name": "user-notifications-hr.jpg"
+    },
+    "78ea5e38-e206-5908-9637-525be8ffd2ee": {
+        "file": "docs/user-guide/images/md-editor-table-hr.jpg",
+        "sha256": "7cd81c3457561d4eedd366854b7bb21c3fcdc9caa503fc35282b5480088685e9",
+        "original_name": "md-editor-table-hr.jpg"
     },
     "792795a7-c5c8-4a6c-ae89-e9515f136804": {
         "file": "docs/user-guide/images/792795a7-c5c8-4a6c-ae89-e9515f136804.jpg",
@@ -1773,6 +1808,11 @@
         "sha256": "ed376815c360bac035fb265e1e3cfc7044ec1291f594fd6aaf2b3fb8d2a574fc",
         "original_name": "menu-guide-04-hr.jpg"
     },
+    "9cec79d2-1767-5b86-8289-40547cb645cc": {
+        "file": "docs/user-guide/images/md-editor-source-en.jpg",
+        "sha256": "7a35bbb9350dc14efe2d229c4555647a88bac04fe6fc10d0ac8635c75f0112b9",
+        "original_name": "md-editor-source-en.jpg"
+    },
     "9d03cfb2-def1-579e-a6d0-e8030581b32e": {
         "file": "docs/user-guide/images/calendar-09-hr.jpg",
         "sha256": "bf194228dc2fde6b1f27b54f61d2bf40245bd7cc1d4c941405db913dfc772c1c",
@@ -2040,6 +2080,11 @@
         "sha256": "c49b689d260ac5b9c3d062a5de1e91e5ca91d5188cee8d68ccb7f791cfb44751",
         "original_name": "search-filters_en.jpg"
     },
+    "ba383928-86ca-5bae-8d96-29b18959377b": {
+        "file": "docs/user-guide/images/md-editor-visual-en.jpg",
+        "sha256": "5b27c267217c90c0eaec368bd7cb6ef963922cec378a83bda2a3ab1eb730edc6",
+        "original_name": "md-editor-visual-en.jpg"
+    },
     "ba5b7cce-78d6-4ad3-9602-6720d6b22568": {
         "file": "docs/user-guide/images/ba5b7cce-78d6-4ad3-9602-6720d6b22568.jpg",
         "sha256": "e4a3d381d29309b9e26073ad883352423aac45911fc1c381999a5ca8058c1934"
@@ -2280,6 +2325,11 @@
         "sha256": "7057ba56c52106c98c14256928d52f3ca40c6360362fca9afa3985d8d125fde2",
         "original_name": "page-edit-01-hr.jpg"
     },
+    "cca02291-d285-5f86-ae3a-c8fd7a23c979": {
+        "file": "docs/user-guide/images/md-editor-table-en.jpg",
+        "sha256": "061b210d4129fe228f5da48a2b54645b4812683d38e1e2d26abe94a32590d5ec",
+        "original_name": "md-editor-table-en.jpg"
+    },
     "ccef647c-7636-531e-8f1b-43e0911e82cd": {
         "file": "docs/user-guide/images/theme-guide-16-hr.jpg",
         "sha256": "8976b488d2d1e9ff65354c058ccd95bee80b7e5cb294a7284c6b75c1582aa5cd",
@@ -2444,6 +2494,11 @@
         "file": "docs/user-guide/images/d9c84f55-cf37-412c-af31-ee42ccb66267.png",
         "sha256": "eaa78318e2ee9a03c93dab4d40fcce40a74fb1d8af32c7fb3a9f5e619a64ad73"
     },
+    "da1c6dc9-a1e8-589a-87b3-0e183b440408": {
+        "file": "docs/user-guide/images/md-editor-source-hr.jpg",
+        "sha256": "cee273efbbecfb3f3441a1a5ecf874c918e849dc80d1b12ca446ac6575272ee2",
+        "original_name": "md-editor-source-hr.jpg"
+    },
     "da265d6a-b1ca-535c-8de0-808d91915ad8": {
         "file": "docs/user-guide/images/menu-guide-04-en.jpg",
         "sha256": "7a8765418bb5b8f01221e365a37271f0466779a1fa527ce72be96f44994f419d",
@@ -2564,6 +2619,11 @@
     "e199d462-e597-4e15-8123-99314db301d1": {
         "file": "docs/user-guide/images/e199d462-e597-4e15-8123-99314db301d1.jpg",
         "sha256": "d6b2e20386cc22fbf70fe8ee3f5796aae3e45a2c0ef5d8607ba31dfd849761ce"
+    },
+    "e1ea8934-4fb4-5a0d-ae41-27336943400a": {
+        "file": "docs/user-guide/images/md-editor-attachments-en.jpg",
+        "sha256": "17728407a30da0abe3d11072370542d81a4420fd6e9e903221863e2c8bb960aa",
+        "original_name": "md-editor-attachments-en.jpg"
     },
     "e20ced95-af39-44d6-ad45-775b198caabb": {
         "file": "docs/user-guide/images/e20ced95-af39-44d6-ad45-775b198caabb.png",

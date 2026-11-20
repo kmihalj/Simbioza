@@ -1,4 +1,4 @@
-# Editing pages
+# HTML Editor
 
 Learn how to create a page, add text, images and other content, and prepare it for readers. You work in a visual editor, much like a word processor. **You do not need to know HTML or write programming code for everyday editing.**
 

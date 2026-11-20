@@ -803,7 +803,7 @@ final class InstallationTest extends TestCase
             ->get();
         $this->assertSame([
             'simbioza',
-            'uredivanje-stranica',
+            'uredivanje-stranica-pregled',
             'samostalne-html-stranice',
             'podrucja',
             'kalendari',
@@ -831,7 +831,13 @@ final class InstallationTest extends TestCase
         $this->assertSame('Installation', $translatedTitles['instalacija']['en']);
         $this->assertSame('Calendars', $translatedTitles['kalendari']['en']);
         $this->assertSame('Workspaces', $translatedTitles['podrucja']['en']);
-        $this->assertSame('Editing pages', $translatedTitles['uredivanje-stranica']['en']);
+        $this->assertSame('Editing pages', $translatedTitles['uredivanje-stranica-pregled']['en']);
+        $editorParent = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('workspace_id', '=', $workspaceId)->where('slug', '=', 'uredivanje-stranica-pregled')->first();
+        $this->assertIsArray($editorParent);
+        $editorChapters = $database->table(ModuleWorkspace::TABLE_WORKSPACE_NODES)
+            ->where('parent_id', '=', $editorParent['id'])->orderBy('sort_order')->get();
+        $this->assertSame(['uredivanje-stranica', 'md-editor'], array_column($editorChapters, 'slug'));
         $this->assertSame('Surveys', $translatedTitles['ankete']['en']);
 
         $workspaceAcl = $database->table(ModuleWorkspace::TABLE_WORKSPACE_ACL)

@@ -1,5 +1,7 @@
 # Simbioza 0.3.48 — veliki HTML izvozi područja
 
+> Povijesna bilješka izdanja. Pogledajte [aktualno izdanje](release-0.3.49_hr.md).
+
 Izvoz velikog područja u HTML mogao se zaustaviti usred preuzimanja kad bi PHP
 dosegnuo ograničenje izvršavanja. Modul Workspace **0.3.8** daje ovlaštenim
 izvozima iz obrasca i preko API-ja najmanje 900 sekundi izvršavanja PHP-a kad

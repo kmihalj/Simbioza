@@ -23,6 +23,7 @@ const DOCUMENTED_MODULES = [
     'heartphrame-module-calendar',
     'heartphrame-module-comment',
     'heartphrame-module-editor-html',
+    'heartphrame-module-editor-md',
     'heartphrame-module-email',
     'heartphrame-module-menu',
     'heartphrame-module-notification',

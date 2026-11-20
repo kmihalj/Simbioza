@@ -1,4 +1,4 @@
-# Uređivanje stranica
+# HTML Editor
 
 Ovdje naučite napraviti stranicu, dodati tekst, slike i druge sadržaje te je pripremiti za čitatelje. Radite u vizualnom editoru, slično kao u uređivaču teksta. **Za uobičajeni rad ne trebate poznavati HTML ni pisati programski kod.**
 

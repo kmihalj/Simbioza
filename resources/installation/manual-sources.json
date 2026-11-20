@@ -32,7 +32,7 @@
     }
   },
   {
-    "slug": "uredivanje-stranica",
+    "slug": "uredivanje-stranica-pregled",
     "title": {
       "hr": "Uređivanje stranica",
       "en": "Editing pages",
@@ -42,6 +42,38 @@
       "it": "Modifica delle pagine"
     },
     "parent": null,
+    "sources": {
+      "hr": [
+        "docs/user-guide/uredivanje-stranica-pregled_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/uredivanje-stranica-pregled_en.md"
+      ],
+      "de": [
+        "docs/user-guide/uredivanje-stranica-pregled_de.md"
+      ],
+      "es": [
+        "docs/user-guide/uredivanje-stranica-pregled_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/uredivanje-stranica-pregled_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/uredivanje-stranica-pregled_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "uredivanje-stranica",
+    "title": {
+      "hr": "HTML Editor",
+      "en": "HTML Editor",
+      "de": "HTML Editor",
+      "es": "HTML Editor",
+      "fr": "HTML Editor",
+      "it": "HTML Editor"
+    },
+    "parent": "uredivanje-stranica-pregled",
     "sources": {
       "hr": [
         "docs/user-guide/uredivanje-stranica_hr.md"
@@ -60,6 +92,38 @@
       ],
       "it": [
         "docs/user-guide/uredivanje-stranica_it.md"
+      ]
+    }
+  },
+  {
+    "slug": "md-editor",
+    "title": {
+      "hr": "MD Editor",
+      "en": "MD Editor",
+      "de": "MD Editor",
+      "es": "MD Editor",
+      "fr": "MD Editor",
+      "it": "MD Editor"
+    },
+    "parent": "uredivanje-stranica-pregled",
+    "sources": {
+      "hr": [
+        "docs/user-guide/md-editor_hr.md"
+      ],
+      "en": [
+        "docs/user-guide/md-editor_en.md"
+      ],
+      "de": [
+        "docs/user-guide/md-editor_de.md"
+      ],
+      "es": [
+        "docs/user-guide/md-editor_es.md"
+      ],
+      "fr": [
+        "docs/user-guide/md-editor_fr.md"
+      ],
+      "it": [
+        "docs/user-guide/md-editor_it.md"
       ]
     }
   },
