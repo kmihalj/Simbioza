@@ -1,5 +1,7 @@
 # Simbioza 0.3.50 — MD Editor i navigacija u područjima
 
+> Povijesna bilješka izdanja za neobjavljenu kandidat-verziju. Pogledajte [aktualno izdanje](release-0.3.51_hr.md).
+
 MD Editor **0.3.1** podržava samostalne Markdown stranice i ugradiva Markdown polja. Uključuje povijest, prijevode, privitke i API za samostalne stranice i stranice u područjima. Područja **0.3.10** podržavaju oba formata u istom stablu. HTML Editor **0.3.22** uključuje zajedničke kontrole kazala i dopunjene zadane postavke prijenosa privitaka.
 
 Širine stabla stranica i kazala prilagođavaju se duljini naziva unutar čitljivog raspona. Stranica koristi preostalu širinu. Kad nema dovoljno mjesta za istodobno čitanje stranice i prikaz kartica, stablo i kazalo otvaraju se rubnim gumbima.

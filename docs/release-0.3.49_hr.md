@@ -1,5 +1,7 @@
 # Simbioza 0.3.49 — MD Editor
 
+> Povijesna bilješka izdanja za neobjavljenu kandidat-verziju. Pogledajte [aktualno izdanje](release-0.3.51_hr.md).
+
 MD Editor **0.3.0** donosi Markdown stranice i ugradiva Markdown polja. Podržava samostalne stranice, revizije, prijevode, privitke i pristup preko API-ja. Područja **0.3.9** povezuju Markdown i HTML stranice u istom stablu, od izrade nacrta do objave, sigurnosne kopije i izvoza. HTML Editor **0.3.21** uključuje zajedničke kontrole dijaloga i tablica te dopunjene zadane postavke prijenosa datoteka.
 
 Odjeljak **Uređivanje stranica** u ugrađenim korisničkim uputama objašnjava kako pokrenuti oba editora. Sadrži zasebna poglavlja za HTML Editor i MD Editor na svih šest jezika Simbioze. Markdown upute imaju hrvatske i engleske snimke u svijetloj temi. Poveznice na postojeću HTML uputu zadržavaju adresu.
