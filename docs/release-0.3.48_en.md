@@ -1,6 +1,6 @@
 # Simbioza 0.3.48 — large Workspace HTML exports
 
-> Historical release note. See the [current release](release-0.3.49_en.md).
+> Historical release note. See the [current release](release-0.3.50_en.md).
 
 Large Workspace HTML downloads could stop partway through when PHP reached its
 execution time limit. Workspace **0.3.8** gives authorized exports from the

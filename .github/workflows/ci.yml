@@ -96,11 +96,15 @@ jobs:
           docker compose -p simbioza-release-ci up -d --force-recreate --wait app
           docker compose -p simbioza-release-ci exec -T app php /dev/stdin state < ../tests/Fixtures/container_probe.php > ../build/docker/state-after.json
           cmp ../build/docker/state-before.json ../build/docker/state-after.json
-          # EN: Verify this release's published package inventory, including the unchanged Framework.
+          # EN: Verify every package resolved from the release catalog before the image build.
           #
-          # HR: Provjeriti objavljene pakete ovog izdanja, uključujući nepromijenjeni Framework.
-          docker compose -p simbioza-release-ci exec -T app php -r '$s=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $expected=["aaieduhr/heartphrame-framework"=>"0.0.25","aaieduhr/heartphrame-module-orm"=>"0.3.3","aaieduhr/simbioza-module-user"=>"0.3.6","aaieduhr/simbioza-module-workspace-search"=>"0.3.4","aaieduhr/heartphrame-module-accessibility"=>"0.3.3","aaieduhr/heartphrame-module-audit"=>"0.3.4","aaieduhr/heartphrame-module-api"=>"0.3.5","aaieduhr/heartphrame-module-calendar"=>"0.3.5","aaieduhr/heartphrame-module-auth"=>"0.3.5","aaieduhr/heartphrame-module-email"=>"0.3.7","aaieduhr/heartphrame-module-survey"=>"0.3.8","aaieduhr/heartphrame-module-editor-html"=>"0.3.20","aaieduhr/heartphrame-module-backup"=>"0.3.6","aaieduhr/heartphrame-module-menu"=>"0.3.6","aaieduhr/heartphrame-module-theme"=>"0.3.15","aaieduhr/heartphrame-module-task"=>"0.3.5","aaieduhr/heartphrame-module-comment"=>"0.3.5","aaieduhr/heartphrame-module-notification"=>"0.3.4","aaieduhr/simbioza-module-workspace"=>"0.3.8","aaieduhr/simbioza-module-confluence-import"=>"0.3.3"]; foreach($s["packages"] as $p){if(str_starts_with($p["name"],"aaieduhr/") && ltrim($p["version"],"v")!==($expected[$p["name"]]??null)){throw new RuntimeException("Unexpected package version: ".$p["name"]);}}'
+          # HR: Provjeri svaki paket razriješen iz kataloga izdanja prije gradnje slike.
           docker compose -p simbioza-release-ci cp app:/opt/simbioza/composer.lock ../build/docker/composer.lock
+          for lock in ../composer.ci.lock ../build/docker/composer.lock; do
+            jq -eS '.packages | map(select(.name | startswith("aaieduhr/")) | {key: .name, value: (.version | ltrimstr("v"))}) | from_entries | select(length > 0)' \
+              "$lock" > "$lock.modules"
+          done
+          diff -u ../composer.ci.lock.modules ../build/docker/composer.lock.modules
       - name: Record all vulnerability findings
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
         with:
