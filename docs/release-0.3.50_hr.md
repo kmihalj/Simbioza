@@ -1,6 +1,6 @@
 # Simbioza 0.3.50 — MD Editor i navigacija u područjima
 
-> Povijesna bilješka izdanja za neobjavljenu kandidat-verziju. Pogledajte [aktualno izdanje](release-0.3.53_hr.md).
+> Povijesna bilješka izdanja za neobjavljenu kandidat-verziju. Pogledajte [aktualno izdanje](release-0.3.54_hr.md).
 
 MD Editor **0.3.1** podržava samostalne Markdown stranice i ugradiva Markdown polja. Uključuje povijest, prijevode, privitke i API za samostalne stranice i stranice u područjima. Područja **0.3.10** podržavaju oba formata u istom stablu. HTML Editor **0.3.22** uključuje zajedničke kontrole kazala i dopunjene zadane postavke prijenosa privitaka.
 

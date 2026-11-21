@@ -1,6 +1,6 @@
 # Simbioza 0.3.48 — veliki HTML izvozi područja
 
-> Povijesna bilješka izdanja. Pogledajte [aktualno izdanje](release-0.3.53_hr.md).
+> Povijesna bilješka izdanja. Pogledajte [aktualno izdanje](release-0.3.54_hr.md).
 
 Izvoz velikog područja u HTML mogao se zaustaviti usred preuzimanja kad bi PHP
 dosegnuo ograničenje izvršavanja. Modul Workspace **0.3.8** daje ovlaštenim

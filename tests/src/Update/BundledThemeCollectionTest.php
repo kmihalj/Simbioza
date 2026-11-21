@@ -138,14 +138,17 @@ final class BundledThemeCollectionTest extends TestCase
             $this->assertSame('wide', $before[$index]['components'][$component]['container']);
             $previous[$index]['components'][$component]['container'] = 'fluid';
         }
+
         $existing = $previous;
         if ($hasCustomWidth) {
             $existing[$index]['components']['content']['container'] = 'xxl';
         }
+
         file_put_contents($path, json_encode($existing, JSON_THROW_ON_ERROR));
 
         $upgrade = new BundledThemeCollection($this->themes);
         $upgrade->apply($this->root);
+
         $actual = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
         $actualIndex = array_search('simbioza', array_column($actual, 'id'), true);
         $this->assertIsInt($actualIndex);
