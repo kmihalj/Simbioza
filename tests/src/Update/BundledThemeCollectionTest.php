@@ -12,6 +12,7 @@ use App\Update\BundledThemeCollection;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
 use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -112,6 +113,49 @@ final class BundledThemeCollectionTest extends TestCase
         $this->assertSame($raw, file_get_contents($this->themes->themesJsonPath()));
         $this->themes->deleteTheme('simbioza-stadion');
         $this->assertSame(0, (new BundledThemeCollection($this->themes))->apply($this->root));
+    }
+
+    /**
+     * EN: New installs use wide containers; only the unmodified previous theme receives that default on upgrade.
+     *
+     * HR: Nove instalacije koriste široke okvire, a nadogradnja ih postavlja samo na neizmijenjenoj prethodnoj temi.
+     */
+    #[TestWith([false])]
+    #[TestWith([true])]
+    public function testDefaultWidthUpgradePreservesLocalEdits(bool $hasCustomWidth): void
+    {
+        $archivePath = $this->root . '/resources/installation/theme/simbioza.zip';
+        copy(dirname(__DIR__, 3) . '/resources/installation/theme/simbioza.zip', $archivePath);
+        $archive = new ThemeArchiveService($this->themes, new ThemeAssetLibrary($this->themes));
+        $this->assertSame('simbioza', $archive->importFile($archivePath));
+        $path = $this->themes->themesJsonPath();
+        $settings = file_get_contents($this->themes->settingsJsonPath());
+        $before = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $previous = $before;
+        $index = array_search('simbioza', array_column($before, 'id'), true);
+        $this->assertIsInt($index);
+        foreach (['header', 'navigation', 'hero', 'content'] as $component) {
+            $this->assertSame('wide', $before[$index]['components'][$component]['container']);
+            $previous[$index]['components'][$component]['container'] = 'fluid';
+        }
+        $existing = $previous;
+        if ($hasCustomWidth) {
+            $existing[$index]['components']['content']['container'] = 'xxl';
+        }
+        file_put_contents($path, json_encode($existing, JSON_THROW_ON_ERROR));
+
+        $upgrade = new BundledThemeCollection($this->themes);
+        $upgrade->apply($this->root);
+        $actual = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $actualIndex = array_search('simbioza', array_column($actual, 'id'), true);
+        $this->assertIsInt($actualIndex);
+        $this->assertEquals($hasCustomWidth ? $existing[$index] : $before[$index], $actual[$actualIndex]);
+        $this->assertSame($settings, file_get_contents($this->themes->settingsJsonPath()));
+
+        $actual[$actualIndex] = $previous[$index];
+        file_put_contents($path, json_encode($actual, JSON_THROW_ON_ERROR));
+        $upgrade->apply($this->root);
+        $this->assertSame($actual, json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR));
     }
 
     /**

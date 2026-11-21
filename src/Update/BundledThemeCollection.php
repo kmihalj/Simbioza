@@ -162,7 +162,54 @@ final readonly class BundledThemeCollection
             $this->writeReceipt($receipt, $retired);
         }
 
+        $widthMarker = 'simbioza:wide-default-0.3.53';
+        if (!isset($retired[$widthMarker]) && is_file(dirname($manifestPath) . '/simbioza.zip')) {
+            $this->widenUnmodifiedDefault();
+            $retired[$widthMarker] = true;
+            $this->writeReceipt($receipt, $retired);
+        }
+
         return $count;
+    }
+
+    /**
+     * EN: Updates only the exact installed settings of the former bundled Simbioza preset.
+     *
+     * HR: Ažurira samo točne spremljene postavke prethodno priložene teme Simbioza.
+     */
+    private function widenUnmodifiedDefault(): void
+    {
+        $themes = json_decode(
+            (string)file_get_contents($this->themes->themesJsonPath()),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        if (!is_array($themes) || !array_is_list($themes)) {
+            throw new RuntimeException('Invalid installed theme list.');
+        }
+
+        foreach ($themes as $index => $theme) {
+            if (
+                !is_array($theme) || ($theme['id'] ?? null) !== 'simbioza'
+                || BundledThemeRetirement::fingerprint($theme)
+                !== '99f291132d7572df471c2c6f362ef76a43ef747c00d094cfcd4d2f78fa71edbc'
+            ) {
+                continue;
+            }
+
+            $themes[$index] = array_replace_recursive($theme, ['components' => [
+                'header' => ['container' => 'wide'],
+                'navigation' => ['container' => 'wide'],
+                'hero' => ['container' => 'wide'],
+                'content' => ['container' => 'wide'],
+            ]]);
+            $this->themes->writeJsonContents(
+                'themes',
+                json_encode($themes, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL,
+            );
+            return;
+        }
     }
 
     /**
