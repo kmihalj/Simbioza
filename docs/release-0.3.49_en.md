@@ -1,6 +1,6 @@
 # Simbioza 0.3.49 — MD Editor
 
-> Historical release note for an unpublished candidate. See the [current release](release-0.3.54_en.md).
+> Historical release note for an unpublished candidate. See the [current release](release-0.3.55_en.md).
 
 MD Editor **0.3.0** adds managed Markdown pages and reusable Markdown fields. It supports standalone pages, revisions, translations, attachments, and API access. Workspace **0.3.9** supports Markdown alongside HTML in the same tree, from creating drafts through publication, backup, and export. HTML Editor **0.3.21** includes shared dialog and table controls and the updated upload defaults.
 

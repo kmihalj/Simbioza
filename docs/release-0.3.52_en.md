@@ -1,6 +1,6 @@
 # Simbioza 0.3.52 — fullscreen editing
 
-> Historical release note. See the [current release](release-0.3.54_en.md).
+> Historical release note. See the [current release](release-0.3.55_en.md).
 
 MD Editor **0.3.2** and HTML Editor **0.3.23** keep the toolbar visible in fullscreen. When the theme uses a sticky header or navigation, the editing frame starts immediately below it. Both the visual and source views fill the remaining space, and long documents scroll inside the editor to the last line.
 
